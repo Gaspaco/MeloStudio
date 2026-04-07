@@ -7,16 +7,39 @@
   z-index: 9999;
   background: $bg-primary;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   pointer-events: none;
 
-  &__line {
-    width: 100px;
-    height: 1px;
-    background: $accent;
-    transform: scaleX(0);
-    transform-origin: left;
+  &__melo {
+    font-family: $font-display;
+    font-size: clamp(6rem, 18vw, 22rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    line-height: 0.85;
+    color: $accent;
+    overflow: hidden;
+    display: inline-block;
+  }
+
+  &__studio {
+    font-family: $font-script;
+    font-size: clamp(3rem, 9vw, 11rem);
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1;
+    margin-top: -0.15em;
+    overflow: hidden;
+    display: inline-block;
+    align-self: flex-end;
+    margin-right: 12vw;
+  }
+
+  &__char {
+    display: inline-block;
+    will-change: transform;
   }
 }
 
@@ -62,33 +85,231 @@
   right: 0;
   z-index: 50;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  padding: 28px 48px;
-  mix-blend-mode: difference;
+  padding: 12px 48px;
 
   &__logo {
+    display: flex;
+    align-items: baseline;
+    gap: 0.18em;
+    mix-blend-mode: difference;
+  }
+
+  &__logoMelo {
     font-family: $font-display;
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: white;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: $accent;
     text-transform: uppercase;
   }
 
-  &__link {
-    font-family: $font-mono;
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.5);
-    text-decoration: none;
-    letter-spacing: 0.04em;
-    transition: color 0.3s ease;
+  &__logoStudio {
+    font-family: $font-script;
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: white;
+    text-transform: none;
+  }
 
-    &:hover {
-      color: white;
-    }
+}
+
+// ── 3D Slab Widget ───────────────────────────────
+.slab {
+  position: relative;
+  display: flex;
+  width: 260px;
+  height: 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: default;
+  perspective: 600px;
+  transform-style: preserve-3d;
+  will-change: transform;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 4px 20px rgba(0, 0, 0, 0.6),
+    0 12px 40px rgba(0, 0, 0, 0.4);
+
+  // ── Glow (behind image side) ──
+  &__glow {
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    width: 120px;
+    height: 100px;
+    background: radial-gradient(ellipse, rgba(180, 120, 60, 0.5) 0%, transparent 70%);
+    filter: blur(20px);
+    opacity: 0;
+    z-index: -1;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+  }
+
+  // ── Specular highlight ──
+  &__sheen {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    background: linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0.06) 0%,
+      transparent 40%,
+      transparent 60%,
+      rgba(255, 255, 255, 0.03) 100%
+    );
+  }
+
+  // ── Grain texture ──
+  &__grain {
+    position: absolute;
+    inset: 0;
+    z-index: 11;
+    pointer-events: none;
+    opacity: 0.3;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+
+  // ── Left Cube — LCD matte text ──
+  &__left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 10px 14px;
+    background: #08080a;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__meta {
+    font-family: $font-mono;
+    font-size: 0.42rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: rgba($accent, 0.5);
+    margin-bottom: 3px;
+  }
+
+  &__title {
+    font-family: $font-display;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.1;
+    text-shadow: 0 0 12px rgba($accent, 0.15);
+  }
+
+  &__artist {
+    font-family: $font-sans;
+    font-size: 0.55rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 1px;
+  }
+
+  &__time {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  &__timeCur,
+  &__timeDur {
+    font-family: $font-mono;
+    font-size: 0.42rem;
+    color: rgba(255, 255, 255, 0.25);
+  }
+
+  &__timeBar {
+    flex: 1;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  &__timeFill {
+    display: block;
+    width: 52%;
+    height: 100%;
+    background: $accent;
+    border-radius: 1px;
+    box-shadow: 0 0 6px rgba($accent, 0.4);
+  }
+
+  // ── Center Seam ──
+  &__seam {
+    width: 1px;
+    align-self: stretch;
+    position: relative;
+    z-index: 5;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.08) 0%,
+      rgba(255, 255, 255, 0.03) 50%,
+      rgba(255, 255, 255, 0.08) 100%
+    );
+    box-shadow:
+      -1px 0 0 rgba(0, 0, 0, 0.7),
+       1px 0 0 rgba(255, 255, 255, 0.03);
+  }
+
+  // ── Right Cube — Album art display ──
+  &__right {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 2;
+    background: #0a0a0c;
+    overflow: hidden;
+  }
+
+  &__art {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: saturate(0.85) brightness(0.9);
+    transition: filter 0.5s ease;
+  }
+
+  // Gloss on album side
+  &__gloss {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      transparent 45%,
+      transparent 55%,
+      rgba(255, 255, 255, 0.04) 100%
+    );
+  }
+
+  // ── Hover states ──
+  &:hover &__art {
+    filter: saturate(1.1) brightness(1.05);
+  }
+
+  &:hover &__timeFill {
+    box-shadow: 0 0 10px rgba($accent, 0.6);
+  }
+
+  &:hover &__title {
+    text-shadow: 0 0 18px rgba($accent, 0.25);
   }
 }
+
+
 
 // ── Hero ─────────────────────────────────────────
 .hero {
@@ -865,13 +1086,14 @@
   min-height: 80vh;
   display: flex;
   align-items: center;
-  overflow: hidden;
+  justify-content: flex-start;
+  overflow: visible;
 
   &__text {
     font-family: $font-display;
-    font-size: clamp(2rem, 4.5vw, 4.2rem);
+    font-size: clamp(3rem, 5.5vw, 5.5rem);
     font-weight: 700;
-    line-height: 1.3;
+    line-height: 1.25;
     letter-spacing: -0.035em;
     max-width: 900px;
     overflow-wrap: break-word;
@@ -1018,6 +1240,7 @@
     color: $text-primary;
     display: block;
     overflow: hidden;
+    padding-right: 0.08em;
 
     &:nth-child(2) {
       font-family: $font-script;

@@ -1,5 +1,14 @@
 @use "reset";
 
+// Hide scrollbar
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 // Lenis smooth scroll
 html.lenis,
 html.lenis body {

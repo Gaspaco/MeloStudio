@@ -9,7 +9,8 @@ gsap.registerPlugin(ScrollTrigger);
 const Home: Component = () => {
   let lenisRef: InstanceType<typeof Lenis> | undefined;
   let loaderRef!: HTMLDivElement;
-  let loaderLineRef!: HTMLDivElement;
+  let loaderMeloRef!: HTMLDivElement;
+  let loaderStudioRef!: HTMLDivElement;
   let heroRef!: HTMLElement;
   let heroTitleRef!: HTMLDivElement;
   let heroLine1Ref!: HTMLDivElement;
@@ -26,6 +27,8 @@ const Home: Component = () => {
   let closingWordsRefs: HTMLSpanElement[] = [];
   let footerRef!: HTMLElement;
   let orbRef!: HTMLDivElement;
+  let slabRef!: HTMLDivElement;
+  let slabGlowRef!: HTMLDivElement;
 
   const tracks = [
     { label: "Lead Vox", color: "#ccff00", vol: 82, blocks: [{ x: 8, w: 22 }, { x: 34, w: 18 }, { x: 58, w: 26 }] },
@@ -41,12 +44,12 @@ const Home: Component = () => {
   ];
 
   const closingWordImages: Record<string, string> = {
-    "audio": "https://cdn-images.dzcdn.net/images/cover/311bba0fc112d15f72c8b5a65f0456c1/500x500-000000-80-0-0.jpg",
-    "production": "https://cdn-images.dzcdn.net/images/cover/fd00ebd6d30d7253f813dba3bb1c66a9/500x500-000000-80-0-0.jpg",
+    "audio": "https://cdn-images.dzcdn.net/images/cover/b5d7b0054e47ae579716bc251c4b08ae/500x500-000000-80-0-0.jpg",
+    "in": "https://cdn-images.dzcdn.net/images/cover/aa7e6de00b0810f5051aa60b489f58d8/500x500-000000-80-0-0.jpg",
     "browser.": "https://cdn-images.dzcdn.net/images/cover/7ce6b8452fae425557067db6e6a1cad5/500x500-000000-80-0-0.jpg",
-    "create.": "https://cdn-images.dzcdn.net/images/cover/041ab5ceb6fb6ebf9512966835be9e1b/500x500-000000-80-0-0.jpg",
+    "create.": "https://cdn-images.dzcdn.net/images/cover/7df7ac6028591a5622f24cf32a555510/500x500-000000-80-0-0.jpg",
   };
-  const closingAccentWords = new Set(["browser.", "create.", "No"]);
+  const closingAccentWords = new Set(["Desktop-grade", "browser.", "create.", "No"]);
   const closingWords = "Desktop-grade audio production belongs in the browser. No installs. No compromises. Just create.".split(" ");
   const typewriterWords = ["conceptualise.", "produce.", "create.", "master.", "perform."];
   const [twText, setTwText] = createSignal("");
@@ -103,10 +106,41 @@ const Home: Component = () => {
     gsap.ticker.lagSmoothing(0);
 
     // ── Intro sequence ──
-    const intro = gsap.timeline({ delay: 0.15 });
+    const hasLoaded = sessionStorage.getItem("melostudio_loaded");
+
+    if (hasLoaded) {
+      // Skip loader entirely
+      gsap.set(loaderRef, { display: "none" });
+    }
+
+    const intro = gsap.timeline({ delay: hasLoaded ? 0 : 0.2 });
+
+    if (!hasLoaded) {
+      // MELO: each letter rises up
+      const meloChars = loaderMeloRef.querySelectorAll("." + styles.loader__char);
+      const studioChars = loaderStudioRef.querySelectorAll("." + styles.loader__char);
+      intro
+        .from(meloChars, {
+          yPercent: 120,
+          stagger: 0.08,
+          duration: 0.7,
+          ease: "power4.out",
+        }, 0)
+        // Studio: letters slide in from right, staggered
+        .from(studioChars, {
+          xPercent: 80,
+          opacity: 0,
+          stagger: 0.05,
+          duration: 0.6,
+          ease: "power3.out",
+        }, 0.4)
+        // Hold, then slide up
+        .to(loaderRef, { yPercent: -100, duration: 0.8, ease: "power4.inOut" }, 1.4);
+
+      sessionStorage.setItem("melostudio_loaded", "1");
+    }
+
     intro
-      .to(loaderLineRef, { scaleX: 1, duration: 1.0, ease: "power2.inOut" })
-      .to(loaderRef, { yPercent: -100, duration: 0.7, ease: "power4.inOut" }, 0.85)
       // "Melo" — wipe-reveal from left + slight rise
       .fromTo(heroLine1Ref, {
         clipPath: "inset(0 100% 0 0)",
@@ -311,18 +345,25 @@ const Home: Component = () => {
     }
 
     // ── Closing word-by-word ──
-    closingWordsRefs.forEach((word) => {
+    closingWordsRefs.forEach((word, i) => {
       if (!word) return;
-      gsap.to(word, {
-        opacity: 1,
-        ease: "none",
-        scrollTrigger: {
-          trigger: word,
-          start: "top 85%",
-          end: "top 45%",
-          scrub: true,
-        },
-      });
+      gsap.fromTo(
+        word,
+        { opacity: 0.08, y: 30, filter: "blur(4px)" },
+        {
+          opacity: 1,
+          y: 0,
+          filter: "blur(0px)",
+          duration: 0.8,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: word,
+            start: "top 90%",
+            end: "top 55%",
+            scrub: true,
+          },
+        }
+      );
     });
 
     // ── Footer ──
@@ -424,7 +465,16 @@ const Home: Component = () => {
     <div class={styles.page}>
       {/* ── Loader ── */}
       <div ref={loaderRef!} class={styles.loader}>
-        <div ref={loaderLineRef!} class={styles.loader__line} />
+        <div ref={loaderMeloRef!} class={styles.loader__melo}>
+          {"MELO".split("").map((ch) => (
+            <span class={styles.loader__char}>{ch}</span>
+          ))}
+        </div>
+        <div ref={loaderStudioRef!} class={styles.loader__studio}>
+          {"Studio".split("").map((ch) => (
+            <span class={styles.loader__char}>{ch}</span>
+          ))}
+        </div>
       </div>
 
       {/* ── Grain ── */}
@@ -432,8 +482,72 @@ const Home: Component = () => {
 
       {/* ── Nav ── */}
       <nav class={styles.nav}>
-        <span class={styles.nav__logo}>MeloStudio</span>
-        <a href="#" class={styles.nav__link}>Open DAW</a>
+        <span class={styles.nav__logo}>
+          <span class={styles.nav__logoMelo}>Melo</span><span class={styles.nav__logoStudio}>Studio</span>
+        </span>
+
+        {/* ── 3D Slab Widget ── */}
+        <div
+          ref={slabRef!}
+          class={styles.slab}
+          onMouseMove={(e) => {
+            const rect = slabRef.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width - 0.5;
+            const y = (e.clientY - rect.top) / rect.height - 0.5;
+            gsap.to(slabRef, {
+              rotateY: x * 18,
+              rotateX: y * -12,
+              duration: 0.4,
+              ease: "power2.out",
+            });
+            gsap.to(slabGlowRef, { opacity: 0.7, duration: 0.3 });
+          }}
+          onMouseLeave={() => {
+            gsap.to(slabRef, {
+              rotateY: 0,
+              rotateX: 0,
+              duration: 0.6,
+              ease: "elastic.out(1, 0.5)",
+            });
+            gsap.to(slabGlowRef, { opacity: 0, duration: 0.5 });
+          }}
+        >
+          {/* Glow behind image side */}
+          <div ref={slabGlowRef!} class={styles.slab__glow} />
+
+          {/* Specular highlight across slab */}
+          <div class={styles.slab__sheen} />
+
+          {/* Grain overlay */}
+          <div class={styles.slab__grain} />
+
+          {/* Left Cube — LCD text side */}
+          <div class={styles.slab__left}>
+            <div class={styles.slab__meta}>NOW PLAYING</div>
+            <div class={styles.slab__title}>Blinding Lights</div>
+            <div class={styles.slab__artist}>The Weeknd</div>
+            <div class={styles.slab__time}>
+              <span class={styles.slab__timeCur}>1:42</span>
+              <span class={styles.slab__timeBar}>
+                <span class={styles.slab__timeFill} />
+              </span>
+              <span class={styles.slab__timeDur}>3:20</span>
+            </div>
+          </div>
+
+          {/* Center seam */}
+          <div class={styles.slab__seam} />
+
+          {/* Right Cube — Album art */}
+          <div class={styles.slab__right}>
+            <img
+              src="https://cdn-images.dzcdn.net/images/cover/b5d7b0054e47ae579716bc251c4b08ae/500x500-000000-80-0-0.jpg"
+              alt="Album art"
+              class={styles.slab__art}
+            />
+            <div class={styles.slab__gloss} />
+          </div>
+        </div>
       </nav>
 
       {/* ── Hero ── */}
