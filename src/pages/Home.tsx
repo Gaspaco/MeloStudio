@@ -29,6 +29,7 @@ const Home: Component = () => {
   let orbRef!: HTMLDivElement;
   let slabRef!: HTMLDivElement;
   let slabGlowRef!: HTMLDivElement;
+  let cubeRef!: HTMLDivElement;
 
   const tracks = [
     { label: "Lead Vox", color: "#ccff00", vol: 82, blocks: [{ x: 8, w: 22 }, { x: 34, w: 18 }, { x: 58, w: 26 }] },
@@ -54,6 +55,7 @@ const Home: Component = () => {
   const typewriterWords = ["conceptualise.", "produce.", "create.", "master.", "perform."];
   const [twText, setTwText] = createSignal("");
   const [twCursor, setTwCursor] = createSignal(true);
+  const [menuOpen, setMenuOpen] = createSignal(false);
 
   const capabilities = [
     {
@@ -97,7 +99,7 @@ const Home: Component = () => {
   onMount(() => {
     // ── Lenis ──
     lenisRef = new Lenis({
-      duration: 1.2,
+      duration: 0.9,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
     });
@@ -344,26 +346,38 @@ const Home: Component = () => {
       });
     }
 
-    // ── Closing word-by-word ──
-    closingWordsRefs.forEach((word, i) => {
-      if (!word) return;
-      gsap.fromTo(
-        word,
-        { opacity: 0.08, y: 30, filter: "blur(4px)" },
-        {
-          opacity: 1,
-          y: 0,
-          filter: "blur(0px)",
-          duration: 0.8,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: word,
-            start: "top 90%",
-            end: "top 55%",
-            scrub: true,
+    // ── Closing word-by-word music decode ──
+    const noteChars = "▪▫▬▮░▒";
+    const makeNoise = (len: number) => {
+      let s = "";
+      for (let j = 0; j < len; j++) s += noteChars[Math.floor(Math.random() * noteChars.length)];
+      return s;
+    };
+
+    closingWordsRefs.forEach((wordEl, i) => {
+      if (!wordEl) return;
+      const realText = closingWords[i]!;
+      // Pre-generate a fixed noise string so it doesn't flicker
+      const frozenNoise = makeNoise(realText.length);
+      wordEl.textContent = frozenNoise + " ";
+
+      gsap.to(wordEl, {
+        scrollTrigger: {
+          trigger: wordEl,
+          start: "top 88%",
+          end: "top 55%",
+          scrub: 0.5,
+          onUpdate: (self) => {
+            const p = self.progress;
+            const resolved = Math.floor(p * realText.length);
+            wordEl.textContent =
+              realText.slice(0, resolved) +
+              frozenNoise.slice(resolved) + " ";
           },
-        }
-      );
+        },
+        opacity: 1,
+        ease: "none",
+      });
     });
 
     // ── Footer ──
@@ -490,7 +504,9 @@ const Home: Component = () => {
         <div
           ref={slabRef!}
           class={styles.slab}
+          onClick={() => setMenuOpen(!menuOpen())}
           onMouseMove={(e) => {
+            if (menuOpen()) return;
             const rect = slabRef.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width - 0.5;
             const y = (e.clientY - rect.top) / rect.height - 0.5;
@@ -500,7 +516,13 @@ const Home: Component = () => {
               duration: 0.4,
               ease: "power2.out",
             });
-            gsap.to(slabGlowRef, { opacity: 0.7, duration: 0.3 });
+            gsap.to(slabGlowRef, { opacity: 0.5, duration: 0.3 });
+            gsap.to(cubeRef, {
+              rotateY: x * 60,
+              rotateX: y * -60,
+              duration: 0.4,
+              ease: "power2.out",
+            });
           }}
           onMouseLeave={() => {
             gsap.to(slabRef, {
@@ -510,42 +532,61 @@ const Home: Component = () => {
               ease: "elastic.out(1, 0.5)",
             });
             gsap.to(slabGlowRef, { opacity: 0, duration: 0.5 });
+            gsap.to(cubeRef, {
+              rotateY: 0,
+              rotateX: 0,
+              duration: 0.6,
+              ease: "elastic.out(1, 0.5)",
+            });
           }}
         >
-          {/* Glow behind image side */}
           <div ref={slabGlowRef!} class={styles.slab__glow} />
-
-          {/* Specular highlight across slab */}
           <div class={styles.slab__sheen} />
-
-          {/* Grain overlay */}
-          <div class={styles.slab__grain} />
-
-          {/* Left Cube — LCD text side */}
-          <div class={styles.slab__left}>
-            <div class={styles.slab__meta}>NOW PLAYING</div>
-            <div class={styles.slab__title}>Blinding Lights</div>
-            <div class={styles.slab__artist}>The Weeknd</div>
-            <div class={styles.slab__time}>
-              <span class={styles.slab__timeCur}>1:42</span>
-              <span class={styles.slab__timeBar}>
-                <span class={styles.slab__timeFill} />
-              </span>
-              <span class={styles.slab__timeDur}>3:20</span>
-            </div>
+          <div ref={cubeRef!} class={styles.slab__cube}>
+            {["front", "back", "left", "right", "top", "bottom"].map((face) => (
+              <div class={styles.slab__cubeFace} data-face={face}>
+                <div class={styles.slab__marquee}>
+                  <span>Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span><span>Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;Menu&nbsp;&nbsp;&bull;&nbsp;&nbsp;</span>
+                </div>
+              </div>
+            ))}
           </div>
+        </div>
 
-          {/* Center seam */}
-          <div class={styles.slab__seam} />
-
-          {/* Right Cube — Album art */}
-          <div class={styles.slab__right}>
-            <img
-              src="https://cdn-images.dzcdn.net/images/cover/b5d7b0054e47ae579716bc251c4b08ae/500x500-000000-80-0-0.jpg"
-              alt="Album art"
-              class={styles.slab__art}
-            />
-            <div class={styles.slab__gloss} />
+        {/* ── Nav Menu Overlay ── */}
+        <div class={`${styles.navMenu}${menuOpen() ? ` ${styles.navMenuOpen}` : ""}`}>
+          <div class={styles.navMenu__bg} />
+          <div class={styles.navMenu__close} onClick={() => setMenuOpen(false)}>
+            <svg class={styles.navMenu__closeArrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19 12H5M5 12L11 6M5 12L11 18" /></svg>
+          </div>
+          <div class={styles.navMenu__left}>
+            <span class={styles.navMenu__eyebrow}>Navigation</span>
+            <span class={styles.navMenu__desc}>Explore the features that make MeloStudio the most powerful browser-native DAW.</span>
+          </div>
+          <div class={styles.navMenu__right}>
+            {["Timeline", "Mixer", "Engine", "Cloud"].map((label, i) => (
+              <a class={styles.navMenu__row} style={{ "--i": i } as any}>
+                <span class={styles.navMenu__num}>{String(i + 1).padStart(2, "0")}</span>
+                <span class={styles.navMenu__divider} />
+                <span class={styles.navMenu__label}>
+                  {label.split("").map((ch, ci) => (
+                    <span class={styles.navMenu__char} style={{ "--ci": ci, "--i": i } as any}>{ch}</span>
+                  ))}
+                </span>
+              </a>
+            ))}
+          </div>
+          <div class={styles.navMenu__bottom}>
+            <div class={styles.navMenu__socials}>
+              <a class={styles.navMenu__socialLink} href="https://twitter.com" target="_blank" rel="noopener noreferrer">Twitter</a>
+              <a class={styles.navMenu__socialLink} href="https://instagram.com" target="_blank" rel="noopener noreferrer">Instagram</a>
+              <a class={styles.navMenu__socialLink} href="https://discord.com" target="_blank" rel="noopener noreferrer">Discord</a>
+              <a class={styles.navMenu__socialLink} href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+            <div class={styles.navMenu__footer}>
+              <span>© 2026 MeloStudio</span>
+              <span>All rights reserved</span>
+            </div>
           </div>
         </div>
       </nav>
@@ -744,7 +785,7 @@ const Home: Component = () => {
       {/* ── Footer ── */}
       <footer ref={footerRef!} class={styles.footer}>
         <div class={styles.footer__info}>
-          <span class={styles.footer__backTop} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>back to top ↑</span>
+          <span class={styles.footer__backTop} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>↑ back to top</span>
           <div class={styles.footer__links}>
             <span class={styles.footer__accent}>timeline</span>
             <span>mixer</span>

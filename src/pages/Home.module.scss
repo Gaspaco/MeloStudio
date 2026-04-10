@@ -80,7 +80,7 @@
 // ── Nav ──────────────────────────────────────────
 .nav {
   position: fixed;
-  top: 0;
+  top: 16px;
   left: 0;
   right: 0;
   z-index: 50;
@@ -98,7 +98,7 @@
 
   &__logoMelo {
     font-family: $font-display;
-    font-size: 0.82rem;
+    font-size: 1.1rem;
     font-weight: 800;
     letter-spacing: 0.06em;
     color: $accent;
@@ -107,7 +107,7 @@
 
   &__logoStudio {
     font-family: $font-script;
-    font-size: 1.1rem;
+    font-size: 1.4rem;
     font-weight: 400;
     letter-spacing: 0;
     color: white;
@@ -119,194 +119,434 @@
 // ── 3D Slab Widget ───────────────────────────────
 .slab {
   position: relative;
-  display: flex;
-  width: 260px;
-  height: 64px;
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: default;
+  width: 68px;
+  height: 68px;
+  border-radius: 14px;
+  cursor: pointer;
   perspective: 600px;
   transform-style: preserve-3d;
   will-change: transform;
+  background: linear-gradient(145deg, #2a2a30 0%, #1c1c22 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.04) inset,
-    0 4px 20px rgba(0, 0, 0, 0.6),
-    0 12px 40px rgba(0, 0, 0, 0.4);
+    0 0.5px 0 rgba(255, 255, 255, 0.06) inset,
+    0 4px 12px rgba(0, 0, 0, 0.5),
+    0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: box-shadow 0.4s ease;
 
-  // ── Glow (behind image side) ──
+  &:hover {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 0.5px 0 rgba(255, 255, 255, 0.08) inset,
+      0 8px 24px rgba(0, 0, 0, 0.6),
+      0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+
   &__glow {
     position: absolute;
-    right: -20px;
-    top: -20px;
-    width: 120px;
-    height: 100px;
-    background: radial-gradient(ellipse, rgba(180, 120, 60, 0.5) 0%, transparent 70%);
-    filter: blur(20px);
+    inset: -12px;
+    border-radius: 20px;
+    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
     opacity: 0;
     z-index: -1;
     pointer-events: none;
     transition: opacity 0.4s ease;
   }
 
-  // ── Specular highlight ──
   &__sheen {
     position: absolute;
     inset: 0;
-    z-index: 10;
+    z-index: 2;
     pointer-events: none;
+    border-radius: inherit;
     background: linear-gradient(
-      115deg,
-      rgba(255, 255, 255, 0.06) 0%,
-      transparent 40%,
-      transparent 60%,
-      rgba(255, 255, 255, 0.03) 100%
+      135deg,
+      rgba(255, 255, 255, 0.08) 0%,
+      transparent 50%
     );
   }
 
-  // ── Grain texture ──
-  &__grain {
+  &__cube {
+    width: 44px;
+    height: 44px;
     position: absolute;
-    inset: 0;
-    z-index: 11;
-    pointer-events: none;
-    opacity: 0.3;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-    mix-blend-mode: overlay;
+    right: 12px;
+    top: 12px;
+    transform-style: preserve-3d;
   }
 
-  // ── Left Cube — LCD matte text ──
+  &__cubeFace {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    backface-visibility: visible;
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    &[data-face="front"]  { transform: translateZ(22px); }
+    &[data-face="back"]   { transform: translateZ(-22px) rotateY(180deg); }
+    &[data-face="left"]   { transform: rotateY(-90deg) translateZ(22px); }
+    &[data-face="right"]  { transform: rotateY(90deg) translateZ(22px); }
+    &[data-face="top"]    { transform: rotateX(90deg) translateZ(22px); }
+    &[data-face="bottom"] { transform: rotateX(-90deg) translateZ(22px); }
+  }
+}
+
+.slab__marquee {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: max-content;
+  animation: marqueeSlide 20s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  span {
+    font-family: $font-display;
+    font-size: 0.52rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    white-space: nowrap;
+    padding-right: 0.05em;
+  }
+}
+
+@keyframes marqueeSlide {
+  0%   { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+// ── Nav Menu Overlay ────────────────────────────
+.navMenu {
+  position: fixed;
+  inset: 0;
+  z-index: 49;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+
+  // ── Diagonal slash wipe ──
+  &__bg {
+    position: absolute;
+    inset: 0;
+    background: $bg-primary;
+    clip-path: polygon(100% 0, 100% 0, 100% 100%, 100% 100%);
+    transition: clip-path 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+  }
+
+  // ── Close button ──
+  &__close {
+    position: absolute;
+    top: 14px;
+    right: 48px;
+    z-index: 10;
+    width: 52px;
+    height: 52px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: transparent;
+    opacity: 0;
+    transform: scale(0.8);
+    transition:
+      opacity 0.4s ease 0.5s,
+      transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s,
+      border-color 0.3s ease,
+      background 0.3s ease;
+
+    // Animated border sweep on hover
+    &::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      background: conic-gradient(from 180deg, transparent 0%, $accent 50%, transparent 100%);
+      mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #fff calc(100% - 1.5px));
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 1.5px), #fff calc(100% - 1.5px));
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      animation: ringSweep 1.8s linear infinite;
+    }
+
+    &:hover {
+      border-color: rgba($accent, 0.3);
+      background: rgba($accent, 0.04);
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+
+  &__closeArrow {
+    width: 18px;
+    height: 18px;
+    color: rgba(255, 255, 255, 0.4);
+    transition: color 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    z-index: 1;
+  }
+
+  &__close:hover &__closeArrow {
+    color: $accent;
+    transform: translateX(-2px);
+  }
+
+  // ── Info (top-left overlay) ──
   &__left {
+    position: absolute;
+    top: 100px;
+    left: 64px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition:
+      opacity 0.5s ease 0.6s,
+      transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.6s;
+  }
+
+  &__eyebrow {
+    font-family: $font-mono;
+    font-size: 0.5rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: $accent;
+  }
+
+  &__desc {
+    font-family: $font-sans;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.22);
+    max-width: 220px;
+  }
+
+  // ── Center links (full-width stacked) ──
+  &__right {
+    position: relative;
+    z-index: 2;
     flex: 1;
     display: flex;
     flex-direction: column;
+    align-items: flex-end;
     justify-content: center;
-    padding: 10px 14px;
-    background: #08080a;
-    position: relative;
-    z-index: 2;
+    padding: 0 64px;
+    gap: 0;
   }
 
-  &__meta {
-    font-family: $font-mono;
-    font-size: 0.42rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    color: rgba($accent, 0.5);
-    margin-bottom: 3px;
-  }
-
-  &__title {
-    font-family: $font-display;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: rgba(255, 255, 255, 0.9);
-    line-height: 1.1;
-    text-shadow: 0 0 12px rgba($accent, 0.15);
-  }
-
-  &__artist {
-    font-family: $font-sans;
-    font-size: 0.55rem;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.35);
-    margin-top: 1px;
-  }
-
-  &__time {
+  &__row {
+    --i: 0;
     display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 6px;
+    align-items: baseline;
+    gap: 24px;
+    padding: 16px 0;
+    cursor: pointer;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+
+    // Hover wash
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0 -64px;
+      background: linear-gradient(90deg, transparent 0%, rgba($accent, 0.03) 50%, transparent 100%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    &:hover::before {
+      opacity: 1;
+    }
   }
 
-  &__timeCur,
-  &__timeDur {
+  &__num {
     font-family: $font-mono;
-    font-size: 0.42rem;
-    color: rgba(255, 255, 255, 0.25);
+    font-size: 0.44rem;
+    color: rgba(255, 255, 255, 0.06);
+    letter-spacing: 0.14em;
+    min-width: 24px;
+    align-self: center;
+    opacity: 0;
+    transition:
+      opacity 0.4s ease calc(var(--i) * 0.08s + 0.4s),
+      color 0.3s ease;
   }
 
-  &__timeBar {
-    flex: 1;
-    height: 2px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 1px;
+  &__row:hover &__num {
+    color: $accent;
+  }
+
+  &__divider {
+    display: none;
+  }
+
+  &__label {
+    display: flex;
     overflow: hidden;
   }
 
-  &__timeFill {
-    display: block;
-    width: 52%;
-    height: 100%;
-    background: $accent;
-    border-radius: 1px;
-    box-shadow: 0 0 6px rgba($accent, 0.4);
+  &__char {
+    display: inline-block;
+    font-family: $font-display;
+    font-size: clamp(4.5rem, 9vw, 9rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    line-height: 0.88;
+    color: $text-primary;
+    opacity: 0;
+    transform: translateY(110%) skewY(12deg) rotate(4deg);
+    transform-origin: bottom left;
+    filter: blur(4px);
+    transition:
+      opacity 0.01s ease calc(var(--i) * 0.06s + var(--ci) * 0.02s + 0.2s),
+      transform 0.9s cubic-bezier(0.22, 1.4, 0.36, 1) calc(var(--i) * 0.06s + var(--ci) * 0.02s + 0.2s),
+      filter 0.5s ease calc(var(--i) * 0.06s + var(--ci) * 0.02s + 0.25s),
+      color 0.35s ease,
+      text-shadow 0.35s ease;
   }
 
-  // ── Center Seam ──
-  &__seam {
-    width: 1px;
-    align-self: stretch;
-    position: relative;
-    z-index: 5;
-    background: linear-gradient(
-      to bottom,
-      rgba(255, 255, 255, 0.08) 0%,
-      rgba(255, 255, 255, 0.03) 50%,
-      rgba(255, 255, 255, 0.08) 100%
-    );
-    box-shadow:
-      -1px 0 0 rgba(0, 0, 0, 0.7),
-       1px 0 0 rgba(255, 255, 255, 0.03);
+  &__row:hover &__char {
+    color: $accent;
+    text-shadow: 0 0 40px rgba($accent, 0.25);
   }
 
-  // ── Right Cube — Album art display ──
-  &__right {
-    width: 64px;
-    height: 64px;
-    flex-shrink: 0;
+  &__row:hover &__num {
+    color: $accent;
+  }
+
+  // ── Bottom bar ──
+  &__bottom {
     position: relative;
     z-index: 2;
-    background: #0a0a0c;
-    overflow: hidden;
+    padding: 0 64px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
 
-  &__art {
+  &__bottomLine {
+    width: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba($accent, 0.5) 50%, transparent 100%);
+    box-shadow: 0 0 8px rgba($accent, 0.15), 0 0 2px rgba($accent, 0.1);
+    transition: width 0.8s cubic-bezier(0.77, 0, 0.175, 1) 0.3s;
+  }
+
+  &__socials {
+    display: flex;
+    gap: 32px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.5s ease 0.55s,
+      transform 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.55s;
+  }
+
+  &__socialLink {
+    font-family: $font-mono;
+    font-size: 0.52rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.25);
+    text-decoration: none;
+    position: relative;
+    padding-bottom: 4px;
+    transition: color 0.3s ease;
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: $accent;
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    &:hover {
+      color: $accent;
+    }
+
+    &:hover::after {
+      width: 100%;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    font-family: $font-mono;
+    font-size: 0.48rem;
+    color: rgba(255, 255, 255, 0);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    transition: color 0.4s ease 0.65s;
+  }
+}
+
+.navMenuOpen {
+  pointer-events: auto;
+
+  .navMenu__bg {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+
+  .navMenu__close {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .navMenu__left {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .navMenu__num {
+    opacity: 1;
+  }
+
+  .navMenu__char {
+    opacity: 1;
+    transform: translateY(0) skewY(0deg) rotate(0deg);
+    filter: blur(0px);
+  }
+
+  .navMenu__bottomLine {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    filter: saturate(0.85) brightness(0.9);
-    transition: filter 0.5s ease;
   }
 
-  // Gloss on album side
-  &__gloss {
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    pointer-events: none;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.12) 0%,
-      transparent 45%,
-      transparent 55%,
-      rgba(255, 255, 255, 0.04) 100%
-    );
+  .navMenu__socials {
+    opacity: 1;
+    transform: translateY(0);
   }
 
-  // ── Hover states ──
-  &:hover &__art {
-    filter: saturate(1.1) brightness(1.05);
+  .navMenu__footer {
+    color: rgba(255, 255, 255, 0.18);
   }
+}
 
-  &:hover &__timeFill {
-    box-shadow: 0 0 10px rgba($accent, 0.6);
-  }
-
-  &:hover &__title {
-    text-shadow: 0 0 18px rgba($accent, 0.25);
-  }
+@keyframes ringSweep {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 
@@ -1104,6 +1344,8 @@
     opacity: 0.08;
     will-change: opacity;
     display: inline;
+    font-variant-ligatures: none;
+    transition: opacity 0.1s ease;
   }
 
   &__wordAccent {
@@ -1186,11 +1428,34 @@
 
   &__backTop {
     cursor: pointer;
-    transition: color 0.3s ease;
     white-space: nowrap;
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.25);
+    position: relative;
+    padding-bottom: 6px;
+    transition: color 0.4s ease;
+
+    &::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 16px;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.15);
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.4s ease;
+    }
 
     &:hover {
-      color: $text-primary;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    &:hover::after {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.3);
     }
   }
 
