@@ -479,7 +479,7 @@ const Home: Component = () => {
     <div class={styles.page}>
       {/* ── Loader ── */}
       <div ref={loaderRef!} class={styles.loader}>
-        <div ref={loaderMeloRef!} class={styles.loader__melo}>
+        <div ref={loaderMeloRef!} class='sdlkfj__ffklsj-- '>
           {"MELO".split("").map((ch) => (
             <span class={styles.loader__char}>{ch}</span>
           ))}

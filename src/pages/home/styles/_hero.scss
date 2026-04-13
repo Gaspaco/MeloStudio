@@ -1,0 +1,74 @@
+@use "../../../styles/variables" as *;
+
+.hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 3rem 5rem;
+
+  &__title {
+    position: relative;
+    z-index: 2;
+  }
+
+  &__clip {
+    overflow: hidden;
+  }
+
+  &__word {
+    font-family: $font-display;
+    font-size: clamp(6rem, 15vw, 18rem);
+    font-weight: 800;
+    line-height: 0.85;
+    letter-spacing: -0.045em;
+    color: $text-primary;
+    text-transform: uppercase;
+    will-change: transform;
+  }
+
+  &__word--pink {
+    color: $accent;
+  }
+
+  &__word--stroke {
+    color: transparent;
+    -webkit-text-stroke: 1.5px $text-primary;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    margin-top: 2.5rem;
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    color: $text-secondary;
+    letter-spacing: 0.04em;
+  }
+
+  &__sep {
+    color: $text-muted;
+    user-select: none;
+  }
+
+  &__scroll {
+    position: absolute;
+    bottom: 2.5rem;
+    right: 3rem;
+  }
+
+  &__scroll-line {
+    width: 1px;
+    height: 4rem;
+    background: $accent;
+    transform-origin: top;
+    animation: scrollPulse 2.5s ease-in-out infinite 3s;
+  }
+}
+
+@keyframes scrollPulse {
+  0%, 100% { transform: scaleY(1); opacity: 0.7; }
+  50% { transform: scaleY(0.3); opacity: 0.15; }
+}

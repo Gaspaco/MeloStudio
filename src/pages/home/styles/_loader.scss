@@ -1,0 +1,43 @@
+@use "../../../styles/variables" as *;
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: $bg-primary;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+
+  &__melo {
+    font-family: $font-display;
+    font-size: clamp(6rem, 18vw, 22rem);
+    font-weight: 800;
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    line-height: 0.85;
+    color: $accent;
+    overflow: hidden;
+    display: inline-block;
+  }
+
+  &__studio {
+    font-family: $font-script;
+    font-size: clamp(3rem, 9vw, 11rem);
+    font-weight: 400;
+    color: $text-primary;
+    line-height: 1;
+    margin-top: -0.15em;
+    overflow: hidden;
+    display: inline-block;
+    align-self: flex-end;
+    margin-right: 12vw;
+  }
+
+  &__char {
+    display: inline-block;
+    will-change: transform;
+  }
+}

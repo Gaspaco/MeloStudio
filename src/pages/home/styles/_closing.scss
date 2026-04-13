@@ -1,0 +1,90 @@
+@use "../../../styles/variables" as *;
+
+.closing {
+  padding: 12.5rem 3rem;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: visible;
+
+  &__text {
+    font-family: $font-display;
+    font-size: clamp(3rem, 5.5vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.035em;
+    max-width: 56.25rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  &__word {
+    opacity: 0.08;
+    will-change: opacity;
+    display: inline;
+    font-variant-ligatures: none;
+    transition: opacity 0.1s ease;
+  }
+
+  &__word--accent {
+    color: $accent;
+  }
+
+  &__inline-img {
+    display: inline-block;
+    vertical-align: middle;
+    width: clamp(6.25rem, 15vw, 12.5rem);
+    height: clamp(2.8125rem, 6vw, 5rem);
+    border-radius: 6.25rem;
+    overflow: hidden;
+    margin: 0 0.12em;
+    position: relative;
+    top: -0.06em;
+    transform: rotate(-2deg);
+    box-shadow:
+      0 0 0 1px rgba($accent, 0.2),
+      0 0.25rem 1.25rem rgba(0, 0, 0, 0.4),
+      0 0 2.5rem -0.625rem rgba($accent, 0.15);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.5s ease;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        135deg,
+        rgba($bg-primary, 0.3) 0%,
+        transparent 40%,
+        transparent 60%,
+        rgba($bg-primary, 0.3) 100%
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(0.7) brightness(0.85);
+      transition: filter 0.6s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    &:hover {
+      transform: rotate(0deg) scale(1.05);
+      box-shadow:
+        0 0 0 1px rgba($accent, 0.4),
+        0 0.5rem 1.875rem rgba(0, 0, 0, 0.5),
+        0 0 3.75rem -0.625rem rgba($accent, 0.3);
+    }
+
+    &:hover img {
+      filter: saturate(1.1) brightness(1);
+      transform: scale(1.1);
+    }
+  }
+}

@@ -1,0 +1,48 @@
+@use "../../../styles/variables" as *;
+
+.manifesto {
+  position: relative;
+  padding: 10rem 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid $border;
+  border-bottom: 1px solid $border;
+
+  &__text {
+    text-align: center;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 3em;
+  }
+
+  &__script {
+    font-family: $font-script;
+    font-style: normal;
+    font-weight: 400;
+    font-size: clamp(5rem, 12vw, 13rem);
+    line-height: 1;
+    color: $text-primary;
+    display: inline-block;
+    will-change: transform, opacity, filter;
+  }
+
+  &__sans {
+    font-family: $font-sans;
+    font-weight: 400;
+    font-size: clamp(5rem, 12vw, 13rem);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: $text-primary;
+    will-change: transform, opacity;
+  }
+
+  &__cursor {
+    display: inline-block;
+    color: $accent;
+    font-weight: 200;
+    margin-left: 0.04em;
+    transition: opacity 0.08s step-end;
+  }
+}

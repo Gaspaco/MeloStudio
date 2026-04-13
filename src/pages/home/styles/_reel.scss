@@ -1,0 +1,20 @@
+@use "../../../styles/variables" as *;
+
+.reel {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $bg-primary;
+
+  &__inner {
+    width: 82%;
+    max-width: 71.25rem;
+    will-change: transform, opacity;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.125rem;
+    box-shadow: 0 2.5rem 7.5rem rgba(0, 0, 0, 0.9);
+  }
+}

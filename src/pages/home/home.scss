@@ -1,0 +1,19 @@
+@use "../../styles/variables" as *;
+@use "styles/loader";
+@use "styles/grain";
+@use "styles/nav";
+@use "styles/hero";
+@use "styles/reel";
+@use "styles/daw";
+@use "styles/manifesto";
+@use "styles/capabilities";
+@use "styles/closing";
+@use "styles/footer";
+@use "styles/responsive";
+
+.page {
+  background: $bg-primary;
+  color: $text-primary;
+  min-height: 100vh;
+  position: relative;
+}

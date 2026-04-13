@@ -1,5 +1,5 @@
 import type { Component } from "solid-js";
-import Home from "./pages/Home";
+import Home from "./pages/home/Home";
 
 const App: Component = () => {
   return <Home />;

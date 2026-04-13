@@ -1521,7 +1521,96 @@
 // ── Responsive ───────────────────────────────────
 @media (max-width: 768px) {
   .nav {
-    padding: 20px 24px;
+    padding: 0.75rem 1rem;
+    top: 0.5rem;
+    align-items: center;
+
+    &__logoMelo {
+      font-size: 0.85rem;
+    }
+
+    &__logoStudio {
+      font-size: 1.05rem;
+    }
+  }
+
+  .slab {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.625rem;
+
+    &__cube {
+      width: 1.875rem;
+      height: 1.875rem;
+      right: 0.5625rem;
+      top: 0.5625rem;
+    }
+
+    &__cubeFace {
+      width: 1.875rem;
+      height: 1.875rem;
+
+      &[data-face="front"]  { transform: translateZ(0.9375rem); }
+      &[data-face="back"]   { transform: translateZ(-0.9375rem) rotateY(180deg); }
+      &[data-face="left"]   { transform: rotateY(-90deg) translateZ(0.9375rem); }
+      &[data-face="right"]  { transform: rotateY(90deg) translateZ(0.9375rem); }
+      &[data-face="top"]    { transform: rotateX(90deg) translateZ(0.9375rem); }
+      &[data-face="bottom"] { transform: rotateX(-90deg) translateZ(0.9375rem); }
+    }
+  }
+
+  .slab__marquee span {
+    font-size: 0.38rem;
+  }
+
+  .navMenu {
+    &__close {
+      top: 0.625rem;
+      right: 1rem;
+      width: 2.625rem;
+      height: 2.625rem;
+    }
+
+    &__left {
+      top: 4.375rem;
+      left: 1.5rem;
+    }
+
+    &__desc {
+      font-size: 0.68rem;
+      max-width: 11.25rem;
+    }
+
+    &__right {
+      padding: 0 1.5rem;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    &__char {
+      font-size: clamp(1.8rem, 10vw, 3rem);
+    }
+
+    &__row {
+      padding: 0.625rem 0;
+    }
+
+    &__bottom {
+      padding: 0 1.5rem 1.5rem;
+    }
+
+    &__socials {
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    &__socialLink {
+      font-size: 0.44rem;
+    }
+
+    &__footer {
+      font-size: 0.4rem;
+    }
   }
 
   .hero {

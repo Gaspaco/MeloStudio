@@ -1,0 +1,219 @@
+@use "../../../styles/variables" as *;
+
+@media (max-width: 48rem) {
+  .nav {
+    padding: 0.5rem 1.5rem;
+  }
+
+  .slab {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.625rem;
+
+    &__cube {
+      width: 2rem;
+      height: 2rem;
+      right: 0.5rem;
+      top: 0.5rem;
+    }
+
+    &__cube-face {
+      width: 2rem;
+      height: 2rem;
+
+      &[data-face="front"]  { transform: translateZ(1rem); }
+      &[data-face="back"]   { transform: translateZ(-1rem) rotateY(180deg); }
+      &[data-face="left"]   { transform: rotateY(-90deg) translateZ(1rem); }
+      &[data-face="right"]  { transform: rotateY(90deg) translateZ(1rem); }
+      &[data-face="top"]    { transform: rotateX(90deg) translateZ(1rem); }
+      &[data-face="bottom"] { transform: rotateX(-90deg) translateZ(1rem); }
+    }
+  }
+
+  .nav-menu {
+    &__close {
+      top: 0.5rem;
+      right: 1.5rem;
+      width: 2.625rem;
+      height: 2.625rem;
+    }
+
+    &__left {
+      top: 4.375rem;
+      left: 1.5rem;
+    }
+
+    &__desc {
+      font-size: 0.68rem;
+      max-width: 11.25rem;
+    }
+
+    &__right {
+      padding: 0 1.5rem;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    &__char {
+      font-size: clamp(1.8rem, 10vw, 3rem);
+    }
+
+    &__row {
+      padding: 0.625rem 0;
+    }
+
+    &__bottom {
+      padding: 0 1.5rem 1.5rem;
+    }
+
+    &__socials {
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    &__social-link {
+      font-size: 0.44rem;
+    }
+
+    &__footer {
+      font-size: 0.4rem;
+    }
+  }
+
+  .hero {
+    padding: 0 1.5rem 3.75rem;
+
+    &__word {
+      font-size: clamp(3.5rem, 18vw, 8rem);
+    }
+
+    &__word--stroke {
+      -webkit-text-stroke-width: 1px;
+    }
+
+    &__meta {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    &__scroll {
+      right: 1.5rem;
+    }
+  }
+
+  .reel {
+    &__inner {
+      width: 92%;
+    }
+  }
+
+  .daw {
+    &__toolbar {
+      height: 1.875rem;
+      padding: 0 0.5rem;
+    }
+
+    &__tab {
+      font-size: 0.42rem;
+      padding: 0.1875rem 0.375rem;
+    }
+
+    &__pill {
+      display: none;
+    }
+
+    &__time {
+      font-size: 0.5rem;
+    }
+
+    &__body {
+      grid-template-columns: 5.625rem 1fr;
+    }
+
+    &__label {
+      height: 2.125rem;
+    }
+
+    &__track-meta {
+      display: none;
+    }
+
+    &__track-name {
+      font-size: 0.42rem;
+    }
+
+    &__track {
+      height: 2.125rem;
+    }
+
+    &__rulers {
+      height: 1.25rem;
+    }
+
+    &__sidebar {
+      padding-top: 1.25rem;
+    }
+
+    &__bottom {
+      grid-template-columns: 5.625rem 1fr;
+      height: 3.25rem;
+    }
+
+    &__bottom-label {
+      font-size: 0.42rem;
+    }
+
+    &__bottom-sub {
+      display: none;
+    }
+  }
+
+  .manifesto {
+    &__script {
+      font-size: clamp(3rem, 12vw, 6rem);
+    }
+
+    &__sans {
+      font-size: clamp(2.6rem, 11vw, 5.5rem);
+    }
+  }
+
+  .h-panel {
+    width: 90vw;
+
+    &__title {
+      font-size: clamp(2.2rem, 10vw, 3.5rem);
+    }
+  }
+
+  .h-panel--intro {
+    padding: 0 2rem;
+    width: 90vw;
+
+    .h-panel__intro-title {
+      font-size: clamp(2rem, 10vw, 3.5rem);
+    }
+  }
+
+  .h-panel--end {
+    width: 60vw;
+  }
+
+  .closing {
+    padding: 7.5rem 1.5rem;
+  }
+
+  .footer {
+    padding: 2rem 1.5rem 0;
+
+    &__info {
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      margin-bottom: 2.5rem;
+    }
+
+    &__right {
+      align-items: flex-start;
+    }
+  }
+}
