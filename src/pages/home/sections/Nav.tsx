@@ -19,14 +19,6 @@ const Nav: Component<{
           <span class="nav__logo-studio">Studio</span>
         </span>
 
-        <button class="nav__login" onClick={() => props.onLogin?.()}>
-          Sign in
-        </button>
-
-        <button class="nav__signup" onClick={() => props.onSignup?.()}>
-          Sign up
-        </button>
-
         {/* 3D Slab Widget */}
         <div
           ref={slabEl!}
