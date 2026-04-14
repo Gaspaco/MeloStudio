@@ -1,0 +1,388 @@
+@use "../../styles/variables" as *;
+
+.login {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: $bg-primary;
+  overflow: hidden;
+  font-family: $font-sans;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // ── Back button ──
+  &__back {
+    position: absolute;
+    top: 2rem;
+    left: 3rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: none;
+    border: none;
+    color: $text-secondary;
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.3s ease;
+
+    svg { width: 18px; height: 18px; }
+
+    &:hover {
+      color: #fff;
+      transform: translateX(-4px);
+    }
+  }
+
+  // ── Meta ──
+  &__meta {
+    position: absolute;
+    top: 2rem;
+    right: 3rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    color: $text-muted;
+    letter-spacing: 0.06em;
+  }
+
+  &__meta-sep {
+    color: $text-muted;
+    opacity: 0.4;
+  }
+
+  // ── Center stage ──
+  &__stage {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0 5vw 0 6vw;
+  }
+
+  // ── Hero typography ──
+  &__hero {
+    margin-bottom: 5vh;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35em;
+    flex-wrap: wrap;
+  }
+
+  &__script {
+    font-family: $font-script;
+    font-size: clamp(4rem, 11vw, 12rem);
+    font-weight: 400;
+    line-height: 1;
+    color: $accent;
+    display: inline-block;
+    will-change: transform;
+  }
+
+  &__display-clip {
+    overflow: hidden;
+    display: inline-flex;
+    perspective: 600px;
+  }
+
+  &__display-char {
+    display: inline-block;
+    font-family: $font-display;
+    font-size: clamp(4rem, 11vw, 12rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    color: $text-primary;
+    will-change: transform;
+  }
+
+  // ── Form ──
+  &__form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  &__field {
+    display: flex;
+    align-items: center;
+    gap: 2vw;
+    padding: 3vh 0;
+    position: relative;
+  }
+
+  &__field-num {
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: $text-muted;
+    flex-shrink: 0;
+    width: 2rem;
+  }
+
+  &__input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: $font-sans;
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-weight: 300;
+    color: $text-primary;
+    padding: 0;
+    caret-color: $accent;
+
+    &::placeholder {
+      color: $text-muted;
+      font-weight: 300;
+    }
+  }
+
+  &__line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #151515;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 1px;
+      background: $text-primary;
+      transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+  }
+
+  &__field--first::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #151515;
+  }
+
+  &__field:focus-within &__line::after {
+    width: 100%;
+  }
+
+  &__field:focus-within &__field-num {
+    color: $accent;
+  }
+
+  // ── Row (remember / forgot) ──
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5vh 0;
+  }
+
+  &__remember {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: $font-mono;
+    font-size: 0.62rem;
+    color: $text-muted;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+
+    input[type="checkbox"] {
+      appearance: none;
+      width: 13px;
+      height: 13px;
+      border: 1px solid rgba(#fff, 0.12);
+      border-radius: 3px;
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+
+      &:checked {
+        background: $accent;
+        border-color: $accent;
+
+        &::after {
+          content: "";
+          position: absolute;
+          top: 1px;
+          left: 3px;
+          width: 4px;
+          height: 7px;
+          border: solid #fff;
+          border-width: 0 1.5px 1.5px 0;
+          transform: rotate(45deg);
+        }
+      }
+    }
+  }
+
+  &__forgot {
+    font-family: $font-mono;
+    font-size: 0.62rem;
+    color: $text-muted;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 0.25s ease;
+
+    &:hover { color: $accent; }
+  }
+
+  // ── Form footer ──
+  &__form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8vh;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  &__submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1rem 2rem;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 100px;
+    color: $text-primary;
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease, transform 0.2s ease;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      transition: transform 0.35s ease;
+    }
+
+    &:hover {
+      background: $text-primary;
+      color: $bg-primary;
+      border-color: $text-primary;
+      transform: translateY(-2px);
+
+      svg { transform: translate(2px, -2px); }
+    }
+  }
+
+  &__signup-text {
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: $text-muted;
+  }
+
+  &__signup-link {
+    background: none;
+    border: none;
+    color: $text-primary;
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: #333;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: $accent;
+      text-decoration-color: $accent;
+    }
+  }
+
+  // ── Divider ──
+  &__divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 3vh 0;
+  }
+
+  &__divider-line {
+    flex: 1;
+    height: 1px;
+    background: #151515;
+  }
+
+  &__divider span {
+    font-family: $font-mono;
+    font-size: 0.56rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: $text-muted;
+  }
+
+  // ── Socials ──
+  &__socials {
+    display: flex;
+    gap: 0.6rem;
+  }
+
+  &__social {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.65rem;
+    background: transparent;
+    border: 1px solid #1a1a1a;
+    border-radius: 100px;
+    color: $text-secondary;
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    svg {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      border-color: #333;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+  }
+
+  // ── Responsive ──
+  @media (max-width: 640px) {
+    &__back { left: 1.5rem; top: 1.5rem; }
+    &__meta { right: 1.5rem; top: 1.5rem; }
+
+    &__stage {
+      padding: 0 5vw;
+    }
+  }
+}

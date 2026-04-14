@@ -1,4 +1,4 @@
-import { type Component, createSignal, onMount, onCleanup } from "solid-js";
+import { type Component, createSignal, onMount, onCleanup, createEffect } from "solid-js";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
@@ -25,7 +25,7 @@ import { setupOrb } from "./animations/orb";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Home: Component = () => {
+const Home: Component<{ onLogin?: () => void; onSignup?: () => void }> = (props) => {
   let lenisRef: InstanceType<typeof Lenis> | undefined;
   let loaderRef!: HTMLDivElement;
   let loaderMeloRef!: HTMLDivElement;
@@ -80,6 +80,16 @@ const Home: Component = () => {
     animateClosing(closingWordsRefs);
     animateFooter(footerRef);
     setupOrb(orbRef);
+
+    createEffect(() => {
+      if (menuOpen()) {
+        lenisRef?.stop();
+        document.body.style.overflow = "hidden";
+      } else {
+        lenisRef?.start();
+        document.body.style.overflow = "";
+      }
+    });
   });
 
   onCleanup(() => {
@@ -98,6 +108,8 @@ const Home: Component = () => {
       <Nav
         menuOpen={menuOpen}
         setMenuOpen={setMenuOpen}
+        onLogin={props.onLogin}
+        onSignup={props.onSignup}
       />
       <Hero
         heroRef={(el) => (heroRef = el)}
@@ -106,6 +118,8 @@ const Home: Component = () => {
         heroLine2Ref={(el) => (heroLine2Ref = el)}
         heroMetaRef={(el) => (heroMetaRef = el)}
         scrollIndRef={(el) => (scrollIndRef = el)}
+        onLogin={props.onLogin}
+        onSignup={props.onSignup}
       />
       <Reel
         reelRef={(el) => (reelRef = el)}

@@ -7,6 +7,8 @@ const Hero: Component<{
   heroLine2Ref: (el: HTMLDivElement) => void;
   heroMetaRef: (el: HTMLDivElement) => void;
   scrollIndRef: (el: HTMLDivElement) => void;
+  onLogin?: () => void;
+  onSignup?: () => void;
 }> = (props) => {
   return (
     <section ref={props.heroRef} class="hero">
@@ -25,8 +27,12 @@ const Hero: Component<{
         <span class="hero__sep">/</span>
         <span>2026</span>
       </div>
-      <div class="hero__scroll">
-        <div ref={props.scrollIndRef} class="hero__scroll-line" />
+      <div class="hero__actions">
+        <button class="hero__btn hero__btn--primary" onClick={props.onSignup}>Sign up</button>
+        <button class="hero__btn hero__btn--secondary" onClick={props.onLogin}>Sign in</button>
+      </div>
+      <div ref={props.scrollIndRef} class="hero__scroll">
+        <div class="hero__scroll-line" />
       </div>
     </section>
   );

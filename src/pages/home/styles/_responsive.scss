@@ -109,7 +109,7 @@
 
   .daw {
     &__toolbar {
-      height: 1.875rem;
+      height: 1.5rem;
       padding: 0 0.5rem;
     }
 
@@ -131,7 +131,7 @@
     }
 
     &__label {
-      height: 2.125rem;
+      height: 1.5rem;
     }
 
     &__track-meta {
@@ -143,20 +143,20 @@
     }
 
     &__track {
-      height: 2.125rem;
+      height: 1.5rem;
     }
 
     &__rulers {
-      height: 1.25rem;
+      height: 1rem;
     }
 
     &__sidebar {
-      padding-top: 1.25rem;
+      padding-top: 1rem;
     }
 
     &__bottom {
       grid-template-columns: 5.625rem 1fr;
-      height: 3.25rem;
+      height: 2.25rem;
     }
 
     &__bottom-label {
@@ -179,24 +179,56 @@
   }
 
   .h-panel {
-    width: 90vw;
+    width: 95vw;
+    padding: 0 2rem;
 
     &__title {
       font-size: clamp(2.2rem, 10vw, 3.5rem);
     }
+
+    &__title-script {
+      font-size: clamp(1.8rem, 8vw, 3rem);
+    }
+
+    &__desc {
+      font-size: 0.82rem;
+      max-width: 100%;
+    }
+
+    &__tags {
+      flex-wrap: wrap;
+    }
   }
 
   .h-panel--intro {
-    padding: 0 2rem;
-    width: 90vw;
+    padding: 0 2rem 3rem;
+    width: 95vw;
 
     .h-panel__intro-title {
-      font-size: clamp(2rem, 10vw, 3.5rem);
+      font-size: clamp(1.8rem, 8vw, 3rem);
     }
   }
 
   .h-panel--end {
-    width: 60vw;
+    width: 70vw;
+
+    &__orb {
+      width: 14rem;
+      height: 14rem;
+    }
+
+    &__ring--2 {
+      inset: 1.5rem;
+    }
+
+    &__ring--3 {
+      inset: 3rem;
+    }
+
+    &__glow {
+      width: 8rem;
+      height: 8rem;
+    }
   }
 
   .closing {

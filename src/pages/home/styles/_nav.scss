@@ -11,12 +11,19 @@
   align-items: flex-start;
   justify-content: space-between;
   padding: 0.75rem 3rem;
+  mix-blend-mode: difference;
+  transition: opacity 0.4s ease, transform 0.4s ease, pointer-events 0.4s ease;
+
+  &--hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-1rem);
+  }
 
   &__logo {
     display: flex;
     align-items: baseline;
     gap: 0.18em;
-    mix-blend-mode: difference;
   }
 
   &__logo-melo {
@@ -35,6 +42,54 @@
     letter-spacing: 0;
     color: white;
     text-transform: none;
+  }
+
+  &__login {
+    position: absolute;
+    right: 14rem;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.4rem 1.2rem;
+    background: transparent;
+    border: 1px solid rgba(#fff, 0.2);
+    border-radius: 100px;
+    color: #fff;
+    font-family: $font-display;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: rgba(#fff, 0.08);
+      border-color: rgba(#fff, 0.4);
+    }
+  }
+
+  &__signup {
+    position: absolute;
+    right: 8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.4rem 1.2rem;
+    background: $accent;
+    border: 1px solid $accent;
+    border-radius: 100px;
+    color: #fff;
+    font-family: $font-display;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: lighten($accent, 5%);
+      box-shadow: 0 4px 20px rgba($accent, 0.3);
+    }
   }
 }
 
@@ -131,7 +186,7 @@
       font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: rgba(255, 255, 255, 0.45);
+      color: $accent;
       white-space: nowrap;
       padding-right: 0.05em;
     }
@@ -177,8 +232,8 @@
     opacity: 0;
     transform: scale(0.8);
     transition:
-      opacity 0.4s ease 0.5s,
-      transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s,
+      opacity 0.2s ease,
+      transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
       border-color 0.3s ease,
       background 0.3s ease;
 
@@ -304,6 +359,10 @@
   &__label {
     display: flex;
     overflow: hidden;
+
+    &--accent .nav-menu__char {
+      color: $accent;
+    }
   }
 
   &__char {
@@ -329,7 +388,7 @@
 
   &__row:hover &__char {
     color: $accent;
-    text-shadow: 0 0 2.5rem rgba($accent, 0.25);
+    // Removed text-shadow to stop the glow/shape around the text
   }
 
   &__bottom {
@@ -408,6 +467,11 @@
   .nav-menu__close {
     opacity: 1;
     transform: scale(1);
+    transition:
+      opacity 0.4s ease 0.5s,
+      transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s,
+      border-color 0.3s ease,
+      background 0.3s ease;
   }
 
   .nav-menu__left {

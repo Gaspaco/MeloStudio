@@ -1,0 +1,310 @@
+@use "../../styles/variables" as *;
+
+.signup {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: $bg-primary;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: $font-sans;
+
+  // ── Back ──
+  &__back {
+    position: fixed;
+    top: 2rem;
+    left: 3rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: none;
+    border: none;
+    color: $text-secondary;
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.3s ease;
+
+    svg { width: 18px; height: 18px; }
+
+    &:hover {
+      color: #fff;
+      transform: translateX(-4px);
+    }
+  }
+
+  // ── Meta ──
+  &__meta {
+    position: fixed;
+    top: 2rem;
+    right: 3rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    color: $text-muted;
+    letter-spacing: 0.06em;
+  }
+
+  &__meta-sep {
+    color: $text-muted;
+    opacity: 0.4;
+  }
+
+  // ── Fixed hero text — visible first, goes behind images ──
+  &__hero-text {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8rem 5vw 4rem;
+  }
+
+  &__title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.35em;
+    flex-wrap: wrap;
+
+    &--2 { margin-top: -0.1em; }
+  }
+
+  &__script {
+    font-family: $font-script;
+    font-size: clamp(4rem, 11vw, 12rem);
+    font-weight: 400;
+    line-height: 1;
+    color: $text-primary;
+    display: inline-block;
+    will-change: transform;
+
+    &--accent { color: $accent; }
+  }
+
+  &__display-clip {
+    overflow: hidden;
+    display: inline-flex;
+    perspective: 600px;
+  }
+
+  &__display-char {
+    display: inline-block;
+    font-family: $font-display;
+    font-size: clamp(4rem, 11vw, 12rem);
+    font-weight: 800;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    color: $text-primary;
+    will-change: transform;
+
+    &--stroke {
+      color: transparent;
+      -webkit-text-stroke: 2px $text-primary;
+    }
+  }
+
+  // ── Form section — full-width cinematic ──
+  &__form-section {
+    position: relative;
+    z-index: 3;
+    background: $bg-primary;
+    padding: 35vh 5vw 15vh;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  &__form-top {
+    margin-bottom: 5vh;
+    width: 100%;
+  }
+
+  &__form-title {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  &__form-title-line {
+    font-family: $font-display;
+    font-size: clamp(3rem, 10vw, 8rem);
+    font-weight: 800;
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: $text-primary;
+    will-change: transform, clip-path;
+  }
+
+  &__form-title-script {
+    font-family: $font-script;
+    font-size: clamp(4rem, 12vw, 10rem);
+    font-weight: 400;
+    line-height: 0.6;
+    color: $accent;
+    position: relative;
+    z-index: 2;
+    margin-left: 3vw;
+    will-change: transform, clip-path;
+  }
+
+  &__form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  &__field {
+    display: flex;
+    align-items: center;
+    gap: 2vw;
+    padding: 3vh 0;
+    position: relative;
+  }
+
+  &__field-num {
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    color: $text-muted;
+    flex-shrink: 0;
+    width: 2rem;
+  }
+
+  &__input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: $font-sans;
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    font-weight: 300;
+    color: $text-primary;
+    padding: 0;
+    caret-color: $accent;
+
+    &::placeholder {
+      color: $text-muted;
+      font-weight: 300;
+    }
+  }
+
+  &__line {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #151515;
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0;
+      height: 1px;
+      background: $text-primary;
+      transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+  }
+
+  // The first row also gets a top line
+  &__field--first::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #151515;
+  }
+
+  &__field:focus-within &__line::after {
+    width: 100%;
+  }
+
+  &__field:focus-within &__field-num {
+    color: $accent;
+  }
+
+  &__form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8vh;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+
+  &__submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1rem 2rem;
+    background: transparent;
+    border: 1px solid #333;
+    border-radius: 100px;
+    color: $text-primary;
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.35s ease, color 0.35s ease, border-color 0.35s ease, transform 0.2s ease;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      transition: transform 0.35s ease;
+    }
+
+    &:hover {
+      background: $text-primary;
+      color: $bg-primary;
+      border-color: $text-primary;
+      transform: translateY(-2px);
+
+      svg { transform: translate(2px, -2px); }
+    }
+  }
+
+  &__signin {
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: $text-muted;
+  }
+
+  &__signin-link {
+    background: none;
+    border: none;
+    color: $text-primary;
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-color: #333;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: $accent;
+      text-decoration-color: $accent;
+    }
+  }
+}
+

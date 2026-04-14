@@ -8,7 +8,7 @@ export function animateFooter(footerRef: HTMLElement) {
     scrollTrigger: {
       trigger: footerRef,
       start: "top 85%",
-      toggleActions: "play none none reverse",
+      toggleActions: "restart none none reset",
     },
   });
 

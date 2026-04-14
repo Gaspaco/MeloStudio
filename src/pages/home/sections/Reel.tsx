@@ -86,8 +86,8 @@ const Reel: Component<{
               <span class="daw__bottom-sub">Waveform</span>
             </div>
             <div class="daw__waveform">
-              <For each={Array.from({ length: 80 })}>{() =>
-                <div class="daw__wav-bar" style={{ height: `${12 + Math.random() * 76}%` }} />
+              <For each={Array.from({ length: 60 })}>{() =>
+                <div class="daw__wav-bar" style={{ height: "10%" }} />
               }</For>
             </div>
           </div>

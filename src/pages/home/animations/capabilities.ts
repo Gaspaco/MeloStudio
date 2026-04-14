@@ -24,6 +24,29 @@ export function animateCapabilities(refs: {
     },
   });
 
+  // Smoothly fade out and blur as the section scrolls away
+  // Bypass pin-spacer calculation issues by tracking the entry of the next section directly
+  const closingSection = document.querySelector(".closing");
+  
+  if (closingSection) {
+    gsap.fromTo(
+      refs.hScrollTrackRef,
+      { filter: "blur(0px)", scale: 1, opacity: 1 },
+      {
+        filter: "blur(14px)",
+        scale: 0.92,
+        opacity: 0,
+        ease: "none",
+        scrollTrigger: {
+          trigger: closingSection,
+          start: "top bottom", // Starts exactly when the .closing section enters the screen from the bottom
+          end: "top top",      // Ends when the .closing section reaches the top of the screen
+          scrub: true,
+        },
+      }
+    );
+  }
+
   panels.forEach((panel) => {
     const num = panel.querySelector(".h-panel__num") as HTMLElement;
     const title = panel.querySelector(".h-panel__title") as HTMLElement;

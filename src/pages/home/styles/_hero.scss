@@ -66,6 +66,48 @@
     transform-origin: top;
     animation: scrollPulse 2.5s ease-in-out infinite 3s;
   }
+
+  &__actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+
+  &__btn {
+    padding: 0.65rem 2rem;
+    border-radius: 100px;
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.35s ease;
+
+    &--primary {
+      background: $accent;
+      border: 1px solid $accent;
+      color: #fff;
+
+      &:hover {
+        background: lighten($accent, 5%);
+        box-shadow: 0 4px 24px rgba($accent, 0.35);
+        transform: translateY(-2px);
+      }
+    }
+
+    &--secondary {
+      background: transparent;
+      border: 1px solid rgba(#fff, 0.2);
+      color: #fff;
+
+      &:hover {
+        background: rgba(#fff, 0.06);
+        border-color: rgba(#fff, 0.4);
+        transform: translateY(-2px);
+      }
+    }
+  }
 }
 
 @keyframes scrollPulse {
