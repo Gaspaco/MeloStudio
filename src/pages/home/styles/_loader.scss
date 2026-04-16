@@ -40,4 +40,19 @@
     display: inline-block;
     will-change: transform;
   }
+
+
+  &__melo {
+    .loader__char {
+      transform: translateY(120%);
+    }
+  }
+
+  &__studio {
+    .loader__char {
+      transform: translateX(80%);
+      opacity: 0;
+    }
+  }
+
 }

@@ -2,6 +2,7 @@ import { type Component, createSignal, onMount, onCleanup, createEffect } from "
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
+import { authClient } from "../../lib/auth";
 import "./home.scss";
 
 import Loader from "./sections/Loader";
@@ -25,7 +26,7 @@ import { setupOrb } from "./animations/orb";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const Home: Component<{ onLogin?: () => void; onSignup?: () => void }> = (props) => {
+const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?: () => void }> = (props) => {
   let lenisRef: InstanceType<typeof Lenis> | undefined;
   let loaderRef!: HTMLDivElement;
   let loaderMeloRef!: HTMLDivElement;
@@ -49,8 +50,13 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void }> = (props)
   const [twText, setTwText] = createSignal("");
   const [twCursor, setTwCursor] = createSignal(true);
   const [menuOpen, setMenuOpen] = createSignal(false);
+  const [isLoggedIn, setIsLoggedIn] = createSignal(false);
 
-  onMount(() => {
+  onMount(async () => {
+    try {
+      const { data } = await authClient.getSession();
+      if (data?.session) setIsLoggedIn(true);
+    } catch {}
     // Lenis smooth scroll
     lenisRef = new Lenis({
       duration: 0.9,
@@ -110,6 +116,8 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void }> = (props)
         setMenuOpen={setMenuOpen}
         onLogin={props.onLogin}
         onSignup={props.onSignup}
+        isLoggedIn={isLoggedIn}
+        onProfile={props.onProfile}
       />
       <Hero
         heroRef={(el) => (heroRef = el)}
@@ -120,6 +128,8 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void }> = (props)
         scrollIndRef={(el) => (scrollIndRef = el)}
         onLogin={props.onLogin}
         onSignup={props.onSignup}
+        isLoggedIn={isLoggedIn}
+        onProfile={props.onProfile}
       />
       <Reel
         reelRef={(el) => (reelRef = el)}

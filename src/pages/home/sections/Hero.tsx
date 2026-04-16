@@ -1,4 +1,4 @@
-import type { Component } from "solid-js";
+import { type Component, type Accessor, Show } from "solid-js";
 
 const Hero: Component<{
   heroRef: (el: HTMLElement) => void;
@@ -9,6 +9,8 @@ const Hero: Component<{
   scrollIndRef: (el: HTMLDivElement) => void;
   onLogin?: () => void;
   onSignup?: () => void;
+  isLoggedIn?: Accessor<boolean>;
+  onProfile?: () => void;
 }> = (props) => {
   return (
     <section ref={props.heroRef} class="hero">
@@ -28,8 +30,12 @@ const Hero: Component<{
         <span>2026</span>
       </div>
       <div class="hero__actions">
-        <button class="hero__btn hero__btn--primary" onClick={props.onSignup}>Sign up</button>
-        <button class="hero__btn hero__btn--secondary" onClick={props.onLogin}>Sign in</button>
+        <Show when={!props.isLoggedIn?.()} fallback={
+          <button class="hero__btn hero__btn--primary" onClick={props.onProfile}>Dashboard</button>
+        }>
+          <button class="hero__btn hero__btn--primary" onClick={props.onSignup}>Sign up</button>
+          <button class="hero__btn hero__btn--secondary" onClick={props.onLogin}>Sign in</button>
+        </Show>
       </div>
       <div ref={props.scrollIndRef} class="hero__scroll">
         <div class="hero__scroll-line" />

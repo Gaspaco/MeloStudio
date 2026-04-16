@@ -96,6 +96,10 @@
       gap: 0.5rem;
     }
 
+    &__actions {
+      flex-wrap: wrap;
+    }
+
     &__scroll {
       right: 1.5rem;
     }

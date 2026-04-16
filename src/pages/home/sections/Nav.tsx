@@ -1,4 +1,4 @@
-import { type Component, type Accessor, For } from "solid-js";
+import { type Component, type Accessor, For, Show } from "solid-js";
 import { gsap } from "gsap";
 
 const Nav: Component<{
@@ -6,6 +6,8 @@ const Nav: Component<{
   setMenuOpen: (v: boolean) => void;
   onLogin?: () => void;
   onSignup?: () => void;
+  isLoggedIn?: Accessor<boolean>;
+  onProfile?: () => void;
 }> = (props) => {
   let slabEl!: HTMLDivElement;
   let glowEl!: HTMLDivElement;
@@ -67,15 +69,19 @@ const Nav: Component<{
           <span class="nav-menu__desc">Explore the features that make MeloStudio the most powerful browser-native DAW.</span>
         </div>
         <div class="nav-menu__right">
-          <For each={["Timeline", "Mixer", "Engine", "Cloud", "Sign in"]}>{(label, i) =>
+          <For each={["Timeline", "Mixer", "Engine", "Cloud", props.isLoggedIn?.() ? "Profile" : "Sign in"]}>{(label, i) =>
             <a
               class="nav-menu__row"
               style={{ "--i": i() } as any}
-              onClick={label === "Sign in" ? () => { props.setMenuOpen(false); props.onLogin?.(); } : undefined}
+              onClick={
+                label === "Sign in" ? () => { props.setMenuOpen(false); props.onLogin?.(); }
+                : label === "Profile" ? () => { props.setMenuOpen(false); props.onProfile?.(); }
+                : undefined
+              }
             >
               <span class="nav-menu__num">{String(i() + 1).padStart(2, "0")}</span>
               <span class="nav-menu__divider" />
-              <span class={`nav-menu__label${label === "Sign in" ? " nav-menu__label--accent" : ""}`}>
+              <span class={`nav-menu__label${(label === "Sign in" || label === "Profile") ? " nav-menu__label--accent" : ""}`}>
                 <For each={label.split("")}>{(ch, ci) =>
                   <span class="nav-menu__char" style={{ "--ci": ci(), "--i": i() } as any}>{ch}</span>
                 }</For>

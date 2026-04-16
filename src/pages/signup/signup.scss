@@ -68,8 +68,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 8rem 5vw 4rem;
+    justify-content: flex-start;
+    padding: 18vh 5vw 4rem;
   }
 
   &__hero-spacer {
@@ -83,8 +83,12 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0.5vw;
-    padding: 0 4vw;
+    width: 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    padding: 0 8vw 0 0;
     margin-bottom: 150vh;
+    // Removed overflow-hidden to stop parallax bottom cutoffs!
   }
 
   &__img {
@@ -124,7 +128,7 @@
 
   &__script {
     font-family: $font-script;
-    font-size: clamp(4rem, 11vw, 12rem);
+    font-size: clamp(2.8rem, 12vw, 12rem);
     font-weight: 400;
     line-height: 1;
     color: $text-primary;
@@ -143,7 +147,7 @@
   &__display-char {
     display: inline-block;
     font-family: $font-display;
-    font-size: clamp(4rem, 11vw, 12rem);
+    font-size: clamp(2.8rem, 12vw, 12rem);
     font-weight: 800;
     line-height: 0.9;
     letter-spacing: -0.04em;
@@ -151,9 +155,8 @@
     color: $text-primary;
     will-change: transform;
 
-    &--stroke {
-      color: transparent;
-      -webkit-text-stroke: 2px $text-primary;
+    &--accent {
+      color: $accent;
     }
   }
 
@@ -182,7 +185,7 @@
 
   &__form-title-line {
     font-family: $font-display;
-    font-size: clamp(3rem, 10vw, 8rem);
+    font-size: clamp(2rem, 10vw, 8rem);
     font-weight: 800;
     line-height: 0.85;
     letter-spacing: -0.02em;
@@ -193,7 +196,7 @@
 
   &__form-title-script {
     font-family: $font-script;
-    font-size: clamp(4rem, 12vw, 10rem);
+    font-size: clamp(2.5rem, 12vw, 10rem);
     font-weight: 400;
     line-height: 0.6;
     color: $accent;

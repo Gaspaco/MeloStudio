@@ -1,5 +1,6 @@
 import { type Component, createSignal, onMount, onCleanup, For } from "solid-js";
 import { gsap } from "gsap";
+import { authClient } from "../../lib/auth";
 import "./signup.scss";
 
 const covers = [
@@ -32,7 +33,7 @@ const covers = [
   "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/07/2b/a4/072ba4fa-7f4c-f478-6f22-13f9e62ac1be/21UMGIM53733.rgb.jpg/600x600bb.jpg"
 ];
 
-const Signup: Component<{ onBack: () => void; onLogin: () => void }> = (props) => {
+const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: () => void }> = (props) => {
   let pageRef!: HTMLDivElement;
   let heroRef!: HTMLDivElement;
   let scriptRef1!: HTMLSpanElement;
@@ -43,6 +44,38 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void }> = (props) =
   const [name, setName] = createSignal("");
   const [email, setEmail] = createSignal("");
   const [password, setPassword] = createSignal("");
+  const [errorMsg, setErrorMsg] = createSignal<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = createSignal(false);
+
+  const handleSubmit = async (e: Event) => {
+    e.preventDefault();
+    if (!name() || !email() || !password()) {
+      setErrorMsg("All fields are required");
+      return;
+    }
+    
+    setErrorMsg(null);
+    setIsSubmitting(true);
+
+    try {
+      const { data, error } = await authClient.signUp.email({
+        email: email(),
+        password: password(),
+        name: name()
+      });
+
+      if (error) {
+        setErrorMsg(error.message || "Failed to create account");
+      } else {
+        // Automatically redirects or calls onSuccess successfully
+        props.onSuccess?.();
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "Network error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   onMount(() => {
     const m = gsap.timeline();
@@ -168,7 +201,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void }> = (props) =
       {/* ── Fixed hero text — visible first, goes behind images ── */}
       <div ref={heroRef!} class="signup__hero-text">
         <div class="signup__title-row">
-          <span ref={scriptRef1!} class="signup__script">Begin</span>
+          <span ref={scriptRef1!} class="signup__script signup__script--accent">Begin</span>
           <div class="signup__display-clip">
             <For each={"Your".split("")}>{(ch) =>
               <span class="signup__display-char">{ch}</span>
@@ -178,7 +211,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void }> = (props) =
         <div class="signup__title-row signup__title-row--2">
           <div class="signup__display-clip">
             <For each={"Journey".split("")}>{(ch) =>
-              <span class="signup__display-char signup__display-char--stroke">{ch}</span>
+              <span class="signup__display-char">{ch}</span>
             }</For>
           </div>
           <span ref={scriptRef2!} class="signup__script signup__script--accent">today</span>
@@ -218,7 +251,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void }> = (props) =
           </h2>
         </div>
 
-        <form class="signup__form" onSubmit={(e) => e.preventDefault()}>
+        <form class="signup__form" onSubmit={handleSubmit}>
           <div class="signup__field signup__field--first">
             <span class="signup__field-num">01</span>
             <input
@@ -229,6 +262,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void }> = (props) =
               onInput={(e) => setName(e.currentTarget.value)}
               placeholder="Your full name"
               autocomplete="name"
+              required
             />
             <div class="signup__line" />
           </div>
@@ -243,6 +277,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void }> = (props) =
               onInput={(e) => setEmail(e.currentTarget.value)}
               placeholder="Email address"
               autocomplete="email"
+              required
             />
             <div class="signup__line" />
           </div>
@@ -257,13 +292,21 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void }> = (props) =
               onInput={(e) => setPassword(e.currentTarget.value)}
               placeholder="Create a password"
               autocomplete="new-password"
+              required
+              minLength="6"
             />
             <div class="signup__line" />
           </div>
 
+          {errorMsg() && (
+            <div style={{ color: "#ff4d4f", "margin-top": "1rem", "font-size": "0.875rem" }}>
+              {errorMsg()}
+            </div>
+          )}
+
           <div class="signup__form-footer">
-            <button type="submit" class="signup__submit">
-              <span>Create Account</span>
+            <button type="submit" class="signup__submit" disabled={isSubmitting()}>
+              <span>{isSubmitting() ? "Creating..." : "Create Account"}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M7 17L17 7M17 7H7M17 7V17" />
               </svg>
