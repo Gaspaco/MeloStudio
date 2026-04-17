@@ -3,7 +3,7 @@ import { defineConfig } from "@solidjs/start/config";
 export default defineConfig({
   ssr: false,
   server: {
-    preset: "static",
+    preset: "vercel",
   },
   vite: {
     server: {
@@ -12,5 +12,13 @@ export default defineConfig({
     build: {
       target: "esnext",
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: "modern-compiler",
+          silenceDeprecations: ["legacy-js-api", "color-functions", "global-builtin"]
+        }
+      }
+    }
   },
 });
