@@ -2,6 +2,9 @@
   "name": "melostudio",
   "type": "module",
   "private": true,
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "vinxi dev",
     "build": "vinxi build",
