@@ -22,7 +22,7 @@ export function animateIntro(refs: {
     const studioChars = refs.loaderStudioRef.querySelectorAll(".loader__char");
 
     intro
-      .fromTo(meloChars, { yPercent: 120 }, { yPercent: 0, stagger: 0.08, duration: 0.7, ease: "power4.out" }, 0)
+      .fromTo(meloChars, { yPercent: 120, opacity: 1 }, { yPercent: 0, opacity: 1, stagger: 0.08, duration: 0.7, ease: "power4.out" }, 0)
       .fromTo(studioChars, { xPercent: 80, opacity: 0 }, { xPercent: 0, opacity: 1, stagger: 0.05, duration: 0.6, ease: "power3.out" }, 0.4)
       .to(refs.loaderRef, { yPercent: -100, duration: 0.8, ease: "power4.inOut" }, 1.4);
 

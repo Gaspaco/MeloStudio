@@ -72,6 +72,23 @@ const Dashboard: Component<{
     props.onLogout();
   };
 
+  const handleImageUpload = (e: Event & { currentTarget: HTMLInputElement }) => {
+    const file = e.currentTarget.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        const result = evt.target?.result as string;
+        try {
+          await authClient.updateUser({ image: result });
+          setUser((u) => (u ? { ...u, image: result } : u));
+        } catch (err) {
+          setUser((u) => (u ? { ...u, image: result } : u));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSaveProfile = async () => {
     setProfileSaving(true);
     setProfileSaved(false);
@@ -175,12 +192,6 @@ const Dashboard: Component<{
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
           </button>
         </div>
-
-        <button class="db__avatar" onClick={() => switchTab("profile")}>
-          <Show when={user()?.image} fallback={<span class="db__avatar-text">{initials()}</span>}>
-            <img class="db__avatar-img" src={user()!.image!} alt="" />
-          </Show>
-        </button>
       </header>
 
       {/* ══════════════════════════ OVERVIEW ══════════════════════════ */}
@@ -355,7 +366,14 @@ const Dashboard: Component<{
         <div class="db__content">
           {/* Profile hero */}
           <section class="db__profile-hero">
-            <div class="db__profile-avatar-wrap">
+            <div class="db__profile-avatar-wrap" style={{ position: "relative" }}>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                class="db__profile-upload-input"
+                title="Change Profile Picture"
+              />
               <div class="db__profile-avatar">
                 <Show when={user()?.image} fallback={<span class="db__profile-initials">{initials()}</span>}>
                   <img class="db__profile-img" src={user()!.image!} alt="" />

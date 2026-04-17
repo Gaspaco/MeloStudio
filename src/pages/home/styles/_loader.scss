@@ -18,6 +18,8 @@
     letter-spacing: -0.05em;
     text-transform: uppercase;
     line-height: 0.85;
+    padding-bottom: 0.15em;
+    margin-bottom: -0.15em;
     color: $accent;
     overflow: hidden;
     display: inline-block;
@@ -39,20 +41,8 @@
   &__char {
     display: inline-block;
     will-change: transform;
+    opacity: 0;
   }
 
-
-  &__melo {
-    .loader__char {
-      transform: translateY(120%);
-    }
-  }
-
-  &__studio {
-    .loader__char {
-      transform: translateX(80%);
-      opacity: 0;
-    }
-  }
 
 }
