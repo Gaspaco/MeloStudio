@@ -67,7 +67,7 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
     gsap.ticker.add((time) => lenisRef!.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
-    // Animations
+    // ── Critical: intro + hero (above the fold) ──
     animateIntro({
       loaderRef, loaderMeloRef, loaderStudioRef,
       heroLine1Ref, heroLine2Ref, heroMetaRef, scrollIndRef,
@@ -77,15 +77,72 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
       heroRef, heroLine1Ref, heroLine2Ref, heroMetaRef, scrollIndRef,
     });
 
-    animateDaw({ dawWrapRef, reelRef });
+    // ── Deferred: only init when scrolled near ──
+    let dawInited = false;
+    ScrollTrigger.create({
+      trigger: reelRef,
+      start: "top 120%",
+      once: true,
+      onEnter: () => {
+        if (!dawInited) {
+          dawInited = true;
+          animateDaw({ dawWrapRef, reelRef });
+        }
+      },
+    });
 
-    const cleanupTypewriter = startTypewriter(setTwText, setTwCursor);
-    onCleanup(cleanupTypewriter);
+    let twCleanup: (() => void) | null = null;
+    ScrollTrigger.create({
+      trigger: manifestoRef,
+      start: "top 120%",
+      once: true,
+      onEnter: () => {
+        if (!twCleanup) {
+          twCleanup = startTypewriter(setTwText, setTwCursor);
+        }
+      },
+    });
+    onCleanup(() => twCleanup?.());
 
-    animateCapabilities({ hScrollRef, hScrollTrackRef });
-    animateClosing(closingWordsRefs);
-    animateFooter(footerRef);
-    setupOrb(orbRef);
+    let capsInited = false;
+    ScrollTrigger.create({
+      trigger: hScrollRef,
+      start: "top 120%",
+      once: true,
+      onEnter: () => {
+        if (!capsInited) {
+          capsInited = true;
+          animateCapabilities({ hScrollRef, hScrollTrackRef });
+          setupOrb(orbRef);
+        }
+      },
+    });
+
+    let closingInited = false;
+    ScrollTrigger.create({
+      trigger: ".closing",
+      start: "top 130%",
+      once: true,
+      onEnter: () => {
+        if (!closingInited) {
+          closingInited = true;
+          animateClosing(closingWordsRefs);
+        }
+      },
+    });
+
+    let footerInited = false;
+    ScrollTrigger.create({
+      trigger: footerRef,
+      start: "top 130%",
+      once: true,
+      onEnter: () => {
+        if (!footerInited) {
+          footerInited = true;
+          animateFooter(footerRef);
+        }
+      },
+    });
 
     createEffect(() => {
       if (menuOpen()) {

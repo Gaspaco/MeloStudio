@@ -3,6 +3,8 @@
 .footer {
   padding: 3rem 3rem 0;
   overflow: visible;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 60vh;
 
   &__info {
     display: flex;

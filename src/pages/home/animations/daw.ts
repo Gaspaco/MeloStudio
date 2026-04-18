@@ -214,8 +214,25 @@ export function animateDaw(refs: {
     }
   };
 
-  // Use gsap.ticker instead of requestAnimationFrame
-  gsap.ticker.add(onTick);
+  // Only run the waveform ticker when the reel section is visible
+  let reelVisible = false;
+
+  ScrollTrigger.create({
+    trigger: refs.reelRef,
+    start: "top bottom",
+    end: "bottom top",
+    onEnter: () => { reelVisible = true; },
+    onLeave: () => { reelVisible = false; },
+    onEnterBack: () => { reelVisible = true; },
+    onLeaveBack: () => { reelVisible = false; },
+  });
+
+  const onTickGuarded = () => {
+    if (!reelVisible && !isPlaying) return;
+    onTick();
+  };
+
+  gsap.ticker.add(onTickGuarded);
 
   const startWaveform = () => {
     initAudioContext();
