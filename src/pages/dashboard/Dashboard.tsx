@@ -47,6 +47,12 @@ const Dashboard: Component<{
   const [passwordError, setPasswordError] = createSignal("");
   const [passwordSaved, setPasswordSaved] = createSignal(false);
 
+  // Delete
+  const [deleteStep, setDeleteStep] = createSignal<"none" | "confirm" | "password">("none");
+  const [deletePassword, setDeletePassword] = createSignal("");
+  const [deleteLoading, setDeleteLoading] = createSignal(false);
+  const [deleteError, setDeleteError] = createSignal("");
+
   onMount(async () => {
     try {
       const { data } = await authClient.getSession();
@@ -155,6 +161,33 @@ const Dashboard: Component<{
     requestAnimationFrame(() => {
       gsap.fromTo(".db__content", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" });
     });
+  };
+
+  const handleStartDelete = () => setDeleteStep("confirm");
+  const handleConfirmDelete = () => setDeleteStep("password");
+  const handleCancelDelete = () => {
+    setDeleteStep("none");
+    setDeletePassword("");
+    setDeleteError("");
+  };
+
+  const handleFinalDelete = async (e: Event) => {
+    e.preventDefault();
+    if (!deletePassword()) {
+      setDeleteError("Password is required.");
+      return;
+    }
+    setDeleteLoading(true);
+    setDeleteError("");
+    try {
+      const res = await authClient.deleteUser({ password: deletePassword() });
+      if (res.error) throw res.error;
+      props.onLogout();
+    } catch (err: any) {
+      setDeleteError(err?.message || "Failed to delete account. Check your password.");
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   // ── Entrance ──
@@ -506,7 +539,40 @@ const Dashboard: Component<{
                 <span class="db__danger-label">Delete Account</span>
                 <span class="db__danger-sub">Permanently delete your account and all data. This cannot be undone.</span>
               </div>
-              <button class="db__btn db__btn--danger">Delete Account</button>
+              <Show when={deleteStep() === "none"}>
+                <button class="db__btn db__btn--danger" onClick={handleStartDelete}>Delete Account</button>
+              </Show>
+              <Show when={deleteStep() === "confirm"}>
+                <div style={{ display: "flex", gap: "1rem", "align-items": "center" }}>
+                  <span style={{ "font-size": "0.9rem", color: "#ff4d4f" }}>Are you sure?</span>
+                  <button class="db__btn db__btn--danger" onClick={handleConfirmDelete}>Yes</button>
+                  <button class="db__btn db__btn--ghost" onClick={handleCancelDelete}>No</button>
+                </div>
+              </Show>
+              <Show when={deleteStep() === "password"}>
+                <form class="db__danger-confirm" onSubmit={handleFinalDelete}>
+                  <div class="db__frow">
+                    <input 
+                      class="db__finput" 
+                      type="password" 
+                      placeholder="Confirm Password" 
+                      value={deletePassword()}
+                      onInput={(e) => setDeletePassword(e.currentTarget.value)}
+                      required
+                    />
+                    <div class="db__fline" />
+                  </div>
+                  <div style={{ display: "flex", gap: "1rem", "align-items": "center" }}>
+                    <button class="db__btn db__btn--danger" type="submit" disabled={deleteLoading()}>
+                      {deleteLoading() ? "Deleting..." : "Confirm"}
+                    </button>
+                    <button class="db__btn db__btn--ghost" type="button" onClick={handleCancelDelete}>Cancel</button>
+                  </div>
+                  <Show when={deleteError()}>
+                    <span class="db__form-err" style={{ "margin-top": "0.5rem", display: "block" }}>{deleteError()}</span>
+                  </Show>
+                </form>
+              </Show>
             </div>
           </section>
 
