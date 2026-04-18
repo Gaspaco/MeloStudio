@@ -651,6 +651,24 @@
   overflow: hidden;
   position: relative;
   z-index: 1;
+
+  &::after {
+    content: "Upload";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
 }
 
 .db__profile-ring {
@@ -1009,4 +1027,8 @@
 .db__hero-avatar:hover {
   filter: brightness(0.85);
   transition: filter 0.3s ease;
+}
+
+.db__profile-avatar-wrap:hover .db__profile-avatar::after {
+  opacity: 1;
 }
