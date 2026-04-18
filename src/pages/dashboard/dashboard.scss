@@ -653,7 +653,7 @@
   z-index: 1;
 
   &::after {
-    content: "Upload";
+    content: "+";
     position: absolute;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
@@ -661,8 +661,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 2rem;
+    font-weight: 300;
     text-transform: uppercase;
     letter-spacing: 1px;
     opacity: 0;
