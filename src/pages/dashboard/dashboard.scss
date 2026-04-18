@@ -932,6 +932,65 @@
   min-width: 250px;
 }
 
+/* ── Delete Modal ── */
+
+.db__modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+  display: grid;
+  place-items: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.db__modal {
+  background: $bg;
+  border: 1px solid rgba(#fff, 0.06);
+  border-radius: 1rem;
+  padding: 2.5rem;
+  max-width: 420px;
+  width: 90%;
+  animation: modalSlide 0.3s ease;
+}
+
+.db__modal-title {
+  font-family: $font-sans;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #e05050;
+  margin-bottom: 0.75rem;
+}
+
+.db__modal-desc {
+  font-family: $font-sans;
+  font-size: 0.85rem;
+  color: $text-secondary;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.db__modal-btns {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.db__modal form .db__frow {
+  margin-bottom: 0.5rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlide {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .db__danger-info {
   display: flex;
   flex-direction: column;

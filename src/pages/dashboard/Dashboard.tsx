@@ -539,40 +539,7 @@ const Dashboard: Component<{
                 <span class="db__danger-label">Delete Account</span>
                 <span class="db__danger-sub">Permanently delete your account and all data. This cannot be undone.</span>
               </div>
-              <Show when={deleteStep() === "none"}>
-                <button class="db__btn db__btn--danger" onClick={handleStartDelete}>Delete Account</button>
-              </Show>
-              <Show when={deleteStep() === "confirm"}>
-                <div style={{ display: "flex", gap: "1rem", "align-items": "center" }}>
-                  <span style={{ "font-size": "0.9rem", color: "#ff4d4f" }}>Are you sure?</span>
-                  <button class="db__btn db__btn--danger" onClick={handleConfirmDelete}>Yes</button>
-                  <button class="db__btn db__btn--ghost" onClick={handleCancelDelete}>No</button>
-                </div>
-              </Show>
-              <Show when={deleteStep() === "password"}>
-                <form class="db__danger-confirm" onSubmit={handleFinalDelete}>
-                  <div class="db__frow">
-                    <input 
-                      class="db__finput" 
-                      type="password" 
-                      placeholder="Confirm Password" 
-                      value={deletePassword()}
-                      onInput={(e) => setDeletePassword(e.currentTarget.value)}
-                      required
-                    />
-                    <div class="db__fline" />
-                  </div>
-                  <div style={{ display: "flex", gap: "1rem", "align-items": "center" }}>
-                    <button class="db__btn db__btn--danger" type="submit" disabled={deleteLoading()}>
-                      {deleteLoading() ? "Deleting..." : "Confirm"}
-                    </button>
-                    <button class="db__btn db__btn--ghost" type="button" onClick={handleCancelDelete}>Cancel</button>
-                  </div>
-                  <Show when={deleteError()}>
-                    <span class="db__form-err" style={{ "margin-top": "0.5rem", display: "block" }}>{deleteError()}</span>
-                  </Show>
-                </form>
-              </Show>
+              <button class="db__btn db__btn--danger" onClick={handleStartDelete}>Delete Account</button>
             </div>
           </section>
 
@@ -581,6 +548,47 @@ const Dashboard: Component<{
             <span class="db__brand-melo">Melo</span>
             <span class="db__brand-studio">Studio</span>
           </footer>
+        </div>
+      </Show>
+      {/* ── Delete Account Modal ── */}
+      <Show when={deleteStep() !== "none"}>
+        <div class="db__modal-overlay" onClick={handleCancelDelete}>
+          <div class="db__modal" onClick={(e) => e.stopPropagation()}>
+            <Show when={deleteStep() === "confirm"}>
+              <h3 class="db__modal-title">Are you sure?</h3>
+              <p class="db__modal-desc">This will permanently delete your account and all associated data. This action cannot be undone.</p>
+              <div class="db__modal-btns">
+                <button class="db__btn db__btn--danger" onClick={handleConfirmDelete}>Yes, delete</button>
+                <button class="db__btn db__btn--ghost" onClick={handleCancelDelete}>No, go back</button>
+              </div>
+            </Show>
+            <Show when={deleteStep() === "password"}>
+              <h3 class="db__modal-title">Confirm your password</h3>
+              <p class="db__modal-desc">Enter your password to permanently delete your account.</p>
+              <form onSubmit={handleFinalDelete}>
+                <div class="db__frow">
+                  <input
+                    class="db__finput"
+                    type="password"
+                    placeholder="Password"
+                    value={deletePassword()}
+                    onInput={(e) => setDeletePassword(e.currentTarget.value)}
+                    required
+                  />
+                  <div class="db__fline" />
+                </div>
+                <Show when={deleteError()}>
+                  <span class="db__form-err">{deleteError()}</span>
+                </Show>
+                <div class="db__modal-btns">
+                  <button class="db__btn db__btn--danger" type="submit" disabled={deleteLoading()}>
+                    {deleteLoading() ? "Deleting..." : "Delete Account"}
+                  </button>
+                  <button class="db__btn db__btn--ghost" type="button" onClick={handleCancelDelete}>Cancel</button>
+                </div>
+              </form>
+            </Show>
+          </div>
         </div>
       </Show>
     </div>
