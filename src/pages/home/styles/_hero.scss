@@ -1,3 +1,4 @@
+@use "sass:color";
 @use "../../../styles/variables" as *;
 
 .hero {
@@ -91,7 +92,7 @@
       color: #fff;
 
       &:hover {
-        background: lighten($accent, 5%);
+        background: color.scale($accent, $lightness: 12.5%);
         box-shadow: 0 4px 24px rgba($accent, 0.35);
         transform: translateY(-2px);
       }

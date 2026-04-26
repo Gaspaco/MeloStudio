@@ -208,10 +208,15 @@ const Dashboard: Component<{
     <div ref={pageRef!} class="db">
       {/* ── Fixed nav bar ── */}
       <header class="db__bar">
-        <button class="db__logo" onClick={props.onHome}>
-          <span class="db__logo-melo">MELO</span>
-          <span class="db__logo-studio">Studio</span>
-        </button>
+        <div class="db__bar-left">
+          <button class="db__home-btn" onClick={props.onHome} title="Back to home">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <button class="db__logo" onClick={props.onHome}>
+            <span class="db__logo-melo">MELO</span>
+            <span class="db__logo-studio">Studio</span>
+          </button>
+        </div>
 
         <nav class="db__nav">
           <button class={`db__nav-link ${tab() === "overview" ? "db__nav-link--active" : ""}`} onClick={() => switchTab("overview")}>Overview</button>
@@ -220,6 +225,11 @@ const Dashboard: Component<{
 
         <div class="db__bar-right">
           <span class="db__clock">{formatTime()}</span>
+          <button class="db__bar-avatar" onClick={() => switchTab("profile")}>
+            <Show when={user()?.image} fallback={<span class="db__bar-avatar-initials">{initials()}</span>}>
+              <img src={user()!.image!} alt="" />
+            </Show>
+          </button>
           <button class="db__bar-logout" onClick={handleLogout}>
             <span>Log out</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
@@ -343,16 +353,6 @@ const Dashboard: Component<{
             </div>
 
             <div class="db__actions">
-              <button class="db__act" onClick={props.onNewProject}>
-                <div class="db__act-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4v16m8-8H4" /></svg>
-                </div>
-                <div class="db__act-body">
-                  <span class="db__act-label">New Project</span>
-                  <span class="db__act-desc">Start a fresh session from scratch</span>
-                </div>
-                <svg class="db__act-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
-              </button>
               <button class="db__act">
                 <div class="db__act-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
