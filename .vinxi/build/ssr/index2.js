@@ -1,0 +1,1 @@
+import{r,c as n}from"./assets/auth-server-B9Po8mn5.js";import"@neondatabase/serverless";async function u(t){const e=await r(t.request);if(!e)return new Response("unauthorized",{status:401});const s=((await t.request.json().catch(()=>({})))?.name??"Untitled Project").toString().slice(0,100),o=await n(e,s);return Response.json(o,{status:201})}export{u as POST};

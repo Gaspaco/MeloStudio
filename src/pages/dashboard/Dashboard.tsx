@@ -1,7 +1,7 @@
 import { type Component, createSignal, onMount, onCleanup, For, Show } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
-import { listProjectsApi } from "../../lib/api";
+import { listProjectsApi, deleteProjectApi, updateProjectApi } from "../../lib/api";
 import "./dashboard.scss";
 
 interface Project {
@@ -18,7 +18,8 @@ type Tab = "overview" | "profile";
 
 const Dashboard: Component<{
   onLogout: () => void;
-  onNewProject: () => void;
+  onNewProject: (name?: string) => void;
+  onOpenProject: (id: string) => void;
   onHome: () => void;
 }> = (props) => {
   let pageRef!: HTMLDivElement;
@@ -71,21 +72,30 @@ const Dashboard: Component<{
 
   onMount(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
-    onCleanup(() => clearInterval(interval));
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (createOpen()) setCreateOpen(false);
+        if (renameTarget()) setRenameTarget(null);
+        if (deleteTarget()) setDeleteTarget(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    onCleanup(() => { clearInterval(interval); window.removeEventListener("keydown", onKey); });
   });
 
   onMount(async () => {
     try {
       const list = await listProjectsApi();
+      const PROJECT_COLORS = ["#e05297", "#7c5cff", "#ff5454", "#14f195", "#00d2ff", "#ffaa00", "#ff00ff", "#a3ff00"];
       setProjects(
-        list.map((p) => ({
+        list.map((p, i) => ({
           id: p.id,
           name: p.name,
           bpm: p.bpm,
           key: "—",
           tracks: 0,
           updatedAt: new Date(p.updatedAt).toLocaleDateString(),
-          color: "#7c5cff",
+          color: PROJECT_COLORS[i % PROJECT_COLORS.length] as string,
         })),
       );
     } catch (err) {
@@ -175,6 +185,78 @@ const Dashboard: Component<{
   };
 
   const totalTracks = () => projects().reduce((a, p) => a + p.tracks, 0);
+
+  // Project modals
+  const [createOpen, setCreateOpen] = createSignal(false);
+  const [createName, setCreateName] = createSignal("New Project");
+  const [renameTarget, setRenameTarget] = createSignal<Project | null>(null);
+  const [renameValue, setRenameValue] = createSignal("");
+  const [deleteTarget, setDeleteTarget] = createSignal<Project | null>(null);
+  const [projectActionError, setProjectActionError] = createSignal("");
+  const [projectActionLoading, setProjectActionLoading] = createSignal(false);
+
+  const openCreate = () => {
+    setCreateName("New Project");
+    setProjectActionError("");
+    setCreateOpen(true);
+  };
+
+  const submitCreate = (e: Event) => {
+    e.preventDefault();
+    const n = createName().trim();
+    if (!n) { setProjectActionError("Name is required."); return; }
+    setCreateOpen(false);
+    props.onNewProject(n);
+  };
+
+  const openRename = (e: Event, project: Project) => {
+    e.stopPropagation();
+    setRenameTarget(project);
+    setRenameValue(project.name);
+    setProjectActionError("");
+  };
+
+  const submitRename = async (e: Event) => {
+    e.preventDefault();
+    const target = renameTarget();
+    if (!target) return;
+    const next = renameValue().trim();
+    if (!next) { setProjectActionError("Name is required."); return; }
+    if (next === target.name) { setRenameTarget(null); return; }
+    setProjectActionLoading(true);
+    setProjectActionError("");
+    try {
+      await updateProjectApi(target.id, { name: next });
+      setProjects((prev) => prev.map((p) => p.id === target.id ? { ...p, name: next } : p));
+      setRenameTarget(null);
+    } catch {
+      setProjectActionError("Failed to rename project.");
+    } finally {
+      setProjectActionLoading(false);
+    }
+  };
+
+  const openDelete = (e: Event, project: Project) => {
+    e.stopPropagation();
+    setDeleteTarget(project);
+    setProjectActionError("");
+  };
+
+  const submitDelete = async () => {
+    const target = deleteTarget();
+    if (!target) return;
+    setProjectActionLoading(true);
+    setProjectActionError("");
+    try {
+      await deleteProjectApi(target.id);
+      setProjects((prev) => prev.filter((p) => p.id !== target.id));
+      setDeleteTarget(null);
+    } catch {
+      setProjectActionError("Failed to delete project.");
+    } finally {
+      setProjectActionLoading(false);
+    }
+  };
 
   const switchTab = (t: Tab) => {
     setTab(t);
@@ -319,7 +401,7 @@ const Dashboard: Component<{
             <div class="db__section-header">
               <span class="db__section-idx">01</span>
               <h2 class="db__section-title">Projects</h2>
-              <button class="db__section-action" onClick={props.onNewProject}>
+              <button class="db__section-action" onClick={openCreate}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4v16m8-8H4" /></svg>
                 New project
               </button>
@@ -331,7 +413,7 @@ const Dashboard: Component<{
                 <span class="db__empty-note">♪</span>
                 <h3 class="db__empty-title">Nothing here yet</h3>
                 <p class="db__empty-sub">Create your first project and start making music.</p>
-                <button class="db__empty-cta" onClick={props.onNewProject}>
+                <button class="db__empty-cta" onClick={openCreate}>
                   <span>Start creating</span>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
                 </button>
@@ -345,18 +427,27 @@ const Dashboard: Component<{
                   <span class="db__th db__th--key">Key</span>
                   <span class="db__th db__th--tracks">Tracks</span>
                   <span class="db__th db__th--time">Modified</span>
+                  <span class="db__th db__th--acts"></span>
                 </div>
                 <For each={projects()}>{(project, i) =>
-                  <div class="db__table-row">
+                  <div class="db__table-row" onClick={() => props.onOpenProject(project.id)}>
                     <span class="db__td db__td--num">{String(i() + 1).padStart(2, "0")}</span>
                     <span class="db__td db__td--name">
                       <span class="db__td-dot" style={{ background: project.color }} />
                       {project.name}
                     </span>
-                    <span class="db__td db__td--bpm">{project.bpm}</span>
+                    <span class="db__td db__td--bpm">{project.bpm || 100}</span>
                     <span class="db__td db__td--key">{project.key}</span>
-                    <span class="db__td db__td--tracks">{project.tracks}</span>
+                    <span class="db__td db__td--tracks">{project.tracks || 1}</span>
                     <span class="db__td db__td--time">{project.updatedAt}</span>
+                    <span class="db__td db__td--acts">
+                      <button class="db__act-btn" onClick={(e) => openRename(e, project)} title="Rename">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2l5 5-9 9H2v-5z"/></svg>
+                      </button>
+                      <button class="db__act-btn db__act-btn--danger" onClick={(e) => openDelete(e, project)} title="Delete">
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M5 4V2h6v2M6 8v5M10 8v5M3 4l1 10h8l1-10"/></svg>
+                      </button>
+                    </span>
                   </div>
                 }</For>
               </div>
@@ -608,6 +699,92 @@ const Dashboard: Component<{
                 </div>
               </form>
             </Show>
+          </div>
+        </div>
+      </Show>
+
+      {/* ── Project Create Modal ── */}
+      <Show when={createOpen()}>
+        <div class="db__pm-overlay" onClick={() => setCreateOpen(false)}>
+          <form class="db__pm" onClick={(e) => e.stopPropagation()} onSubmit={submitCreate}>
+            <div class="db__pm-meta">
+              <span>New session</span>
+              <span class="db__pm-sep">/</span>
+              <span><strong>{projects().length + 1}</strong> total</span>
+              <span class="db__pm-sep">/</span>
+              <span>{new Date().getFullYear()}</span>
+            </div>
+            <div class="db__pm-display">
+              <span class="db__pm-line db__pm-line--pink">Name</span>
+              <span class="db__pm-line db__pm-line--stroke">it.</span>
+            </div>
+            <input
+              class="db__pm-input"
+              autofocus
+              value={createName()}
+              onInput={(e) => setCreateName(e.currentTarget.value)}
+              placeholder="Untitled project"
+            />
+            <Show when={projectActionError()}><span class="db__pm-error">{projectActionError()}</span></Show>
+            <div class="db__pm-row">
+              <button type="submit" class="db__pm-btn db__pm-btn--primary">Create</button>
+              <button type="button" class="db__pm-btn db__pm-btn--ghost" onClick={() => setCreateOpen(false)}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      </Show>
+
+      {/* ── Project Rename Modal ── */}
+      <Show when={renameTarget()}>
+        <div class="db__pm-overlay" onClick={() => setRenameTarget(null)}>
+          <form class="db__pm" onClick={(e) => e.stopPropagation()} onSubmit={submitRename}>
+            <div class="db__pm-meta">
+              <span>Rename</span>
+              <span class="db__pm-sep">/</span>
+              <span>{renameTarget()?.bpm || 100} BPM</span>
+              <span class="db__pm-sep">/</span>
+              <span>{renameTarget()?.updatedAt}</span>
+            </div>
+            <div class="db__pm-display">
+              <span class="db__pm-line db__pm-line--pink">Re</span>
+              <span class="db__pm-line db__pm-line--stroke">name.</span>
+            </div>
+            <input
+              class="db__pm-input"
+              autofocus
+              value={renameValue()}
+              onInput={(e) => setRenameValue(e.currentTarget.value)}
+              placeholder={renameTarget()?.name}
+            />
+            <Show when={projectActionError()}><span class="db__pm-error">{projectActionError()}</span></Show>
+            <div class="db__pm-row">
+              <button type="submit" class="db__pm-btn db__pm-btn--primary" disabled={projectActionLoading()}>{projectActionLoading() ? "Saving" : "Save"}</button>
+              <button type="button" class="db__pm-btn db__pm-btn--ghost" onClick={() => setRenameTarget(null)}>Cancel</button>
+            </div>
+          </form>
+        </div>
+      </Show>
+
+      {/* ── Project Delete Modal ── */}
+      <Show when={deleteTarget()}>
+        <div class="db__pm-overlay" onClick={() => setDeleteTarget(null)}>
+          <div class="db__pm" onClick={(e) => e.stopPropagation()}>
+            <div class="db__pm-meta">
+              <span>Delete</span>
+              <span class="db__pm-sep">/</span>
+              <span>{deleteTarget()?.name}</span>
+              <span class="db__pm-sep">/</span>
+              <span>Permanent</span>
+            </div>
+            <div class="db__pm-display">
+              <span class="db__pm-line db__pm-line--danger">Sure?</span>
+              <span class="db__pm-line db__pm-line--stroke">No undo.</span>
+            </div>
+            <Show when={projectActionError()}><span class="db__pm-error">{projectActionError()}</span></Show>
+            <div class="db__pm-row">
+              <button type="button" class="db__pm-btn db__pm-btn--danger" disabled={projectActionLoading()} onClick={submitDelete}>{projectActionLoading() ? "Deleting" : "Delete"}</button>
+              <button type="button" class="db__pm-btn db__pm-btn--ghost" onClick={() => setDeleteTarget(null)}>Keep it</button>
+            </div>
           </div>
         </div>
       </Show>

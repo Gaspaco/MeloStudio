@@ -1,0 +1,131 @@
+{
+  "_api-BkRsMQYU.js": {
+    "file": "assets/api-BkRsMQYU.js",
+    "name": "api",
+    "imports": [
+      "_auth-CRRFgofH.js"
+    ]
+  },
+  "_auth-CRRFgofH.js": {
+    "file": "assets/auth-CRRFgofH.js",
+    "name": "auth"
+  },
+  "_index-CzGW6FVa.js": {
+    "file": "assets/index-CzGW6FVa.js",
+    "name": "index"
+  },
+  "_routing-CirwSqmj.js": {
+    "file": "assets/routing-CirwSqmj.js",
+    "name": "routing"
+  },
+  "src/routes/dashboard.tsx?pick=default&pick=$css": {
+    "file": "assets/dashboard-CRlH9yop.js",
+    "name": "dashboard",
+    "src": "src/routes/dashboard.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_routing-CirwSqmj.js",
+      "_index-CzGW6FVa.js",
+      "_auth-CRRFgofH.js",
+      "_api-BkRsMQYU.js"
+    ],
+    "css": [
+      "assets/dashboard-b8j79b3O.css"
+    ]
+  },
+  "src/routes/forgot.tsx?pick=default&pick=$css": {
+    "file": "assets/forgot-B49tj9Ey.js",
+    "name": "forgot",
+    "src": "src/routes/forgot.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_routing-CirwSqmj.js",
+      "_index-CzGW6FVa.js"
+    ],
+    "css": [
+      "assets/forgot-C4pJE_2p.css"
+    ]
+  },
+  "src/routes/index.tsx?pick=default&pick=$css": {
+    "file": "assets/index-DH7KnACq.js",
+    "name": "index",
+    "src": "src/routes/index.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_routing-CirwSqmj.js",
+      "_index-CzGW6FVa.js",
+      "_auth-CRRFgofH.js"
+    ],
+    "css": [
+      "assets/index-D9ci1XUw.css"
+    ]
+  },
+  "src/routes/login.tsx?pick=default&pick=$css": {
+    "file": "assets/login-CmCUKq_1.js",
+    "name": "login",
+    "src": "src/routes/login.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_routing-CirwSqmj.js",
+      "_index-CzGW6FVa.js",
+      "_auth-CRRFgofH.js"
+    ],
+    "css": [
+      "assets/login-CGNAsWA4.css"
+    ]
+  },
+  "src/routes/signup.tsx?pick=default&pick=$css": {
+    "file": "assets/signup-D-Kzng9i.js",
+    "name": "signup",
+    "src": "src/routes/signup.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_routing-CirwSqmj.js",
+      "_index-CzGW6FVa.js",
+      "_auth-CRRFgofH.js"
+    ],
+    "css": [
+      "assets/signup-CKwJ53lE.css"
+    ]
+  },
+  "src/routes/studio/[id].tsx?pick=default&pick=$css": {
+    "file": "assets/_id_-B6RSt5no.js",
+    "name": "_id_",
+    "src": "src/routes/studio/[id].tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_routing-CirwSqmj.js",
+      "_auth-CRRFgofH.js",
+      "_api-BkRsMQYU.js"
+    ],
+    "css": [
+      "assets/_id_-DW0nKctB.css"
+    ]
+  },
+  "virtual:$vinxi/handler/client": {
+    "file": "assets/client-D3g3i_-c.js",
+    "name": "client",
+    "src": "virtual:$vinxi/handler/client",
+    "isEntry": true,
+    "imports": [
+      "_routing-CirwSqmj.js"
+    ],
+    "dynamicImports": [
+      "src/routes/dashboard.tsx?pick=default&pick=$css",
+      "src/routes/forgot.tsx?pick=default&pick=$css",
+      "src/routes/index.tsx?pick=default&pick=$css",
+      "src/routes/login.tsx?pick=default&pick=$css",
+      "src/routes/signup.tsx?pick=default&pick=$css",
+      "src/routes/studio/[id].tsx?pick=default&pick=$css"
+    ],
+    "css": [
+      "assets/client-CWmnLvlF.css"
+    ]
+  }
+}

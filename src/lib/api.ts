@@ -49,6 +49,14 @@ export async function createProjectApi(name = "Untitled Project"): Promise<{ id:
   return res.json();
 }
 
+export async function updateProjectApi(id: string, updates: { name?: string }): Promise<void> {
+  const res = await call(`/api/projects/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(updates),
+  });
+  if (!res.ok) throw new Error(`update project: ${res.status}`);
+}
+
 export async function deleteProjectApi(id: string): Promise<void> {
   const res = await call(`/api/projects/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`delete project: ${res.status}`);

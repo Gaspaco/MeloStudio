@@ -1,0 +1,1 @@
+import{r as s,d as t}from"./assets/auth-server-B9Po8mn5.js";import"@neondatabase/serverless";async function u(e){const r=await s(e.request);return r?(await t(r,e.params.id),new Response(null,{status:204})):new Response("unauthorized",{status:401})}export{u as DELETE};

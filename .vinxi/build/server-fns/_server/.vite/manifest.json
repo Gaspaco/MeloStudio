@@ -1,0 +1,110 @@
+{
+  "_auth-server-B9Po8mn5.js": {
+    "file": "assets/auth-server-B9Po8mn5.js",
+    "name": "auth-server"
+  },
+  "_server-fns-Du3nX4Sx.js": {
+    "file": "assets/server-fns-Du3nX4Sx.js",
+    "name": "server-fns",
+    "dynamicImports": [
+      "src/routes/api/projects/[id].ts?pick=DELETE",
+      "src/routes/api/projects/[id].ts?pick=DELETE",
+      "src/routes/api/projects/[id].ts?pick=GET",
+      "src/routes/api/projects/[id].ts?pick=GET",
+      "src/routes/api/projects/[id].ts?pick=GET",
+      "src/routes/api/projects/[id].ts?pick=GET",
+      "src/routes/api/projects/[id].ts?pick=PATCH",
+      "src/routes/api/projects/[id].ts?pick=PATCH",
+      "src/routes/api/projects/[id].ts?pick=PUT",
+      "src/routes/api/projects/[id].ts?pick=PUT",
+      "src/routes/api/projects/index.ts?pick=GET",
+      "src/routes/api/projects/index.ts?pick=GET",
+      "src/routes/api/projects/index.ts?pick=GET",
+      "src/routes/api/projects/index.ts?pick=GET",
+      "src/routes/api/projects/index.ts?pick=POST",
+      "src/routes/api/projects/index.ts?pick=POST",
+      "src/App.tsx"
+    ]
+  },
+  "src/App.tsx": {
+    "file": "assets/App-B42jyNwL.js",
+    "name": "App",
+    "src": "src/App.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_server-fns-Du3nX4Sx.js"
+    ],
+    "css": [
+      "assets/App-CWmnLvlF.css"
+    ]
+  },
+  "src/routes/api/projects/[id].ts?pick=DELETE": {
+    "file": "_id_.js",
+    "name": "_id_",
+    "src": "src/routes/api/projects/[id].ts?pick=DELETE",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_auth-server-B9Po8mn5.js"
+    ]
+  },
+  "src/routes/api/projects/[id].ts?pick=GET": {
+    "file": "_id_2.js",
+    "name": "_id_",
+    "src": "src/routes/api/projects/[id].ts?pick=GET",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_auth-server-B9Po8mn5.js"
+    ]
+  },
+  "src/routes/api/projects/[id].ts?pick=PATCH": {
+    "file": "_id_3.js",
+    "name": "_id_",
+    "src": "src/routes/api/projects/[id].ts?pick=PATCH",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_auth-server-B9Po8mn5.js"
+    ]
+  },
+  "src/routes/api/projects/[id].ts?pick=PUT": {
+    "file": "_id_4.js",
+    "name": "_id_",
+    "src": "src/routes/api/projects/[id].ts?pick=PUT",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_auth-server-B9Po8mn5.js"
+    ]
+  },
+  "src/routes/api/projects/index.ts?pick=GET": {
+    "file": "index.js",
+    "name": "index",
+    "src": "src/routes/api/projects/index.ts?pick=GET",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_auth-server-B9Po8mn5.js"
+    ]
+  },
+  "src/routes/api/projects/index.ts?pick=POST": {
+    "file": "index2.js",
+    "name": "index",
+    "src": "src/routes/api/projects/index.ts?pick=POST",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_auth-server-B9Po8mn5.js"
+    ]
+  },
+  "virtual:$vinxi/handler/server-fns": {
+    "file": "server-fns.js",
+    "name": "server-fns",
+    "src": "virtual:$vinxi/handler/server-fns",
+    "isEntry": true,
+    "imports": [
+      "_server-fns-Du3nX4Sx.js"
+    ]
+  }
+}

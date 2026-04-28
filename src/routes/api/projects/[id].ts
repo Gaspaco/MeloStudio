@@ -31,6 +31,18 @@ export async function PUT(event: APIEvent) {
   return new Response(null, { status: 204 });
 }
 
+export async function PATCH(event: APIEvent) {
+  const userId = await requireUserId(event.request);
+  if (!userId) return new Response("unauthorized", { status: 401 });
+  const id = event.params.id;
+  const body = await event.request.json();
+  const doc = await getProject(userId, id);
+  if (!doc) return new Response("not found", { status: 404 });
+  if (body.name !== undefined) doc.name = body.name;
+  await saveProject(userId, id, doc);
+  return new Response(null, { status: 204 });
+}
+
 export async function DELETE(event: APIEvent) {
   const userId = await requireUserId(event.request);
   if (!userId) return new Response("unauthorized", { status: 401 });

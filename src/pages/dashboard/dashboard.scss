@@ -518,7 +518,8 @@
 
 .db__table-head {
   display: grid;
-  grid-template-columns: 3rem 1fr 5rem 5rem 5rem 7rem;
+  grid-template-columns: 3rem 1fr 5rem 5rem 5rem 7rem 4rem;
+  align-items: center;
   padding: 0.75rem 0;
   border-bottom: 1px solid $border;
 }
@@ -533,11 +534,18 @@
 
 .db__table-row {
   display: grid;
-  grid-template-columns: 3rem 1fr 5rem 5rem 5rem 7rem;
+  grid-template-columns: 3rem 1fr 5rem 5rem 5rem 7rem 4rem;
+  align-items: center;
   padding: 1rem 0;
   border-bottom: 1px solid rgba(#fff, 0.03);
   cursor: pointer;
   transition: background 0.2s, padding-left 0.3s;
+
+  .db__act-btn {
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.2s, transform 0.2s, background 0.15s, color 0.15s;
+  }
 
   &:hover {
     background: rgba(#fff, 0.015);
@@ -545,6 +553,7 @@
   }
 
   &:hover .db__td--name { color: $accent; }
+  &:hover .db__act-btn { opacity: 1; transform: scale(1); }
 }
 
 .db__td {
@@ -571,6 +580,37 @@
   &--time {
     font-size: 0.75rem;
     color: $text-muted;
+  }
+
+  &--acts {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+  }
+}
+
+.db__act-btn {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 4px;
+  color: $text-muted;
+  background: rgba(#fff, 0.05);
+
+  svg { width: 0.9rem; height: 0.9rem; display: block; }
+
+  &:hover {
+    background: rgba(#fff, 0.1);
+    color: $text-primary;
+  }
+
+  &--danger:hover {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
   }
 }
 
@@ -1169,4 +1209,153 @@
 
 .db__profile-avatar-wrap:hover .db__profile-avatar::after {
   opacity: 1;
+}
+
+
+/* ─────────────── Project Modals — home aesthetic ─────────────── */
+.db__pm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(5, 5, 5, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  animation: dbPmFade 0.2s ease-out;
+}
+@keyframes dbPmFade { from { opacity: 0; } to { opacity: 1; } }
+
+.db__pm {
+  position: relative;
+  width: min(38rem, 100%);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 2.4rem;
+  animation: dbPmIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes dbPmIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* meta line — mono, slash-separated, like hero__meta */
+.db__pm-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  font-family: $font-mono;
+  font-size: 0.72rem;
+  color: $text-secondary;
+  letter-spacing: 0.04em;
+  span.db__pm-sep { color: $text-muted; user-select: none; }
+  strong { color: $accent; font-weight: 500; }
+}
+
+/* the giant title — like hero__word, but two lines: pink + stroke */
+.db__pm-display {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.85;
+}
+.db__pm-line {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: clamp(3.2rem, 8vw, 5.5rem);
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  color: $text-primary;
+  margin: 0;
+  &--pink { color: $accent; }
+  &--stroke {
+    color: transparent;
+    -webkit-text-stroke: 1.5px $text-primary;
+  }
+  &--danger { color: #ff5454; }
+}
+
+/* the input — borderless, big, sits below the title */
+.db__pm-input {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.6rem 0;
+  background: transparent;
+  border-bottom: 1px solid rgba(#fff, 0.18);
+  font-family: $font-display;
+  font-weight: 600;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  color: $text-primary;
+  caret-color: $accent;
+  transition: border-color 0.2s;
+  &::placeholder { color: $text-muted; font-weight: 400; }
+  &:focus { border-bottom-color: $accent; }
+  &::selection { background: rgba($accent, 0.35); color: #fff; }
+}
+
+.db__pm-error {
+  font-family: $font-mono;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: #ff7e7e;
+}
+
+/* button row — same pills as hero */
+.db__pm-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+.db__pm-btn {
+  all: unset;
+  cursor: pointer;
+  padding: 0.65rem 2rem;
+  border-radius: 100px;
+  font-family: $font-mono;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.25s, box-shadow 0.25s;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  &--ghost {
+    background: transparent;
+    border-color: rgba(#fff, 0.2);
+    color: #fff;
+    &:hover:not(:disabled) {
+      background: rgba(#fff, 0.06);
+      border-color: rgba(#fff, 0.4);
+      transform: translateY(-2px);
+    }
+  }
+  &--primary {
+    background: $accent;
+    border-color: $accent;
+    color: #fff;
+    &:hover:not(:disabled) {
+      background: lighten($accent, 6%);
+      box-shadow: 0 4px 24px rgba($accent, 0.35);
+      transform: translateY(-2px);
+    }
+  }
+  &--danger {
+    background: transparent;
+    border-color: rgba(255, 84, 84, 0.5);
+    color: #ff7e7e;
+    &:hover:not(:disabled) {
+      background: rgba(255, 84, 84, 0.1);
+      border-color: #ff5454;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+  }
 }

@@ -4,6 +4,7 @@ import { authClient } from "~/lib/auth";
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
 import { unlockAudioContext } from "~/lib/audio/context";
 import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
+import { updateProjectApi } from "~/lib/api";
 import "./studio.scss";
 
 type TrackType = "drum" | "voice" | "instrument" | "sampler" | "bass" | "guitar";
@@ -102,6 +103,9 @@ const Studio: Component = () => {
   const [showAddMenu, setShowAddMenu] = createSignal(false);
   const [hasShownInitialPicker, setHasShownInitialPicker] = createSignal(false);
   const [navOpen, setNavOpen] = createSignal(false);
+  const [navCat, setNavCat] = createSignal<"project" | "edit" | "insert" | "view" | "transport" | "help">("project");
+  const [titleEditing, setTitleEditing] = createSignal(false);
+  let titleInputEl: HTMLInputElement | undefined;
   const [drumPanelOpen, setDrumPanelOpen] = createSignal(true);
   const [synthPreset, setSynthPreset] = createSignal<SynthPreset>("piano");
   const [octave, setOctave] = createSignal(4);
@@ -130,7 +134,28 @@ const Studio: Component = () => {
         setPattern(pat);
         seq!.setPattern(pat);
         if (pat.bpm) setBpm(pat.bpm);
-        // auto-add the drum track
+      }
+
+      // Restore persisted UI tracks
+      const savedTracks: UITrack[] | undefined = (doc as any).uiTracks;
+      if (savedTracks?.length) {
+        const restoredTracks: UITrack[] = [];
+        for (const t of savedTracks) {
+          if (!TRACK_DEFS.find(d => d.type === t.type)?.ready) continue;
+          restoredTracks.push(t);
+          if (t.type === "instrument" || t.type === "bass") {
+            const preset = t.type === "bass" ? "bass" as SynthPreset : synthPreset();
+            if (!synth) { synth = new PolySynth(preset); } else { synth.setPreset(preset); }
+            if (t.type === "bass") setSynthPreset("bass");
+          }
+        }
+        setTracks(restoredTracks);
+        setSelectedTrack(restoredTracks[0]?.id ?? null);
+        const hasDrum = restoredTracks.some(t => t.type === "drum");
+        if (hasDrum && pat?.rows?.length) seq!.setPattern(pat);
+        if (hasDrum) setDrumPanelOpen(true);
+      } else if (pat?.rows?.length) {
+        // legacy: doc has a pattern but no uiTracks — restore drum track only
         addTrack("drum", false);
       }
       
@@ -325,6 +350,28 @@ const Studio: Component = () => {
     }
   };
 
+  const startEditingTitle = () => {
+    setTitleEditing(true);
+    queueMicrotask(() => {
+      titleInputEl?.focus();
+      titleInputEl?.select();
+    });
+  };
+
+  const commitTitle = async () => {
+    if (!titleEditing()) return;
+    const next = (titleInputEl?.value ?? "").trim();
+    setTitleEditing(false);
+    if (!next || next === name()) return;
+    setName(next);
+    try { await updateProjectApi(params.id, { name: next }); } catch { /* ignore */ }
+  };
+
+  const cancelTitle = () => {
+    if (titleInputEl) titleInputEl.value = name();
+    setTitleEditing(false);
+  };
+
   const save = async () => {
     if (!seq) return;
     setSaveState("saving");
@@ -338,6 +385,7 @@ const Studio: Component = () => {
         ...doc,
         beat: { pattern: seq.getPattern() },
         transport: { ...(doc.transport ?? {}), bpm: bpm() },
+        uiTracks: tracks(),
       };
       const put = await fetch(`/api/projects/${params.id}`, {
         method: "PUT",
@@ -417,7 +465,33 @@ const Studio: Component = () => {
 
           <div class="bl__strip-c">
             <span class="bl__title-eyebrow">Project</span>
-            <h1 class="bl__title">{name()}</h1>
+            <Show
+              when={titleEditing()}
+              fallback={
+                <button
+                  class="bl__title bl__title--btn"
+                  onClick={startEditingTitle}
+                  title="Click to rename"
+                >
+                  <span class="bl__title-text">{name()}</span>
+                  <svg class="bl__title-pencil" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M11.5 2.5l2 2L5 13H3v-2l8.5-8.5z" />
+                    <path d="M10 4l2 2" />
+                  </svg>
+                </button>
+              }
+            >
+              <input
+                ref={(el) => (titleInputEl = el)}
+                class="bl__title bl__title--edit"
+                value={name()}
+                onBlur={commitTitle}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") { e.preventDefault(); commitTitle(); }
+                  else if (e.key === "Escape") { e.preventDefault(); cancelTitle(); }
+                }}
+              />
+            </Show>
           </div>
 
           <div class="bl__strip-r">
@@ -958,66 +1032,161 @@ const Studio: Component = () => {
         </section>
       </Show>
 
-      {/* SIDE NAV DRAWER */}
+      {/* SIDE NAV DRAWER — editorial command menu */}
       <Show when={navOpen()}>
-        <div class="bl__nav-overlay" onClick={() => setNavOpen(false)}>
-          <aside class="bl__nav-drawer" onClick={(e) => e.stopPropagation()}>
-            <div class="bl__nav-head">
-              <button class="bl__brand" onClick={() => { setNavOpen(false); navigate("/dashboard"); }}>
-                <span class="bl__brand-melo">Melo</span>
-                <span class="bl__brand-studio">Studio</span>
-              </button>
-              <button class="bl__nav-close" onClick={() => setNavOpen(false)} aria-label="Close menu">
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
-              </button>
+        {(() => {
+          const close = () => setNavOpen(false);
+          const run = (fn: () => void) => () => { fn(); close(); };
+          const renamePrompt = () => { startEditingTitle(); };
+          const bpmPrompt = () => {
+            const next = window.prompt("Set BPM (40–240)", String(bpm()));
+            const n = Number(next);
+            if (Number.isFinite(n) && n >= 40 && n <= 240) {
+              setBpm(Math.round(n));
+              if (seq) seq.setBpm(Math.round(n));
+            }
+          };
+          const CATS = [
+            {
+              id: "project" as const, num: "01", label: "Project",
+              ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V4l6-1.2v7"/><circle cx="5" cy="11.5" r="1.4"/><circle cx="11" cy="9.8" r="1.4"/></svg>,
+              items: [
+                { label: "New Project",   kbd: "⌘N",  action: run(() => navigate("/dashboard?new=1")) },
+                { label: "Save",          kbd: "⌘S",  action: run(() => { void save(); }), disabled: () => saveState() === "saving" },
+                { label: "Rename\u2026",  kbd: "",    action: run(renamePrompt) },
+                { label: "Open Dashboard",kbd: "⌘D",  action: run(() => navigate("/dashboard")) },
+              ],
+            },
+            {
+              id: "edit" as const, num: "02", label: "Edit",
+              ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9-3 1 1-3 9-9z"/><path d="M9 4l3 3"/></svg>,
+              items: [
+                { label: "Undo",            kbd: "⌘Z",   disabled: () => true },
+                { label: "Redo",            kbd: "⌘⇧Z",  disabled: () => true },
+                { label: "Delete Track",    kbd: "⌫",    action: run(() => { const id = selectedTrack(); if (id) deleteTrack(id); }), disabled: () => !selectedTrack() },
+                { label: "Clear Pattern",   kbd: "",     action: run(() => setPattern(DEFAULT_PATTERN())) },
+              ],
+            },
+            {
+              id: "insert" as const, num: "03", label: "Insert",
+              ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v10M3 8h10"/></svg>,
+              items: [
+                { label: "Add Track\u2026", kbd: "T", action: run(() => setShowNewTrack(true)) },
+                { label: "Import Audio\u2026", kbd: "", disabled: () => true },
+                { label: "Insert Pattern",     kbd: "", disabled: () => true },
+              ],
+            },
+            {
+              id: "view" as const, num: "04", label: "View",
+              ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2.2"/></svg>,
+              items: [
+                { label: "Toggle Drum Panel", kbd: "", action: run(() => setDrumPanelOpen(!drumPanelOpen())) },
+                { label: "Toggle Mixer",      kbd: "", disabled: () => true },
+                { label: "Fullscreen",        kbd: "F", action: run(() => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.(); }) },
+              ],
+            },
+            {
+              id: "transport" as const, num: "05", label: "Transport",
+              ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l7 5-7 5z"/></svg>,
+              items: [
+                { label: () => playing() ? "Pause" : "Play", kbd: "Space", action: run(() => { void togglePlay(); }) },
+                { label: "Stop",                              kbd: ".",     action: run(stopAll) },
+                { label: "Set BPM\u2026",                     kbd: "",      action: run(bpmPrompt) },
+              ],
+            },
+            {
+              id: "help" as const, num: "06", label: "Help",
+              ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M6 6.5a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6 1V10"/><circle cx="8" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg>,
+              items: [
+                { label: "Keyboard Shortcuts", kbd: "?", disabled: () => true },
+                { label: "About MeloStudio",   kbd: "",  disabled: () => true },
+              ],
+            },
+          ];
+          type Item = { label: string | (() => string); kbd: string; action?: () => void; disabled?: () => boolean };
+          const active = () => CATS.find(c => c.id === navCat()) ?? CATS[0];
+          return (
+            <div class="bl__nav-overlay" onClick={close}>
+              <aside class="bl__nav-drawer" onClick={(e) => e.stopPropagation()}>
+                <div class="bl__nav-header">
+                  <span class="bl__nav-eyebrow">— Menu</span>
+                  <button class="bl__nav-x" onClick={close} aria-label="Close">
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+                  </button>
+                </div>
+
+                <div class="bl__nav-body">
+                  <nav class="bl__nav-rail">
+                    <For each={CATS}>{(c) => (
+                      <button
+                        class={`bl__nav-cat ${navCat() === c.id ? "is-active" : ""}`}
+                        onMouseEnter={() => setNavCat(c.id)}
+                        onFocus={() => setNavCat(c.id)}
+                        onClick={() => setNavCat(c.id)}
+                      >
+                        <span class="bl__nav-num">{c.num}</span>
+                        <span class="bl__nav-ico">{c.ico}</span>
+                        <span class="bl__nav-label">{c.label}</span>
+                        <svg class="bl__nav-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+                      </button>
+                    )}</For>
+                  </nav>
+
+                  <div class="bl__nav-pane-viewport">
+                    <div
+                      class="bl__nav-pane-track"
+                      style={{ transform: `translateY(-${CATS.findIndex(c => c.id === navCat()) * 100}%)` }}
+                    >
+                      <For each={CATS}>{(cat) => (
+                        <div class="bl__nav-pane">
+                          <div class="bl__nav-pane-head">
+                            <span class="bl__nav-pane-num">{cat.num} ·</span>
+                            <span class="bl__nav-pane-title">{cat.label}</span>
+                          </div>
+                          <ul class="bl__nav-items">
+                            <For each={cat.items as Item[]}>{(it) => {
+                              const isDisabled = () => it.disabled?.() ?? !it.action;
+                              const labelText = () => typeof it.label === "function" ? it.label() : it.label;
+                              return (
+                                <li>
+                                  <button
+                                    class="bl__nav-item"
+                                    disabled={isDisabled()}
+                                    onClick={() => !isDisabled() && it.action?.()}
+                                  >
+                                    <span class="bl__nav-item-label">{labelText()}</span>
+                                    <Show when={it.kbd}><span class="bl__nav-kbd">{it.kbd}</span></Show>
+                                  </button>
+                                </li>
+                              );
+                            }}</For>
+                          </ul>
+                        </div>
+                      )}</For>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bl__nav-foot">
+                  <button class="bl__nav-exit" onClick={() => { close(); navigate("/dashboard"); }}>
+                    <span class="bl__nav-exit-ico">
+                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H4a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h5"/><path d="M11 5l-3 3 3 3M8 8h6"/></svg>
+                    </span>
+                    <span class="bl__nav-exit-text">
+                      <span class="bl__nav-exit-label">Exit to</span>
+                      <span class="bl__nav-exit-value">Dashboard</span>
+                    </span>
+                    <svg class="bl__nav-exit-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+                  </button>
+                  <div class="bl__nav-meta">
+                    <span class="bl__nav-meta-key">Project</span>
+                    <span class="bl__nav-meta-val">{name()}</span>
+                  </div>
+                </div>
+              </aside>
             </div>
-
-            <nav class="bl__nav-list">
-              <span class="bl__nav-section">— Workspace</span>
-              <button class="bl__nav-link" onClick={() => { setNavOpen(false); navigate("/dashboard"); }}>
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><rect x="9" y="9" width="5" height="5"/></svg>
-                <span>Dashboard</span>
-              </button>
-              <button class="bl__nav-link" disabled>
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4h12M2 8h12M2 12h8"/></svg>
-                <span>All projects</span>
-                <span class="bl__nav-soon">Soon</span>
-              </button>
-              <button class="bl__nav-link" disabled>
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 13l4-4 3 3 5-6"/></svg>
-                <span>Library</span>
-                <span class="bl__nav-soon">Soon</span>
-              </button>
-
-              <span class="bl__nav-section">— Project</span>
-              <button class="bl__nav-link" disabled>
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h10v10H3z"/><path d="M6 7h4M6 10h4"/></svg>
-                <span>Project settings</span>
-                <span class="bl__nav-soon">Soon</span>
-              </button>
-              <button class="bl__nav-link" disabled>
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l6 4 6-4"/><rect x="2" y="3" width="12" height="10"/></svg>
-                <span>Export · Stems</span>
-                <span class="bl__nav-soon">Soon</span>
-              </button>
-
-              <span class="bl__nav-section">— Help</span>
-              <button class="bl__nav-link" disabled>
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><path d="M6 6a2 2 0 1 1 3 1.5L8 9"/><circle cx="8" cy="11.5" r="0.4" fill="currentColor"/></svg>
-                <span>Keyboard shortcuts</span>
-              </button>
-              <button class="bl__nav-link" disabled>
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l6 4 6-4M2 4v8h12V4"/></svg>
-                <span>Send feedback</span>
-              </button>
-            </nav>
-
-            <div class="bl__nav-foot">
-              <span class="bl__nav-foot-label">Project</span>
-              <span class="bl__nav-foot-value">{name()}</span>
-            </div>
-          </aside>
-        </div>
+          );
+        })()}
       </Show>
 
       {/* NEW TRACK MODAL */}
