@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "packs": [
+    {
+      "id": "starter-drums",
+      "name": "Starter Drums",
+      "category": "drums",
+      "cover": "/packs/starter-drums.cover.svg",
+      "manifestUrl": "/packs/starter-drums.json",
+      "triggerCount": 4
+    },
+    {
+      "id": "starter-808s",
+      "name": "Starter 808s",
+      "category": "bass",
+      "cover": "/packs/starter-808s.cover.svg",
+      "manifestUrl": "/packs/starter-808s.json",
+      "triggerCount": 3
+    }
+  ]
+}

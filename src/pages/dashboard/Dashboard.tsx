@@ -1,6 +1,7 @@
 import { type Component, createSignal, onMount, onCleanup, For, Show } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
+import { listProjectsApi } from "../../lib/api";
 import "./dashboard.scss";
 
 interface Project {
@@ -28,7 +29,7 @@ const Dashboard: Component<{
     image?: string;
     createdAt?: string;
   } | null>(null);
-  const [projects] = createSignal<Project[]>([]);
+  const [projects, setProjects] = createSignal<Project[]>([]);
   const [time, setTime] = createSignal(new Date());
   const [tab, setTab] = createSignal<Tab>("overview");
 
@@ -71,6 +72,25 @@ const Dashboard: Component<{
   onMount(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
     onCleanup(() => clearInterval(interval));
+  });
+
+  onMount(async () => {
+    try {
+      const list = await listProjectsApi();
+      setProjects(
+        list.map((p) => ({
+          id: p.id,
+          name: p.name,
+          bpm: p.bpm,
+          key: "—",
+          tracks: 0,
+          updatedAt: new Date(p.updatedAt).toLocaleDateString(),
+          color: "#7c5cff",
+        })),
+      );
+    } catch (err) {
+      console.warn("project list failed (are you signed in?)", err);
+    }
   });
 
   const handleLogout = async () => {

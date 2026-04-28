@@ -1,0 +1,11 @@
+{
+  "id": "starter-808s",
+  "name": "Starter 808s",
+  "description": "Three sub-rumbling 808s.",
+  "category": "bass",
+  "triggers": [
+    { "id": "808_a",  "name": "808 A",  "assetId": "REPLACE_ME_808a", "rootNote": 33, "gainDb": -3 },
+    { "id": "808_c",  "name": "808 C",  "assetId": "REPLACE_ME_808c", "rootNote": 36, "gainDb": -3 },
+    { "id": "808_e",  "name": "808 E",  "assetId": "REPLACE_ME_808e", "rootNote": 40, "gainDb": -3 }
+  ]
+}

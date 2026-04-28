@@ -1,0 +1,12 @@
+{
+  "id": "starter-drums",
+  "name": "Starter Drums",
+  "description": "Four foundational hits to get you moving.",
+  "category": "drums",
+  "triggers": [
+    { "id": "kick",   "name": "Kick 01",   "assetId": "REPLACE_ME_kick",   "tag": "kick",   "gainDb": 0 },
+    { "id": "snare",  "name": "Snare 01",  "assetId": "REPLACE_ME_snare",  "tag": "snare",  "gainDb": -1 },
+    { "id": "hh_cl",  "name": "Hat Closed","assetId": "REPLACE_ME_hh_cl",  "tag": "hat",    "gainDb": -6 },
+    { "id": "hh_op",  "name": "Hat Open",  "assetId": "REPLACE_ME_hh_op",  "tag": "hat",    "gainDb": -6 }
+  ]
+}
