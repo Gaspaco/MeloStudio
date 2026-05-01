@@ -1,4 +1,4 @@
-import { type Component, createSignal, onMount, onCleanup, For, Show, createMemo } from "solid-js";
+import { type Component, createSignal, createEffect, onMount, onCleanup, For, Show, createMemo } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
 import { authClient } from "~/lib/auth";
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
@@ -26,7 +26,7 @@ const TRACK_DEFS: { type: TrackType; label: string; sub?: string; tag: string; r
   { type: "bass",       label: "Bass Synth",   sub: "Deep monophonic bass — keyboard playable",                 tag: "MIDI",     ready: true,  icon: "bass"       },
   { type: "voice",      label: "Voice / Audio",sub: "Capture vocals or any external sound source",              tag: "AUDIO",    ready: false, icon: "voice"      },
   { type: "sampler",    label: "Sampler",      sub: "Turn any audio clip into a playable instrument",           tag: "MIDI",     ready: false, icon: "sampler"    },
-  { type: "guitar",     label: "Guitar",       sub: "Plug a guitar into the input and use as a live amp",       tag: "AUDIO",    ready: false, icon: "guitar"     },
+  { type: "guitar",     label: "Guitar",       sub: "Acoustic & Electric Guitars — keyboard playable",          tag: "MIDI",     ready: true,  icon: "guitar"     },
 ];
 
 const DRUM_LABEL: Record<string, string> = {
@@ -101,7 +101,6 @@ const Studio: Component = () => {
   const [error, setError] = createSignal("");
   const [showNewTrack, setShowNewTrack] = createSignal(false);
   const [showAddMenu, setShowAddMenu] = createSignal(false);
-  const [hasShownInitialPicker, setHasShownInitialPicker] = createSignal(false);
   const [navOpen, setNavOpen] = createSignal(false);
   const [navCat, setNavCat] = createSignal<"project" | "edit" | "insert" | "view" | "transport" | "help">("project");
   const [titleEditing, setTitleEditing] = createSignal(false);
@@ -109,6 +108,30 @@ const Studio: Component = () => {
   const [drumPanelOpen, setDrumPanelOpen] = createSignal(true);
   const [synthPreset, setSynthPreset] = createSignal<SynthPreset>("piano");
   const [octave, setOctave] = createSignal(4);
+
+  // Sync the synth preset whenever the selected track changes.
+  // Bass tracks always use the "bass" preset; switching back to an
+  // instrument track restores a non-bass preset.
+  createEffect(() => {
+    const t = tracks().find(tr => tr.id === selectedTrack());
+    if (!t) return;
+    if (t.type === "bass") {
+      if (synthPreset() !== "bass") {
+        setSynthPreset("bass");
+        synth?.setPreset("bass");
+      }
+    } else if (t.type === "guitar") {
+      if (synthPreset() !== "guitar") {
+        setSynthPreset("guitar");
+        synth?.setPreset("guitar");
+      }
+    } else if (t.type === "instrument") {
+      if (synthPreset() === "bass" || synthPreset() === "guitar") {
+        setSynthPreset("piano");
+        synth?.setPreset("piano");
+      }
+    }
+  });
   const [activeNotes, setActiveNotes] = createSignal<Set<number>>(new Set());
 
   const userId = async (): Promise<string | null> => {
@@ -143,10 +166,11 @@ const Studio: Component = () => {
         for (const t of savedTracks) {
           if (!TRACK_DEFS.find(d => d.type === t.type)?.ready) continue;
           restoredTracks.push(t);
-          if (t.type === "instrument" || t.type === "bass") {
-            const preset = t.type === "bass" ? "bass" as SynthPreset : synthPreset();
+          if (t.type === "instrument" || t.type === "bass" || t.type === "guitar") {
+            const preset = t.type === "bass" ? "bass" : t.type === "guitar" ? "guitar" : synthPreset();
             if (!synth) { synth = new PolySynth(preset); } else { synth.setPreset(preset); }
             if (t.type === "bass") setSynthPreset("bass");
+            else if (t.type === "guitar") setSynthPreset("guitar");
           }
         }
         setTracks(restoredTracks);
@@ -161,8 +185,7 @@ const Studio: Component = () => {
       
       const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.get("new") === "1") {
-        setShowNewTrack(true);
-        setHasShownInitialPicker(true);
+        setShowAddMenu(true);
         
         // Clean up the URL so reloads don't pop it up again
         searchParams.delete("new");
@@ -187,18 +210,21 @@ const Studio: Component = () => {
 
   const onKeyDown = async (e: KeyboardEvent) => {
     const sel = tracks().find(t => t.id === selectedTrack());
-    if (!sel || (sel.type !== "instrument" && sel.type !== "bass")) return;
+    if (!sel || (sel.type !== "instrument" && sel.type !== "bass" && sel.type !== "guitar")) return;
     if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key.toLowerCase();
     if (k === "z") { setOctave(Math.max(1, octave() - 1)); return; }
     if (k === "x") { setOctave(Math.min(7, octave() + 1)); return; }
-    if (!(k in KEY_MAP)) return;
+    
+    const keyVal = KEY_MAP[k];
+    if (keyVal === undefined) return;
+    
     if (heldKeys.has(k)) return;
     heldKeys.add(k);
     e.preventDefault();
     await unlockAudioContext();
     ensureSynth(synthPreset());
-    const midi = 12 * (octave() + 1) + KEY_MAP[k];
+    const midi = 12 * (octave() + 1) + keyVal;
     synth!.noteOn(midi, 0.85);
     const next = new Set(activeNotes());
     next.add(midi);
@@ -207,9 +233,10 @@ const Studio: Component = () => {
 
   const onKeyUp = (e: KeyboardEvent) => {
     const k = e.key.toLowerCase();
-    if (!(k in KEY_MAP) || !heldKeys.has(k)) return;
+    const keyVal = KEY_MAP[k];
+    if (keyVal === undefined || !heldKeys.has(k)) return;
     heldKeys.delete(k);
-    const midi = 12 * (octave() + 1) + KEY_MAP[k];
+    const midi = 12 * (octave() + 1) + keyVal;
     synth?.noteOff(midi);
     const next = new Set(activeNotes());
     next.delete(midi);
@@ -264,9 +291,11 @@ const Studio: Component = () => {
       if (openModal) setShowNewTrack(false);
       return;
     }
-    if (type === "instrument" || type === "bass") {
-      ensureSynth(type === "bass" ? "bass" : synthPreset());
+    if (type === "instrument" || type === "bass" || type === "guitar") {
+      const initPreset = type === "bass" ? "bass" : type === "guitar" ? "guitar" : synthPreset();
+      ensureSynth(initPreset);
       if (type === "bass") setSynthPreset("bass");
+      else if (type === "guitar") setSynthPreset("guitar");
     }
     const t: UITrack = {
       id: crypto.randomUUID(),
@@ -660,14 +689,7 @@ const Studio: Component = () => {
             <div class="bl__add-wrap">
               <button
                 class="bl__add-track"
-                onClick={() => {
-                  if (!hasShownInitialPicker()) {
-                    setShowNewTrack(true);
-                    setHasShownInitialPicker(true);
-                  } else {
-                    setShowAddMenu(v => !v);
-                  }
-                }}
+                onClick={() => setShowAddMenu(v => !v)}
               >
                 <span class="bl__add-plus">
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8 3v10M3 8h10"/></svg>
@@ -851,48 +873,14 @@ const Studio: Component = () => {
         </section>
       </div>
 
-      {/* BOTTOM UTILITY BAR */}
-      <div class="bl__util">
-        <div class="bl__util-l">
-          <button class="bl__util-btn" disabled>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8c2 0 2-3 4-3s2 6 4 6 2-3 4-3"/></svg>
-            <span>AutoPitch™</span>
-          </button>
-          <span class="bl__util-sep">·</span>
-          <button class="bl__util-btn" disabled>
-            <span class="bl__util-fx">Fx</span>
-            <span>Effects</span>
-          </button>
-          <span class="bl__util-sep">·</span>
-          <button class="bl__util-btn" disabled>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9-3 1 1-3z"/><path d="M9 4l3 3"/></svg>
-            <span>Editor</span>
-          </button>
-        </div>
-        <div class="bl__util-r">
-          <button class="bl__util-btn" disabled>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9-3 1 1-3z"/></svg>
-            <span>Lyrics / Notes</span>
-          </button>
-          <span class="bl__util-sep">·</span>
-          <button class="bl__util-btn" disabled>
-            <span class="bl__util-flame">▶</span>
-            <span>Melo Sounds</span>
-          </button>
-          <span class="bl__util-sep">·</span>
-          <button class="bl__util-btn" disabled>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="12" height="6" rx="1"/><path d="M5 8h.01M8 8h.01M11 8h.01"/></svg>
-            <span>Shortcuts</span>
-          </button>
-        </div>
-      </div>
-
       {/* DRUM MACHINE PANEL */}
       <Show when={drumPanelOpen() && tracks().some(t => t.type === "drum")}>
         <section class="bl__drum-panel">
           <div class="bl__dp-head">
             <div class="bl__dp-title">
-              <span class="bl__dp-icon" style={{ background: "#f5b53e" }}>🥁</span>
+              <span class="bl__dp-icon" style={{ color: "#f5b53e", display: "flex", "align-items": "center", "justify-content": "center" }}>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4c-4.4 0-8 1.6-8 3.5s3.6 3.5 8 3.5 8-1.6 8-3.5-3.6-3.5-8-3.5z"/><path d="M4 7.5v9c0 1.9 3.6 3.5 8 3.5s8-1.6 8-3.5v-9"/><path d="M12 11v6"/></svg>
+              </span>
               <span>Drum Machine</span>
               <span class="bl__dp-step">{currentStep() < 0 ? "—" : `Step ${currentStep() + 1}/16`}</span>
             </div>
@@ -935,28 +923,47 @@ const Studio: Component = () => {
       {/* KEYBOARD / SYNTH PANEL */}
       <Show when={(() => {
         const t = tracks().find(tr => tr.id === selectedTrack());
-        return t && (t.type === "instrument" || t.type === "bass");
+        return t && (t.type === "instrument" || t.type === "bass" || t.type === "guitar");
       })()}>
         <section class="bl__kb-panel">
           <div class="bl__dp-head">
             <div class="bl__dp-title">
-              <span class="bl__dp-icon" style={{ background: "#3ee08b" }}>🎹</span>
-              <span>{synthPreset() === "bass" ? "Bass Synth" : "Instruments"}</span>
-              <div class="bl__preset-row">
-                <For each={[
-                  { id: "piano" as const, label: "Piano" },
-                  { id: "lead" as const,  label: "Lead" },
-                  { id: "pad" as const,   label: "Pad" },
-                  { id: "bass" as const,  label: "Bass" },
-                ]}>
-                  {(p) => (
-                    <button
-                      class={`bl__preset ${synthPreset() === p.id ? "is-on" : ""}`}
-                      onClick={() => updatePreset(p.id)}
-                    >{p.label}</button>
-                  )}
-                </For>
-              </div>
+              <span class="bl__dp-icon" style={{ color: "#3ee08b", display: "flex", "align-items": "center", "justify-content": "center" }}>
+                {(() => {
+                  const t = tracks().find(tr => tr.id === selectedTrack());
+                  if (t?.type === "bass" || t?.type === "guitar") return (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M19 14 10 5"/><path d="M12 14 14 12"/><path d="m11 15 2-2"/><path d="m14 8 2-2"/><path d="m15 9 2-2"/><path d="m18 11 2-2"/><path d="M19 3a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/></svg>
+                  );
+                  return (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 6v12"/><path d="M10 6v12"/><path d="M14 6v12"/><path d="M18 6v12"/><path d="M8 6v6"/><path d="M12 6v6"/><path d="M16 6v6"/></svg>
+                  );
+                })()}
+              </span>
+              <span>{(() => {
+                const t = tracks().find(tr => tr.id === selectedTrack());
+                return t?.type === "bass" ? "Bass Synth" : t?.type === "guitar" ? "Guitar" : "Instruments";
+              })()}</span>
+              <Show when={(() => {
+                const t = tracks().find(tr => tr.id === selectedTrack());
+                return t && t.type !== "bass" && t.type !== "guitar";
+              })()}>
+                <div class="bl__preset-row">
+                  <For each={[
+                    { id: "piano" as const,  label: "Piano" },
+                    { id: "guitar" as const, label: "Guitar" },
+                    { id: "bass" as const,   label: "Bass" },
+                    { id: "lead" as const,   label: "Lead" },
+                    { id: "pad" as const,    label: "Pad" },
+                  ]}>
+                    {(p) => (
+                      <button
+                        class={`bl__preset ${synthPreset() === p.id ? "is-on" : ""}`}
+                        onClick={() => updatePreset(p.id)}
+                      >{p.label}</button>
+                    )}
+                  </For>
+                </div>
+              </Show>
             </div>
             <div class="bl__dp-actions">
               <button class="bl__icon-btn" onClick={() => setOctave(Math.max(1, octave() - 1))} title="Octave down">−</button>
@@ -976,6 +983,61 @@ const Studio: Component = () => {
                 12:"K",13:"O",14:"L",15:"P",16:";",
               };
               const notes = Array.from({ length: totalNotes }, (_, i) => startMidi + i);
+              const t = tracks().find(tr => tr.id === selectedTrack());
+              const preset = t?.type === "bass" ? "bass" : t?.type === "guitar" ? "guitar" : synthPreset();
+              const isFretboard = preset === "guitar" || preset === "bass";
+              const strings = preset === "bass"
+                ? [43, 38, 33, 28] // G, D, A, E (top to bottom)
+                : [64, 59, 55, 50, 45, 40]; // e, B, G, D, A, E
+              
+              if (isFretboard) {
+                const strNames = preset === "bass"
+                  ? ["G", "D", "A", "E"]
+                  : ["e", "B", "G", "D", "A", "E"];
+                const FRETS = Array.from({ length: 13 }, (_, i) => i);
+                const SINGLE_DOTS = new Set([3, 5, 7, 9]);
+                return (
+                  <div class="bl__fretboard">
+                    {/* String name labels */}
+                    <div class="bl__fb-lblcol">
+                      <For each={strNames}>{(n) => <div class="bl__fb-lbl">{n}</div>}</For>
+                    </div>
+                    {/* Neck body */}
+                    <div class="bl__fb-neck">
+                      {/* Fret-position dot row */}
+                      <div class="bl__fb-dotrow">
+                        <For each={FRETS}>
+                          {(fret) => (
+                            <div class={`bl__fb-dotcell${SINGLE_DOTS.has(fret) ? " has-dot" : ""}${fret === 12 ? " has-double" : ""}`} />
+                          )}
+                        </For>
+                      </div>
+                      {/* String rows */}
+                      <For each={strings}>
+                        {(openStr, sIdx) => (
+                          <div class="bl__fb-row" data-sn={sIdx()}>
+                            <For each={FRETS}>
+                              {(fret) => {
+                                const midi = openStr + fret;
+                                return (
+                                  <div
+                                    class={`bl__fb-cell${fret === 0 ? " is-nut" : ""}${activeNotes().has(midi) ? " is-on" : ""}`}
+                                    onMouseDown={() => pressKey(midi)}
+                                    onMouseUp={() => releaseKey(midi)}
+                                    onMouseLeave={() => activeNotes().has(midi) && releaseKey(midi)}
+                                    onTouchStart={(e) => { e.preventDefault(); pressKey(midi); }}
+                                    onTouchEnd={(e) => { e.preventDefault(); releaseKey(midi); }}
+                                  />
+                                );
+                              }}
+                            </For>
+                          </div>
+                        )}
+                      </For>
+                    </div>
+                  </div>
+                );
+              }
               return (
                 <>
                   {/* white keys */}
@@ -1031,6 +1093,42 @@ const Studio: Component = () => {
           </div>
         </section>
       </Show>
+
+      {/* BOTTOM UTILITY BAR */}
+      <div class="bl__util">
+        <div class="bl__util-l">
+          <button class="bl__util-btn" disabled>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8c2 0 2-3 4-3s2 6 4 6 2-3 4-3"/></svg>
+            <span>AutoPitch™</span>
+          </button>
+          <span class="bl__util-sep">·</span>
+          <button class="bl__util-btn" disabled>
+            <span class="bl__util-fx">Fx</span>
+            <span>Effects</span>
+          </button>
+          <span class="bl__util-sep">·</span>
+          <button class="bl__util-btn" disabled>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9-3 1 1-3z"/><path d="M9 4l3 3"/></svg>
+            <span>Editor</span>
+          </button>
+        </div>
+        <div class="bl__util-r">
+          <button class="bl__util-btn" disabled>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9-3 1 1-3z"/></svg>
+            <span>Lyrics / Notes</span>
+          </button>
+          <span class="bl__util-sep">·</span>
+          <button class="bl__util-btn" disabled>
+            <span class="bl__util-flame">▶</span>
+            <span>Melo Sounds</span>
+          </button>
+          <span class="bl__util-sep">·</span>
+          <button class="bl__util-btn" disabled>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="12" height="6" rx="1"/><path d="M5 8h.01M8 8h.01M11 8h.01"/></svg>
+            <span>Shortcuts</span>
+          </button>
+        </div>
+      </div>
 
       {/* SIDE NAV DRAWER — editorial command menu */}
       <Show when={navOpen()}>

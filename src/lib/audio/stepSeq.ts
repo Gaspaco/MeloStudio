@@ -1,8 +1,15 @@
-// Step sequencer with look-ahead scheduling.
-// Loops a 16-step (configurable) pattern in sync with AudioContext.currentTime.
+// Step sequencer powered by Tone.Transport + Tone.Sequence.
+//
+// Why this matters for UI smoothness:
+// - Tone's clock ticks inside an internal Web Worker, so we no longer run
+//   a setInterval on the main thread.
+// - Audio scheduling happens on the audio thread (Web Audio).
+// - UI cursor updates are pushed through Tone.Draw, which lines them up
+//   with requestAnimationFrame so they never block paint.
 
-import { getAudioContext } from "./context";
-import { getDrumKit, type DrumName } from "./synthDrums";
+import * as Tone from "tone";
+import { bindToneToContext } from "./context";
+import { DrumKit, type DrumName } from "./synthDrums";
 
 export interface StepRow {
   drum: DrumName;
@@ -32,32 +39,35 @@ export const DEFAULT_PATTERN = (): StepPattern => ({
 const dbToGain = (db: number) => Math.pow(10, db / 20);
 
 export class StepSequencer {
-  private kit: Record<DrumName, AudioBuffer> | null = null;
+  private kit: DrumKit | null = null;
   private pattern: StepPattern;
-  private masterGain: GainNode;
+  private masterGain: Tone.Gain;
+  private sequence: Tone.Sequence<number> | null = null;
 
   private playing = false;
-  private startCtxTime = 0;
-  private nextStep = 0;        // next step to schedule
-  private timer: ReturnType<typeof setInterval> | null = null;
 
   /** UI tick callback: receives the *currently audible* step index. */
   onStep: ((stepIndex: number) => void) | null = null;
 
   constructor(initial?: StepPattern) {
     this.pattern = initial ?? DEFAULT_PATTERN();
-    const ctx = getAudioContext();
-    this.masterGain = ctx.createGain();
-    this.masterGain.gain.value = 0.8;
-    this.masterGain.connect(ctx.destination);
+    bindToneToContext();
+    this.masterGain = new Tone.Gain(0.8).toDestination();
+    Tone.getTransport().bpm.value = this.pattern.bpm;
   }
 
-  setPattern(p: StepPattern): void { this.pattern = p; }
+  setPattern(p: StepPattern): void {
+    this.pattern = p;
+    Tone.getTransport().bpm.value = p.bpm;
+    if (this.sequence) this.rebuildSequence();
+  }
   getPattern(): StepPattern { return this.pattern; }
-  setBpm(bpm: number): void { this.pattern.bpm = Math.max(40, Math.min(240, bpm)); }
+  setBpm(bpm: number): void {
+    this.pattern.bpm = Math.max(40, Math.min(240, bpm));
+    Tone.getTransport().bpm.rampTo(this.pattern.bpm, 0.05);
+  }
   setMasterGainDb(db: number): void {
-    const ctx = getAudioContext();
-    this.masterGain.gain.setTargetAtTime(dbToGain(db), ctx.currentTime, 0.01);
+    this.masterGain.gain.rampTo(dbToGain(db), 0.01);
   }
 
   toggleStep(rowIdx: number, stepIdx: number): void {
@@ -80,70 +90,64 @@ export class StepSequencer {
 
   async start(): Promise<void> {
     if (this.playing) return;
-    if (!this.kit) this.kit = await getDrumKit();
-    const ctx = getAudioContext();
-    if (ctx.state === "suspended") await ctx.resume();
+    if (!this.kit) this.kit = new DrumKit(this.masterGain);
+    try { await Tone.start(); } catch { /* */ }
+
+    this.rebuildSequence();
+    Tone.getTransport().start("+0.05");
     this.playing = true;
-    this.startCtxTime = ctx.currentTime + 0.05; // small delay so first step isn't clipped
-    this.nextStep = 0;
-    this.tick();
-    this.timer = setInterval(() => this.tick(), 25);
   }
 
   stop(): void {
+    if (!this.playing) return;
+    Tone.getTransport().stop();
+    this.sequence?.stop();
+    this.sequence?.dispose();
+    this.sequence = null;
     this.playing = false;
-    if (this.timer) clearInterval(this.timer);
-    this.timer = null;
-    this.onStep?.(-1);
+    // Clear the UI cursor on the next animation frame so it never collides
+    // with paint work on the calling tick.
+    Tone.getDraw().schedule(() => this.onStep?.(-1), Tone.now());
   }
 
   // ─── private ─────────────────────────────────────────────────────────────
 
-  private get stepDur(): number {
-    // 16 steps per 4 beats → 1 step = 1/16 note
-    return 60 / this.pattern.bpm / 4;
-  }
-
-  private tick(): void {
-    if (!this.playing || !this.kit) return;
-    const ctx = getAudioContext();
-    const lookAhead = 0.1; // 100ms
-    const horizon = ctx.currentTime + lookAhead;
-
-    while (true) {
-      const stepCtxTime =
-        this.startCtxTime + this.nextStep * this.stepDur;
-      if (stepCtxTime > horizon) break;
-      this.scheduleStep(this.nextStep % this.pattern.steps, stepCtxTime);
-      this.nextStep++;
+  private rebuildSequence(): void {
+    if (this.sequence) {
+      this.sequence.stop();
+      this.sequence.dispose();
+      this.sequence = null;
     }
-
-    // Update UI cursor to the step that's *currently* sounding.
-    const elapsed = ctx.currentTime - this.startCtxTime;
-    if (elapsed >= 0) {
-      const cur = Math.floor(elapsed / this.stepDur) % this.pattern.steps;
-      this.onStep?.(cur);
-    }
+    const indices = Array.from({ length: this.pattern.steps }, (_, i) => i);
+    this.sequence = new Tone.Sequence<number>(
+      (time, stepIdx) => this.scheduleStep(stepIdx, time),
+      indices,
+      "16n",
+    );
+    this.sequence.loop = true;
+    this.sequence.start(0);
   }
 
   private scheduleStep(stepIdx: number, atTime: number): void {
     if (!this.kit) return;
-    const ctx = getAudioContext();
     for (const row of this.pattern.rows) {
       if (row.muted) continue;
       const v = row.velocities[stepIdx] ?? 0;
       if (v <= 0) continue;
-      const buf = this.kit[row.drum];
-      if (!buf) continue;
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      const g = ctx.createGain();
-      g.gain.value = v * dbToGain(row.gainDb);
-      src.connect(g).connect(this.masterGain);
-      src.start(atTime);
-      src.onended = () => {
-        try { src.disconnect(); g.disconnect(); } catch { /* */ }
-      };
+      const voice = this.kit.voices[row.drum];
+      if (!voice) continue;
+      const vel = Math.min(1, Math.max(0, v * dbToGain(row.gainDb)));
+      voice.trigger(atTime, vel);
     }
+    // Drive the UI cursor through Tone.Draw → requestAnimationFrame.
+    // This guarantees we never repaint while the audio thread is mid-tick.
+    Tone.getDraw().schedule(() => this.onStep?.(stepIdx), atTime);
+  }
+
+  dispose(): void {
+    this.stop();
+    this.kit?.dispose();
+    this.kit = null;
+    this.masterGain.dispose();
   }
 }

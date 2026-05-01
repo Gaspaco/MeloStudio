@@ -1,154 +1,263 @@
-// Polyphonic subtractive synth with 3 presets.
-// Each voice: 2 oscillators -> filter -> ADSR amp env -> master.
+// Polyphonic synth, powered by Tone.js.
+// Public API is unchanged: PolySynth + SynthPreset, with noteOn/noteOff/etc.
+//
+// "piano", "bass", and "guitar" are *real recorded samples* streamed from
+// the tonejs-instruments CDN and played back via Tone.Sampler (it pitch-shifts
+// between sampled pitches to cover every MIDI note).
+// "lead" and "pad" stay synthesized — they're inherently synth sounds.
+//
+// While the samples are downloading we route notes through a lightweight
+// fallback synth so the keyboard never goes silent.
 
-import { getAudioContext } from "./context";
+import * as Tone from "tone";
+import { bindToneToContext } from "./context";
 
-export type SynthPreset = "piano" | "lead" | "pad" | "bass";
+export type SynthPreset = "piano" | "lead" | "pad" | "bass" | "guitar";
 
-interface PresetConfig {
-  osc1: OscillatorType;
-  osc2: OscillatorType;
-  detune: number;       // cents on osc2
-  filterFreq: number;   // base Hz
-  filterQ: number;
-  amp: { a: number; d: number; s: number; r: number };
-  filt: { a: number; d: number; s: number; r: number; mod: number };
-  gain: number;
+interface SynthPresetOptions {
+  oscillator: Partial<Tone.OmniOscillatorOptions>;
+  envelope: { attack: number; decay: number; sustain: number; release: number };
+  filter: { frequency: number; Q: number };
+  filterEnvelope: {
+    attack: number;
+    decay: number;
+    sustain: number;
+    release: number;
+    baseFrequency: number;
+    octaves: number;
+  };
+  volume: number; // dB
 }
 
-const PRESETS: Record<SynthPreset, PresetConfig> = {
-  piano: {
-    osc1: "triangle", osc2: "sine", detune: 4,
-    filterFreq: 4500, filterQ: 0.6,
-    amp:  { a: 0.005, d: 0.4, s: 0.0, r: 0.6 },
-    filt: { a: 0.01,  d: 0.6, s: 0.0, r: 0.4, mod: 2500 },
-    gain: 0.45,
-  },
+const SYNTH_PRESETS: Record<"lead" | "pad" | "fallback", SynthPresetOptions> = {
   lead: {
-    osc1: "sawtooth", osc2: "sawtooth", detune: 8,
-    filterFreq: 1500, filterQ: 4,
-    amp:  { a: 0.005, d: 0.2, s: 0.7, r: 0.25 },
-    filt: { a: 0.01,  d: 0.3, s: 0.4, r: 0.25, mod: 3500 },
-    gain: 0.3,
+    oscillator: { type: "sawtooth" },
+    envelope: { attack: 0.005, decay: 0.2, sustain: 0.7, release: 0.25 },
+    filter: { frequency: 1500, Q: 4 },
+    filterEnvelope: {
+      attack: 0.01, decay: 0.3, sustain: 0.4, release: 0.25,
+      baseFrequency: 1500, octaves: 1.5,
+    },
+    volume: -12,
   },
   pad: {
-    osc1: "sawtooth", osc2: "triangle", detune: 12,
-    filterFreq: 800, filterQ: 1.2,
-    amp:  { a: 0.6, d: 0.3, s: 0.8, r: 1.2 },
-    filt: { a: 0.8, d: 0.4, s: 0.6, r: 1.0, mod: 1200 },
-    gain: 0.32,
+    oscillator: { type: "fatsawtooth", count: 3, spread: 30 },
+    envelope: { attack: 0.6, decay: 0.3, sustain: 0.8, release: 1.2 },
+    filter: { frequency: 800, Q: 1.2 },
+    filterEnvelope: {
+      attack: 0.8, decay: 0.4, sustain: 0.6, release: 1.0,
+      baseFrequency: 800, octaves: 1,
+    },
+    volume: -12,
   },
-  bass: {
-    osc1: "square", osc2: "sawtooth", detune: -12,
-    filterFreq: 600, filterQ: 6,
-    amp:  { a: 0.005, d: 0.2, s: 0.6, r: 0.2 },
-    filt: { a: 0.005, d: 0.25, s: 0.3, r: 0.2, mod: 1500 },
-    gain: 0.5,
+  // Used as the silent-period fallback while samples are downloading.
+  fallback: {
+    oscillator: { type: "triangle" },
+    envelope: { attack: 0.005, decay: 0.4, sustain: 0, release: 0.6 },
+    filter: { frequency: 4500, Q: 0.6 },
+    filterEnvelope: {
+      attack: 0.01, decay: 0.6, sustain: 0, release: 0.4,
+      baseFrequency: 4500, octaves: 0.6,
+    },
+    volume: -10,
   },
 };
 
-const noteToFreq = (midi: number) => 440 * Math.pow(2, (midi - 69) / 12);
+// Free CC-licensed instrument samples, hosted on GitHub Pages.
+// https://github.com/nbrosowsky/tonejs-instruments
+const SAMPLE_BASE = "https://nbrosowsky.github.io/tonejs-instruments/samples";
 
-interface Voice {
-  o1: OscillatorNode;
-  o2: OscillatorNode;
-  filter: BiquadFilterNode;
-  amp: GainNode;
+interface SamplerPreset {
+  folder: string;
+  ext: "mp3" | "ogg";
+  // sparse set — Tone.Sampler interpolates between these
+  urls: Record<string, string>;
+  release: number;
+  volume: number; // dB
+  attack?: number;
+}
+
+const SAMPLER_PRESETS: Record<"piano" | "bass" | "guitar", SamplerPreset> = {
+  piano: {
+    folder: "piano",
+    ext: "mp3",
+    release: 1.0,
+    volume: -6,
+    urls: {
+      A1: "A1.mp3", C2: "C2.mp3", "D#2": "Ds2.mp3", "F#2": "Fs2.mp3",
+      A2: "A2.mp3", C3: "C3.mp3", "D#3": "Ds3.mp3", "F#3": "Fs3.mp3",
+      A3: "A3.mp3", C4: "C4.mp3", "D#4": "Ds4.mp3", "F#4": "Fs4.mp3",
+      A4: "A4.mp3", C5: "C5.mp3", "D#5": "Ds5.mp3", "F#5": "Fs5.mp3",
+      A5: "A5.mp3", C6: "C6.mp3", "D#6": "Ds6.mp3", "F#6": "Fs6.mp3",
+      A6: "A6.mp3", C7: "C7.mp3",
+    },
+  },
+  bass: {
+    folder: "bass-electric",
+    ext: "mp3",
+    release: 0.5,
+    volume: -4,
+    urls: {
+      "A#1": "As1.mp3", "C#2": "Cs2.mp3", E2: "E2.mp3", G2: "G2.mp3",
+      "A#2": "As2.mp3", "C#3": "Cs3.mp3", E3: "E3.mp3", G3: "G3.mp3",
+      "A#3": "As3.mp3", "C#4": "Cs4.mp3", E4: "E4.mp3", G4: "G4.mp3",
+    },
+  },
+  guitar: {
+    folder: "guitar-acoustic",
+    ext: "mp3",
+    release: 0.6,
+    volume: -6,
+    urls: {
+      E2: "E2.mp3", A2: "A2.mp3", D3: "D3.mp3", G3: "G3.mp3",
+      B3: "B3.mp3", E4: "E4.mp3", A4: "A4.mp3", D5: "D5.mp3",
+    },
+  },
+};
+
+const midiToNote = (midi: number): string =>
+  Tone.Frequency(midi, "midi").toNote();
+
+function buildSynthOpts(cfg: SynthPresetOptions) {
+  return {
+    oscillator: cfg.oscillator,
+    envelope: cfg.envelope,
+    filter: { type: "lowpass" as const, Q: cfg.filter.Q, frequency: cfg.filter.frequency },
+    filterEnvelope: cfg.filterEnvelope,
+    volume: cfg.volume,
+  };
+}
+
+// Tiny module-level cache so swapping presets doesn't re-download samples.
+const samplerCache = new Map<string, Tone.Sampler>();
+
+function getSampler(preset: "piano" | "bass" | "guitar"): Tone.Sampler {
+  const cached = samplerCache.get(preset);
+  if (cached) return cached;
+  const cfg = SAMPLER_PRESETS[preset];
+  const baseUrl = `${SAMPLE_BASE}/${cfg.folder}/`;
+  const sampler = new Tone.Sampler({
+    urls: cfg.urls,
+    baseUrl,
+    release: cfg.release,
+    attack: cfg.attack ?? 0,
+    volume: cfg.volume,
+  });
+  samplerCache.set(preset, sampler);
+  return sampler;
 }
 
 export class PolySynth {
-  private cfg: PresetConfig;
-  private master: GainNode;
-  private active = new Map<number, Voice>(); // midi -> voice
+  private master: Tone.Gain;
+  /** Always present — used standalone for lead/pad and as a fallback while samples load. */
+  private synth: Tone.PolySynth;
+  /** Present only when the active preset is sample-backed. */
+  private sampler: Tone.Sampler | null = null;
+  private samplerReady = false;
+  private preset: SynthPreset;
+  /** Track which engine handled each note so noteOff goes to the right one. */
+  private noteOwner = new Map<number, "synth" | "sampler">();
+  private active = new Set<number>();
 
   constructor(preset: SynthPreset = "piano") {
-    this.cfg = PRESETS[preset];
-    const ctx = getAudioContext();
-    this.master = ctx.createGain();
-    this.master.gain.value = this.cfg.gain;
-    this.master.connect(ctx.destination);
+    bindToneToContext();
+    this.preset = preset;
+
+    this.master = new Tone.Gain(1).toDestination();
+    this.synth = new Tone.PolySynth(Tone.MonoSynth, buildSynthOpts(SYNTH_PRESETS.fallback))
+      .connect(this.master);
+    this.synth.maxPolyphony = 16;
+
+    this.applyPreset(preset);
+  }
+
+  private applyPreset(p: SynthPreset): void {
+    if (p === "lead" || p === "pad") {
+      // Pure synth — detach any sampler.
+      this.detachSampler();
+      this.synth.set(buildSynthOpts(SYNTH_PRESETS[p]));
+      return;
+    }
+
+    // Sample-backed preset. Use the cached/shared Sampler.
+    this.detachSampler();
+    const s = getSampler(p);
+    s.connect(this.master);
+    this.sampler = s;
+    this.samplerReady = s.loaded;
+
+    // While we wait for samples, the fallback synth voices the keyboard.
+    this.synth.set(buildSynthOpts(SYNTH_PRESETS.fallback));
+
+    if (!s.loaded) {
+      // Tone.loaded() resolves once every pending buffer in the global
+      // registry is downloaded — including this Sampler's URLs.
+      Tone.loaded().then(() => {
+        // Make sure the user didn't switch presets during the download.
+        if (this.sampler === s) this.samplerReady = true;
+      });
+    }
+  }
+
+  private detachSampler(): void {
+    if (this.sampler) {
+      try { this.sampler.disconnect(this.master); } catch { /* */ }
+      this.sampler = null;
+    }
+    this.samplerReady = false;
   }
 
   setPreset(p: SynthPreset): void {
-    this.cfg = PRESETS[p];
-    const ctx = getAudioContext();
-    this.master.gain.setTargetAtTime(this.cfg.gain, ctx.currentTime, 0.02);
+    if (p === this.preset) return;
+    this.allNotesOff();
+    this.preset = p;
+    this.applyPreset(p);
   }
 
   setMasterGainDb(db: number): void {
-    const ctx = getAudioContext();
-    const g = Math.max(0.0001, Math.pow(10, db / 20)) * this.cfg.gain;
-    this.master.gain.setTargetAtTime(g, ctx.currentTime, 0.02);
+    const linear = Math.pow(10, db / 20);
+    this.master.gain.rampTo(linear, 0.02);
   }
 
   noteOn(midi: number, velocity = 1): void {
     if (this.active.has(midi)) this.noteOff(midi);
-    const ctx = getAudioContext();
-    const t = ctx.currentTime;
-    const f = noteToFreq(midi);
-
-    const o1 = ctx.createOscillator();
-    o1.type = this.cfg.osc1;
-    o1.frequency.value = f;
-
-    const o2 = ctx.createOscillator();
-    o2.type = this.cfg.osc2;
-    o2.frequency.value = f;
-    o2.detune.value = this.cfg.detune;
-
-    const mix = ctx.createGain();
-    mix.gain.value = 0.5;
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.Q.value = this.cfg.filterQ;
-    const fStart = this.cfg.filterFreq;
-    const fPeak = fStart + this.cfg.filt.mod;
-    filter.frequency.setValueAtTime(fStart, t);
-    filter.frequency.linearRampToValueAtTime(fPeak, t + this.cfg.filt.a);
-    filter.frequency.linearRampToValueAtTime(
-      fStart + (fPeak - fStart) * this.cfg.filt.s,
-      t + this.cfg.filt.a + this.cfg.filt.d
-    );
-
-    const amp = ctx.createGain();
-    amp.gain.setValueAtTime(0, t);
-    amp.gain.linearRampToValueAtTime(velocity, t + this.cfg.amp.a);
-    amp.gain.linearRampToValueAtTime(velocity * this.cfg.amp.s, t + this.cfg.amp.a + this.cfg.amp.d);
-
-    o1.connect(mix);
-    o2.connect(mix);
-    mix.connect(filter).connect(amp).connect(this.master);
-
-    o1.start(t);
-    o2.start(t);
-
-    this.active.set(midi, { o1, o2, filter, amp });
+    const note = midiToNote(midi);
+    if (this.sampler && this.samplerReady) {
+      this.sampler.triggerAttack(note, undefined, velocity);
+      this.noteOwner.set(midi, "sampler");
+    } else {
+      this.synth.triggerAttack(note, undefined, velocity);
+      this.noteOwner.set(midi, "synth");
+    }
+    this.active.add(midi);
   }
 
   noteOff(midi: number): void {
-    const v = this.active.get(midi);
-    if (!v) return;
-    const ctx = getAudioContext();
-    const t = ctx.currentTime;
-    const r = this.cfg.amp.r;
-    v.amp.gain.cancelScheduledValues(t);
-    v.amp.gain.setValueAtTime(v.amp.gain.value, t);
-    v.amp.gain.linearRampToValueAtTime(0, t + r);
-    const filterEnd = this.cfg.filterFreq;
-    v.filter.frequency.cancelScheduledValues(t);
-    v.filter.frequency.setValueAtTime(v.filter.frequency.value, t);
-    v.filter.frequency.linearRampToValueAtTime(filterEnd, t + this.cfg.filt.r);
-    v.o1.stop(t + r + 0.05);
-    v.o2.stop(t + r + 0.05);
-    const stopAt = t + r + 0.1;
-    setTimeout(() => {
-      try { v.o1.disconnect(); v.o2.disconnect(); v.filter.disconnect(); v.amp.disconnect(); } catch { /* */ }
-    }, (stopAt - t) * 1000 + 50);
+    if (!this.active.has(midi)) return;
+    const note = midiToNote(midi);
+    const owner = this.noteOwner.get(midi);
+    if (owner === "sampler" && this.sampler) {
+      this.sampler.triggerRelease(note);
+    } else {
+      this.synth.triggerRelease(note);
+    }
     this.active.delete(midi);
+    this.noteOwner.delete(midi);
   }
 
   allNotesOff(): void {
-    for (const m of [...this.active.keys()]) this.noteOff(m);
+    this.synth.releaseAll();
+    this.sampler?.releaseAll();
+    this.active.clear();
+    this.noteOwner.clear();
+  }
+
+  dispose(): void {
+    this.allNotesOff();
+    this.synth.dispose();
+    // Don't dispose cached samplers — they're shared across instances.
+    this.detachSampler();
+    this.master.dispose();
   }
 }
+

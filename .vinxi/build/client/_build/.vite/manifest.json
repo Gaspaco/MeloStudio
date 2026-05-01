@@ -94,7 +94,7 @@
     ]
   },
   "src/routes/studio/[id].tsx?pick=default&pick=$css": {
-    "file": "assets/_id_-B6RSt5no.js",
+    "file": "assets/_id_-DnKdWJLt.js",
     "name": "_id_",
     "src": "src/routes/studio/[id].tsx?pick=default&pick=$css",
     "isEntry": true,
@@ -105,11 +105,11 @@
       "_api-BkRsMQYU.js"
     ],
     "css": [
-      "assets/_id_-DW0nKctB.css"
+      "assets/_id_-Dbn0-PKt.css"
     ]
   },
   "virtual:$vinxi/handler/client": {
-    "file": "assets/client-D3g3i_-c.js",
+    "file": "assets/client-CNgxsNzk.js",
     "name": "client",
     "src": "virtual:$vinxi/handler/client",
     "isEntry": true,

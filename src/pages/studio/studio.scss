@@ -11,8 +11,8 @@
   background: $bg-primary;
   color: $text-primary;
   font-family: $font-sans;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -658,6 +658,7 @@
 .bl__main {
   display: grid;
   grid-template-columns: 17rem 1fr;
+  flex: 1;
   min-height: 0;
   overflow: hidden;
 }
@@ -1318,6 +1319,7 @@
   border-top: 1px solid rgba(#fff, 0.05);
   display: flex;
   flex-direction: column;
+  flex: 0 0 auto;
   max-height: 22rem;
 }
 .bl__dp-head {
@@ -1449,7 +1451,7 @@
 
 .bl__kb {
   position: relative;
-  height: 9rem;
+  height: 10.5rem;
   margin: 0.9rem 1.5rem 0.4rem;
 }
 .bl__kb-whites {
@@ -1539,6 +1541,145 @@
   letter-spacing: 0.05em;
 }
 .bl__bk.is-on .bl__bk-shortcut { color: #fff; }
+
+// ── Fretboard (guitar / bass) ───────────────────────────────────────────────
+.bl__fretboard {
+  display: flex;
+  height: 100%;
+  background: #08070a;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+// Left: string name labels
+.bl__fb-lblcol {
+  display: flex;
+  flex-direction: column;
+  width: 2.2rem;
+  background: rgba(255,255,255,0.025);
+  border-right: 1px solid rgba(255,255,255,0.07);
+  padding-top: 1.4rem; // offset for dot-row height
+}
+.bl__fb-lbl {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-mono;
+  font-size: 0.52rem;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.08em;
+}
+
+// Right: the neck
+.bl__fb-neck {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+// Dot-position indicator row (above the strings)
+.bl__fb-dotrow {
+  height: 1.4rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.bl__fb-dotcell {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-right: 1px solid rgba(255,255,255,0.05);
+
+  &:first-child {
+    flex: 0.55;
+    border-right: 2px solid rgba(255,255,255,0.22);
+  }
+  &:last-child { border-right: none; }
+
+  &.has-dot::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: rgba(255,255,255,0.16);
+    border-radius: 50%;
+  }
+  &.has-double {
+    &::before, &::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background: rgba(255,255,255,0.16);
+      border-radius: 50%;
+    }
+  }
+}
+
+// Each string row
+.bl__fb-row {
+  flex: 1;
+  display: flex;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.55) 6%, rgba(255,255,255,0.3));
+  }
+
+  // Thickness increases with string index (0 = thinnest/highest)
+  @for $i from 0 through 5 {
+    &[data-sn="#{$i}"]::before { height: #{0.8 + $i * 0.45}px; }
+  }
+}
+
+// Fret cells
+.bl__fb-cell {
+  flex: 1;
+  height: 100%;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  transition: background 0.07s;
+
+  &:last-child { border-right: none; }
+  &:hover { background: rgba(255,255,255,0.05); }
+
+  // Nut column
+  &.is-nut {
+    flex: 0.55;
+    border-right: 2px solid rgba(255,255,255,0.28);
+  }
+
+  // Pressed / active note
+  &.is-on {
+    background: rgba($accent, 0.1);
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 16px;
+      height: 16px;
+      background: $accent;
+      border-radius: 50%;
+      box-shadow: 0 0 14px $accent, 0 0 4px rgba($accent, 0.5);
+      z-index: 3;
+    }
+  }
+}
 
 .bl__kb-hint {
   text-align: center;
@@ -2134,12 +2275,9 @@
 
 /* ────────────── BOTTOM UTILITY BAR ────────────── */
 .bl__util {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   height: 3.2rem;
   display: flex;
+  flex: 0 0 auto;
   justify-content: space-between;
   align-items: center;
   padding: 0 1.5rem;

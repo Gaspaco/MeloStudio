@@ -1,110 +1,110 @@
-// Render synthesized drum hits to AudioBuffers using OfflineAudioContext.
-// One-time render, then they're regular AudioBuffers — same as loaded samples.
+// Tone.js drum kit. Each voice exposes a `trigger(time, velocity)` method
+// that fires a hit at a precise AudioContext time, so the step sequencer
+// keeps its tight look-ahead scheduling.
+
+import * as Tone from "tone";
+import { bindToneToContext } from "./context";
 
 export type DrumName = "kick" | "snare" | "hat_closed" | "hat_open" | "clap";
 export const DRUM_NAMES: DrumName[] = ["kick", "snare", "hat_closed", "hat_open", "clap"];
 
-const SR = 48000;
-
-function noiseBuffer(ctx: OfflineAudioContext, durSec: number): AudioBuffer {
-  const buf = ctx.createBuffer(1, Math.floor(durSec * SR), SR);
-  const data = buf.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-  return buf;
+export interface DrumVoice {
+  trigger(time: number, velocity: number): void;
+  dispose(): void;
 }
 
-async function renderKick(): Promise<AudioBuffer> {
-  const dur = 0.5;
-  const ctx = new OfflineAudioContext(1, dur * SR, SR);
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.frequency.setValueAtTime(150, 0);
-  osc.frequency.exponentialRampToValueAtTime(40, 0.15);
-  gain.gain.setValueAtTime(1, 0);
-  gain.gain.exponentialRampToValueAtTime(0.001, dur);
-  osc.connect(gain).connect(ctx.destination);
-  osc.start(0);
-  osc.stop(dur);
-  return ctx.startRendering();
-}
+export class DrumKit {
+  voices: Record<DrumName, DrumVoice>;
 
-async function renderSnare(): Promise<AudioBuffer> {
-  const dur = 0.3;
-  const ctx = new OfflineAudioContext(1, dur * SR, SR);
-  // Tonal body
-  const osc = ctx.createOscillator();
-  const oscGain = ctx.createGain();
-  osc.frequency.setValueAtTime(200, 0);
-  osc.frequency.exponentialRampToValueAtTime(120, 0.1);
-  oscGain.gain.setValueAtTime(0.5, 0);
-  oscGain.gain.exponentialRampToValueAtTime(0.01, 0.1);
-  osc.connect(oscGain).connect(ctx.destination);
-  // Noise
-  const noise = ctx.createBufferSource();
-  noise.buffer = noiseBuffer(ctx, dur);
-  const hp = ctx.createBiquadFilter();
-  hp.type = "highpass";
-  hp.frequency.value = 1000;
-  const noiseGain = ctx.createGain();
-  noiseGain.gain.setValueAtTime(0.7, 0);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, dur);
-  noise.connect(hp).connect(noiseGain).connect(ctx.destination);
-  osc.start(0);
-  osc.stop(dur);
-  noise.start(0);
-  noise.stop(dur);
-  return ctx.startRendering();
-}
+  constructor(destination: Tone.ToneAudioNode) {
+    bindToneToContext();
 
-async function renderHat(open: boolean): Promise<AudioBuffer> {
-  const dur = open ? 0.35 : 0.06;
-  const ctx = new OfflineAudioContext(1, dur * SR, SR);
-  const noise = ctx.createBufferSource();
-  noise.buffer = noiseBuffer(ctx, dur);
-  const hp = ctx.createBiquadFilter();
-  hp.type = "highpass";
-  hp.frequency.value = 7000;
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0.5, 0);
-  gain.gain.exponentialRampToValueAtTime(0.001, dur);
-  noise.connect(hp).connect(gain).connect(ctx.destination);
-  noise.start(0);
-  noise.stop(dur);
-  return ctx.startRendering();
-}
+    // ── Kick ─────────────────────────────────────────────
+    const kick = new Tone.MembraneSynth({
+      pitchDecay: 0.05,
+      octaves: 6,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.001, decay: 0.3, sustain: 0.01, release: 1.4, attackCurve: "exponential" },
+      volume: -2,
+    }).connect(destination);
 
-async function renderClap(): Promise<AudioBuffer> {
-  const dur = 0.25;
-  const ctx = new OfflineAudioContext(1, dur * SR, SR);
-  const burstAt = [0, 0.012, 0.022, 0.038];
-  for (const t of burstAt) {
-    const noise = ctx.createBufferSource();
-    noise.buffer = noiseBuffer(ctx, 0.05);
-    const bp = ctx.createBiquadFilter();
-    bp.type = "bandpass";
-    bp.frequency.value = 1500;
-    bp.Q.value = 1.2;
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.6, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
-    noise.connect(bp).connect(g).connect(ctx.destination);
-    noise.start(t);
-    noise.stop(t + 0.05);
+    // ── Snare (noise + body) ─────────────────────────────
+    const snareHP = new Tone.Filter(1000, "highpass").connect(destination);
+    const snareNoise = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.13, sustain: 0 },
+      volume: -8,
+    }).connect(snareHP);
+    const snareBody = new Tone.MembraneSynth({
+      pitchDecay: 0.05,
+      octaves: 4,
+      envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.05 },
+      volume: -12,
+    }).connect(destination);
+
+    // ── Hi-hats ──────────────────────────────────────────
+    const hatClosed = new Tone.MetalSynth({
+      envelope: { attack: 0.001, decay: 0.06, release: 0.01 },
+      harmonicity: 5.1,
+      modulationIndex: 32,
+      resonance: 4000,
+      octaves: 1.5,
+      volume: -28,
+    }).connect(destination);
+
+    const hatOpen = new Tone.MetalSynth({
+      envelope: { attack: 0.001, decay: 0.35, release: 0.2 },
+      harmonicity: 5.1,
+      modulationIndex: 32,
+      resonance: 4000,
+      octaves: 1.5,
+      volume: -26,
+    }).connect(destination);
+
+    // ── Clap ─────────────────────────────────────────────
+    const clapBP = new Tone.Filter({ frequency: 1500, type: "bandpass", Q: 1.2 }).connect(destination);
+    const clap = new Tone.NoiseSynth({
+      noise: { type: "pink" },
+      envelope: { attack: 0.001, decay: 0.18, sustain: 0 },
+      volume: -10,
+    }).connect(clapBP);
+
+    this.voices = {
+      kick: {
+        trigger(time, vel) {
+          kick.triggerAttackRelease("C1", "8n", time, vel);
+        },
+        dispose() { kick.dispose(); },
+      },
+      snare: {
+        trigger(time, vel) {
+          snareNoise.triggerAttackRelease("16n", time, vel);
+          snareBody.triggerAttackRelease("G2", "16n", time, vel * 0.6);
+        },
+        dispose() { snareNoise.dispose(); snareBody.dispose(); snareHP.dispose(); },
+      },
+      hat_closed: {
+        trigger(time, vel) {
+          hatClosed.triggerAttackRelease("32n", time, vel);
+        },
+        dispose() { hatClosed.dispose(); },
+      },
+      hat_open: {
+        trigger(time, vel) {
+          hatOpen.triggerAttackRelease("8n", time, vel);
+        },
+        dispose() { hatOpen.dispose(); },
+      },
+      clap: {
+        trigger(time, vel) {
+          clap.triggerAttackRelease("16n", time, vel);
+        },
+        dispose() { clap.dispose(); clapBP.dispose(); },
+      },
+    };
   }
-  return ctx.startRendering();
-}
 
-let cache: Record<DrumName, AudioBuffer> | null = null;
-
-export async function getDrumKit(): Promise<Record<DrumName, AudioBuffer>> {
-  if (cache) return cache;
-  const [kick, snare, hat_closed, hat_open, clap] = await Promise.all([
-    renderKick(),
-    renderSnare(),
-    renderHat(false),
-    renderHat(true),
-    renderClap(),
-  ]);
-  cache = { kick, snare, hat_closed, hat_open, clap };
-  return cache;
+  dispose(): void {
+    for (const v of Object.values(this.voices)) v.dispose();
+  }
 }
