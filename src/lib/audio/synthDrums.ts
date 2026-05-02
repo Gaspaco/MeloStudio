@@ -5,13 +5,22 @@
 import * as Tone from "tone";
 import { bindToneToContext } from "./context";
 
-export type DrumName = "kick" | "snare" | "hat_closed" | "hat_open" | "clap";
-export const DRUM_NAMES: DrumName[] = ["kick", "snare", "hat_closed", "hat_open", "clap"];
+export type DrumName = "kick" | "snare" | "hat_closed" | "hat_open" | "clap" | "tom_hi" | "tom_lo" | "rimshot";
+export const DRUM_NAMES: DrumName[] = ["kick", "snare", "hat_closed", "hat_open", "clap", "tom_hi", "tom_lo", "rimshot"];
 
 export interface DrumVoice {
   trigger(time: number, velocity: number): void;
   dispose(): void;
 }
+
+/** Returns a random value in [-range, +range]. */
+const rnd = (range: number) => (Math.random() * 2 - 1) * range;
+/** Clamps a value to [lo, hi]. */
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+/** Humanized velocity: adds ±velRange variation then clamps to 0.05–1. */
+const hVel = (v: number, velRange = 0.06) => clamp(v + rnd(velRange), 0.05, 1);
+/** Tiny timing nudge in seconds — used only for softer hits so the beat stays tight. */
+const hTime = (t: number, maxJitterMs = 6) => t + Math.random() * (maxJitterMs / 1000);
 
 export class DrumKit {
   voices: Record<DrumName, DrumVoice>;
@@ -69,37 +78,90 @@ export class DrumKit {
       volume: -10,
     }).connect(clapBP);
 
+    // ── Tom Hi ────────────────────────────────────────────
+    const tomHi = new Tone.MembraneSynth({
+      pitchDecay: 0.03,
+      octaves: 3,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.001, decay: 0.22, sustain: 0, release: 0.3 },
+      volume: -8,
+    }).connect(destination);
+
+    // ── Tom Lo ───────────────────────────────────────────
+    const tomLo = new Tone.MembraneSynth({
+      pitchDecay: 0.06,
+      octaves: 5,
+      oscillator: { type: "sine" },
+      envelope: { attack: 0.001, decay: 0.38, sustain: 0, release: 0.5 },
+      volume: -6,
+    }).connect(destination);
+
+    // ── Rimshot ──────────────────────────────────────────
+    const rimshotHP = new Tone.Filter(800, "highpass").connect(destination);
+    const rimshot = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.04, sustain: 0 },
+      volume: -12,
+    }).connect(rimshotHP);
+    const rimshotBody = new Tone.MembraneSynth({
+      pitchDecay: 0.02,
+      octaves: 2,
+      envelope: { attack: 0.001, decay: 0.04, sustain: 0, release: 0.02 },
+      volume: -14,
+    }).connect(destination);
+
     this.voices = {
       kick: {
         trigger(time, vel) {
-          kick.triggerAttackRelease("C1", "8n", time, vel);
+          kick.triggerAttackRelease("C1", "8n", time, hVel(vel, 0.04));
         },
         dispose() { kick.dispose(); },
       },
       snare: {
         trigger(time, vel) {
-          snareNoise.triggerAttackRelease("16n", time, vel);
-          snareBody.triggerAttackRelease("G2", "16n", time, vel * 0.6);
+          const v = hVel(vel, 0.07);
+          snareNoise.triggerAttackRelease("16n", hTime(time, 2), v);
+          snareBody.triggerAttackRelease("G2", "16n", hTime(time, 1), v * 0.6);
         },
         dispose() { snareNoise.dispose(); snareBody.dispose(); snareHP.dispose(); },
       },
       hat_closed: {
         trigger(time, vel) {
-          hatClosed.triggerAttackRelease("32n", time, vel);
+          hatClosed.triggerAttackRelease("32n", hTime(time, 5), hVel(vel, 0.08));
         },
         dispose() { hatClosed.dispose(); },
       },
       hat_open: {
         trigger(time, vel) {
-          hatOpen.triggerAttackRelease("8n", time, vel);
+          hatOpen.triggerAttackRelease("8n", hTime(time, 4), hVel(vel, 0.07));
         },
         dispose() { hatOpen.dispose(); },
       },
       clap: {
         trigger(time, vel) {
-          clap.triggerAttackRelease("16n", time, vel);
+          clap.triggerAttackRelease("16n", hTime(time, 6), hVel(vel, 0.09));
         },
         dispose() { clap.dispose(); clapBP.dispose(); },
+      },
+      tom_hi: {
+        trigger(time, vel) {
+          tomHi.triggerAttackRelease("G3", "8n", time, hVel(vel, 0.05));
+        },
+        dispose() { tomHi.dispose(); },
+      },
+      tom_lo: {
+        trigger(time, vel) {
+          tomLo.triggerAttackRelease("D2", "8n", time, hVel(vel, 0.05));
+        },
+        dispose() { tomLo.dispose(); },
+      },
+      rimshot: {
+        trigger(time, vel) {
+          const v = hVel(vel, 0.08);
+          rimshot.triggerAttackRelease("32n", hTime(time, 5), v);
+          rimshotBody.triggerAttackRelease("A3", "32n", hTime(time, 3), v * 0.5);
+        },
+        dispose() { rimshot.dispose(); rimshotBody.dispose(); rimshotHP.dispose(); },
       },
     };
   }

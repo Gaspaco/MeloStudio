@@ -1,13 +1,26 @@
 import { type Component, createSignal, createEffect, onMount, onCleanup, For, Show, createMemo } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
+import { KeyboardMusic, Drum, AudioWaveform, MicVocal, Disc2, Guitar, Music, Video, FileMusic } from "lucide-solid";
+import Peaks, { type PeaksInstance } from "peaks.js";
 import { authClient } from "~/lib/auth";
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
-import { unlockAudioContext } from "~/lib/audio/context";
+import { unlockAudioContext, getAudioContext } from "~/lib/audio/context";
+import { storeClip, loadClip, removeClip } from "~/lib/clipStore";
 import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
 import { updateProjectApi } from "~/lib/api";
 import "./studio.scss";
 
 type TrackType = "drum" | "voice" | "instrument" | "sampler" | "bass" | "guitar";
+
+type ClipKind = "audio" | "midi" | "video";
+interface MediaClip {
+  id: string;
+  kind: ClipKind;
+  name: string;
+  barStart: number; // bar index (0-based)
+  bars: number;     // length in bars
+  url?: string;     // object URL for audio/video preview (not persisted)
+}
 
 interface UITrack {
   id: string;
@@ -18,19 +31,21 @@ interface UITrack {
   volume: number; // 0..1
   pan: number;    // -1..1
   color: string;
+  clips?: MediaClip[];
 }
 
-const TRACK_DEFS: { type: TrackType; label: string; sub?: string; tag: string; ready: boolean; icon: string }[] = [
-  { type: "instrument", label: "Instrument",   sub: "Piano, lead, pad, plucks — playable from your keyboard",   tag: "MIDI",     ready: true,  icon: "instrument" },
-  { type: "drum",       label: "Drum Machine", sub: "Step-sequenced kit · ready in seconds",                    tag: "RHYTHM",   ready: true,  icon: "drum"       },
-  { type: "bass",       label: "Bass Synth",   sub: "Deep monophonic bass — keyboard playable",                 tag: "MIDI",     ready: true,  icon: "bass"       },
-  { type: "voice",      label: "Voice / Audio",sub: "Capture vocals or any external sound source",              tag: "AUDIO",    ready: false, icon: "voice"      },
-  { type: "sampler",    label: "Sampler",      sub: "Turn any audio clip into a playable instrument",           tag: "MIDI",     ready: false, icon: "sampler"    },
-  { type: "guitar",     label: "Guitar",       sub: "Acoustic & Electric Guitars — keyboard playable",          tag: "MIDI",     ready: true,  icon: "guitar"     },
+const TRACK_DEFS: { type: TrackType; label: string; sub?: string; tag: string; ready: boolean; icon: string; color: string }[] = [
+  { type: "instrument", label: "Instrument",   sub: "Piano, lead, pad, plucks — playable from your keyboard",   tag: "MIDI",     ready: true,  icon: "instrument", color: "#3ee08b" },
+  { type: "drum",       label: "Drum Machine", sub: "Step-sequenced kit · ready in seconds",                    tag: "RHYTHM",   ready: true,  icon: "drum",       color: "#f5b53e" },
+  { type: "bass",       label: "Bass Synth",   sub: "Deep monophonic bass — keyboard playable",                 tag: "MIDI",     ready: true,  icon: "bass",       color: "#1d87f5" },
+  { type: "voice",      label: "Voice / Audio",sub: "Capture vocals or any external sound source",              tag: "AUDIO",    ready: false, icon: "voice",      color: "#f53e3e" },
+  { type: "sampler",    label: "Sampler",      sub: "Turn any audio clip into a playable instrument",           tag: "MIDI",     ready: false, icon: "sampler",    color: "#a93ef5" },
+  { type: "guitar",     label: "Guitar",       sub: "Acoustic & Electric Guitars — keyboard playable",          tag: "MIDI",     ready: true,  icon: "guitar",     color: "#f53ee0" },
 ];
 
 const DRUM_LABEL: Record<string, string> = {
-  kick: "Kick", snare: "Snare", hat_closed: "Hi-Hat", hat_open: "Open Hat", clap: "Clap",
+  kick: "Kick", snare: "Snare", hat_closed: "Hi-Hat", hat_open: "Open Hat",
+  clap: "Clap", tom_hi: "Tom Hi", tom_lo: "Tom Lo", rimshot: "Rimshot",
 };
 
 const fmtTime = (sec: number): string => {
@@ -41,42 +56,111 @@ const fmtTime = (sec: number): string => {
   return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}.${ms}`;
 };
 
-/* Editorial line-icons for the New Track modal */
-const TrackIcon: Component<{ name: string }> = (props) => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <Show when={props.name === "instrument"}>
-      <rect x="3" y="6" width="18" height="12" rx="1.2" />
-      <path d="M7 6v8M11 6v8M15 6v8" />
-      <rect x="5.5" y="14" width="3" height="4" rx="0.4" fill="currentColor" stroke="none" />
-      <rect x="13.5" y="14" width="3" height="4" rx="0.4" fill="currentColor" stroke="none" />
-    </Show>
-    <Show when={props.name === "drum"}>
-      <ellipse cx="12" cy="8" rx="8" ry="2.4" />
-      <path d="M4 8v6c0 1.3 3.6 2.4 8 2.4s8-1.1 8-2.4V8" />
-      <path d="M9 9.5l-3 9M15 9.5l3 9" />
-    </Show>
-    <Show when={props.name === "bass"}>
-      <path d="M14 4l3 3" />
-      <path d="M16 6l-9 9a3 3 0 1 1-2-2l9-9 2 2z" />
-      <circle cx="6.5" cy="17.5" r="1" fill="currentColor" stroke="none" />
-    </Show>
-    <Show when={props.name === "voice"}>
-      <rect x="9" y="3" width="6" height="11" rx="3" />
-      <path d="M5 11a7 7 0 0 0 14 0" />
-      <path d="M12 18v3M9 21h6" />
-    </Show>
-    <Show when={props.name === "sampler"}>
-      <rect x="3" y="6" width="18" height="12" rx="1.5" />
-      <path d="M7 14l2-4 2 7 2-9 2 6 2-3" />
-    </Show>
-    <Show when={props.name === "guitar"}>
-      <path d="M14 4l4 4" />
-      <path d="M17 5l2 2" />
-      <path d="M16 7l-7 7a4 4 0 1 1-2-2l7-7 2 2z" />
-      <circle cx="8" cy="15" r="1.5" />
-    </Show>
-  </svg>
-);
+/* Track icons — lucide-solid */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const TRACK_ICON_MAP: Record<string, Component<any>> = {
+  instrument: KeyboardMusic,
+  drum:       Drum,
+  bass:       AudioWaveform,
+  voice:      MicVocal,
+  sampler:    Disc2,
+  guitar:     Guitar,
+};
+
+const TrackIcon: Component<{ name: string }> = (props) => {
+  const Icon = TRACK_ICON_MAP[props.name];
+  return Icon ? <Icon size={18} stroke-width={1.4} aria-hidden="true" /> : null;
+};
+
+const MEDIA_ICON_MAP: Record<string, Component<any>> = {
+  audio: MicVocal,
+  midi:  FileMusic,
+  video: MicVocal,
+};
+const MediaClipIcon: Component<{ kind: string }> = (props) => {
+  const Icon = MEDIA_ICON_MAP[props.kind];
+  return Icon ? <Icon size={11} stroke-width={1.6} aria-hidden="true" /> : null;
+};
+
+// Reusable SVG Waveform component drawn from an object URL's ArrayBuffer
+const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props) => {
+  let containerEl!: HTMLDivElement;
+  let audioEl!: HTMLAudioElement;
+  let peaksInstance: PeaksInstance | null = null;
+
+  const initPeaks = (url: string) => {
+    if (peaksInstance) { peaksInstance.destroy(); peaksInstance = null; }
+    if (!containerEl || !audioEl) return;
+    audioEl.src = url;
+    Peaks.init({
+      overview: {
+        container: containerEl,
+        waveformColor: props.color,
+        showAxisLabels: false,
+        playheadColor: "transparent",
+        playheadTextColor: "transparent",
+        axisGridlineColor: "transparent",
+        highlightColor: "transparent",
+        highlightOpacity: 0,
+      },
+      mediaElement: audioEl,
+      webAudio: { audioContext: new AudioContext() },
+      keyboard: false,
+      logger: console.debug.bind(console),
+    }, (err, peaks) => {
+      if (err || !peaks) return;
+      peaksInstance = peaks;
+      const view = peaks.views.getView("overview");
+      if (view) {
+        view.enableSeek(false);
+        view.showAxisLabels(false, { topMarkerHeight: 0, bottomMarkerHeight: 0 });
+        view.setAmplitudeScale(1.0);
+      }
+    });
+  };
+
+  createEffect(() => {
+    const url = props.url;
+    if (url) initPeaks(url);
+  });
+
+  onCleanup(() => {
+    if (peaksInstance) { peaksInstance.destroy(); peaksInstance = null; }
+  });
+
+  return (
+    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+      <audio ref={audioEl!} style={{ display: "none" }} preload="metadata" />
+      <div ref={containerEl!} style={{ width: "100%", height: "100%" }} />
+    </div>
+  );
+};
+
+const PRESET_ADSR = {
+  lead: { attack: 0.005, decay: 0.2,  sustain: 0.7, release: 0.25, filterFreq: 1500 },
+  pad:  { attack: 0.6,   decay: 0.3,  sustain: 0.8, release: 1.2,  filterFreq: 800  },
+} as const;
+
+// Curated palette for newly imported tracks — handpicked to feel
+// like a modern DAW (Ableton/Logic). Picked at random per track.
+const TRACK_COLORS = [
+  "#3ee08b", // mint
+  "#1d87f5", // azure
+  "#f5b53e", // amber
+  "#a93ef5", // violet
+  "#3eddf5", // cyan
+  "#f53e8a", // hot pink
+  "#9af53e", // lime
+  "#f57c3e", // orange
+  "#3ef5d4", // turquoise
+  "#cf5cf5", // magenta
+  "#5cf593", // jade
+  "#f5e23e", // yellow
+];
+const randomTrackColor = (avoid?: string): string => {
+  const pool = avoid ? TRACK_COLORS.filter(c => c !== avoid) : TRACK_COLORS;
+  return pool[Math.floor(Math.random() * pool.length)] ?? TRACK_COLORS[0]!;
+};
 
 const Studio: Component = () => {
   const params = useParams<{ id: string }>();
@@ -87,6 +171,73 @@ const Studio: Component = () => {
   let elapsedTimer: ReturnType<typeof setInterval> | null = null;
   let startTime = 0;
   const heldKeys = new Set<string>();
+  let importInputEl: HTMLInputElement | undefined;
+
+  // ── Audio clip playback ──────────────────────────────────────────────────
+  let audioSources: AudioBufferSourceNode[] = [];
+  let playbackRaf: number | null = null;
+  let playbackStartCtxTime = 0;
+  let playbackStartTimelineSecs = 0;
+  const audioBufferCache = new Map<string, AudioBuffer>();
+  // Shared master gain node — all clip sources route through this so the
+  // master volume fader affects clips that are already playing.
+  let masterGainNode: GainNode | null = null;
+
+  const barsToSecs = (bars: number) => bars * 4 * (60 / bpm());
+  const pxToSecs   = (px: number)   => (px / 80) * 4 * (60 / bpm());
+  const secsToPx   = (secs: number) => secs * (bpm() / 60) * (80 / 4);
+
+  const stopAudioPlayback = () => {
+    for (const src of audioSources) { try { src.stop(); } catch { /* already ended */ } }
+    audioSources = [];
+    if (playbackRaf) { cancelAnimationFrame(playbackRaf); playbackRaf = null; }
+    // Disconnect master gain node so it can be re-created cleanly next play
+    if (masterGainNode) { try { masterGainNode.disconnect(); } catch { /* */ } masterGainNode = null; }
+  };
+
+  const startAudioPlayback = async () => {
+    stopAudioPlayback();
+    const ctx = getAudioContext();
+    const timelineStartSecs = pxToSecs(playheadPx());
+    playbackStartCtxTime    = ctx.currentTime;
+    playbackStartTimelineSecs = timelineStartSecs;
+
+    const tickPlayhead = () => {
+      const elapsed = getAudioContext().currentTime - playbackStartCtxTime;
+      setPlayheadPx(secsToPx(playbackStartTimelineSecs + elapsed));
+      playbackRaf = requestAnimationFrame(tickPlayhead);
+    };
+    playbackRaf = requestAnimationFrame(tickPlayhead);
+
+    // One shared gain node for all clips — lets us update volume live
+    masterGainNode = ctx.createGain();
+    masterGainNode.gain.value = masterVol();
+    masterGainNode.connect(ctx.destination);
+
+    for (const track of tracks()) {
+      for (const clip of track.clips ?? []) {
+        if (clip.kind === "midi" || !clip.url) continue;
+        let buffer = audioBufferCache.get(clip.url);
+        if (!buffer) {
+          try {
+            const ab = await fetch(clip.url).then(r => r.arrayBuffer());
+            buffer = await ctx.decodeAudioData(ab);
+            audioBufferCache.set(clip.url, buffer);
+          } catch { continue; }
+        }
+        const clipStartSecs = barsToSecs(clip.barStart);
+        const clipEndSecs   = clipStartSecs + barsToSecs(clip.bars);
+        if (clipEndSecs <= timelineStartSecs) continue; // already passed
+        const offsetInClip = Math.max(0, timelineStartSecs - clipStartSecs);
+        const delayFromNow = Math.max(0, clipStartSecs - timelineStartSecs);
+        const src = ctx.createBufferSource();
+        src.buffer = buffer;
+        src.connect(masterGainNode!);
+        src.start(ctx.currentTime + delayFromNow, offsetInClip);
+        audioSources.push(src);
+      }
+    }
+  };
 
   const [name, setName] = createSignal("New Project");
   const [tracks, setTracks] = createSignal<UITrack[]>([]);
@@ -101,34 +252,55 @@ const Studio: Component = () => {
   const [error, setError] = createSignal("");
   const [showNewTrack, setShowNewTrack] = createSignal(false);
   const [showAddMenu, setShowAddMenu] = createSignal(false);
+  const [showRestoreDialog, setShowRestoreDialog] = createSignal(false);
+  // Holds the raw server doc while the user decides whether to restore
+  let pendingDoc: any = null;
   const [navOpen, setNavOpen] = createSignal(false);
   const [navCat, setNavCat] = createSignal<"project" | "edit" | "insert" | "view" | "transport" | "help">("project");
   const [titleEditing, setTitleEditing] = createSignal(false);
   let titleInputEl: HTMLInputElement | undefined;
   const [drumPanelOpen, setDrumPanelOpen] = createSignal(true);
+  const [drumSwing, setDrumSwing] = createSignal(0);
+  const [drumSteps, setDrumSteps] = createSignal(16);
   const [synthPreset, setSynthPreset] = createSignal<SynthPreset>("piano");
   const [octave, setOctave] = createSignal(4);
+  // Synth editor params (ADSR + filter) — active when Lead or Pad is selected
+  const [synthAttack,     setSynthAttack]     = createSignal<number>(PRESET_ADSR.lead.attack);
+  const [synthDecay,      setSynthDecay]      = createSignal<number>(PRESET_ADSR.lead.decay);
+  const [synthSustain,    setSynthSustain]    = createSignal<number>(PRESET_ADSR.lead.sustain);
+  const [synthRelease,    setSynthRelease]    = createSignal<number>(PRESET_ADSR.lead.release);
+  const [synthFilterFreq, setSynthFilterFreq] = createSignal<number>(PRESET_ADSR.lead.filterFreq);
 
   // Sync the synth preset whenever the selected track changes.
   // Bass tracks always use the "bass" preset; switching back to an
   // instrument track restores a non-bass preset.
+  let lastSelectedTrack: string | null = null;
   createEffect(() => {
-    const t = tracks().find(tr => tr.id === selectedTrack());
+    const trackId = selectedTrack();
+    const t = tracks().find(tr => tr.id === trackId);
     if (!t) return;
-    if (t.type === "bass") {
-      if (synthPreset() !== "bass") {
-        setSynthPreset("bass");
-        synth?.setPreset("bass");
-      }
-    } else if (t.type === "guitar") {
-      if (synthPreset() !== "guitar") {
-        setSynthPreset("guitar");
-        synth?.setPreset("guitar");
-      }
-    } else if (t.type === "instrument") {
-      if (synthPreset() === "bass" || synthPreset() === "guitar") {
-        setSynthPreset("piano");
-        synth?.setPreset("piano");
+    
+    if (lastSelectedTrack !== trackId) {
+      lastSelectedTrack = trackId;
+      if (t.type === "bass") {
+        if (synthPreset() !== "bass") {
+          setSynthPreset("bass");
+          synth?.setPreset("bass");
+        }
+        // Bass lives in the 2nd octave — ensures keyboard notes land on fretboard
+        setOctave(2);
+      } else if (t.type === "guitar") {
+        if (synthPreset() !== "guitar") {
+          setSynthPreset("guitar");
+          synth?.setPreset("guitar");
+        }
+        setOctave(4);
+      } else if (t.type === "instrument") {
+        if (synthPreset() === "bass" || synthPreset() === "guitar") {
+          setSynthPreset("piano");
+          synth?.setPreset("piano");
+        }
+        setOctave(4);
       }
     }
   });
@@ -137,6 +309,79 @@ const Studio: Component = () => {
   const userId = async (): Promise<string | null> => {
     const { data } = await authClient.getSession();
     return data?.user?.id ?? null;
+  };
+
+  // ── Restore helpers ─────────────────────────────────────────────────────
+  const applyDoc = async (doc: any) => {
+    setName(doc.name ?? "Untitled");
+    if (doc.transport?.bpm) setBpm(doc.transport.bpm);
+
+    const pat: StepPattern | undefined = doc.beat?.pattern;
+    if (pat?.rows?.length) {
+      setPattern(pat);
+      seq!.setPattern(pat);
+      if (pat.bpm) setBpm(pat.bpm);
+    }
+
+    const savedTracks: UITrack[] | undefined = doc.uiTracks;
+    if (savedTracks?.length) {
+      const restoredTracks: UITrack[] = [];
+      for (const t of savedTracks) {
+        if (!TRACK_DEFS.find(d => d.type === t.type)) continue;
+        const restoredClips: MediaClip[] = [];
+        for (const clip of t.clips ?? []) {
+          if (clip.kind !== "midi") {
+            const url = await loadClip(clip.id).catch(() => null);
+            restoredClips.push({ ...clip, url: url ?? undefined });
+          } else {
+            restoredClips.push(clip);
+          }
+        }
+        restoredTracks.push({ ...t, clips: restoredClips });
+        if (t.type === "instrument" || t.type === "bass" || t.type === "guitar") {
+          const preset = t.type === "bass" ? "bass" : t.type === "guitar" ? "guitar" : synthPreset();
+          if (!synth) { synth = new PolySynth(preset); } else { synth.setPreset(preset); }
+          if (t.type === "bass") setSynthPreset("bass");
+          else if (t.type === "guitar") setSynthPreset("guitar");
+        }
+      }
+      setTracks(restoredTracks);
+      setSelectedTrack(restoredTracks[0]?.id ?? null);
+      const hasDrum = restoredTracks.some(t => t.type === "drum");
+      if (hasDrum && pat?.rows?.length) seq!.setPattern(pat);
+      if (hasDrum) setDrumPanelOpen(true);
+    } else if (doc.beat?.pattern?.rows?.length) {
+      addTrack("drum", false);
+    }
+  };
+
+  const restoreSession = async () => {
+    setShowRestoreDialog(false);
+    if (pendingDoc) await applyDoc(pendingDoc);
+    pendingDoc = null;
+  };
+
+  const discardSession = async () => {
+    setShowRestoreDialog(false);
+    if (!pendingDoc) { pendingDoc = null; return; }
+    // Wipe all clip blobs from IDB for this doc
+    for (const t of (pendingDoc.uiTracks ?? []) as UITrack[]) {
+      for (const clip of t.clips ?? []) {
+        removeClip(clip.id).catch(() => {});
+      }
+    }
+    // Save the cleared state back to server
+    pendingDoc = null;
+    const id = await userId().catch(() => null);
+    if (!id) return;
+    const res = await fetch(`/api/projects/${params.id}`, { headers: { "x-user-id": id } });
+    if (!res.ok) return;
+    const doc = await res.json();
+    await fetch(`/api/projects/${params.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "x-user-id": id },
+      body: JSON.stringify({ ...doc, uiTracks: [], beat: { pattern: DEFAULT_PATTERN() } }),
+    });
   };
 
   onMount(async () => {
@@ -149,48 +394,27 @@ const Studio: Component = () => {
       const res = await fetch(`/api/projects/${params.id}`, { headers: { "x-user-id": id } });
       if (!res.ok) { setError(`Couldn't load (${res.status})`); return; }
       const doc = await res.json();
-      setName(doc.name ?? "Untitled");
-      if (doc.transport?.bpm) setBpm(doc.transport.bpm);
 
-      const pat: StepPattern | undefined = doc.beat?.pattern;
-      if (pat?.rows?.length) {
-        setPattern(pat);
-        seq!.setPattern(pat);
-        if (pat.bpm) setBpm(pat.bpm);
-      }
+      const hasTracks = (doc.uiTracks as UITrack[] | undefined)?.some(
+        t => (t.clips ?? []).length > 0 || t.type === "drum"
+      );
+      const hasBeat = (doc.beat?.pattern?.rows as any[] | undefined)?.some(
+        (r: any) => r.velocities?.some((v: number) => v > 0)
+      );
 
-      // Restore persisted UI tracks
-      const savedTracks: UITrack[] | undefined = (doc as any).uiTracks;
-      if (savedTracks?.length) {
-        const restoredTracks: UITrack[] = [];
-        for (const t of savedTracks) {
-          if (!TRACK_DEFS.find(d => d.type === t.type)?.ready) continue;
-          restoredTracks.push(t);
-          if (t.type === "instrument" || t.type === "bass" || t.type === "guitar") {
-            const preset = t.type === "bass" ? "bass" : t.type === "guitar" ? "guitar" : synthPreset();
-            if (!synth) { synth = new PolySynth(preset); } else { synth.setPreset(preset); }
-            if (t.type === "bass") setSynthPreset("bass");
-            else if (t.type === "guitar") setSynthPreset("guitar");
-          }
+      if (hasTracks || hasBeat) {
+        // Has saved session data — ask the user
+        pendingDoc = doc;
+        setShowRestoreDialog(true);
+      } else {
+        // Nothing saved yet — just apply (sets name/bpm)
+        await applyDoc(doc);
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.get("new") === "1") {
+          setShowAddMenu(true);
+          searchParams.delete("new");
+          window.history.replaceState({}, "", window.location.pathname + (searchParams.toString() ? `?${searchParams.toString()}` : ""));
         }
-        setTracks(restoredTracks);
-        setSelectedTrack(restoredTracks[0]?.id ?? null);
-        const hasDrum = restoredTracks.some(t => t.type === "drum");
-        if (hasDrum && pat?.rows?.length) seq!.setPattern(pat);
-        if (hasDrum) setDrumPanelOpen(true);
-      } else if (pat?.rows?.length) {
-        // legacy: doc has a pattern but no uiTracks — restore drum track only
-        addTrack("drum", false);
-      }
-      
-      const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.get("new") === "1") {
-        setShowAddMenu(true);
-        
-        // Clean up the URL so reloads don't pop it up again
-        searchParams.delete("new");
-        const newUrl = window.location.pathname + (searchParams.toString() ? `?${searchParams.toString()}` : "");
-        window.history.replaceState({}, "", newUrl);
       }
     } catch (err) {
       setError(String(err));
@@ -199,8 +423,14 @@ const Studio: Component = () => {
 
   // ───── Synth & keyboard ─────
   const ensureSynth = (preset: SynthPreset = "piano") => {
-    if (!synth) synth = new PolySynth(preset);
-    else synth.setPreset(preset);
+    if (!synth) {
+      synth = new PolySynth(preset);
+      // Apply the current master volume to the freshly created synth instance.
+      const db = masterVol() <= 0.001 ? -60 : 20 * Math.log10(masterVol());
+      synth.setMasterGainDb(db);
+    } else {
+      synth.setPreset(preset);
+    }
   };
 
   const KEY_MAP: Record<string, number> = {
@@ -223,7 +453,12 @@ const Studio: Component = () => {
     heldKeys.add(k);
     e.preventDefault();
     await unlockAudioContext();
-    ensureSynth(synthPreset());
+    // Derive preset from the selected track type so bass always sounds like bass
+    // even if the synthPreset signal hasn't settled yet.
+    const activePreset: SynthPreset = sel.type === "bass" ? "bass"
+      : sel.type === "guitar" ? "guitar"
+      : synthPreset();
+    ensureSynth(activePreset);
     const midi = 12 * (octave() + 1) + keyVal;
     synth!.noteOn(midi, 0.85);
     const next = new Set(activeNotes());
@@ -245,7 +480,13 @@ const Studio: Component = () => {
 
   const pressKey = async (midi: number) => {
     await unlockAudioContext();
-    ensureSynth(synthPreset());
+    // Derive preset from the selected track type so clicking bass fretboard cells
+    // always uses the bass sampler, not whatever synthPreset() currently is.
+    const sel = tracks().find(t => t.id === selectedTrack());
+    const activePreset: SynthPreset = sel?.type === "bass" ? "bass"
+      : sel?.type === "guitar" ? "guitar"
+      : synthPreset();
+    ensureSynth(activePreset);
     synth!.noteOn(midi, 0.85);
     const next = new Set(activeNotes());
     next.add(midi);
@@ -261,6 +502,25 @@ const Studio: Component = () => {
   const updatePreset = (p: SynthPreset) => {
     setSynthPreset(p);
     if (synth) synth.setPreset(p);
+    // Restore ADSR defaults when switching to a synth preset
+    if (p === "lead" || p === "pad") {
+      const d = PRESET_ADSR[p];
+      setSynthAttack(d.attack); setSynthDecay(d.decay);
+      setSynthSustain(d.sustain); setSynthRelease(d.release);
+      setSynthFilterFreq(d.filterFreq);
+    }
+    // Match octave to preset so bass sounds in the right range
+    if (p === "bass") setOctave(2);
+    else if (p !== synthPreset()) setOctave(4);
+  };
+
+  const updateEnvelope = (a: number, d: number, s: number, r: number) => {
+    setSynthAttack(a); setSynthDecay(d); setSynthSustain(s); setSynthRelease(r);
+    synth?.setEnvelope(a, d, s, r);
+  };
+  const updateFilterFreq = (freq: number) => {
+    setSynthFilterFreq(freq);
+    synth?.setFilterFreq(freq);
   };
 
   onMount(() => {
@@ -305,21 +565,175 @@ const Studio: Component = () => {
       solo: false,
       volume: 0.8,
       pan: 0,
-      color: def.color,
+      // Drum keeps its iconic amber; everything else gets a fresh random color
+      color: type === "drum" ? def.color : randomTrackColor(),
     };
     setTracks([...tracks(), t]);
     setSelectedTrack(t.id);
     if (type === "drum") setDrumPanelOpen(true);
     if (openModal) setShowNewTrack(false);
+    // Auto-save so restore dialog triggers on next load
+    void save();
   };
 
   const deleteTrack = (id: string) => {
     setTracks(tracks().filter(t => t.id !== id));
     if (selectedTrack() === id) setSelectedTrack(null);
+    // Auto-save so the deletion persists on reload
+    save();
   };
 
   const patchTrack = (id: string, patch: Partial<UITrack>) => {
     setTracks(tracks().map(t => t.id === id ? { ...t, ...patch } : t));
+  };
+
+  // ── Media clips (drag-drop audio / midi / video onto a lane) ─────────────
+  const BAR_PX = 80; // 1 bar = 5rem = 80px (must match SCSS .bl__bar / .bl__lanes)
+  const [dropTarget, setDropTarget] = createSignal<{ trackId: string; bar: number } | null>(null);
+
+  const classifyFile = (file: File): ClipKind | null => {
+    const name = file.name.toLowerCase();
+    if (file.type.startsWith("audio/") || /\.(mp3|wav|ogg|flac|m4a|aac)$/.test(name)) return "audio";
+    if (file.type.startsWith("video/") || /\.(mp4|webm|mov|mkv)$/.test(name)) return "video";
+    if (file.type === "audio/midi" || /\.(mid|midi)$/.test(name)) return "midi";
+    return null;
+  };
+
+  const estimateBars = async (file: File, kind: ClipKind): Promise<number> => {
+    if (kind === "midi") return 4;
+    return new Promise((resolve) => {
+      try {
+        const url = URL.createObjectURL(file);
+        const el = kind === "video" ? document.createElement("video") : document.createElement("audio");
+        el.preload = "metadata";
+        el.src = url;
+        const done = (bars: number) => { URL.revokeObjectURL(url); resolve(bars); };
+        el.onloadedmetadata = () => {
+          const secs = el.duration;
+          if (!isFinite(secs) || secs <= 0) return done(4);
+          const beatsPerSec = bpm() / 60;
+          const bars = Math.max(1, Math.round((secs * beatsPerSec) / 4));
+          done(bars);
+        };
+        el.onerror = () => done(4);
+      } catch { resolve(4); }
+    });
+  };
+
+  const addClip = async (trackId: string, file: File, barStart: number) => {
+    const kind = classifyFile(file);
+    if (!kind) {
+      setError("Unsupported file — drop audio, MIDI, or video");
+      setTimeout(() => setError(""), 2200);
+      return;
+    }
+    const bars = await estimateBars(file, kind);
+    const clipId = crypto.randomUUID();
+    let url: string | undefined;
+    if (kind !== "midi") {
+      url = URL.createObjectURL(file);
+      await storeClip(clipId, file).catch(() => {}); // persist to IDB
+    }
+    const clip: MediaClip = {
+      id: clipId,
+      kind,
+      name: file.name.replace(/\.[^.]+$/, ""),
+      barStart: Math.max(0, barStart),
+      bars,
+      url,
+    };
+    setTracks(tracks().map(t =>
+      t.id === trackId ? { ...t, clips: [...(t.clips ?? []), clip] } : t
+    ));
+  };
+
+  const deleteClip = (trackId: string, clipId: string) => {
+    setTracks(tracks().map(t => {
+      if (t.id !== trackId) return t;
+      const target = (t.clips ?? []).find(c => c.id === clipId);
+      if (target?.url) URL.revokeObjectURL(target.url);
+      removeClip(clipId).catch(() => {}); // remove from IDB
+      return { ...t, clips: (t.clips ?? []).filter(c => c.id !== clipId) };
+    }));
+  };
+
+  // Import one or more files: each spawns a new instrument/audio track at the bottom
+  const importFiles = async (files: File[]) => {
+    if (!files.length) return;
+    for (const f of files) {
+      const kind = classifyFile(f);
+      if (!kind) continue;
+      const type = kind === "midi" ? "instrument" : "voice";
+      // Avoid repeating the previous track's color when possible
+      const lastColor = tracks().slice(-1)[0]?.color;
+      const newTrack: UITrack = {
+        id: crypto.randomUUID(),
+        name: f.name.replace(/\.[^.]+$/, ""),
+        type,
+        muted: false, solo: false,
+        volume: 0.8, pan: 0,
+        color: randomTrackColor(lastColor), clips: [],
+      };
+      // Append at the end so new tracks always appear UNDER existing tracks
+      setTracks(prev => [...prev, newTrack]);
+      setSelectedTrack(newTrack.id);
+      await addClip(newTrack.id, f, 0);
+    }
+    // Auto-save so tracks + clips persist on reload
+    save();
+  };
+
+  const onLaneDragOver = (e: DragEvent, trackId: string) => {
+    if (!e.dataTransfer?.types.includes("Files")) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const scrollLeft = timelineEl?.scrollLeft ?? 0;
+    const x = e.clientX - rect.left + scrollLeft;
+    const bar = Math.max(0, Math.floor(x / BAR_PX));
+    setDropTarget({ trackId, bar });
+  };
+  const onLaneDragLeave = (e: DragEvent) => {
+    if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node | null))
+      setDropTarget(null);
+  };
+  const onLaneDrop = async (e: DragEvent, trackId: string) => {
+    e.preventDefault();
+    setDropTarget(null);
+    const files = Array.from(e.dataTransfer?.files ?? []);
+    if (!files.length) return;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const scrollLeft = timelineEl?.scrollLeft ?? 0;
+    const x = e.clientX - rect.left + scrollLeft;
+    const startBar = Math.max(0, Math.floor(x / BAR_PX));
+    let cursor = startBar;
+    for (const f of files) {
+      await addClip(trackId, f, cursor);
+      const last = tracks().find(t => t.id === trackId)?.clips?.slice(-1)[0];
+      cursor += last?.bars ?? 4;
+    }
+  };
+
+  // Global drop zone on the lanes container — auto-creates a track when no track is targeted
+  const [globalDragOver, setGlobalDragOver] = createSignal(false);
+  const onLanesDragOver = (e: DragEvent) => {
+    if (!e.dataTransfer?.types.includes("Files")) return;
+    // only handle if not already over a specific lane
+    if (dropTarget()) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    setGlobalDragOver(true);
+  };
+  const onLanesDragLeave = (e: DragEvent) => {
+    if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node | null))
+      setGlobalDragOver(false);
+  };
+  const onLanesDrop = async (e: DragEvent) => {
+    if (dropTarget()) return; // let lane handler take it
+    e.preventDefault();
+    setGlobalDragOver(false);
+    const files = Array.from(e.dataTransfer?.files ?? []);
+    await importFiles(files);
   };
 
   const togglePlay = async () => {
@@ -330,11 +744,13 @@ const Studio: Component = () => {
       setPlaying(false);
       if (elapsedTimer) clearInterval(elapsedTimer);
       elapsedTimer = null;
+      stopAudioPlayback();
     } else {
       await seq.start();
       setPlaying(true);
       startTime = performance.now();
       elapsedTimer = setInterval(() => setElapsed((performance.now() - startTime) / 1000), 50);
+      await startAudioPlayback();
     }
   };
 
@@ -345,6 +761,8 @@ const Studio: Component = () => {
     setElapsed(0);
     if (elapsedTimer) clearInterval(elapsedTimer);
     elapsedTimer = null;
+    stopAudioPlayback();
+    setPlayheadPx(0);
   };
 
   const updateBpm = (v: number) => {
@@ -370,13 +788,56 @@ const Studio: Component = () => {
     setPattern({ ...p, rows: p.rows.map(r => ({ ...r, velocities: [...r.velocities] })) });
   };
 
+  const cycleStepVelocity = (rowIdx: number, stepIdx: number) => {
+    if (!seq) return;
+    const row = seq.getPattern().rows[rowIdx];
+    if (!row) return;
+    const cur = row.velocities[stepIdx] ?? 0;
+    const next = cur <= 0 ? 1.0 : cur >= 0.9 ? 0.6 : cur >= 0.5 ? 0.3 : 0;
+    seq.setStepVelocity(rowIdx, stepIdx, next);
+    const p = seq.getPattern();
+    setPattern({ ...p, rows: p.rows.map(r => ({ ...r, velocities: [...r.velocities] })) });
+  };
+
+  const toggleRowMute = (rowIdx: number) => {
+    if (!seq) return;
+    const row = seq.getPattern().rows[rowIdx];
+    if (!row) return;
+    seq.setRowMuted(rowIdx, !row.muted);
+    const p = seq.getPattern();
+    setPattern({ ...p, rows: p.rows.map(r => ({ ...r })) });
+  };
+
+  const updateRowGain = (rowIdx: number, db: number) => {
+    if (!seq) return;
+    seq.setRowGainDb(rowIdx, db);
+    const p = seq.getPattern();
+    setPattern({ ...p, rows: p.rows.map(r => ({ ...r })) });
+  };
+
+  const updateSwing = (amount: number) => {
+    setDrumSwing(amount);
+    seq?.setSwing(amount);
+  };
+
+  const updateDrumSteps = (steps: number) => {
+    if (!seq) return;
+    seq.setSteps(steps);
+    setDrumSteps(steps);
+    const p = seq.getPattern();
+    setPattern({ ...p, rows: p.rows.map(r => ({ ...r, velocities: [...r.velocities] })) });
+  };
+
   const setMasterVolume = (v: number) => {
     setMasterVol(v);
-    if (seq) {
-      // map 0..1 → -60..0 db
-      const db = v <= 0.001 ? -60 : 20 * Math.log10(v);
-      seq.setMasterGainDb(db);
-    }
+    // map 0..1 → -60..0 dB
+    const db = v <= 0.001 ? -60 : 20 * Math.log10(v);
+    // Drum sequencer
+    if (seq) seq.setMasterGainDb(db);
+    // Instrument / synth
+    if (synth) synth.setMasterGainDb(db);
+    // Audio clips currently playing
+    if (masterGainNode) masterGainNode.gain.setTargetAtTime(v, getAudioContext().currentTime, 0.01);
   };
 
   const startEditingTitle = () => {
@@ -410,11 +871,17 @@ const Studio: Component = () => {
       const res = await fetch(`/api/projects/${params.id}`, { headers: { "x-user-id": id } });
       if (!res.ok) throw new Error(`load failed: ${res.status}`);
       const doc = await res.json();
+      // Strip blob URLs before sending — they are session-only and useless
+      // after reload. Blobs are persisted in IndexedDB via clipStore.ts.
+      const uiTracksForSave = tracks().map(t => ({
+        ...t,
+        clips: (t.clips ?? []).map(c => ({ ...c, url: undefined })),
+      }));
       const updated = {
         ...doc,
         beat: { pattern: seq.getPattern() },
         transport: { ...(doc.transport ?? {}), bpm: bpm() },
-        uiTracks: tracks(),
+        uiTracks: uiTracksForSave,
       };
       const put = await fetch(`/api/projects/${params.id}`, {
         method: "PUT",
@@ -434,6 +901,12 @@ const Studio: Component = () => {
   // Generate ruler bars (450 bars total)
   const bars = Array.from({ length: 450 }, (_, i) => i + 1);
 
+  // ── Playhead ────────────────────────────────────────────────────────────────
+  // Position in pixels from the start of the timeline (1 bar = 80px).
+  const [playheadPx, setPlayheadPx] = createSignal(0);
+
+  // (Playhead is advanced in real-time by startAudioPlayback's RAF loop)
+
   // Horizontal scroll: wheel + middle-button drag (BandLab-style pan)
   let timelineEl: HTMLDivElement | undefined;
   const onTimelineWheel = (e: WheelEvent) => {
@@ -451,14 +924,39 @@ const Studio: Component = () => {
     dragState = { x: e.clientX, scroll: timelineEl.scrollLeft };
     document.body.style.cursor = "grabbing";
   };
+
+  // Ruler left-click / drag → seek playhead
+  let playheadDragState: { startX: number; startPx: number } | null = null;
+  const onRulerMouseDown = (e: MouseEvent) => {
+    if (e.button !== 0) return;
+    if (!timelineEl) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = timelineEl.getBoundingClientRect();
+    const x = Math.max(0, e.clientX - rect.left + timelineEl.scrollLeft);
+    setPlayheadPx(x);
+    playheadDragState = { startX: e.clientX, startPx: x };
+    document.body.style.cursor = "col-resize";
+  };
+
   const onWinMouseMove = (e: MouseEvent) => {
-    if (!dragState || !timelineEl) return;
-    timelineEl.scrollLeft = dragState.scroll - (e.clientX - dragState.x);
+    if (dragState && timelineEl) {
+      timelineEl.scrollLeft = dragState.scroll - (e.clientX - dragState.x);
+    }
+    if (playheadDragState) {
+      const dx = e.clientX - playheadDragState.startX;
+      setPlayheadPx(Math.max(0, playheadDragState.startPx + dx));
+    }
   };
   const onWinMouseUp = () => {
-    if (!dragState) return;
-    dragState = null;
-    document.body.style.cursor = "";
+    if (dragState) {
+      dragState = null;
+      document.body.style.cursor = "";
+    }
+    if (playheadDragState) {
+      playheadDragState = null;
+      document.body.style.cursor = "";
+    }
   };
   onMount(() => {
     window.addEventListener("mousemove", onWinMouseMove);
@@ -467,13 +965,30 @@ const Studio: Component = () => {
   onCleanup(() => {
     window.removeEventListener("mousemove", onWinMouseMove);
     window.removeEventListener("mouseup", onWinMouseUp);
+    stopAudioPlayback();
   });
 
   // Compute clip block style for drum row
   const drumClipBars = createMemo(() => {
-    // Each pattern is 1 bar long; show as repeated block while playing
-    const totalBars = 4; // visible loop length
+    const totalBars = 4;
     return Array.from({ length: totalBars }, (_, i) => i);
+  });
+
+  // ADSR envelope path for the Lead/Pad visualizer (SVG 200×52 coordinate space)
+  const adsrPath = createMemo(() => {
+    const a = Math.max(0.001, synthAttack());
+    const d = Math.max(0.001, synthDecay());
+    const s = synthSustain();
+    const r = Math.max(0.001, synthRelease());
+    const hold = 0.5; // fixed visual sustain hold width
+    const total = a + d + hold + r;
+    const W = 200, H = 52;
+    const aw = (a / total) * W;
+    const dw = (d / total) * W;
+    const sw = (hold / total) * W;
+    const sy = 2 + (1 - s) * (H - 4);
+    const stroke = `M0,${H} L${aw.toFixed(1)},2 L${(aw+dw).toFixed(1)},${sy.toFixed(1)} L${(aw+dw+sw).toFixed(1)},${sy.toFixed(1)} L${W},${H}`;
+    return { stroke, fill: `${stroke} Z` };
   });
 
   return (
@@ -759,9 +1274,12 @@ const Studio: Component = () => {
               {(t) => (
                 <div
                   class={`bl__track ${selectedTrack() === t.id ? "is-sel" : ""}`}
+                  style={{ "--tc": t.color }}
                   onClick={() => setSelectedTrack(t.id)}
                 >
-                  <div class="bl__track-bar" style={{ background: t.color }} />
+                  <div class="bl__track-col">
+                    <TrackIcon name={TRACK_DEFS.find(d => d.type === t.type)?.icon ?? ""} />
+                  </div>
                   <div class="bl__track-body">
                     <div class="bl__track-head">
                       <input
@@ -775,23 +1293,25 @@ const Studio: Component = () => {
                         onClick={(e) => { e.stopPropagation(); deleteTrack(t.id); }}
                         title="Delete track"
                       >
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
                       </button>
                     </div>
                     <div class="bl__track-controls" onClick={(e) => e.stopPropagation()}>
                       <button
                         class={`bl__chip-btn ${t.muted ? "is-on-mute" : ""}`}
+                        title="Mute"
                         onClick={() => patchTrack(t.id, { muted: !t.muted })}
                       >M</button>
                       <button
                         class={`bl__chip-btn ${t.solo ? "is-on-solo" : ""}`}
+                        title="Solo"
                         onClick={() => patchTrack(t.id, { solo: !t.solo })}
                       >S</button>
                       <input
                         class="bl__slider"
                         type="range" min="0" max="1" step="0.01"
                         value={t.volume}
-                        onInput={(e) => patchTrack(t.id, { volume: parseFloat(e.currentTarget.value) })}
+                        onChange={(e) => patchTrack(t.id, { volume: parseFloat(e.currentTarget.value) })}
                       />
                     </div>
                   </div>
@@ -811,8 +1331,8 @@ const Studio: Component = () => {
           onWheel={onTimelineWheel}
           onMouseDown={onTimelineMouseDown}
         >
-          {/* Ruler */}
-          <div class="bl__ruler">
+          {/* Ruler — left-click or drag to seek the playhead */}
+          <div class="bl__ruler" onMouseDown={onRulerMouseDown}>
             <For each={bars}>
               {(b) => (
                 <div class="bl__bar">
@@ -823,53 +1343,180 @@ const Studio: Component = () => {
           </div>
 
           {/* Track lanes */}
-          <div class="bl__lanes">
+          <div
+            class={`bl__lanes ${globalDragOver() ? "is-global-drop" : ""}`}
+            onDragOver={onLanesDragOver}
+            onDragLeave={onLanesDragLeave}
+            onDrop={onLanesDrop}
+          >
             <Show when={tracks().length === 0}>
               <div class="bl__stage-empty">
-                <div class="bl__stage-empty-card">
-                  <span class="bl__stage-empty-eyebrow">Empty session</span>
-                  <h2 class="bl__stage-empty-title">Your canvas awaits</h2>
-                  <p class="bl__stage-empty-sub">Add a track from the panel on the left, drop in a loop, or let AutoMix get you started.</p>
-                  <div class="bl__stage-empty-actions">
-                    <button class="bl__btn-pink" onClick={() => setShowNewTrack(true)}>+ Add a track</button>
-                    <button class="bl__btn-ghost" onClick={() => addTrack("drum")}>Drum machine</button>
-                  </div>
+                <div class={`bl__stage-empty-card ${globalDragOver() ? "is-drop" : ""}`}>
+                  <Show when={!globalDragOver()} fallback={
+                    <>
+                      <span class="bl__stage-empty-eyebrow">Release to import</span>
+                      <h2 class="bl__stage-empty-title">Drop it in</h2>
+                      <p class="bl__stage-empty-sub">Audio, MIDI, and video files are supported</p>
+                    </>
+                  }>
+                    <span class="bl__stage-empty-eyebrow">Empty session</span>
+                    <h2 class="bl__stage-empty-title">Your canvas awaits</h2>
+                    <p class="bl__stage-empty-sub">Add a track from the left, or drag any audio / MIDI / video file here.</p>
+                    <div class="bl__stage-empty-actions">
+                      <button class="bl__btn-pink" onClick={() => setShowAddMenu(true)}>+ Add a track</button>
+                      <button class="bl__btn-ghost" onClick={() => addTrack("drum")}>Drum machine</button>
+                    </div>
+                  </Show>
                 </div>
               </div>
             </Show>
 
             <For each={tracks()}>
               {(t) => (
-                <div class={`bl__lane ${selectedTrack() === t.id ? "is-sel" : ""}`}>
-                  <Show when={t.type === "drum"}>
-                    <For each={drumClipBars()}>
-                      {(barIdx) => (
+                <div
+                  class={`bl__lane ${selectedTrack() === t.id ? "is-sel" : ""} ${dropTarget()?.trackId === t.id ? "is-drop" : ""}`}
+                  style={{ "--tc": t.color }}
+                  onDragOver={(e) => onLaneDragOver(e, t.id)}
+                  onDragLeave={onLaneDragLeave}
+                  onDrop={(e) => onLaneDrop(e, t.id)}
+                >
+                    <Show when={t.type === "drum"}>
+                      <For each={drumClipBars()}>
+                        {(barIdx) => (
+                          <div
+                            class="bl__clip"
+                            style={{ left: `${barIdx * 80}px`, width: "78px", "--tc": t.color }}
+                          >
+                            <div class="bl__clip-header">
+                              <span class="bl__clip-dot-led" />
+                              <span class="bl__clip-name">DRUMS</span>
+                            </div>
+                            <div class="bl__clip-matrix">
+                              <For each={pattern().rows.slice(0, 8)}>
+                                {(row) => (
+                                  <div class="bl__clip-mrow">
+                                    <For each={row.velocities.slice(0, 16)}>
+                                      {(v, i) => (
+                                        <span
+                                          class="bl__clip-cell"
+                                          classList={{
+                                            "is-hit": v > 0,
+                                            "is-beat": i() % 4 === 0,
+                                            "is-soft": v > 0 && v < 0.55,
+                                          }}
+                                        />
+                                      )}
+                                    </For>
+                                  </div>
+                                )}
+                              </For>
+                            </div>
+                          </div>
+                        )}
+                      </For>
+                    </Show>
+                    <For each={t.clips ?? []}>
+                      {(c) => (
                         <div
-                          class="bl__clip"
-                          style={{ left: `${barIdx * 80}px`, width: "78px", background: t.color }}
+                          class={`bl__mclip is-${c.kind}`}
+                          style={{
+                            left: `${c.barStart * 80}px`,
+                            width: `${c.bars * 80 - 2}px`,
+                            "--tc": t.color,
+                          }}
+                          title={`${c.name} · ${c.bars} bar${c.bars > 1 ? "s" : ""}`}
                         >
-                          <span class="bl__clip-name">Drums</span>
-                          <div class="bl__clip-wave">
-                            <For each={pattern().rows[0]?.velocities ?? []}>
-                              {(v) => <div class="bl__clip-tick" classList={{ "is-hit": v > 0 }} />}
-                            </For>
+                          <div class="bl__mclip-head">
+                            <span class="bl__mclip-icon" aria-hidden="true">
+                              <MediaClipIcon kind={c.kind} />
+                            </span>
+                            <span class="bl__mclip-name">{c.name}</span>
+                            <button
+                              class="bl__mclip-x"
+                              onClick={(e) => { e.stopPropagation(); deleteClip(t.id, c.id); }}
+                              title="Remove clip"
+                            >×</button>
+                          </div>
+                          <div class="bl__mclip-body">
+                            <Show when={c.kind !== "midi" && c.url}>
+                              <AudioWaveformDisplay
+                                url={c.url}
+                                color={t.color}
+                              />
+                            </Show>
                           </div>
                         </div>
                       )}
                     </For>
-                  </Show>
-                </div>
+                    <Show when={dropTarget()?.trackId === t.id}>
+                      <div
+                        class="bl__drop-marker"
+                        style={{ left: `${(dropTarget()?.bar ?? 0) * 80}px` }}
+                      />
+                    </Show>
+                  </div>
               )}
             </For>
+
+            {/* Drop zone — ghost lane below the last track */}
+            <Show when={tracks().length > 0}>
+              <div
+                class={`bl__import-drop ${globalDragOver() ? "is-over" : ""}`}
+                role="button"
+                tabIndex={0}
+                onClick={() => importInputEl?.click()}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); importInputEl?.click(); } }}
+                onDragOver={(e) => {
+                  if (!e.dataTransfer?.types.includes("Files")) return;
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "copy";
+                  setGlobalDragOver(true);
+                }}
+                onDragLeave={(e) => {
+                  if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node | null))
+                    setGlobalDragOver(false);
+                }}
+                onDrop={async (e) => {
+                  e.preventDefault();
+                  setGlobalDragOver(false);
+                  const files = Array.from(e.dataTransfer?.files ?? []);
+                  await importFiles(files);
+                }}
+              >
+                <input
+                  ref={(el) => (importInputEl = el)}
+                  type="file"
+                  accept="audio/*,video/*,.mid,.midi"
+                  multiple
+                  style={{ display: "none" }}
+                  onChange={async (e) => {
+                    const files = Array.from(e.currentTarget.files ?? []);
+                    e.currentTarget.value = "";
+                    await importFiles(files);
+                  }}
+                />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" class="bl__import-drop-icon" aria-hidden="true">
+                  <path d="M9 18V6l12-2v12"/>
+                  <circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+                  <line x1="2" y1="2" x2="2" y2="6"/><line x1="0" y1="4" x2="4" y2="4"/>
+                </svg>
+                <span>Drop a loop or an audio/MIDI/video file</span>
+              </div>
+            </Show>
           </div>
 
-          {/* Playhead */}
-          <Show when={playing()}>
-            <div
-              class="bl__playhead"
-              style={{ left: `${currentStep() < 0 ? 0 : (currentStep() / 16) * 80}px` }}
-            />
-          </Show>
+          {/* Playhead — always visible; drag the diamond handle to seek */}
+          <div
+            class="bl__playhead"
+            style={{ left: `${playheadPx()}px` }}
+            onMouseDown={(e) => {
+              if (e.button !== 0) return;
+              e.preventDefault();
+              e.stopPropagation();
+              playheadDragState = { startX: e.clientX, startPx: playheadPx() };
+              document.body.style.cursor = "col-resize";
+            }}
+          />
         </section>
       </div>
 
@@ -882,10 +1529,26 @@ const Studio: Component = () => {
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4c-4.4 0-8 1.6-8 3.5s3.6 3.5 8 3.5 8-1.6 8-3.5-3.6-3.5-8-3.5z"/><path d="M4 7.5v9c0 1.9 3.6 3.5 8 3.5s8-1.6 8-3.5v-9"/><path d="M12 11v6"/></svg>
               </span>
               <span>Drum Machine</span>
-              <span class="bl__dp-step">{currentStep() < 0 ? "—" : `Step ${currentStep() + 1}/16`}</span>
+              <span class="bl__dp-step">{currentStep() < 0 ? "—" : `Step ${currentStep() + 1}/${drumSteps()}`}</span>
             </div>
-            <div class="bl__dp-actions">
-              <button class="bl__btn-ghost" onClick={clearPattern}>Clear</button>
+            <div class="bl__dp-controls">
+              <div class="bl__dp-ctrl-group">
+                <span class="bl__dp-ctrl-label">Steps</span>
+                <div class="bl__dp-steps-toggle">
+                  <button class={`bl__dp-steps-btn ${drumSteps() === 16 ? "is-on" : ""}`} onClick={() => updateDrumSteps(16)}>16</button>
+                  <button class={`bl__dp-steps-btn ${drumSteps() === 32 ? "is-on" : ""}`} onClick={() => updateDrumSteps(32)}>32</button>
+                </div>
+              </div>
+              <div class="bl__dp-ctrl-group">
+                <span class="bl__dp-ctrl-label">Swing <span class="bl__dp-ctrl-val">{Math.round(drumSwing() * 100)}%</span></span>
+                <input
+                  class="bl__dp-swing"
+                  type="range" min="0" max="0.5" step="0.01"
+                  value={drumSwing()}
+                  onInput={(e) => updateSwing(parseFloat(e.currentTarget.value))}
+                />
+              </div>
+              <button class="bl__btn-ghost bl__dp-clear" onClick={clearPattern}>Clear</button>
               <button class="bl__icon-btn" onClick={() => setDrumPanelOpen(false)} title="Collapse">−</button>
             </div>
           </div>
@@ -893,21 +1556,34 @@ const Studio: Component = () => {
           <div class="bl__dp-grid">
             <For each={pattern().rows}>
               {(row, rowIdx) => (
-                <div class="bl__dp-row">
+                <div class={`bl__dp-row ${row.muted ? "is-muted" : ""}`}>
                   <div class="bl__dp-rowlabel">
+                    <button
+                      class={`bl__dp-mute ${row.muted ? "is-muted" : ""}`}
+                      onClick={() => toggleRowMute(rowIdx())}
+                      title={row.muted ? "Unmute" : "Mute"}
+                    >M</button>
                     <span class="bl__dp-rowname">{DRUM_LABEL[row.drum] ?? row.drum}</span>
+                    <input
+                      class="bl__dp-vol"
+                      type="range" min="-20" max="6" step="1"
+                      value={row.gainDb}
+                      onChange={(e) => updateRowGain(rowIdx(), parseInt(e.currentTarget.value, 10))}
+                      title={`Volume: ${row.gainDb}dB`}
+                    />
                   </div>
-                  <div class="bl__dp-cells">
+                  <div class="bl__dp-cells" style={{ "grid-template-columns": `repeat(${drumSteps()}, 1fr)` }}>
                     <For each={row.velocities}>
                       {(v, stepIdx) => (
                         <button
                           class={[
                             "bl__dp-cell",
-                            v > 0 ? "is-on" : "",
+                            v >= 0.9 ? "is-vel-hi" : v >= 0.5 ? "is-vel-med" : v > 0 ? "is-vel-lo" : "",
                             currentStep() === stepIdx() ? "is-cursor" : "",
                             stepIdx() % 4 === 0 ? "is-down" : "",
                           ].filter(Boolean).join(" ")}
                           onClick={() => toggleStep(rowIdx(), stepIdx())}
+                          onContextMenu={(e) => { e.preventDefault(); cycleStepVelocity(rowIdx(), stepIdx()); }}
                           aria-label={`${row.drum} step ${stepIdx() + 1}`}
                         />
                       )}
@@ -971,6 +1647,71 @@ const Studio: Component = () => {
               <button class="bl__icon-btn" onClick={() => setOctave(Math.min(7, octave() + 1))} title="Octave up">+</button>
             </div>
           </div>
+
+          {/* Lead / Pad synth editor — ADSR visualizer + live sliders */}
+          <Show when={synthPreset() === "lead" || synthPreset() === "pad"}>
+            <div class={`bl__synth-edit ${synthPreset() === "pad" ? "is-pad" : "is-lead"}`}>
+              {/* ADSR envelope visualizer */}
+              <svg class="bl__adsr-viz" viewBox="0 0 200 52" preserveAspectRatio="none">
+                <path d={adsrPath().fill}
+                  fill={synthPreset() === "pad" ? "rgba(163,116,247,0.12)" : "rgba(224,82,151,0.12)"}
+                />
+                <path d={adsrPath().stroke} fill="none"
+                  stroke={synthPreset() === "pad" ? "#a374f7" : "#e05297"}
+                  stroke-width="1.5" stroke-linejoin="round"
+                />
+                {/* ADSR section labels */}
+                <text x="2" y="50" class="bl__adsr-lbl">A</text>
+                <text x="52" y="50" class="bl__adsr-lbl">D</text>
+                <text x="105" y="50" class="bl__adsr-lbl">S</text>
+                <text x="158" y="50" class="bl__adsr-lbl">R</text>
+              </svg>
+
+              {/* Sliders */}
+              <div class="bl__synth-sliders">
+                <div class="bl__synth-param">
+                  <label class="bl__synth-lbl">Attack</label>
+                  <input type="range" class="bl__synth-range" min="0.001" max="2" step="0.001"
+                    value={synthAttack()}
+                    onInput={(e) => updateEnvelope(+e.currentTarget.value, synthDecay(), synthSustain(), synthRelease())}
+                  />
+                  <span class="bl__synth-val">{synthAttack() < 0.1 ? `${Math.round(synthAttack() * 1000)}ms` : `${synthAttack().toFixed(2)}s`}</span>
+                </div>
+                <div class="bl__synth-param">
+                  <label class="bl__synth-lbl">Decay</label>
+                  <input type="range" class="bl__synth-range" min="0.01" max="2" step="0.01"
+                    value={synthDecay()}
+                    onInput={(e) => updateEnvelope(synthAttack(), +e.currentTarget.value, synthSustain(), synthRelease())}
+                  />
+                  <span class="bl__synth-val">{synthDecay() < 0.1 ? `${Math.round(synthDecay() * 1000)}ms` : `${synthDecay().toFixed(2)}s`}</span>
+                </div>
+                <div class="bl__synth-param">
+                  <label class="bl__synth-lbl">Sustain</label>
+                  <input type="range" class="bl__synth-range" min="0" max="1" step="0.01"
+                    value={synthSustain()}
+                    onInput={(e) => updateEnvelope(synthAttack(), synthDecay(), +e.currentTarget.value, synthRelease())}
+                  />
+                  <span class="bl__synth-val">{Math.round(synthSustain() * 100)}%</span>
+                </div>
+                <div class="bl__synth-param">
+                  <label class="bl__synth-lbl">Release</label>
+                  <input type="range" class="bl__synth-range" min="0.01" max="4" step="0.01"
+                    value={synthRelease()}
+                    onInput={(e) => updateEnvelope(synthAttack(), synthDecay(), synthSustain(), +e.currentTarget.value)}
+                  />
+                  <span class="bl__synth-val">{synthRelease() < 0.1 ? `${Math.round(synthRelease() * 1000)}ms` : `${synthRelease().toFixed(2)}s`}</span>
+                </div>
+                <div class="bl__synth-param bl__synth-param--wide">
+                  <label class="bl__synth-lbl">Cutoff</label>
+                  <input type="range" class="bl__synth-range" min="100" max="8000" step="50"
+                    value={synthFilterFreq()}
+                    onInput={(e) => updateFilterFreq(+e.currentTarget.value)}
+                  />
+                  <span class="bl__synth-val">{synthFilterFreq() >= 1000 ? `${(synthFilterFreq() / 1000).toFixed(1)}kHz` : `${synthFilterFreq()}Hz`}</span>
+                </div>
+              </div>
+            </div>
+          </Show>
 
           <div class="bl__kb">
             {(() => {
@@ -1285,6 +2026,37 @@ const Studio: Component = () => {
             </div>
           );
         })()}
+      </Show>
+
+      {/* RESTORE SESSION DIALOG */}
+      <Show when={showRestoreDialog()}>
+        <div class="db__pm-overlay">
+          <div class="db__pm" onClick={(e) => e.stopPropagation()}>
+            <div class="db__pm-meta">
+              <span>MeloStudio</span>
+              <span class="db__pm-sep">/</span>
+              <span>Studio</span>
+              <span class="db__pm-sep">/</span>
+              <strong>Session found</strong>
+            </div>
+            <div class="db__pm-display">
+              <p class="db__pm-line">Restore</p>
+              <p class="db__pm-line db__pm-line--pink">Session?</p>
+            </div>
+            <p style={{ "font-family": "var(--font-mono, monospace)", "font-size": "0.78rem", color: "var(--text-secondary)", "line-height": "1.65", "margin-top": "-0.5rem" }}>
+              You have tracks, clips and beat patterns from a previous session.
+              Restore to pick up where you left off, or start fresh.
+            </p>
+            <div class="db__pm-row">
+              <button class="db__pm-btn db__pm-btn--primary" onClick={restoreSession}>
+                Restore session
+              </button>
+              <button class="db__pm-btn db__pm-btn--ghost" onClick={discardSession}>
+                Start fresh
+              </button>
+            </div>
+          </div>
+        </div>
       </Show>
 
       {/* NEW TRACK MODAL */}

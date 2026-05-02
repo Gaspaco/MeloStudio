@@ -457,12 +457,12 @@
   }
 
   &__waveform {
-    display: flex;
-    align-items: center;
-    gap: 1px;
-    padding: 0.5rem 0.5rem;
+    position: relative;
     overflow: hidden;
+    padding: 0;
     height: 100%;
+    display: flex;
+    align-items: stretch;
   }
 
   &__wav-bar {

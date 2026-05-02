@@ -29,7 +29,7 @@ interface SynthPresetOptions {
   volume: number; // dB
 }
 
-const SYNTH_PRESETS: Record<"lead" | "pad" | "fallback", SynthPresetOptions> = {
+const SYNTH_PRESETS: Record<"lead" | "pad" | "fallback" | "bassFallback", SynthPresetOptions> = {
   lead: {
     oscillator: { type: "sawtooth" },
     envelope: { attack: 0.005, decay: 0.2, sustain: 0.7, release: 0.25 },
@@ -38,7 +38,7 @@ const SYNTH_PRESETS: Record<"lead" | "pad" | "fallback", SynthPresetOptions> = {
       attack: 0.01, decay: 0.3, sustain: 0.4, release: 0.25,
       baseFrequency: 1500, octaves: 1.5,
     },
-    volume: -12,
+    volume: -3,
   },
   pad: {
     oscillator: { type: "fatsawtooth", count: 3, spread: 30 },
@@ -48,7 +48,7 @@ const SYNTH_PRESETS: Record<"lead" | "pad" | "fallback", SynthPresetOptions> = {
       attack: 0.8, decay: 0.4, sustain: 0.6, release: 1.0,
       baseFrequency: 800, octaves: 1,
     },
-    volume: -12,
+    volume: -3,
   },
   // Used as the silent-period fallback while samples are downloading.
   fallback: {
@@ -60,6 +60,18 @@ const SYNTH_PRESETS: Record<"lead" | "pad" | "fallback", SynthPresetOptions> = {
       baseFrequency: 4500, octaves: 0.6,
     },
     volume: -10,
+  },
+  // Bass-specific fallback — sawtooth + heavy low-pass so it sounds bass-like,
+  // not piano-like, while the bass-electric samples are downloading.
+  bassFallback: {
+    oscillator: { type: "sawtooth" },
+    envelope: { attack: 0.005, decay: 0.5, sustain: 0.55, release: 0.35 },
+    filter: { frequency: 380, Q: 2.5 },
+    filterEnvelope: {
+      attack: 0.02, decay: 0.25, sustain: 0.2, release: 0.3,
+      baseFrequency: 380, octaves: 1.8,
+    },
+    volume: -6,
   },
 };
 
@@ -158,6 +170,8 @@ export class PolySynth {
   /** Track which engine handled each note so noteOff goes to the right one. */
   private noteOwner = new Map<number, "synth" | "sampler">();
   private active = new Set<number>();
+  /** Stored so setFilterFreq can preserve Q when only changing frequency. */
+  private filterQ = 1.0;
 
   constructor(preset: SynthPreset = "piano") {
     bindToneToContext();
@@ -175,6 +189,7 @@ export class PolySynth {
     if (p === "lead" || p === "pad") {
       // Pure synth — detach any sampler.
       this.detachSampler();
+      this.filterQ = SYNTH_PRESETS[p].filter.Q;
       this.synth.set(buildSynthOpts(SYNTH_PRESETS[p]));
       return;
     }
@@ -186,8 +201,10 @@ export class PolySynth {
     this.sampler = s;
     this.samplerReady = s.loaded;
 
-    // While we wait for samples, the fallback synth voices the keyboard.
-    this.synth.set(buildSynthOpts(SYNTH_PRESETS.fallback));
+    // While we wait for samples, use a preset-appropriate fallback so bass
+    // doesn't sound like piano during the download window.
+    const fallbackCfg = p === "bass" ? SYNTH_PRESETS.bassFallback : SYNTH_PRESETS.fallback;
+    this.synth.set(buildSynthOpts(fallbackCfg));
 
     if (!s.loaded) {
       // Tone.loaded() resolves once every pending buffer in the global
@@ -222,6 +239,10 @@ export class PolySynth {
   noteOn(midi: number, velocity = 1): void {
     if (this.active.has(midi)) this.noteOff(midi);
     const note = midiToNote(midi);
+    // Self-heal: if the Tone.loaded() callback was missed, check directly.
+    if (this.sampler && !this.samplerReady && this.sampler.loaded) {
+      this.samplerReady = true;
+    }
     if (this.sampler && this.samplerReady) {
       this.sampler.triggerAttack(note, undefined, velocity);
       this.noteOwner.set(midi, "sampler");
@@ -250,6 +271,21 @@ export class PolySynth {
     this.sampler?.releaseAll();
     this.active.clear();
     this.noteOwner.clear();
+  }
+
+  /** Live-tweak ADSR envelope — only effective for lead/pad presets. */
+  setEnvelope(attack: number, decay: number, sustain: number, release: number): void {
+    if (this.preset !== "lead" && this.preset !== "pad") return;
+    this.synth.set({
+      envelope: { attack, decay, sustain, release },
+      filterEnvelope: { attack: attack * 0.9, decay, sustain, release: release * 0.85 },
+    });
+  }
+
+  /** Live-tweak filter cutoff — only effective for lead/pad presets. */
+  setFilterFreq(freq: number): void {
+    if (this.preset !== "lead" && this.preset !== "pad") return;
+    this.synth.set({ filter: { type: "lowpass" as const, frequency: freq, Q: this.filterQ } });
   }
 
   dispose(): void {

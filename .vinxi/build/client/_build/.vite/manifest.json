@@ -14,18 +14,18 @@
     "file": "assets/index-CzGW6FVa.js",
     "name": "index"
   },
-  "_routing-CirwSqmj.js": {
-    "file": "assets/routing-CirwSqmj.js",
+  "_routing-CRg5XiLQ.js": {
+    "file": "assets/routing-CRg5XiLQ.js",
     "name": "routing"
   },
   "src/routes/dashboard.tsx?pick=default&pick=$css": {
-    "file": "assets/dashboard-CRlH9yop.js",
+    "file": "assets/dashboard-Bdc0v_NG.js",
     "name": "dashboard",
     "src": "src/routes/dashboard.tsx?pick=default&pick=$css",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
-      "_routing-CirwSqmj.js",
+      "_routing-CRg5XiLQ.js",
       "_index-CzGW6FVa.js",
       "_auth-CRRFgofH.js",
       "_api-BkRsMQYU.js"
@@ -35,13 +35,13 @@
     ]
   },
   "src/routes/forgot.tsx?pick=default&pick=$css": {
-    "file": "assets/forgot-B49tj9Ey.js",
+    "file": "assets/forgot-BnHXTYBQ.js",
     "name": "forgot",
     "src": "src/routes/forgot.tsx?pick=default&pick=$css",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
-      "_routing-CirwSqmj.js",
+      "_routing-CRg5XiLQ.js",
       "_index-CzGW6FVa.js"
     ],
     "css": [
@@ -49,13 +49,13 @@
     ]
   },
   "src/routes/index.tsx?pick=default&pick=$css": {
-    "file": "assets/index-DH7KnACq.js",
+    "file": "assets/index-DerQgjWY.js",
     "name": "index",
     "src": "src/routes/index.tsx?pick=default&pick=$css",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
-      "_routing-CirwSqmj.js",
+      "_routing-CRg5XiLQ.js",
       "_index-CzGW6FVa.js",
       "_auth-CRRFgofH.js"
     ],
@@ -64,13 +64,13 @@
     ]
   },
   "src/routes/login.tsx?pick=default&pick=$css": {
-    "file": "assets/login-CmCUKq_1.js",
+    "file": "assets/login-B1WwyOvl.js",
     "name": "login",
     "src": "src/routes/login.tsx?pick=default&pick=$css",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
-      "_routing-CirwSqmj.js",
+      "_routing-CRg5XiLQ.js",
       "_index-CzGW6FVa.js",
       "_auth-CRRFgofH.js"
     ],
@@ -79,13 +79,13 @@
     ]
   },
   "src/routes/signup.tsx?pick=default&pick=$css": {
-    "file": "assets/signup-D-Kzng9i.js",
+    "file": "assets/signup-CCV__9ZH.js",
     "name": "signup",
     "src": "src/routes/signup.tsx?pick=default&pick=$css",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
-      "_routing-CirwSqmj.js",
+      "_routing-CRg5XiLQ.js",
       "_index-CzGW6FVa.js",
       "_auth-CRRFgofH.js"
     ],
@@ -94,27 +94,27 @@
     ]
   },
   "src/routes/studio/[id].tsx?pick=default&pick=$css": {
-    "file": "assets/_id_-DnKdWJLt.js",
+    "file": "assets/_id_-Bkgdut8e.js",
     "name": "_id_",
     "src": "src/routes/studio/[id].tsx?pick=default&pick=$css",
     "isEntry": true,
     "isDynamicEntry": true,
     "imports": [
-      "_routing-CirwSqmj.js",
+      "_routing-CRg5XiLQ.js",
       "_auth-CRRFgofH.js",
       "_api-BkRsMQYU.js"
     ],
     "css": [
-      "assets/_id_-Dbn0-PKt.css"
+      "assets/_id_-DM9f_ky9.css"
     ]
   },
   "virtual:$vinxi/handler/client": {
-    "file": "assets/client-CNgxsNzk.js",
+    "file": "assets/client-DP2atMGE.js",
     "name": "client",
     "src": "virtual:$vinxi/handler/client",
     "isEntry": true,
     "imports": [
-      "_routing-CirwSqmj.js"
+      "_routing-CRg5XiLQ.js"
     ],
     "dynamicImports": [
       "src/routes/dashboard.tsx?pick=default&pick=$css",

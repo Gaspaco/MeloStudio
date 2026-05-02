@@ -29,10 +29,14 @@ export const DEFAULT_PATTERN = (): StepPattern => ({
   steps: 16,
   bpm: 100,
   rows: [
-    { drum: "kick",       velocities: Array(16).fill(0), gainDb: 0,  muted: false },
-    { drum: "snare",      velocities: Array(16).fill(0), gainDb: -2, muted: false },
-    { drum: "hat_closed", velocities: Array(16).fill(0), gainDb: -8, muted: false },
-    { drum: "clap",       velocities: Array(16).fill(0), gainDb: -3, muted: false },
+    { drum: "kick",       velocities: Array(16).fill(0), gainDb: 0,   muted: false },
+    { drum: "snare",      velocities: Array(16).fill(0), gainDb: -2,  muted: false },
+    { drum: "hat_closed", velocities: Array(16).fill(0), gainDb: -8,  muted: false },
+    { drum: "hat_open",   velocities: Array(16).fill(0), gainDb: -10, muted: false },
+    { drum: "clap",       velocities: Array(16).fill(0), gainDb: -3,  muted: false },
+    { drum: "tom_hi",     velocities: Array(16).fill(0), gainDb: -5,  muted: false },
+    { drum: "tom_lo",     velocities: Array(16).fill(0), gainDb: -4,  muted: false },
+    { drum: "rimshot",    velocities: Array(16).fill(0), gainDb: -6,  muted: false },
   ],
 });
 
@@ -75,6 +79,11 @@ export class StepSequencer {
     if (!row) return;
     row.velocities[stepIdx] = row.velocities[stepIdx] > 0 ? 0 : 1;
   }
+  setStepVelocity(rowIdx: number, stepIdx: number, velocity: number): void {
+    const row = this.pattern.rows[rowIdx];
+    if (!row) return;
+    row.velocities[stepIdx] = Math.max(0, Math.min(1, velocity));
+  }
   setRowMuted(rowIdx: number, muted: boolean): void {
     const r = this.pattern.rows[rowIdx];
     if (r) r.muted = muted;
@@ -86,6 +95,23 @@ export class StepSequencer {
   clearRow(rowIdx: number): void {
     const r = this.pattern.rows[rowIdx];
     if (r) r.velocities = Array(this.pattern.steps).fill(0);
+  }
+  setSwing(amount: number): void {
+    const t = Tone.getTransport();
+    t.swing = Math.max(0, Math.min(1, amount));
+    t.swingSubdivision = "16n";
+  }
+  setSteps(n: number): void {
+    if (n !== 16 && n !== 32) return;
+    this.pattern.steps = n;
+    for (const row of this.pattern.rows) {
+      if (row.velocities.length < n) {
+        row.velocities = [...row.velocities, ...Array(n - row.velocities.length).fill(0)];
+      } else {
+        row.velocities = row.velocities.slice(0, n);
+      }
+    }
+    if (this.playing) this.rebuildSequence();
   }
 
   async start(): Promise<void> {
