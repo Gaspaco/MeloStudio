@@ -52,31 +52,33 @@ export class DrumKit {
     }).connect(destination);
 
     // ── Hi-hats ──────────────────────────────────────────
-    const hatClosed = new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 0.06, release: 0.01 },
-      harmonicity: 5.1,
-      modulationIndex: 32,
-      resonance: 4000,
-      octaves: 1.5,
-      volume: -28,
-    }).connect(destination);
+    // ── Hi-hats (NoiseSynth + highpass — more reliable than MetalSynth) ──
+    const hatHp = new Tone.Filter(7000, "highpass").connect(destination);
+    const hatClosed = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.01 },
+      volume: 2,
+    }).connect(hatHp);
 
-    const hatOpen = new Tone.MetalSynth({
-      envelope: { attack: 0.001, decay: 0.35, release: 0.2 },
-      harmonicity: 5.1,
-      modulationIndex: 32,
-      resonance: 4000,
-      octaves: 1.5,
-      volume: -26,
-    }).connect(destination);
+    const hatOpenHp = new Tone.Filter(5000, "highpass").connect(destination);
+    const hatOpen = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.4, sustain: 0.1, release: 0.3 },
+      volume: 0,
+    }).connect(hatOpenHp);
 
-    // ── Clap ─────────────────────────────────────────────
-    const clapBP = new Tone.Filter({ frequency: 1500, type: "bandpass", Q: 1.2 }).connect(destination);
+    // ── Clap — two noise layers for crack + body ──────────
+    const clapHp = new Tone.Filter(800, "highpass").connect(destination);
     const clap = new Tone.NoiseSynth({
+      noise: { type: "white" },
+      envelope: { attack: 0.001, decay: 0.12, sustain: 0 },
+      volume: -2,
+    }).connect(clapHp);
+    const clapTail = new Tone.NoiseSynth({
       noise: { type: "pink" },
-      envelope: { attack: 0.001, decay: 0.18, sustain: 0 },
-      volume: -10,
-    }).connect(clapBP);
+      envelope: { attack: 0.005, decay: 0.22, sustain: 0 },
+      volume: -8,
+    }).connect(clapHp);
 
     // ── Tom Hi ────────────────────────────────────────────
     const tomHi = new Tone.MembraneSynth({
@@ -127,21 +129,23 @@ export class DrumKit {
       },
       hat_closed: {
         trigger(time, vel) {
-          hatClosed.triggerAttackRelease("32n", hTime(time, 5), hVel(vel, 0.08));
+          hatClosed.triggerAttackRelease("32n", time, hVel(vel, 0.08));
         },
-        dispose() { hatClosed.dispose(); },
+        dispose() { hatClosed.dispose(); hatHp.dispose(); },
       },
       hat_open: {
         trigger(time, vel) {
-          hatOpen.triggerAttackRelease("8n", hTime(time, 4), hVel(vel, 0.07));
+          hatOpen.triggerAttackRelease("8n", time, hVel(vel, 0.07));
         },
-        dispose() { hatOpen.dispose(); },
+        dispose() { hatOpen.dispose(); hatOpenHp.dispose(); },
       },
       clap: {
         trigger(time, vel) {
-          clap.triggerAttackRelease("16n", hTime(time, 6), hVel(vel, 0.09));
+          const v = hVel(vel, 0.08);
+          clap.triggerAttackRelease("16n", time, v);
+          clapTail.triggerAttackRelease("16n", hTime(time, 4), v * 0.6);
         },
-        dispose() { clap.dispose(); clapBP.dispose(); },
+        dispose() { clap.dispose(); clapTail.dispose(); clapHp.dispose(); },
       },
       tom_hi: {
         trigger(time, vel) {

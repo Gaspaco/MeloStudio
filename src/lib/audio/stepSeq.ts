@@ -9,7 +9,32 @@
 
 import * as Tone from "tone";
 import { bindToneToContext } from "./context";
-import { DrumKit, type DrumName } from "./synthDrums";
+import { DrumKit, type DrumName, DRUM_NAMES } from "./synthDrums";
+
+/**
+ * Sanitize a saved pattern: deduplicate rows by drum name (keep first),
+ * filter out unknown drum types, and ensure each row has the right number
+ * of velocity slots. Call this before applying a loaded pattern.
+ */
+export function sanitizePattern(p: StepPattern): StepPattern {
+  const seen = new Set<string>();
+  const rows = (p.rows ?? []).filter(r => {
+    if (!DRUM_NAMES.includes(r.drum as DrumName)) return false;
+    if (seen.has(r.drum)) return false;
+    seen.add(r.drum);
+    return true;
+  }).map(r => ({
+    ...r,
+    velocities: Array.from({ length: p.steps ?? 16 }, (_, i) => r.velocities[i] ?? 0),
+  }));
+  // Ensure all canonical drums are present (add empty rows for missing ones)
+  for (const drum of DRUM_NAMES) {
+    if (!seen.has(drum)) {
+      rows.push({ drum, velocities: Array(p.steps ?? 16).fill(0), gainDb: 0, muted: false });
+    }
+  }
+  return { ...p, steps: p.steps ?? 16, rows };
+}
 
 export interface StepRow {
   drum: DrumName;
@@ -112,6 +137,18 @@ export class StepSequencer {
       }
     }
     if (this.playing) this.rebuildSequence();
+  }
+
+  /** Instantly trigger a single drum voice for UI preview (e.g. on cell click). */
+  async previewDrum(rowIdx: number): Promise<void> {
+    try { await Tone.start(); } catch { /* */ }
+    if (!this.kit) this.kit = new DrumKit(this.masterGain);
+    const row = this.pattern.rows[rowIdx];
+    if (!row || row.muted) return;
+    const voice = this.kit.voices[row.drum as DrumName];
+    if (!voice) return;
+    const vel = Math.min(1, Math.max(0.15, dbToGain(row.gainDb)));
+    voice.trigger(Tone.now(), vel);
   }
 
   async start(): Promise<void> {

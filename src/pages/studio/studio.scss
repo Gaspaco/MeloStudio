@@ -1437,6 +1437,48 @@
 }
 
 // ── Drum clip block — modern DAW look ──────────────────────────────────
+/* Instrument ghost block — placeholder shown when no clips recorded yet */
+.bl__inst-ghost {
+  position: absolute;
+  left: 4px;
+  top: 0.4rem;
+  width: 160px;
+  height: calc(100% - 0.8rem);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--tc, #{$accent}) 14%, transparent) 0%,
+      color-mix(in srgb, var(--tc, #{$accent}) 4%, transparent) 100%);
+  border: 1px dashed color-mix(in srgb, var(--tc, #{$accent}) 35%, transparent);
+  pointer-events: none;
+}
+.bl__inst-ghost-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tc, #{$accent});
+  box-shadow: 0 0 6px var(--tc, #{$accent});
+  flex-shrink: 0;
+}
+.bl__inst-ghost-name {
+  font-family: $font-mono;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--tc, #{$accent}) 90%, #fff);
+  flex-shrink: 0;
+}
+.bl__inst-ghost-hint {
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  color: rgba(#fff, 0.2);
+  white-space: nowrap;
+}
+
 .bl__clip {
   position: absolute;
   top: 0.4rem;
@@ -1716,7 +1758,11 @@
   grid-template-columns: 9rem 1fr;
   gap: 0.6rem;
   align-items: center;
-  &.is-muted { opacity: 0.35; }
+  &.is-muted {
+    opacity: 0.4;
+    .bl__dp-rowlabel { border-left: 2px solid rgba(#f55, 0.6); padding-left: 0.4rem; }
+    .bl__dp-cells { filter: grayscale(0.5); }
+  }
 }
 .bl__dp-rowlabel {
   display: flex;
@@ -1782,30 +1828,30 @@
 .bl__dp-cell {
   all: unset;
   cursor: pointer;
+  position: relative;
   height: 1.65rem;
   border-radius: $radius-sm;
-  border: 1px solid rgba(#fff, 0.05);
-  background: rgba(#fff, 0.018);
+  border: 1px solid rgba(#fff, 0.1);
+  background: rgba(#fff, 0.06);
   transition: background 0.08s, border-color 0.08s, transform 0.06s;
-  &:hover { background: rgba(#fff, 0.06); border-color: rgba(#fff, 0.12); }
-  &.is-down { background: rgba(#fff, 0.035); border-color: rgba(#fff, 0.08); }
-  // Velocity levels
+  &:hover { background: rgba(#fff, 0.14); border-color: rgba(#fff, 0.22); }
+  // Velocity levels — only these actually trigger sound
   &.is-vel-lo {
-    background: rgba($accent, 0.22);
-    border-color: rgba($accent, 0.25);
+    background: rgba($accent, 0.3);
+    border-color: rgba($accent, 0.35);
   }
   &.is-vel-med {
-    background: rgba($accent, 0.55);
-    border-color: rgba($accent, 0.55);
-    box-shadow: 0 0 6px rgba($accent, 0.3);
+    background: rgba($accent, 0.65);
+    border-color: rgba($accent, 0.65);
+    box-shadow: 0 0 6px rgba($accent, 0.35);
   }
   &.is-vel-hi {
     background: $accent;
     border-color: $accent;
-    box-shadow: 0 0 12px rgba($accent, 0.45);
+    box-shadow: 0 0 12px rgba($accent, 0.5);
   }
   &.is-cursor:not(.is-vel-lo):not(.is-vel-med):not(.is-vel-hi) {
-    box-shadow: inset 0 0 0 1px rgba(#fff, 0.25);
+    box-shadow: inset 0 0 0 1px rgba(#fff, 0.3);
   }
   &.is-vel-hi.is-cursor {
     background: #fff;
@@ -2531,9 +2577,9 @@ $pad-color:  #a374f7;
 .bl__overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   display: grid;
   place-items: center;
   z-index: 200;
@@ -2956,15 +3002,45 @@ $pad-color:  #a374f7;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #fff;
+  color: rgba(#fff, 0.45);
   transition: color 0.2s, background 0.2s;
-  svg { width: 1.05rem; height: 1.05rem; color: #fff; transition: color 0.2s; }
-  &:hover:not(:disabled) {
-    color: #fff;
-    background: rgba(#fff, 0.08);
+  svg { width: 1.05rem; height: 1.05rem; color: inherit; transition: color 0.2s; }
+  &:hover:not(:disabled) { color: rgba(#fff, 0.75); background: rgba(#fff, 0.06); }
+  &:disabled { opacity: 0.3; cursor: default; }
+  /* context-enabled: not highlighted but fully clickable */
+  &.is-ctx {
+    opacity: 1;
+    color: rgba(#fff, 0.55);
+    cursor: pointer;
+    &:hover { color: rgba(#fff, 0.85); background: rgba(#fff, 0.07); }
+  }
+}
+
+/* Active panel tab — same shape as util-btn but highlighted */
+.bl__util-tab {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.2rem;
+  padding: 0 1rem;
+  border-radius: $radius-sm;
+  font-family: $font-mono;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(#fff, 0.5);
+  transition: color 0.15s, background 0.15s;
+  svg { width: 1rem; height: 1rem; color: inherit; flex-shrink: 0; }
+  &:hover { color: rgba(#fff, 0.8); background: rgba(#fff, 0.07); }
+  &.is-active {
+    color: $accent;
+    background: rgba($accent, 0.1);
+    border-radius: $radius-sm;
     svg { color: $accent; }
   }
-  &:disabled { opacity: 0.4; cursor: default; }
 }
 
 /* leave space at the bottom of timeline so util bar doesn’t overlap last lane */
@@ -3029,4 +3105,107 @@ $pad-color:  #a374f7;
   letter-spacing: inherit;
   font-style: inherit;
   &::selection { background: rgba($accent, 0.35); color: #fff; }
+}
+
+/* ─────────────── MOBILE / SMALL SCREENS ─────────────── */
+@media (max-width: 640px) {
+  /* Top bar — compact */
+  .bl__strip {
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
+    padding: 0.85rem 0.85rem 0.6rem;
+  }
+  .bl__strip-l { gap: 0.35rem; margin-left: 0; }
+  .bl__strip-r { gap: 0.35rem; }
+  .bl__strip-l > .bl__icon-btn { width: 2.4rem; height: 2.4rem; svg { width: 1.2rem; height: 1.2rem; } }
+  .bl__title-eyebrow { font-size: 0.55rem; letter-spacing: 0.24em; }
+  .bl__title { font-size: 1.2rem; max-width: 60vw; }
+  .bl__title--edit { width: 60vw; }
+  .bl__title-pencil { display: none; }
+  .bl__brand, .bl__avatar, .bl__btn-invite, .bl__bell { display: none !important; }
+
+  /* Bottom transport row — fit small screen */
+  .bl__top { gap: 0; }
+  .bl__transport-tools, .bl__chips, .bl__mastering, .bl__save-status { display: none !important; }
+
+  /* Main grid — narrow sidebar so timeline gets max space */
+  .bl__main { grid-template-columns: 8.5rem 1fr; }
+
+  /* Track sidebar — compact track headers */
+  .bl__tracks-side { font-size: 0.78rem; }
+  .bl__track {
+    padding: 0.45rem 0.5rem !important;
+    gap: 0.35rem !important;
+    .bl__track-name { font-size: 0.72rem; max-width: 5.5rem; }
+    .bl__track-icon { width: 1.5rem; height: 1.5rem; }
+    .bl__track-controls { gap: 0.2rem; }
+    button { width: 1.4rem; height: 1.4rem; }
+    .bl__track-vol, .bl__track-pan { display: none; }
+  }
+
+  /* Timeline ruler — smaller */
+  .bl__tlruler { height: 1.6rem; font-size: 0.6rem; }
+
+  /* Drop zone — fit narrower viewport (account for 8.5rem sidebar) */
+  .bl__import-drop {
+    --drop-zone-w: calc(100vw - 8.5rem - 1rem);
+    height: 3.6rem;
+    margin: 0.4rem 0;
+    span { font-size: 0.7rem; padding: 0 0.5rem; text-align: center; }
+    svg { width: 1.4rem; height: 1.4rem; }
+  }
+
+  /* Drum panel — fits mobile width */
+  .bl__drum-panel, .bl__kb-panel { max-height: 50vh; }
+  .bl__dp-head { padding: 0.5rem 0.7rem; gap: 0.5rem; }
+  .bl__dp-title { font-size: 0.72rem; gap: 0.45rem; }
+  .bl__dp-icon { width: 1.3rem; height: 1.3rem; }
+  .bl__dp-grid { padding: 0.4rem 0.5rem !important; overflow-x: auto; }
+  .bl__dp-rowlabel { font-size: 0.6rem !important; min-width: 4rem !important; padding: 0 0.3rem !important; }
+  .bl__dp-cell { min-width: 1.1rem !important; }
+
+  /* Keyboard panel — make keys scroll horizontally */
+  .bl__kb-panel { overflow-x: auto; }
+  .bl__kb { min-width: max-content; }
+
+  /* Bottom util tab bar — shrink + allow wrapping */
+  .bl__util {
+    height: auto;
+    min-height: 2.8rem;
+    padding: 0.4rem 0.6rem;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .bl__util-l, .bl__util-r { gap: 0.25rem; flex-wrap: wrap; }
+  .bl__util-tab, .bl__util-btn {
+    height: 1.9rem;
+    padding: 0 0.55rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    gap: 0.35rem;
+    svg { width: 0.85rem; height: 0.85rem; }
+  }
+  .bl__util-sep { display: none; }
+  .bl__timeline { padding-bottom: 5rem; }
+
+  /* Modals — full-width on mobile */
+  .bl__modal { width: 100%; max-width: 100vw; border-radius: 0.85rem; margin: 0.5rem; }
+  .bl__nt { padding: 1rem !important; }
+
+  /* Restore-session dialog */
+  .db__pm { width: 100%; padding: 1.25rem !important; }
+}
+
+/* very small phones */
+@media (max-width: 380px) {
+  .bl__main { grid-template-columns: 7rem 1fr; }
+  .bl__title { font-size: 1rem; max-width: 50vw; }
+  .bl__import-drop { --drop-zone-w: calc(100vw - 7rem - 1rem); }
+  .bl__track .bl__track-name { max-width: 4rem; font-size: 0.65rem; }
+}
+
+/* Touch device tweaks — bigger hit targets, no hover artefacts */
+@media (hover: none) and (pointer: coarse) {
+  .bl__track button, .bl__icon-btn, .bl__util-tab, .bl__util-btn { min-height: 2.4rem; }
+  .bl__dp-cell { min-height: 1.6rem; }
 }
