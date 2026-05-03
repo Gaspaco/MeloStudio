@@ -1,0 +1,305 @@
+@use "../../../styles/variables" as *;
+
+/* ─────────────── RESPONSIVE ─────────────── */
+@media (max-width: 1100px) {
+  .bl__main { grid-template-columns: 14rem 1fr; }
+  .bl__top { gap: 0.75rem; }
+  .bl__mastering, .bl__save-status { display: none; }
+}
+@media (max-width: 800px) {
+  .bl__top {
+    grid-template-columns: auto 1fr auto;
+    padding: 0 0.85rem;
+  }
+  .bl__transport-tools, .bl__chips,
+  .bl__top-l .bl__brand .bl__logo-text::after { display: none; }
+  .bl__title { display: none; }
+  .bl__main { grid-template-columns: 12rem 1fr; }
+}
+
+/* hide legacy classes from the old version */
+.st, .st__bar, .st__main, .st__sidebar, .st__seq, .st__rows { display: none; }
+
+/* ────────────── BOTTOM UTILITY BAR ────────────── */
+.bl__util {
+  height: 3.2rem;
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.5rem;
+  background: rgba($bg-primary, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(#fff, 0.08);
+  z-index: 8;
+  pointer-events: none; /* let drum panel scroll above; buttons re-enable */
+  > * { pointer-events: auto; }
+}
+.bl__util-l, .bl__util-r {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.bl__util-sep {
+  color: $text-muted;
+  opacity: 0.5;
+  font-size: 0.85rem;
+  margin: 0 0.2rem;
+  user-select: none;
+}
+.bl__util-fx {
+  font-style: italic;
+  font-family: $font-display;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: $text-primary;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  margin-right: 0.3rem;
+}
+.bl__util-flame {
+  font-size: 0.7rem;
+  color: $accent;
+}
+.bl__util-btn--melo {
+  gap: 0.2em;
+}
+.bl__util-melo-word {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba($accent, 0.85);
+}
+.bl__util-melo-sounds {
+  font-family: $font-script;
+  font-weight: 400;
+  font-size: 1.05rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(#fff, 0.45);
+  line-height: 1;
+}
+.bl__util-btn {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  height: 2.2rem;
+  padding: 0 0.95rem;
+  border-radius: $radius-sm;
+  font-family: $font-mono;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(#fff, 0.45);
+  transition: color 0.2s, background 0.2s;
+  svg { width: 1.05rem; height: 1.05rem; color: inherit; transition: color 0.2s; }
+  &:hover:not(:disabled) { color: rgba(#fff, 0.75); background: rgba(#fff, 0.06); }
+  &:disabled { opacity: 0.3; cursor: default; }
+  /* context-enabled: not highlighted but fully clickable */
+  &.is-ctx {
+    opacity: 1;
+    color: rgba(#fff, 0.55);
+    cursor: pointer;
+    &:hover { color: rgba(#fff, 0.85); background: rgba(#fff, 0.07); }
+  }
+}
+
+/* Active panel tab — same shape as util-btn but highlighted */
+.bl__util-tab {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 2.2rem;
+  padding: 0 1rem;
+  border-radius: $radius-sm;
+  font-family: $font-mono;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(#fff, 0.5);
+  transition: color 0.15s, background 0.15s;
+  svg { width: 1rem; height: 1rem; color: inherit; flex-shrink: 0; }
+  &:hover { color: rgba(#fff, 0.8); background: rgba(#fff, 0.07); }
+  &.is-active {
+    color: $accent;
+    background: rgba($accent, 0.1);
+    border-radius: $radius-sm;
+    svg { color: $accent; }
+  }
+}
+
+/* leave space at the bottom of timeline so util bar doesn’t overlap last lane */
+.bl__timeline { padding-bottom: 3.2rem; }
+
+/* invite + bell */
+.bl__btn-invite { color: $text-secondary; }
+.bl__bell {
+  position: relative;
+  margin-left: 0.2rem;
+  &-dot {
+    position: absolute;
+    top: 0.35rem; right: 0.35rem;
+    width: 0.4rem; height: 0.4rem;
+    background: $accent;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px $bg-primary;
+  }
+}
+
+
+/* ─────────────── Title — click-to-edit inline ─────────────── */
+.bl__title--btn {
+  all: unset;
+  cursor: text;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 44ch;
+  transition: color 0.15s, opacity 0.15s;
+  &:hover { color: $accent; }
+  &:hover .bl__title-pencil { opacity: 1; transform: translateY(0); }
+}
+.bl__title-text {
+  display: inline-block;
+  max-width: 40ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bl__title-pencil {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+  color: $accent;
+  opacity: 0;
+  transform: translateY(1px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.bl__title--edit {
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  caret-color: $accent;
+  width: clamp(8rem, 28ch, 40ch);
+  /* inherit all .bl__title typography */
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  font-style: inherit;
+  &::selection { background: rgba($accent, 0.35); color: #fff; }
+}
+
+/* ─────────────── MOBILE / SMALL SCREENS ─────────────── */
+@media (max-width: 640px) {
+  /* Top bar — compact */
+  .bl__strip {
+    grid-template-columns: auto 1fr auto;
+    gap: 0.5rem;
+    padding: 0.85rem 0.85rem 0.6rem;
+  }
+  .bl__strip-l { gap: 0.35rem; margin-left: 0; }
+  .bl__strip-r { gap: 0.35rem; }
+  .bl__strip-l > .bl__icon-btn { width: 2.4rem; height: 2.4rem; svg { width: 1.2rem; height: 1.2rem; } }
+  .bl__title-eyebrow { font-size: 0.55rem; letter-spacing: 0.24em; }
+  .bl__title { font-size: 1.2rem; max-width: 60vw; }
+  .bl__title--edit { width: 60vw; }
+  .bl__title-pencil { display: none; }
+  .bl__brand, .bl__avatar, .bl__btn-invite, .bl__bell { display: none !important; }
+
+  /* Bottom transport row — fit small screen */
+  .bl__top { gap: 0; }
+  .bl__transport-tools, .bl__chips, .bl__mastering, .bl__save-status { display: none !important; }
+
+  /* Main grid — narrow sidebar so timeline gets max space */
+  .bl__main { grid-template-columns: 8.5rem 1fr; }
+
+  /* Track sidebar — compact track headers */
+  .bl__tracks-side { font-size: 0.78rem; }
+  .bl__track {
+    padding: 0.45rem 0.5rem !important;
+    gap: 0.35rem !important;
+    .bl__track-name { font-size: 0.72rem; max-width: 5.5rem; }
+    .bl__track-icon { width: 1.5rem; height: 1.5rem; }
+    .bl__track-controls { gap: 0.2rem; }
+    button { width: 1.4rem; height: 1.4rem; }
+    .bl__track-vol, .bl__track-pan { display: none; }
+  }
+
+  /* Timeline ruler — smaller */
+  .bl__tlruler { height: 1.6rem; font-size: 0.6rem; }
+
+  /* Drop zone — fit narrower viewport (account for 8.5rem sidebar) */
+  .bl__import-drop {
+    --drop-zone-w: calc(100vw - 8.5rem - 1rem);
+    height: 3.6rem;
+    margin: 0.4rem 0;
+    span { font-size: 0.7rem; padding: 0 0.5rem; text-align: center; }
+    svg { width: 1.4rem; height: 1.4rem; }
+  }
+
+  /* Drum panel — fits mobile width */
+  .bl__drum-panel, .bl__kb-panel { max-height: 50vh; }
+  .bl__dp-head { padding: 0.5rem 0.7rem; gap: 0.5rem; }
+  .bl__dp-title { font-size: 0.72rem; gap: 0.45rem; }
+  .bl__dp-icon { width: 1.3rem; height: 1.3rem; }
+  .bl__dp-grid { padding: 0.4rem 0.5rem !important; overflow-x: auto; }
+  .bl__dp-rowlabel { font-size: 0.6rem !important; min-width: 4rem !important; padding: 0 0.3rem !important; }
+  .bl__dp-cell { min-width: 1.1rem !important; }
+
+  /* Keyboard panel — make keys scroll horizontally */
+  .bl__kb-panel { overflow-x: auto; }
+  .bl__kb { min-width: max-content; }
+
+  /* Bottom util tab bar — shrink + allow wrapping */
+  .bl__util {
+    height: auto;
+    min-height: 2.8rem;
+    padding: 0.4rem 0.6rem;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .bl__util-l, .bl__util-r { gap: 0.25rem; flex-wrap: wrap; }
+  .bl__util-tab, .bl__util-btn {
+    height: 1.9rem;
+    padding: 0 0.55rem;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    gap: 0.35rem;
+    svg { width: 0.85rem; height: 0.85rem; }
+  }
+  .bl__util-sep { display: none; }
+  .bl__timeline { padding-bottom: 5rem; }
+
+  /* Modals — full-width on mobile */
+  .bl__modal { width: 100%; max-width: 100vw; border-radius: 0.85rem; margin: 0.5rem; }
+  .bl__nt { padding: 1rem !important; }
+
+  /* Restore-session dialog */
+  .db__pm { width: 100%; padding: 1.25rem !important; }
+}
+
+/* very small phones */
+@media (max-width: 380px) {
+  .bl__main { grid-template-columns: 7rem 1fr; }
+  .bl__title { font-size: 1rem; max-width: 50vw; }
+  .bl__import-drop { --drop-zone-w: calc(100vw - 7rem - 1rem); }
+  .bl__track .bl__track-name { max-width: 4rem; font-size: 0.65rem; }
+}
+
+/* Touch device tweaks — bigger hit targets, no hover artefacts */
+@media (hover: none) and (pointer: coarse) {
+  .bl__track button, .bl__icon-btn, .bl__util-tab, .bl__util-btn { min-height: 2.4rem; }
+  .bl__dp-cell { min-height: 1.6rem; }
+}

@@ -1,0 +1,330 @@
+@use "../../../styles/variables" as *;
+
+/* ─────────────── DRUM PANEL ─────────────── */
+.bl__drum-panel,
+.bl__kb-panel {
+  background: rgba(#fff, 0.015);
+  border-top: 1px solid rgba(#fff, 0.05);
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  max-height: 30rem;
+}
+.bl__dp-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1.2rem;
+  border-bottom: 1px solid rgba(#fff, 0.05);
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.bl__dp-title {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-family: $font-display;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $text-primary;
+  letter-spacing: 0.02em;
+}
+.bl__dp-icon {
+  width: 1.6rem; height: 1.6rem;
+  border-radius: $radius-sm;
+  display: grid; place-items: center;
+  font-size: 0.85rem;
+}
+.bl__dp-step {
+  margin-left: 0.5rem;
+  padding: 0.2rem 0.55rem;
+  background: rgba(#fff, 0.04);
+  border: 1px solid rgba(#fff, 0.06);
+  border-radius: $radius-pill;
+  font-family: $font-mono;
+  font-size: 0.6rem;
+  color: $text-secondary;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.bl__dp-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.bl__dp-ctrl-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.bl__dp-ctrl-label {
+  font-family: $font-mono;
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.bl__dp-ctrl-val {
+  color: $text-secondary;
+  font-size: 0.58rem;
+}
+.bl__dp-steps-toggle {
+  display: flex;
+  gap: 2px;
+}
+.bl__dp-steps-btn {
+  all: unset;
+  cursor: pointer;
+  padding: 0.22rem 0.55rem;
+  background: rgba(#fff, 0.04);
+  border: 1px solid rgba(#fff, 0.06);
+  border-radius: $radius-sm;
+  font-family: $font-mono;
+  font-size: 0.62rem;
+  color: $text-secondary;
+  transition: background 0.12s, color 0.12s;
+  &.is-on {
+    background: rgba($accent, 0.2);
+    border-color: rgba($accent, 0.4);
+    color: $accent;
+  }
+  &:hover:not(.is-on) { background: rgba(#fff, 0.08); color: $text-primary; }
+}
+.bl__dp-swing {
+  width: 6rem;
+  appearance: none;
+  -webkit-appearance: none;
+  height: 22px;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+
+  /* track — drawn via background image so the bar is visible at any height */
+  &::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(#fff, 0.1);
+  }
+  &::-moz-range-track {
+    height: 3px;
+    border-radius: 2px;
+    background: rgba(#fff, 0.1);
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    margin-top: -4.5px; /* center on 3px track */
+    border-radius: 50%;
+    background: $accent;
+    border: 2px solid $bg-primary;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba($accent, 0.4), 0 2px 6px rgba($accent, 0.45);
+    transition: transform 0.1s;
+  }
+  &::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: $accent;
+    border: 2px solid $bg-primary;
+    cursor: pointer;
+    box-shadow: 0 0 0 1px rgba($accent, 0.4), 0 2px 6px rgba($accent, 0.45);
+  }
+  &:hover::-webkit-slider-thumb { transform: scale(1.15); }
+  &:active::-webkit-slider-thumb { transform: scale(1.25); }
+}
+.bl__dp-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Octave stepper — connected pill: [−] Oct N [+] */
+.bl__oct-stepper {
+  display: inline-flex;
+  align-items: stretch;
+  height: 2.1rem;
+  background: rgba(#fff, 0.04);
+  border: 1px solid rgba(#fff, 0.08);
+  border-radius: $radius-pill;
+  overflow: hidden;
+  transition: border-color 0.15s, background 0.15s;
+  &:hover { border-color: rgba(#fff, 0.14); }
+}
+.bl__oct-btn {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  color: rgba(#fff, 0.65);
+  transition: background 0.12s, color 0.12s;
+  svg { width: 0.85rem; height: 0.85rem; display: block; }
+  &:hover:not(:disabled) {
+    background: rgba(#fff, 0.06);
+    color: #fff;
+  }
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+.bl__oct-readout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0 0.65rem;
+  border-left: 1px solid rgba(#fff, 0.06);
+  border-right: 1px solid rgba(#fff, 0.06);
+  font-family: $font-mono;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(#fff, 0.55);
+  white-space: nowrap;
+  user-select: none;
+}
+.bl__oct-readout-label {
+  font-weight: 500;
+}
+.bl__oct-readout-val {
+  font-weight: 700;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Compact collapse-panel button — square-ish, less prominent than the menu burger */
+.bl__icon-btn--collapse {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: $radius-sm;
+  color: rgba(#fff, 0.5);
+  &:hover { background: rgba(#fff, 0.06); color: #fff; }
+  svg { width: 0.95rem; height: 0.95rem; }
+}
+
+.bl__dp-grid {
+  padding: 0.6rem 1.2rem 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.bl__dp-row {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.6rem;
+  align-items: center;
+  &.is-muted {
+    opacity: 0.4;
+    .bl__dp-rowlabel { border-left: 2px solid rgba(#f55, 0.6); padding-left: 0.4rem; }
+    .bl__dp-cells { filter: grayscale(0.5); }
+  }
+}
+.bl__dp-rowlabel {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.bl__dp-mute {
+  all: unset;
+  cursor: pointer;
+  width: 1.3rem;
+  height: 1.3rem;
+  border-radius: $radius-sm;
+  border: 1px solid rgba(#fff, 0.1);
+  background: rgba(#fff, 0.03);
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: $text-muted;
+  display: grid; place-items: center;
+  flex-shrink: 0;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+  &:hover { border-color: rgba(#fff, 0.2); color: $text-secondary; }
+  &.is-muted {
+    background: rgba($accent, 0.25);
+    border-color: rgba($accent, 0.5);
+    color: $accent;
+  }
+}
+.bl__dp-rowname {
+  font-family: $font-mono;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $text-muted;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bl__dp-vol {
+  width: 3rem;
+  appearance: none;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(#fff, 0.08);
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: rgba(#fff, 0.5);
+    cursor: pointer;
+  }
+  &:hover::-webkit-slider-thumb { background: $text-primary; }
+}
+.bl__dp-cells {
+  display: grid;
+  gap: 3px;
+}
+.bl__dp-cell {
+  all: unset;
+  cursor: pointer;
+  position: relative;
+  height: 1.65rem;
+  border-radius: $radius-sm;
+  border: 1px solid rgba(#fff, 0.1);
+  background: rgba(#fff, 0.06);
+  transition: background 0.08s, border-color 0.08s, transform 0.06s;
+  &:hover { background: rgba(#fff, 0.14); border-color: rgba(#fff, 0.22); }
+  // Velocity levels — only these actually trigger sound
+  &.is-vel-lo {
+    background: rgba($accent, 0.3);
+    border-color: rgba($accent, 0.35);
+  }
+  &.is-vel-med {
+    background: rgba($accent, 0.65);
+    border-color: rgba($accent, 0.65);
+    box-shadow: 0 0 6px rgba($accent, 0.35);
+  }
+  &.is-vel-hi {
+    background: $accent;
+    border-color: $accent;
+    box-shadow: 0 0 12px rgba($accent, 0.5);
+  }
+  &.is-cursor:not(.is-vel-lo):not(.is-vel-med):not(.is-vel-hi) {
+    box-shadow: inset 0 0 0 1px rgba(#fff, 0.3);
+  }
+  &.is-vel-hi.is-cursor {
+    background: #fff;
+    border-color: #fff;
+    box-shadow: 0 0 0 1px $accent inset, 0 0 22px rgba($accent, 0.7);
+    transform: scale(1.04);
+  }
+}
+

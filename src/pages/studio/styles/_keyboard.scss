@@ -1,0 +1,399 @@
+@use "../../../styles/variables" as *;
+
+/* ─────────────── KEYBOARD ─────────────── */
+.bl__preset-row {
+  display: flex;
+  gap: 0.3rem;
+  margin-left: 0.85rem;
+  padding-left: 0.85rem;
+  border-left: 1px solid rgba(#fff, 0.06);
+}
+.bl__preset {
+  all: unset;
+  cursor: pointer;
+  padding: 0.35rem 0.85rem;
+  background: rgba(#fff, 0.025);
+  border: 1px solid rgba(#fff, 0.06);
+  color: $text-secondary;
+  border-radius: $radius-pill;
+  font-family: $font-mono;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+  &:hover { color: $text-primary; border-color: rgba(#fff, 0.15); }
+  &.is-on {
+    background: rgba($accent, 0.15);
+    border-color: $accent;
+    color: $accent;
+  }
+}
+.bl__oct {
+  font-family: $font-mono;
+  font-size: 0.65rem;
+  color: $text-secondary;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  min-width: 3.5rem;
+  text-align: center;
+}
+
+.bl__kb {
+  position: relative;
+  height: 10.5rem;
+  margin: 0.9rem 1.5rem 0.4rem;
+}
+.bl__kb-whites {
+  display: flex;
+  height: 100%;
+  gap: 2px;
+}
+.bl__wk {
+  all: unset;
+  flex: 1;
+  background: linear-gradient(180deg, #f5f0ea 0%, #d8d2c8 100%);
+  border-radius: 0 0 6px 6px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 0.6rem;
+  gap: 0.35rem;
+  user-select: none;
+  position: relative;
+  transition: background 0.05s;
+  &:hover { background: linear-gradient(180deg, #fffaf2 0%, #e3ddd2 100%); }
+  &:active, &.is-on {
+    background: linear-gradient(180deg, $accent 0%, $accent-hover 100%);
+    color: #fff;
+  }
+}
+.bl__wk-shortcut {
+  font-family: $font-mono;
+  font-size: 0.58rem;
+  color: rgba(0,0,0,0.45);
+  background: rgba(0,0,0,0.06);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+.bl__wk-name {
+  font-family: $font-mono;
+  font-size: 0.55rem;
+  color: rgba(0,0,0,0.4);
+  letter-spacing: 0.05em;
+}
+.bl__wk.is-on .bl__wk-shortcut,
+.bl__wk.is-on .bl__wk-name {
+  color: rgba(#fff, 0.85);
+  background: rgba(0,0,0,0.18);
+}
+
+.bl__kb-blacks {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  pointer-events: none;
+}
+.bl__bk-slot {
+  flex: 1;
+  position: relative;
+}
+.bl__bk {
+  all: unset;
+  position: absolute;
+  top: 0;
+  right: -16%;
+  width: 60%;
+  height: 62%;
+  background: linear-gradient(180deg, #1a1a1a 0%, #050505 100%);
+  border-radius: 0 0 5px 5px;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0.4rem;
+  user-select: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.6);
+  &:hover { background: linear-gradient(180deg, #2a2a2a 0%, #111 100%); }
+  &:active, &.is-on {
+    background: linear-gradient(180deg, $accent-hover 0%, darken($accent-hover, 8%) 100%);
+  }
+}
+.bl__bk-shortcut {
+  font-family: $font-mono;
+  font-size: 0.55rem;
+  color: rgba(#fff, 0.55);
+  letter-spacing: 0.05em;
+}
+.bl__bk.is-on .bl__bk-shortcut { color: #fff; }
+
+// ── Fretboard (guitar / bass) ───────────────────────────────────────────────
+.bl__fretboard {
+  display: flex;
+  height: 100%;
+  background: #08070a;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+// Left: string name labels
+.bl__fb-lblcol {
+  display: flex;
+  flex-direction: column;
+  width: 2.2rem;
+  background: rgba(255,255,255,0.025);
+  border-right: 1px solid rgba(255,255,255,0.07);
+  padding-top: 1.4rem; // offset for dot-row height
+}
+.bl__fb-lbl {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-mono;
+  font-size: 0.52rem;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.08em;
+}
+
+// Right: the neck
+.bl__fb-neck {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+// Dot-position indicator row (above the strings)
+.bl__fb-dotrow {
+  height: 1.4rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.bl__fb-dotcell {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-right: 1px solid rgba(255,255,255,0.05);
+
+  &:first-child {
+    flex: 0.55;
+    border-right: 2px solid rgba(255,255,255,0.22);
+  }
+  &:last-child { border-right: none; }
+
+  &.has-dot::after {
+    content: "";
+    width: 6px;
+    height: 6px;
+    background: rgba(255,255,255,0.16);
+    border-radius: 50%;
+  }
+  &.has-double {
+    &::before, &::after {
+      content: "";
+      width: 6px;
+      height: 6px;
+      background: rgba(255,255,255,0.16);
+      border-radius: 50%;
+    }
+  }
+}
+
+// Each string row
+.bl__fb-row {
+  flex: 1;
+  display: flex;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    z-index: 1;
+    background: linear-gradient(90deg, rgba(255,255,255,0.15), rgba(255,255,255,0.55) 6%, rgba(255,255,255,0.3));
+  }
+
+  // Thickness increases with string index (0 = thinnest/highest)
+  @for $i from 0 through 5 {
+    &[data-sn="#{$i}"]::before { height: #{0.8 + $i * 0.45}px; }
+  }
+}
+
+// Fret cells
+.bl__fb-cell {
+  flex: 1;
+  height: 100%;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  border-right: 1px solid rgba(255,255,255,0.12);
+  transition: background 0.07s;
+
+  &:last-child { border-right: none; }
+  &:hover { background: rgba(255,255,255,0.05); }
+
+  // Nut column
+  &.is-nut {
+    flex: 0.55;
+    border-right: 2px solid rgba(255,255,255,0.28);
+  }
+
+  // Pressed / active note
+  &.is-on {
+    background: rgba($accent, 0.1);
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      margin: auto;
+      width: 16px;
+      height: 16px;
+      background: $accent;
+      border-radius: 50%;
+      box-shadow: 0 0 14px $accent, 0 0 4px rgba($accent, 0.5);
+      z-index: 3;
+    }
+  }
+}
+
+.bl__kb-hint {
+  text-align: center;
+  font-family: $font-mono;
+  font-size: 0.6rem;
+  color: $text-muted;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0 0 1rem;
+  kbd {
+    display: inline-block;
+    padding: 0.15rem 0.4rem;
+    background: rgba(#fff, 0.04);
+    border: 1px solid rgba(#fff, 0.1);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    color: $text-primary;
+    margin: 0 0.15rem;
+    letter-spacing: 0;
+  }
+}
+
+/* ─────────────── LEAD / PAD SYNTH EDITOR ─────────────── */
+$lead-color: #e05297;
+$pad-color:  #a374f7;
+
+.bl__synth-edit {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid rgba(#fff, 0.05);
+  background: rgba(#000, 0.12);
+}
+
+.bl__adsr-viz {
+  width: 11rem;
+  height: 3.6rem;
+  flex-shrink: 0;
+  border: 1px solid rgba(#fff, 0.06);
+  border-radius: $radius-sm;
+  background: rgba(#000, 0.25);
+  overflow: visible;
+}
+.bl__adsr-lbl {
+  font-family: $font-mono;
+  font-size: 7px;
+  fill: rgba(#fff, 0.25);
+  letter-spacing: 0.05em;
+  text-anchor: middle;
+}
+
+.bl__synth-sliders {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.35rem 1.5rem;
+  align-items: center;
+}
+
+.bl__synth-param {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  &--wide { grid-column: 1 / -1; }
+}
+
+.bl__synth-lbl {
+  font-family: $font-mono;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: $text-muted;
+  width: 3.5rem;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.bl__synth-range {
+  flex: 1;
+  appearance: none;
+  height: 2px;
+  border-radius: 1px;
+  background: rgba(#fff, 0.08);
+  outline: none;
+  cursor: pointer;
+  &::-webkit-slider-thumb {
+    appearance: none;
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: box-shadow 0.1s;
+  }
+  .is-lead & {
+    &::-webkit-slider-thumb {
+      background: $lead-color;
+      box-shadow: 0 0 7px rgba($lead-color, 0.6);
+    }
+    &::-webkit-slider-runnable-track { background: rgba($lead-color, 0.14); }
+  }
+  .is-pad & {
+    &::-webkit-slider-thumb {
+      background: $pad-color;
+      box-shadow: 0 0 7px rgba($pad-color, 0.6);
+    }
+    &::-webkit-slider-runnable-track { background: rgba($pad-color, 0.14); }
+  }
+}
+
+.bl__synth-val {
+  font-family: $font-mono;
+  font-size: 0.55rem;
+  color: $text-secondary;
+  min-width: 3.2rem;
+  white-space: nowrap;
+  text-align: right;
+}
+
+// Active preset pill highlights for Lead and Pad
+.bl__preset.is-on {
+  background: rgba($accent, 0.15);
+  border-color: $accent;
+  color: $accent;
+}
+

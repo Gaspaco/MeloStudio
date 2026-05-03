@@ -1,0 +1,355 @@
+@use "../../../styles/variables" as *;
+
+/* ─────────────── NEW TRACK MODAL ─────────────── */
+.bl__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  z-index: 200;
+  animation: blFade 0.2s ease-out;
+}
+@keyframes blFade { from { opacity: 0; } to { opacity: 1; } }
+
+// Modal: no scroll, fits all content
+.bl__modal {
+  position: relative;
+  width: 46rem;
+  max-width: 98vw;
+  background: $bg-card;
+  border: 1px solid rgba(#fff, 0.08);
+  border-radius: 1.2rem;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+  animation: blSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes blSlide { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+// ── Restore session dialog — mirrors the dashboard db__pm pattern ──────────
+.db__pm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(5, 5, 5, 0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  animation: dbPmFade 0.2s ease-out;
+}
+@keyframes dbPmFade { from { opacity: 0; } to { opacity: 1; } }
+
+.db__pm {
+  position: relative;
+  width: min(38rem, 100%);
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  animation: dbPmIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes dbPmIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.db__pm-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  font-family: $font-mono;
+  font-size: 0.72rem;
+  color: $text-secondary;
+  letter-spacing: 0.04em;
+  span.db__pm-sep { color: $text-muted; user-select: none; }
+  strong { color: $accent; font-weight: 500; }
+}
+
+.db__pm-display {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.85;
+}
+
+.db__pm-line {
+  font-family: $font-display;
+  font-weight: 800;
+  font-size: clamp(3.2rem, 8vw, 5.5rem);
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  color: $text-primary;
+  margin: 0;
+  &--pink  { color: $accent; }
+  &--stroke {
+    color: transparent;
+    -webkit-text-stroke: 1.5px $text-primary;
+  }
+  &--danger { color: #ff5454; }
+}
+
+.db__pm-row {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.db__pm-btn {
+  all: unset;
+  cursor: pointer;
+  padding: 0.65rem 2rem;
+  border-radius: 100px;
+  font-family: $font-mono;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.25s, box-shadow 0.25s;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  &--ghost {
+    background: transparent;
+    border-color: rgba(#fff, 0.2);
+    color: #fff;
+    &:hover {
+      background: rgba(#fff, 0.06);
+      border-color: rgba(#fff, 0.4);
+      transform: translateY(-2px);
+    }
+  }
+  &--primary {
+    background: $accent;
+    border-color: $accent;
+    color: #fff;
+    &:hover {
+      background: lighten($accent, 6%);
+      box-shadow: 0 4px 24px rgba($accent, 0.35);
+      transform: translateY(-2px);
+    }
+  }
+  &--danger {
+    background: transparent;
+    border-color: rgba(255, 84, 84, 0.5);
+    color: #ff7e7e;
+    &:hover {
+      background: rgba(255, 84, 84, 0.1);
+      border-color: #ff5454;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.bl__modal-close {
+  all: unset;
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  color: $text-muted;
+  transition: background 0.15s, color 0.15s;
+  z-index: 2;
+  svg { width: 0.9rem; height: 0.9rem; }
+  &:hover { background: rgba(#fff, 0.06); color: $text-primary; }
+}
+
+/* HERO */
+.bl__modal-hero {
+  position: relative;
+  padding: 1.7rem 2.1rem 1.1rem;
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba($accent, 0.09), transparent 55%);
+  .bl__modal-eyebrow {
+    display: block;
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba($accent, 0.9);
+    margin-bottom: 0.7rem;
+  }
+  h2 {
+    margin: 0 0 0.6rem;
+    font-family: $font-display;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.7rem;
+    line-height: 1.08;
+    letter-spacing: -0.025em;
+    color: $text-primary;
+  }
+  p {
+    margin: 0;
+    max-width: 30rem;
+    font-family: $font-sans;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: $text-secondary;
+  }
+}
+
+/* SECTIONS */
+.bl__modal-section {
+  padding: 0 2.1rem 1.1rem;
+  &:last-child { padding-bottom: 1.7rem; }
+}
+.bl__modal-section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1.1rem 0 0.4rem;
+}
+.bl__modal-section-num {
+  font-family: $font-display;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: $accent;
+}
+.bl__modal-section-title {
+  font-family: $font-mono;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: $text-primary;
+}
+.bl__modal-section-rule {
+  flex: 1;
+  height: 1px;
+  background: rgba(#fff, 0.08);
+}
+.bl__modal-section-meta {
+  font-family: $font-mono;
+  font-size: 0.55rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+.bl__modal-rows {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ROW */
+.bl__nt {
+  all: unset;
+  cursor: pointer;
+  position: relative;
+  display: grid;
+  grid-template-columns: 2.3rem 1fr auto;
+  align-items: center;
+  gap: 1.1rem;
+  padding: 0.7rem 0.2rem;
+  border-bottom: 1px solid rgba(#fff, 0.06);
+  transition: padding 0.2s;
+
+  &:last-child { border-bottom: none; }
+
+  &::before {
+    content: "";
+    position: absolute;
+    left: -2.1rem;
+    top: 50%;
+    width: 0;
+    height: 1px;
+    background: $accent;
+    transform: translateY(-50%);
+    transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &:hover:not(.is-locked) {
+    padding-left: 0.7rem;
+    .bl__nt-icon { color: $accent; border-color: rgba($accent, 0.45); }
+    .bl__nt-title { color: $accent; }
+    .bl__nt-arrow { color: $accent; transform: translateX(3px); opacity: 1; }
+    &::before { width: 1.2rem; }
+  }
+
+  &.is-locked {
+    cursor: not-allowed;
+    .bl__nt-icon, .bl__nt-title, .bl__nt-sub { opacity: 0.45; }
+    .bl__nt-arrow { display: none; }
+  }
+}
+
+.bl__nt-icon {
+  display: grid;
+  place-items: center;
+  width: 2.3rem; height: 2.3rem;
+  border-radius: 0.55rem;
+  color: $text-secondary;
+  border: 1px solid rgba(#fff, 0.1);
+  background: rgba(#fff, 0.02);
+  transition: color 0.2s, border-color 0.2s;
+  svg { width: 1.05rem; height: 1.05rem; display: block; }
+}
+.bl__nt-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.32rem;
+  min-width: 0;
+}
+.bl__nt-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: $font-display;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: $text-primary;
+  letter-spacing: -0.015em;
+  transition: color 0.2s;
+}
+.bl__nt-soon {
+  font-family: $font-mono;
+  font-style: normal;
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  background: rgba(#fff, 0.05);
+  color: $text-muted;
+  padding: 0.22rem 0.45rem;
+  border-radius: 3px;
+}
+.bl__nt-sub {
+  font-family: $font-sans;
+  font-size: 0.78rem;
+  color: $text-secondary;
+  line-height: 1.45;
+}
+.bl__nt-arrow {
+  display: grid;
+  place-items: center;
+  width: 1.4rem; height: 1.4rem;
+  color: $text-muted;
+  opacity: 0.55;
+  transition: color 0.2s, transform 0.2s, opacity 0.2s;
+  svg { width: 1rem; height: 1rem; }
+}
+
+.bl__nt.is-import {
+  .bl__nt-icon {
+    border-style: dashed;
+    border-color: rgba(#fff, 0.14);
+  }
+}
+
+/* legacy */
+.bl__nt-num, .bl__nt-tag, .bl__modal-head, .bl__modal-headline, .bl__modal-grid, .bl__modal-foot { display: none; }
+

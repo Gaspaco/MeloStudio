@@ -1,0 +1,107 @@
+@use "../../../styles/variables" as *;
+
+/* ─────────────── LYRICS / NOTES RIGHT PANEL ─────────────── */
+.bl__lyrics-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  background: rgba(0, 0, 0, 0.35);
+}
+.bl__lyrics-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 32rem;
+  max-width: 94vw;
+  background:
+    radial-gradient(120% 50% at 100% 0%, rgba($accent, 0.06), transparent 55%),
+    $bg-primary;
+  border-left: 1px solid rgba(#fff, 0.08);
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  z-index: 241;
+  animation: blLyricsIn 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes blLyricsIn {
+  from { transform: translateX(100%); opacity: 0.6; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.bl__lyrics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.4rem 1rem;
+  border-bottom: 1px solid rgba(#fff, 0.06);
+  flex-shrink: 0;
+}
+.bl__lyrics-header-l {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.bl__lyrics-eyebrow {
+  font-family: $font-mono;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba($accent, 0.9);
+}
+.bl__lyrics-hint {
+  font-family: $font-mono;
+  font-size: 0.52rem;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: $text-muted;
+}
+.bl__lyrics-x {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  color: $text-muted;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  svg { width: 0.85rem; height: 0.85rem; }
+  &:hover { background: rgba(#fff, 0.06); color: $text-primary; }
+}
+.bl__lyrics-body {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  resize: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: $text-primary;
+  font-family: $font-mono;
+  font-size: 1rem;
+  line-height: 1.85;
+  letter-spacing: 0.01em;
+  padding: 1.1rem 1.4rem;
+  caret-color: $accent;
+  &::placeholder {
+    color: $text-muted;
+    opacity: 0.6;
+  }
+}
+.bl__lyrics-foot {
+  border-top: 1px solid rgba(#fff, 0.05);
+  padding: 0.65rem 1.4rem;
+  flex-shrink: 0;
+}
+.bl__lyrics-foot-label {
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  font-weight: 400;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: $text-muted;
+  opacity: 0.7;
+}
+

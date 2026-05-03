@@ -7,7 +7,7 @@ import { neonConfig, Pool } from "@neondatabase/serverless";
 import ws from "ws";
 
 // In Node we need to give the driver a WebSocket implementation.
-// @ts-expect-error - ws shape matches what neon expects
+
 neonConfig.webSocketConstructor = ws;
 
 const url = process.env.DATABASE_URL;

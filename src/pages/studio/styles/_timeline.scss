@@ -1,0 +1,413 @@
+@use "../../../styles/variables" as *;
+
+/* ─────────────── TIMELINE ─────────────── */
+.bl__timeline {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: auto;
+  background: $bg-primary;
+  scroll-behavior: auto;
+  /* nicer scrollbar */
+  &::-webkit-scrollbar { height: 10px; width: 10px; background: rgba(#000, 0.4); }
+  &::-webkit-scrollbar-thumb { background: rgba(#fff, 0.12); border-radius: 5px; }
+  &::-webkit-scrollbar-thumb:hover { background: rgba(#fff, 0.22); }
+  scrollbar-color: rgba(#fff, 0.12) rgba(#000, 0.4);
+}
+
+.bl__ruler {
+  position: sticky;
+  top: 0;
+  height: 3.2rem;
+  display: flex;
+  width: calc(450 * 5rem);
+  background:
+    linear-gradient(180deg, rgba(#000, 0.55), rgba($bg-primary, 0.98));
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(#fff, 0.12);
+  z-index: 5;
+  box-shadow: 0 1px 0 rgba(#fff, 0.04), 0 4px 12px rgba(#000, 0.35);
+  cursor: col-resize;
+  user-select: none;
+}
+.bl__bar {
+  width: 5rem;
+  flex-shrink: 0;
+  position: relative;
+  /* major bar line on the LEFT edge (start of bar) */
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 1px;
+    height: 1.4rem;
+    background: rgba(#fff, 0.55);
+  }
+  /* mid (beat 3) tick */
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 1px;
+    height: 0.85rem;
+    background: rgba(#fff, 0.32);
+  }
+}
+/* extra quarter ticks via inline pseudo on a child wouldn’t work; use bg-image instead */
+.bl__bar {
+  background-image:
+    linear-gradient(90deg, rgba(#fff, 0.22) 1px, transparent 1px);
+  background-size: 25% 0.55rem;
+  background-position: 0 100%;
+  background-repeat: repeat-x;
+}
+.bl__bar-num {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.6rem;
+  font-family: $font-mono;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  display: none;
+}
+/* show labels only every 4 bars (1, 5, 9, 13, ...) */
+.bl__bar:nth-child(4n + 1) .bl__bar-num {
+  display: block;
+  color: #fff;
+}
+
+.bl__lanes {
+  position: relative;
+  width: calc(450 * 5rem); /* 450 bars × 5rem */
+}
+
+.bl__lane {
+  height: 5rem;
+  border-bottom: 1px solid rgba(#fff, 0.04);
+  position: relative;
+  background-image:
+    linear-gradient(90deg, rgba(#fff, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(#fff, 0.015) 1px, transparent 1px);
+  background-size: 5rem 100%, 1.25rem 100%;
+  &.is-sel { background-color: rgba($accent, 0.025); }
+  &.is-drop {
+    background-color: color-mix(in srgb, var(--tc, #fff) 8%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tc, #fff) 50%, transparent);
+    // "drop a file here" hint label centered on the lane
+    &::after {
+      content: "Drop audio · MIDI · video";
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: $font-mono;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: color-mix(in srgb, var(--tc, #fff) 80%, transparent);
+      pointer-events: none;
+    }
+  }
+  &--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: none;
+  }
+}
+
+/* Imported media clip (audio / midi / video) */
+.bl__mclip {
+  --tc: #888;
+  position: absolute;
+  top: 0;
+  height: 100%;
+  border-radius: $radius-sm;
+  display: flex;
+  flex-direction: column;
+  cursor: grab;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--tc) 22%, #111);
+  border: 1px solid color-mix(in srgb, var(--tc) 55%, transparent);
+  transition: box-shadow 0.13s, transform 0.13s;
+  &:hover {
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--tc) 35%, transparent);
+    .bl__mclip-x { opacity: 1; }
+  }
+  &:active { cursor: grabbing; }
+  &.is-midi {
+    background: repeating-linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--tc) 30%, transparent) 0 6px,
+      color-mix(in srgb, var(--tc) 18%, transparent) 6px 12px
+    );
+  }
+}
+.bl__mclip-head {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.35rem;
+  background: rgba(0, 0, 0, 0.32);
+  border-bottom: 1px solid rgba(#fff, 0.06);
+  flex-shrink: 0;
+}
+.bl__mclip-icon {
+  display: grid;
+  place-items: center;
+  color: var(--tc);
+  flex-shrink: 0;
+}
+.bl__mclip-name {
+  flex: 1;
+  font-family: $font-mono;
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: rgba(#fff, 0.9);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.bl__mclip-x {
+  all: unset;
+  cursor: pointer;
+  width: 0.85rem; height: 0.85rem;
+  display: grid; place-items: center;
+  border-radius: 2px;
+  color: rgba(#fff, 0.55);
+  font-size: 0.7rem;
+  line-height: 1;
+  opacity: 0;
+  transition: opacity 0.13s, color 0.13s, background 0.13s;
+  &:hover { color: #ff8080; background: rgba(255, 70, 70, 0.18); }
+}
+.bl__mclip-body {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  pointer-events: none;
+  overflow: hidden;
+  svg { display: block; width: 100%; height: 100%; }
+}
+
+/* Drop position marker — vertical line where clip will land */
+.bl__drop-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--tc, #fff);
+  box-shadow: 0 0 8px var(--tc, #fff);
+  pointer-events: none;
+  z-index: 5;
+}
+.bl__drop {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: $text-muted;
+  font-family: $font-mono;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  svg { color: rgba(#fff, 0.15); }
+}
+
+// ── Drum clip block — modern DAW look ──────────────────────────────────
+/* Instrument ghost block — placeholder shown when no clips recorded yet */
+.bl__inst-ghost {
+  position: absolute;
+  left: 4px;
+  top: 0.4rem;
+  width: 160px;
+  height: calc(100% - 0.8rem);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--tc, #{$accent}) 14%, transparent) 0%,
+      color-mix(in srgb, var(--tc, #{$accent}) 4%, transparent) 100%);
+  border: 1px dashed color-mix(in srgb, var(--tc, #{$accent}) 35%, transparent);
+  pointer-events: none;
+}
+.bl__inst-ghost-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tc, #{$accent});
+  box-shadow: 0 0 6px var(--tc, #{$accent});
+  flex-shrink: 0;
+}
+.bl__inst-ghost-name {
+  font-family: $font-mono;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--tc, #{$accent}) 90%, #fff);
+  flex-shrink: 0;
+}
+.bl__inst-ghost-hint {
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  color: rgba(#fff, 0.2);
+  white-space: nowrap;
+}
+
+.bl__clip {
+  position: absolute;
+  top: 0.4rem;
+  height: calc(100% - 0.8rem);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  cursor: grab;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--tc, #{$accent}) 22%, #0a0a0a) 0%,
+      color-mix(in srgb, var(--tc, #{$accent}) 8%,  #0a0a0a) 100%);
+  border: 1px solid color-mix(in srgb, var(--tc, #{$accent}) 55%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--tc, #{$accent}) 40%, transparent),
+    0 2px 8px -2px color-mix(in srgb, var(--tc, #{$accent}) 30%, transparent);
+  transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
+  &:hover {
+    border-color: color-mix(in srgb, var(--tc, #{$accent}) 80%, transparent);
+    box-shadow:
+      inset 0 1px 0 color-mix(in srgb, var(--tc, #{$accent}) 60%, transparent),
+      0 4px 14px -2px color-mix(in srgb, var(--tc, #{$accent}) 50%, transparent);
+    transform: translateY(-1px);
+  }
+  &:active { cursor: grabbing; }
+}
+
+.bl__clip-header {
+  display: flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.3rem 0.45rem 0.25rem;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--tc, #{$accent}) 30%, transparent) 0%,
+    color-mix(in srgb, var(--tc, #{$accent}) 8%,  transparent) 100%);
+  border-bottom: 1px solid color-mix(in srgb, var(--tc, #{$accent}) 25%, transparent);
+  flex-shrink: 0;
+}
+
+.bl__clip-dot-led {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--tc, #{$accent});
+  box-shadow:
+    0 0 5px var(--tc, #{$accent}),
+    inset 0 0 2px rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.bl__clip-name {
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  color: rgba(#fff, 0.92);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px color-mix(in srgb, var(--tc, #{$accent}) 50%, transparent);
+}
+
+// 8 rows × 16 cells micro-grid
+.bl__clip-matrix {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0.3rem 0.35rem;
+  justify-content: center;
+}
+
+.bl__clip-mrow {
+  display: flex;
+  gap: 1px;
+  flex: 1;
+  min-height: 0;
+}
+
+.bl__clip-cell {
+  flex: 1;
+  border-radius: 0.5px;
+  background: rgba(#fff, 0.06);
+  transition: background 0.1s, box-shadow 0.1s;
+
+  &.is-beat:not(.is-hit) {
+    background: rgba(#fff, 0.13);
+  }
+
+  &.is-hit {
+    background: var(--tc, #{$accent});
+    box-shadow: 0 0 3px color-mix(in srgb, var(--tc, #{$accent}) 90%, transparent);
+  }
+  &.is-hit.is-soft {
+    background: color-mix(in srgb, var(--tc, #{$accent}) 60%, transparent);
+    box-shadow: none;
+  }
+}
+
+// legacy — hidden
+.bl__clip-head     { display: none; }
+.bl__clip-drum-icon { display: none; }
+.bl__clip-grid     { display: none; }
+.bl__clip-row      { display: none; }
+.bl__clip-dot      { display: none; }
+.bl__clip-bars     { display: none; }
+.bl__clip-bar      { display: none; }
+.bl__clip-wave     { display: none; }
+.bl__clip-tick     { display: none; }
+
+.bl__playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: $accent;
+  pointer-events: none;
+  z-index: 6;
+  box-shadow: 0 0 10px rgba($accent, 0.6), 0 0 3px $accent;
+  // Diamond "ball" at top — this is the drag handle
+  &::before {
+    content: "";
+    position: absolute;
+    top: 2.55rem; // sits just below the ruler
+    left: -5px;
+    width: 12px;
+    height: 12px;
+    background: $accent;
+    transform: rotate(45deg);
+    box-shadow: 0 0 10px rgba($accent, 0.7);
+    pointer-events: auto;
+    cursor: col-resize;
+    border-radius: 2px;
+  }
+  // Thin line through ruler itself
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 2.6rem;
+    background: rgba($accent, 0.55);
+  }
+}
+

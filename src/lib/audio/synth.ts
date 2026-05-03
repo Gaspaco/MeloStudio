@@ -162,7 +162,7 @@ function getSampler(preset: "piano" | "bass" | "guitar"): Tone.Sampler {
 export class PolySynth {
   private master: Tone.Gain;
   /** Always present — used standalone for lead/pad and as a fallback while samples load. */
-  private synth: Tone.PolySynth;
+  private synth: Tone.PolySynth<Tone.MonoSynth>;
   /** Present only when the active preset is sample-backed. */
   private sampler: Tone.Sampler | null = null;
   private samplerReady = false;

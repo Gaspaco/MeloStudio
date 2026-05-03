@@ -1,0 +1,204 @@
+import { createSignal } from "solid-js";
+import type { Accessor, Setter } from "solid-js";
+import { storeClip, removeClip } from "~/lib/clipStore";
+import { type TrackType, type ClipKind, type MediaClip, type UITrack, TRACK_DEFS, randomTrackColor } from "../types";
+import type { SynthPreset } from "~/lib/audio/synth";
+import type { StepSequencer } from "~/lib/audio/stepSeq";
+
+const BAR_PX = 80;
+
+type Deps = {
+  tracks: Accessor<UITrack[]>; setTracks: Setter<UITrack[]>;
+  selectedTrack: Accessor<string | null>; setSelectedTrack: Setter<string | null>;
+  bpm: Accessor<number>;
+  setError: Setter<string>;
+  setShowNewTrack: Setter<boolean>;
+  ensureSynth: (preset: SynthPreset) => void;
+  setSynthPreset: Setter<SynthPreset>;
+  setActivePanel: Setter<"drum" | "keys" | null>;
+  setDrumPanelOpen: Setter<boolean>;
+  getSeq: () => StepSequencer | null;
+  save: () => Promise<void>;
+  timelineEl: () => HTMLDivElement | undefined;
+};
+
+export function useTracks(deps: Deps) {
+  const [dropTarget, setDropTarget] = createSignal<{ trackId: string; bar: number } | null>(null);
+  const [globalDragOver, setGlobalDragOver] = createSignal(false);
+
+  const classifyFile = (file: File): ClipKind | null => {
+    const name = file.name.toLowerCase();
+    if (file.type.startsWith("audio/") || /\.(mp3|wav|ogg|flac|m4a|aac)$/.test(name)) return "audio";
+    if (file.type.startsWith("video/") || /\.(mp4|webm|mov|mkv)$/.test(name)) return "video";
+    if (file.type === "audio/midi" || /\.(mid|midi)$/.test(name)) return "midi";
+    return null;
+  };
+
+  const estimateBars = async (file: File, kind: ClipKind): Promise<number> => {
+    if (kind === "midi") return 4;
+    return new Promise((resolve) => {
+      try {
+        const url = URL.createObjectURL(file);
+        const el = kind === "video" ? document.createElement("video") : document.createElement("audio");
+        el.preload = "metadata";
+        el.src = url;
+        const done = (bars: number) => { URL.revokeObjectURL(url); resolve(bars); };
+        el.onloadedmetadata = () => {
+          const secs = el.duration;
+          if (!isFinite(secs) || secs <= 0) return done(4);
+          const bars = Math.max(1, Math.round((secs * deps.bpm() / 60) / 4));
+          done(bars);
+        };
+        el.onerror = () => done(4);
+      } catch { resolve(4); }
+    });
+  };
+
+  const addClip = async (trackId: string, file: File, barStart: number) => {
+    const kind = classifyFile(file);
+    if (!kind) {
+      deps.setError("Unsupported file — drop audio, MIDI, or video");
+      setTimeout(() => deps.setError(""), 2200);
+      return;
+    }
+    const bars = await estimateBars(file, kind);
+    const clipId = crypto.randomUUID();
+    let url: string | undefined;
+    if (kind !== "midi") {
+      url = URL.createObjectURL(file);
+      await storeClip(clipId, file).catch(() => {});
+    }
+    const clip: MediaClip = { id: clipId, kind, name: file.name.replace(/\.[^.]+$/, ""), barStart: Math.max(0, barStart), bars, url };
+    deps.setTracks(deps.tracks().map(t => t.id === trackId ? { ...t, clips: [...(t.clips ?? []), clip] } : t));
+  };
+
+  const deleteClip = (trackId: string, clipId: string) => {
+    deps.setTracks(deps.tracks().map(t => {
+      if (t.id !== trackId) return t;
+      const target = (t.clips ?? []).find(c => c.id === clipId);
+      if (target?.url) URL.revokeObjectURL(target.url);
+      removeClip(clipId).catch(() => {});
+      return { ...t, clips: (t.clips ?? []).filter(c => c.id !== clipId) };
+    }));
+  };
+
+  const importFiles = async (files: File[]) => {
+    if (!files.length) return;
+    for (const f of files) {
+      const kind = classifyFile(f);
+      if (!kind) continue;
+      const type = kind === "midi" ? "instrument" : "voice";
+      const lastColor = deps.tracks().slice(-1)[0]?.color;
+      const newTrack: UITrack = {
+        id: crypto.randomUUID(), name: f.name.replace(/\.[^.]+$/, ""),
+        type, muted: false, solo: false, volume: 0.8, pan: 0,
+        color: randomTrackColor(lastColor), clips: [],
+      };
+      deps.setTracks(prev => [...prev, newTrack]);
+      deps.setSelectedTrack(newTrack.id);
+      await addClip(newTrack.id, f, 0);
+    }
+    void deps.save();
+  };
+
+  const addTrack = (type: TrackType, openModal = true) => {
+    const def = TRACK_DEFS.find(d => d.type === type);
+    if (!def) return;
+    if (!def.ready) {
+      deps.setError(`${def.label} coming soon — try Drum Machine`);
+      setTimeout(() => deps.setError(""), 2200);
+      return;
+    }
+    if (type === "drum" && deps.tracks().some(t => t.type === "drum")) {
+      deps.setSelectedTrack(deps.tracks().find(t => t.type === "drum")!.id);
+      deps.setDrumPanelOpen(true);
+      if (openModal) deps.setShowNewTrack(false);
+      return;
+    }
+    if (type === "instrument" || type === "bass" || type === "guitar") {
+      const initPreset: SynthPreset = type === "bass" ? "bass" : type === "guitar" ? "guitar" : "piano";
+      deps.ensureSynth(initPreset);
+      if (type === "bass") deps.setSynthPreset("bass");
+      else if (type === "guitar") deps.setSynthPreset("guitar");
+    }
+    const t: UITrack = {
+      id: crypto.randomUUID(), name: def.label, type,
+      muted: false, solo: false, volume: 0.8, pan: 0,
+      color: type === "drum" ? def.color : randomTrackColor(),
+    };
+    deps.setTracks([...deps.tracks(), t]);
+    deps.setSelectedTrack(t.id);
+    if (type === "drum") { deps.setDrumPanelOpen(true); deps.setActivePanel("drum"); }
+    else if (type === "instrument" || type === "bass" || type === "guitar") deps.setActivePanel("keys");
+    if (openModal) deps.setShowNewTrack(false);
+    void deps.save();
+  };
+
+  const deleteTrack = (id: string) => {
+    deps.setTracks(deps.tracks().filter(t => t.id !== id));
+    if (deps.selectedTrack() === id) deps.setSelectedTrack(null);
+    void deps.save();
+  };
+
+  const patchTrack = (id: string, patch: Partial<UITrack>) => {
+    deps.setTracks(deps.tracks().map(t => t.id === id ? { ...t, ...patch } : t));
+  };
+
+  const onLaneDragOver = (e: DragEvent, trackId: string) => {
+    if (!e.dataTransfer?.types.includes("Files")) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const scrollLeft = deps.timelineEl()?.scrollLeft ?? 0;
+    const x = e.clientX - rect.left + scrollLeft;
+    setDropTarget({ trackId, bar: Math.max(0, Math.floor(x / BAR_PX)) });
+  };
+
+  const onLaneDragLeave = (e: DragEvent) => {
+    if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node | null))
+      setDropTarget(null);
+  };
+
+  const onLaneDrop = async (e: DragEvent, trackId: string) => {
+    e.preventDefault();
+    setDropTarget(null);
+    const files = Array.from(e.dataTransfer?.files ?? []);
+    if (!files.length) return;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const scrollLeft = deps.timelineEl()?.scrollLeft ?? 0;
+    const x = e.clientX - rect.left + scrollLeft;
+    let cursor = Math.max(0, Math.floor(x / BAR_PX));
+    for (const f of files) {
+      await addClip(trackId, f, cursor);
+      const last = deps.tracks().find(t => t.id === trackId)?.clips?.slice(-1)[0];
+      cursor += last?.bars ?? 4;
+    }
+  };
+
+  const onLanesDragOver = (e: DragEvent) => {
+    if (!e.dataTransfer?.types.includes("Files")) return;
+    if (dropTarget()) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    setGlobalDragOver(true);
+  };
+
+  const onLanesDragLeave = (e: DragEvent) => {
+    if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node | null))
+      setGlobalDragOver(false);
+  };
+
+  const onLanesDrop = async (e: DragEvent) => {
+    if (dropTarget()) return;
+    e.preventDefault();
+    setGlobalDragOver(false);
+    await importFiles(Array.from(e.dataTransfer?.files ?? []));
+  };
+
+  return {
+    dropTarget, globalDragOver,
+    addTrack, deleteTrack, patchTrack, addClip, deleteClip, importFiles,
+    onLaneDragOver, onLaneDragLeave, onLaneDrop,
+    onLanesDragOver, onLanesDragLeave, onLanesDrop,
+  };
+}

@@ -14,6 +14,7 @@ export async function GET(event: APIEvent) {
   const userId = await requireUserId(event.request);
   if (!userId) return new Response("unauthorized", { status: 401 });
   const id = event.params.id;
+  if (!id) return new Response("missing id", { status: 400 });
   const doc = await getProject(userId, id);
   if (!doc) return new Response("not found", { status: 404 });
   return Response.json(doc);
@@ -23,6 +24,7 @@ export async function PUT(event: APIEvent) {
   const userId = await requireUserId(event.request);
   if (!userId) return new Response("unauthorized", { status: 401 });
   const id = event.params.id;
+  if (!id) return new Response("missing id", { status: 400 });
   const doc = (await event.request.json()) as ProjectDoc;
   if (!doc || typeof doc !== "object" || doc.id !== id) {
     return new Response("bad payload", { status: 400 });
@@ -35,6 +37,7 @@ export async function PATCH(event: APIEvent) {
   const userId = await requireUserId(event.request);
   if (!userId) return new Response("unauthorized", { status: 401 });
   const id = event.params.id;
+  if (!id) return new Response("missing id", { status: 400 });
   const body = await event.request.json();
   const doc = await getProject(userId, id);
   if (!doc) return new Response("not found", { status: 404 });
@@ -46,6 +49,8 @@ export async function PATCH(event: APIEvent) {
 export async function DELETE(event: APIEvent) {
   const userId = await requireUserId(event.request);
   if (!userId) return new Response("unauthorized", { status: 401 });
-  await deleteProject(userId, event.params.id);
+  const id = event.params.id;
+  if (!id) return new Response("missing id", { status: 400 });
+  await deleteProject(userId, id);
   return new Response(null, { status: 204 });
 }

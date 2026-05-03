@@ -308,7 +308,8 @@ const Dashboard: Component<{
 
   return (
     <div ref={pageRef!} class="db">
-      {/* ── Fixed nav bar ── */}
+
+      {/* Bar */}
       <header class="db__bar">
         <div class="db__bar-left">
           <button class="db__home-btn" onClick={props.onHome} title="Back to home">
@@ -319,12 +320,10 @@ const Dashboard: Component<{
             <span class="db__logo-studio">Studio</span>
           </button>
         </div>
-
         <nav class="db__nav">
-          <button class={`db__nav-link ${tab() === "overview" ? "db__nav-link--active" : ""}`} onClick={() => switchTab("overview")}>Overview</button>
-          <button class={`db__nav-link ${tab() === "profile" ? "db__nav-link--active" : ""}`} onClick={() => switchTab("profile")}>Profile</button>
+          <button class={`db__nav-link${tab() === "overview" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("overview")}>Overview</button>
+          <button class={`db__nav-link${tab() === "profile" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("profile")}>Profile</button>
         </nav>
-
         <div class="db__bar-right">
           <span class="db__clock">{formatTime()}</span>
           <button class="db__bar-avatar" onClick={() => switchTab("profile")}>
@@ -339,54 +338,56 @@ const Dashboard: Component<{
         </div>
       </header>
 
-      {/* ══════════════════════════ OVERVIEW ══════════════════════════ */}
+      {/* ── Overview ── */}
       <Show when={tab() === "overview"}>
         <div class="db__content">
-          {/* Hero */}
+
           <section class="db__hero">
             <div class="db__hero-left">
               <div class="db__hero-greeting">
-              <span class="db__hero-script">{greeting()},</span>
-            </div>
+                <span class="db__hero-script">{greeting()},</span>
+              </div>
               <div class="db__hero-clip">
-              <For each={firstName().split("")}>
-                {(ch) => <span class="db__hero-char">{ch === " " ? "\u00A0" : ch}</span>}
-              </For>
-            </div>
+                <For each={firstName().split("")}>
+                  {(ch) => <span class="db__hero-char">{ch === " " ? "\u00A0" : ch}</span>}
+                </For>
+              </div>
               <div class="db__hero-meta">
-              <span class="db__hero-meta-item">{projects().length} Projects</span>
-              <span class="db__hero-meta-sep">/</span>
-              <span class="db__hero-meta-item">{totalTracks()} Tracks</span>
-              <span class="db__hero-meta-sep">/</span>
-              <span class="db__hero-meta-item">Since {memberSince()}</span>
-            </div>
+                <span class="db__hero-meta-item">{projects().length} Projects</span>
+                <span class="db__hero-meta-sep">/</span>
+                <span class="db__hero-meta-item">{totalTracks()} Tracks</span>
+                <span class="db__hero-meta-sep">/</span>
+                <span class="db__hero-meta-item">Since {memberSince()}</span>
+              </div>
             </div>
             <button class="db__hero-avatar" onClick={() => switchTab("profile")}>
               <Show when={user()?.image} fallback={<span class="db__hero-avatar-text">{initials()}</span>}>
                 <img class="db__hero-avatar-img" src={user()!.image!} alt="" />
               </Show>
             </button>
-</section>
+          </section>
 
           <div class="db__rule" />
 
-          {/* Stats strip */}
           <section class="db__stats">
             <div class="db__stat">
               <span class="db__stat-num">{projects().length}</span>
               <span class="db__stat-label">Projects</span>
               <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `${Math.min(projects().length * 10, 100)}%` }} /></span>
             </div>
+
             <div class="db__stat">
               <span class="db__stat-num">{totalTracks()}</span>
               <span class="db__stat-label">Tracks</span>
               <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `${Math.min(totalTracks() * 5, 100)}%` }} /></span>
             </div>
+
             <div class="db__stat">
               <span class="db__stat-num">0h</span>
               <span class="db__stat-label">Studio Time</span>
               <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: "0%" }} /></span>
             </div>
+
             <div class="db__stat">
               <span class="db__stat-num">0</span>
               <span class="db__stat-label">Templates</span>
@@ -396,7 +397,6 @@ const Dashboard: Component<{
 
           <div class="db__rule" />
 
-          {/* Projects */}
           <section class="db__section">
             <div class="db__section-header">
               <span class="db__section-idx">01</span>
@@ -406,7 +406,6 @@ const Dashboard: Component<{
                 New project
               </button>
             </div>
-
             <Show when={projects().length > 0} fallback={
               <div class="db__empty">
                 <div class="db__empty-glow" />
@@ -427,7 +426,7 @@ const Dashboard: Component<{
                   <span class="db__th db__th--key">Key</span>
                   <span class="db__th db__th--tracks">Tracks</span>
                   <span class="db__th db__th--time">Modified</span>
-                  <span class="db__th db__th--acts"></span>
+                  <span class="db__th db__th--acts" />
                 </div>
                 <For each={projects()}>{(project, i) =>
                   <div class="db__table-row" onClick={() => props.onOpenProject(project.id)}>
@@ -442,10 +441,10 @@ const Dashboard: Component<{
                     <span class="db__td db__td--time">{project.updatedAt}</span>
                     <span class="db__td db__td--acts">
                       <button class="db__act-btn" onClick={(e) => openRename(e, project)} title="Rename">
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2l5 5-9 9H2v-5z"/></svg>
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2l5 5-9 9H2v-5z" /></svg>
                       </button>
                       <button class="db__act-btn db__act-btn--danger" onClick={(e) => openDelete(e, project)} title="Delete">
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M5 4V2h6v2M6 8v5M10 8v5M3 4l1 10h8l1-10"/></svg>
+                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M5 4V2h6v2M6 8v5M10 8v5M3 4l1 10h8l1-10" /></svg>
                       </button>
                     </span>
                   </div>
@@ -456,13 +455,11 @@ const Dashboard: Component<{
 
           <div class="db__rule" />
 
-          {/* Quick actions */}
           <section class="db__section">
             <div class="db__section-header">
               <span class="db__section-idx">02</span>
               <h2 class="db__section-title">Quick Actions</h2>
             </div>
-
             <div class="db__actions">
               <button class="db__act">
                 <div class="db__act-icon">
@@ -497,7 +494,6 @@ const Dashboard: Component<{
             </div>
           </section>
 
-          {/* Brand watermark */}
           <footer class="db__brand">
             <span class="db__brand-melo">Melo</span>
             <span class="db__brand-studio">Studio</span>
@@ -505,19 +501,13 @@ const Dashboard: Component<{
         </div>
       </Show>
 
-      {/* ══════════════════════════ PROFILE ══════════════════════════ */}
+      {/* ── Profile ── */}
       <Show when={tab() === "profile"}>
         <div class="db__content">
-          {/* Profile hero */}
+
           <section class="db__profile-hero">
-            <div class="db__profile-avatar-wrap" style={{ position: "relative" }}>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                class="db__profile-upload-input"
-                title="Change Profile Picture"
-              />
+            <div class="db__profile-avatar-wrap">
+              <input type="file" accept="image/*" onChange={handleImageUpload} class="db__profile-upload-input" title="Change Profile Picture" />
               <div class="db__profile-avatar">
                 <Show when={user()?.image} fallback={<span class="db__profile-initials">{initials()}</span>}>
                   <img class="db__profile-img" src={user()!.image!} alt="" />
@@ -538,13 +528,11 @@ const Dashboard: Component<{
 
           <div class="db__rule" />
 
-          {/* Edit Profile */}
           <section class="db__section">
             <div class="db__section-header">
               <span class="db__section-idx">01</span>
               <h2 class="db__section-title">Edit Profile</h2>
             </div>
-
             <div class="db__form-rows">
               <div class="db__frow">
                 <label class="db__flabel">Display Name</label>
@@ -590,7 +578,6 @@ const Dashboard: Component<{
                 <div class="db__fline" />
               </div>
             </div>
-
             <div class="db__form-btns">
               <button class="db__btn db__btn--fill" onClick={handleSaveProfile} disabled={profileSaving()}>
                 {profileSaving() ? "Saving..." : profileSaved() ? "Saved ✓" : "Save Changes"}
@@ -603,13 +590,11 @@ const Dashboard: Component<{
 
           <div class="db__rule" />
 
-          {/* Change Password */}
           <section class="db__section">
             <div class="db__section-header">
               <span class="db__section-idx">02</span>
               <h2 class="db__section-title">Change Password</h2>
             </div>
-
             <div class="db__form-rows">
               <div class="db__frow-pair">
                 <div class="db__frow">
@@ -624,11 +609,9 @@ const Dashboard: Component<{
                 </div>
               </div>
             </div>
-
             <Show when={passwordError()}>
               <span class="db__form-err">{passwordError()}</span>
             </Show>
-
             <div class="db__form-btns">
               <button class="db__btn db__btn--ghost" onClick={handleChangePassword}>
                 {passwordSaved() ? "Updated ✓" : "Update Password"}
@@ -638,13 +621,11 @@ const Dashboard: Component<{
 
           <div class="db__rule" />
 
-          {/* Danger */}
           <section class="db__section db__section--danger">
             <div class="db__section-header">
               <span class="db__section-idx db__section-idx--danger">03</span>
               <h2 class="db__section-title">Danger Zone</h2>
             </div>
-
             <div class="db__danger">
               <div class="db__danger-info">
                 <span class="db__danger-label">Delete Account</span>
@@ -654,14 +635,14 @@ const Dashboard: Component<{
             </div>
           </section>
 
-          {/* Brand watermark */}
           <footer class="db__brand">
             <span class="db__brand-melo">Melo</span>
             <span class="db__brand-studio">Studio</span>
           </footer>
         </div>
       </Show>
-      {/* ── Delete Account Modal ── */}
+
+      {/* Delete account modal */}
       <Show when={deleteStep() !== "none"}>
         <div class="db__modal-overlay" onClick={handleCancelDelete}>
           <div class="db__modal" onClick={(e) => e.stopPropagation()}>
@@ -703,7 +684,7 @@ const Dashboard: Component<{
         </div>
       </Show>
 
-      {/* ── Project Create Modal ── */}
+      {/* Create project modal */}
       <Show when={createOpen()}>
         <div class="db__pm-overlay" onClick={() => setCreateOpen(false)}>
           <form class="db__pm" onClick={(e) => e.stopPropagation()} onSubmit={submitCreate}>
@@ -718,13 +699,7 @@ const Dashboard: Component<{
               <span class="db__pm-line db__pm-line--pink">Name</span>
               <span class="db__pm-line db__pm-line--stroke">it.</span>
             </div>
-            <input
-              class="db__pm-input"
-              autofocus
-              value={createName()}
-              onInput={(e) => setCreateName(e.currentTarget.value)}
-              placeholder="Untitled project"
-            />
+            <input class="db__pm-input" autofocus value={createName()} onInput={(e) => setCreateName(e.currentTarget.value)} placeholder="Untitled project" />
             <Show when={projectActionError()}><span class="db__pm-error">{projectActionError()}</span></Show>
             <div class="db__pm-row">
               <button type="submit" class="db__pm-btn db__pm-btn--primary">Create</button>
@@ -734,7 +709,7 @@ const Dashboard: Component<{
         </div>
       </Show>
 
-      {/* ── Project Rename Modal ── */}
+      {/* Rename project modal */}
       <Show when={renameTarget()}>
         <div class="db__pm-overlay" onClick={() => setRenameTarget(null)}>
           <form class="db__pm" onClick={(e) => e.stopPropagation()} onSubmit={submitRename}>
@@ -749,13 +724,7 @@ const Dashboard: Component<{
               <span class="db__pm-line db__pm-line--pink">Re</span>
               <span class="db__pm-line db__pm-line--stroke">name.</span>
             </div>
-            <input
-              class="db__pm-input"
-              autofocus
-              value={renameValue()}
-              onInput={(e) => setRenameValue(e.currentTarget.value)}
-              placeholder={renameTarget()?.name}
-            />
+            <input class="db__pm-input" autofocus value={renameValue()} onInput={(e) => setRenameValue(e.currentTarget.value)} placeholder={renameTarget()?.name} />
             <Show when={projectActionError()}><span class="db__pm-error">{projectActionError()}</span></Show>
             <div class="db__pm-row">
               <button type="submit" class="db__pm-btn db__pm-btn--primary" disabled={projectActionLoading()}>{projectActionLoading() ? "Saving" : "Save"}</button>
@@ -765,7 +734,7 @@ const Dashboard: Component<{
         </div>
       </Show>
 
-      {/* ── Project Delete Modal ── */}
+      {/* Delete project modal */}
       <Show when={deleteTarget()}>
         <div class="db__pm-overlay" onClick={() => setDeleteTarget(null)}>
           <div class="db__pm" onClick={(e) => e.stopPropagation()}>
@@ -788,6 +757,7 @@ const Dashboard: Component<{
           </div>
         </div>
       </Show>
+
     </div>
   );
 };
