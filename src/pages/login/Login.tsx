@@ -29,6 +29,8 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
 
       if (error) {
         setErrorMsg(error.message || "Invalid email or password");
+      } else if (!data) {
+        setErrorMsg("Sign in failed. Please try again.");
       } else {
         props.onSuccess?.();
       }
