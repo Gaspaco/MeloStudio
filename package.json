@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "vinxi dev",
-    "build": "vinxi build",
+    "build": "rm -rf .vinxi .output .netlify && vinxi build",
     "start": "vinxi start",
     "db:migrate": "bun --env-file=.env run src/lib/db/migrate.ts"
   },
