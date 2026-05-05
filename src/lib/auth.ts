@@ -1,5 +1,8 @@
-import { createAuthClient } from "@neondatabase/neon-js/auth";
+import { createInternalNeonAuth } from "@neondatabase/neon-js/auth";
 
-export const authClient = createAuthClient(
+const auth = createInternalNeonAuth(
   import.meta.env.VITE_NEON_AUTH_URL,
 );
+
+export const authClient = auth.adapter;
+export const getAuthToken = () => auth.getJWTToken();

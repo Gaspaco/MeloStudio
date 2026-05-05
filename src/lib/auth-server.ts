@@ -10,7 +10,7 @@ const authUrl = process.env.NEON_AUTH_URL ?? process.env.VITE_NEON_AUTH_URL ?? "
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 function getJwks() {
   if (!jwks && authUrl) {
-    jwks = createRemoteJWKSet(new URL("/.well-known/jwks.json", authUrl));
+    jwks = createRemoteJWKSet(new URL(`${authUrl.replace(/\/$/, "")}/.well-known/jwks.json`));
   }
   return jwks;
 }

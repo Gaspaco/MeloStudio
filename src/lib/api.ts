@@ -1,11 +1,11 @@
 // Thin fetch wrapper that attaches the user's JWT as a Bearer header
 // so API routes can verify identity via JWKS without touching cookies.
 
-import { authClient } from "./auth";
+import { getAuthToken } from "./auth";
 
 async function bearerToken(): Promise<string | null> {
   try {
-    return await authClient.getJWTToken();
+    return await getAuthToken();
   } catch {
     return null;
   }

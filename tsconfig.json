@@ -27,5 +27,7 @@
     "paths": {
       "~/*": ["./src/*"]
     }
-  }
+  },
+  "include": ["src", "app.config.ts", "entry-client.tsx", "entry-server.tsx", "test-auth-ts.ts"],
+  "exclude": ["node_modules", ".vinxi", ".output", ".netlify", "dist"]
 }

@@ -1,0 +1,10 @@
+{
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.vinxi/**": true,
+    "**/.output/**": true,
+    "**/.netlify/**": true,
+    "**/dist/**": true
+  }
+}

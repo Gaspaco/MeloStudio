@@ -1,6 +1,6 @@
 import { onMount } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
-import { authClient } from "~/lib/auth";
+import { getAuthToken } from "~/lib/auth";
 import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer } from "~/lib/audio/stepSeq";
 import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
 import { loadClip, removeClip } from "~/lib/clipStore";
@@ -28,9 +28,12 @@ export function useProject(deps: Deps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let pendingDoc: any = null;
 
-  const userId = async (): Promise<string | null> => {
-    const { data } = await authClient.getSession();
-    return data?.user?.id ?? null;
+  const authHeaders = async (json = false): Promise<Record<string, string> | null> => {
+    const token = await getAuthToken();
+    if (!token) return null;
+    const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+    if (json) headers["Content-Type"] = "application/json";
+    return headers;
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,14 +93,14 @@ export function useProject(deps: Deps) {
       for (const clip of t.clips ?? []) removeClip(clip.id).catch(() => {});
     }
     pendingDoc = null;
-    const id = await userId().catch(() => null);
-    if (!id) return;
-    const res = await fetch(`/api/projects/${deps.projectId}`, { headers: { "x-user-id": id } });
+    const headers = await authHeaders().catch(() => null);
+    if (!headers) return;
+    const res = await fetch(`/api/projects/${deps.projectId}`, { headers });
     if (!res.ok) return;
     const doc = await res.json();
     await fetch(`/api/projects/${deps.projectId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json", "x-user-id": id },
+      headers: await authHeaders(true) ?? {},
       body: JSON.stringify({ ...doc, uiTracks: [], beat: { pattern: DEFAULT_PATTERN() } }),
     });
     deps.setShowNewTrack(true);
@@ -108,9 +111,9 @@ export function useProject(deps: Deps) {
     if (!seq) return;
     deps.setSaveState("saving");
     try {
-      const id = await userId();
-      if (!id) throw new Error("not signed in");
-      const res = await fetch(`/api/projects/${deps.projectId}`, { headers: { "x-user-id": id } });
+      const headers = await authHeaders();
+      if (!headers) throw new Error("not signed in");
+      const res = await fetch(`/api/projects/${deps.projectId}`, { headers });
       if (!res.ok) throw new Error(`load failed: ${res.status}`);
       const doc = await res.json();
       const uiTracksForSave = deps.tracks().map(t => ({
@@ -125,7 +128,7 @@ export function useProject(deps: Deps) {
       };
       const put = await fetch(`/api/projects/${deps.projectId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", "x-user-id": id },
+        headers: await authHeaders(true) ?? {},
         body: JSON.stringify(updated),
       });
       if (!put.ok) throw new Error(`save failed: ${put.status}`);
@@ -140,9 +143,9 @@ export function useProject(deps: Deps) {
 
   const init = async () => {
     try {
-      const id = await userId();
-      if (!id) { deps.setError("Not signed in"); return; }
-      const res = await fetch(`/api/projects/${deps.projectId}`, { headers: { "x-user-id": id } });
+      const headers = await authHeaders();
+      if (!headers) { deps.setError("Not signed in"); return; }
+      const res = await fetch(`/api/projects/${deps.projectId}`, { headers });
       if (!res.ok) { deps.setError(`Couldn't load (${res.status})`); return; }
       const doc = await res.json();
 
