@@ -1,11 +1,11 @@
 // Thin fetch wrapper that attaches the user's JWT as a Bearer header
 // so API routes can verify identity via JWKS without touching cookies.
 
-import { getAuthToken } from "./auth";
+import { getJWTToken } from "./auth";
 
 async function bearerToken(): Promise<string | null> {
   try {
-    return await getAuthToken();
+    return await getJWTToken();
   } catch {
     return null;
   }
@@ -30,6 +30,7 @@ export interface ProjectListItem {
   name: string;
   bpm: number;
   updatedAt: string;
+  trackCount: number;
 }
 
 export async function listProjectsApi(): Promise<ProjectListItem[]> {
@@ -58,4 +59,10 @@ export async function updateProjectApi(id: string, updates: { name?: string }): 
 export async function deleteProjectApi(id: string): Promise<void> {
   const res = await call(`/api/projects/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`delete project: ${res.status}`);
+}
+
+export async function getProjectStatsApi(): Promise<{ studioHours: number }> {
+  const res = await call("/api/projects/stats");
+  if (!res.ok) return { studioHours: 0 };
+  return res.json();
 }

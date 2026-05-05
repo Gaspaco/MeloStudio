@@ -1,5 +1,7 @@
-// AudioGraph: per-track gain + pan summing into a master gain.
-// Pure Web Audio — no Solid coupling. State changes flow in via methods.
+// AudioGraph is responsible for the actual Web Audio signal chain.
+// It sets up the routing: Clips -> Track Input Gain -> Track Panner -> Track Output Gain -> Master Gain -> Destination.
+// By keeping all the Web Audio logic here, we decouple the audio processing 
+// from SolidJS and UI state, updating it only via manual imperative calls.
 
 import { dbToGain, type Track, type MasterBus, type TrackId } from "./types";
 
@@ -35,7 +37,9 @@ export class AudioGraph {
     );
   }
 
-  // add or update a track's nodes. safe to call repeatedly
+  // Upserts (adds or updates) a track in the audio graph. 
+  // It's perfectly safe to call this whenever track state changes (e.g. volume slider moved).
+  // It uses `setTargetAtTime` to gracefully glide to the new volume, avoiding clicks/pops.
   upsertTrack(t: Track, anySoloed: boolean): void {
     let nodes = this.tracks.get(t.id);
     if (!nodes) {

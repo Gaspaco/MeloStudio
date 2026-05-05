@@ -1,4 +1,8 @@
-// Project persistence: load from API, debounced autosave to API.
+// Handles syncing the live SolidJS project state up to the database backbone.
+// It exposes explicit load/save commands, but the primary mechanism is `startAutosave`:
+// A reactive effect that wraps the entire project store. When any value inside the 
+// project changes (e.g. dragging a clip), it trips a debounce timer. When the UI settles, 
+// the complete structural snapshot is shipped to the Neon database via the internal API.
 
 import { createEffect, on, onCleanup } from "solid-js";
 import { hydrateProject, project } from "./projectStore";

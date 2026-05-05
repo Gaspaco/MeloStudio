@@ -140,6 +140,13 @@
     .bl__mclip-x { opacity: 1; }
   }
   &:active { cursor: grabbing; }
+  &.is-dragging {
+    opacity: 0.75;
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--tc) 50%, transparent);
+    transform: translateY(-2px);
+    z-index: 10;
+    transition: none;
+  }
   &.is-midi {
     background: repeating-linear-gradient(
       45deg,

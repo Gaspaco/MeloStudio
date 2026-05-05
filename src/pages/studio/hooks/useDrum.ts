@@ -1,3 +1,8 @@
+// `useDrum` links the visual Studio Drum Machine panel to the actual `StepSequencer`
+// Web Audio engine layer. When a user clicks a sequencer button on screen, this hook:
+// 1. Modifies the internal integer array backing the drum pattern sequence.
+// 2. Plays a live preview "hit" of the drum so the user hears what they just wrote.
+// 3. Syncs the modified state array back up to SolidJS via `setPattern()`, forcing a re-render.
 import type { Accessor, Setter } from "solid-js";
 import type { StepPattern, StepSequencer } from "~/lib/audio/stepSeq";
 

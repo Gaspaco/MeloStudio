@@ -1,7 +1,13 @@
+// `useTracks` manages the structural composition of the DAW timeline.
+// It's responsible for dragging and dropping audio files, creating loops,
+// snapping movements to the grid (bars/beats), moving clips across lanes,
+// and resolving clip types (audio vs midi vs video).
+// This hook directly manipulates the `tracks` array and instantly saves
+// up to `persist.ts` whenever the timeline layout is modified.
 import { createSignal } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { storeClip, removeClip } from "~/lib/clipStore";
-import { type TrackType, type ClipKind, type MediaClip, type UITrack, TRACK_DEFS, randomTrackColor } from "../types";
+import { type TrackType, type ClipKind, type MediaClip, type UITrack, type StudioTemplate, TRACK_DEFS, randomTrackColor } from "../types";
 import type { SynthPreset } from "~/lib/audio/synth";
 import type { StepSequencer } from "~/lib/audio/stepSeq";
 
@@ -200,5 +206,54 @@ export function useTracks(deps: Deps) {
     addTrack, deleteTrack, patchTrack, addClip, deleteClip, importFiles,
     onLaneDragOver, onLaneDragLeave, onLaneDrop,
     onLanesDragOver, onLanesDragLeave, onLanesDrop,
+
+    moveClip(trackId: string, clipId: string, newBarStart: number) {
+      deps.setTracks(deps.tracks().map(t =>
+        t.id !== trackId ? t : {
+          ...t,
+          clips: (t.clips ?? []).map(c =>
+            c.id === clipId ? { ...c, barStart: Math.max(0, newBarStart) } : c
+          ),
+        }
+      ));
+      void deps.save();
+    },
+
+    createRegion(trackId: string, barStart: number) {
+      const clip: MediaClip = {
+        id: crypto.randomUUID(), kind: "midi", name: "Region",
+        barStart: Math.max(0, barStart), bars: 4,
+      };
+      deps.setTracks(deps.tracks().map(t =>
+        t.id === trackId ? { ...t, clips: [...(t.clips ?? []), clip] } : t
+      ));
+      void deps.save();
+    },
+
+    addTrackBatch(templateTracks: StudioTemplate["tracks"]) {
+      const newTracks: UITrack[] = templateTracks.map(({ type, name }) => {
+        const def = TRACK_DEFS.find(d => d.type === type)!;
+        return {
+          id: crypto.randomUUID(), name, type,
+          muted: false, solo: false, volume: 0.8, pan: 0,
+          color: type === "drum" ? def.color : randomTrackColor(),
+        };
+      });
+      deps.setTracks(newTracks);
+      deps.setSelectedTrack(newTracks[0]?.id ?? null);
+      const hasDrum = newTracks.some(t => t.type === "drum");
+      if (hasDrum) { deps.setDrumPanelOpen(true); deps.setActivePanel("drum"); }
+      const keyTrack = newTracks.find(t =>
+        t.type === "instrument" || t.type === "bass" || t.type === "guitar"
+      );
+      if (keyTrack) {
+        const preset: SynthPreset =
+          keyTrack.type === "bass" ? "bass" : keyTrack.type === "guitar" ? "guitar" : "piano";
+        deps.ensureSynth(preset);
+        deps.setSynthPreset(preset);
+      }
+      deps.setShowNewTrack(false);
+      void deps.save();
+    },
   };
 }

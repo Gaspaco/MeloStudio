@@ -1,3 +1,9 @@
+// The `useTransport` hook orchestrates playback across all audio sub-systems.
+// In a DAW, the "Transport" refers to the global play/pause/record controls and timeline playhead.
+// This hook bridges the Web Audio API, Tone.js (for drums), the PolySynth (for MIDI), 
+// and raw AudioBuffers (for audio clips). When the user clicks play, it schedules 
+// all upcoming clips to play at precisely the right moment on the audio context thread,
+// and starts a visual `requestAnimationFrame` loop to animate the playhead smoothly.
 import { onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { unlockAudioContext, getAudioContext } from "~/lib/audio/context";
