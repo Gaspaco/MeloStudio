@@ -7,6 +7,7 @@
 import { onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { unlockAudioContext, getAudioContext } from "~/lib/audio/context";
+import { getMasterBus } from "~/lib/audio/masterBus";
 import type { StepPattern, StepSequencer } from "~/lib/audio/stepSeq";
 import type { PolySynth } from "~/lib/audio/synth";
 import type { UITrack } from "../types";
@@ -30,6 +31,7 @@ export function useTransport(deps: Deps) {
   let playbackStartTimelineSecs = 0;
   const audioBufferCache = new Map<string, AudioBuffer>();
   let masterGainNode: GainNode | null = null;
+  const trackGainNodes = new Map<string, GainNode>();
   let elapsedTimer: ReturnType<typeof setInterval> | null = null;
   let startTime = 0;
 
@@ -41,7 +43,14 @@ export function useTransport(deps: Deps) {
     for (const src of audioSources) { try { src.stop(); } catch { /* already ended */ } }
     audioSources = [];
     if (playbackRaf) { cancelAnimationFrame(playbackRaf); playbackRaf = null; }
+    trackGainNodes.forEach((n) => { try { n.disconnect(); } catch { /* */ } });
+    trackGainNodes.clear();
     if (masterGainNode) { try { masterGainNode.disconnect(); } catch { /* */ } masterGainNode = null; }
+  };
+
+  const setTrackVolume = (trackId: string, v: number) => {
+    const node = trackGainNodes.get(trackId);
+    if (node) node.gain.setTargetAtTime(Math.max(0, v), getAudioContext().currentTime, 0.01);
   };
 
   const startAudioPlayback = async () => {
@@ -60,9 +69,18 @@ export function useTransport(deps: Deps) {
 
     masterGainNode = ctx.createGain();
     masterGainNode.gain.value = deps.masterVol();
-    masterGainNode.connect(ctx.destination);
+    masterGainNode.connect(getMasterBus().input);
 
     for (const track of deps.tracks()) {
+      const hasAudioClips = (track.clips ?? []).some(c => c.kind !== "midi" && !!c.url);
+      if (!hasAudioClips) continue;
+
+      // Per-track gain node so each track's volume slider works independently
+      const trackGain = ctx.createGain();
+      trackGain.gain.value = track.muted ? 0 : (track.volume ?? 1);
+      trackGain.connect(masterGainNode!);
+      trackGainNodes.set(track.id, trackGain);
+
       for (const clip of track.clips ?? []) {
         if (clip.kind === "midi" || !clip.url) continue;
         let buffer = audioBufferCache.get(clip.url);
@@ -80,7 +98,7 @@ export function useTransport(deps: Deps) {
         const delayFromNow = Math.max(0, clipStartSecs - timelineStartSecs);
         const src = ctx.createBufferSource();
         src.buffer = buffer;
-        src.connect(masterGainNode!);
+        src.connect(trackGain);
         src.start(ctx.currentTime + delayFromNow, offsetInClip);
         audioSources.push(src);
       }
@@ -143,5 +161,5 @@ export function useTransport(deps: Deps) {
     if (elapsedTimer) clearInterval(elapsedTimer);
   });
 
-  return { togglePlay, stopAll, updateBpm, setMasterVolume, stopAudioPlayback };
+  return { togglePlay, stopAll, updateBpm, setMasterVolume, stopAudioPlayback, setTrackVolume };
 }

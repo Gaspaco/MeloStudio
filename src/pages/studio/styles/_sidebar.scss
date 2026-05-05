@@ -451,6 +451,15 @@
   }
 }
 
+.bl__slider-val {
+  font-family: $font-mono;
+  font-size: 0.58rem;
+  color: $text-muted;
+  flex-shrink: 0;
+  min-width: 2.4rem;
+  text-align: right;
+}
+
 .bl__sidebar-hint { display: none; }
 
 /* Drop zone — large dashed box below all tracks */

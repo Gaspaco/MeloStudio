@@ -8,12 +8,14 @@ interface DrumPanelProps {
   currentStep: Accessor<number>;
   drumSteps:   Accessor<number>;
   drumSwing:   Accessor<number>;
+  drumVolume:  Accessor<number>;
   onToggleStep:        (rowIdx: number, stepIdx: number) => void;
   onCycleStepVelocity: (rowIdx: number, stepIdx: number) => void;
   onToggleRowMute:     (rowIdx: number) => void;
   onUpdateRowGain:     (rowIdx: number, db: number) => void;
   onUpdateSwing:       (amount: number) => void;
   onUpdateDrumSteps:   (steps: number) => void;
+  onSetDrumVolume:     (v: number) => void;
   onClearPattern:      () => void;
   onCollapse:          () => void;
 }
@@ -54,6 +56,19 @@ const DrumPanel: Component<DrumPanelProps> = (props) => {
               type="range" min="0" max="0.5" step="0.01"
               value={props.drumSwing()}
               onInput={(e) => props.onUpdateSwing(parseFloat(e.currentTarget.value))}
+            />
+          </div>
+
+          <div class="bl__dp-ctrl-group">
+            <span class="bl__dp-ctrl-label">
+              Vol <span class="bl__dp-ctrl-val">{Math.round(props.drumVolume() * 100)}%</span>
+            </span>
+            <input
+              class="bl__dp-swing"
+              type="range" min="0" max="1" step="0.01"
+              value={props.drumVolume()}
+              onInput={(e) => props.onSetDrumVolume(parseFloat(e.currentTarget.value))}
+              title="Drum kit volume"
             />
           </div>
 

@@ -8,8 +8,10 @@ import { createSignal } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { storeClip, removeClip } from "~/lib/clipStore";
 import { type TrackType, type ClipKind, type MediaClip, type UITrack, type StudioTemplate, TRACK_DEFS, randomTrackColor } from "../types";
-import type { SynthPreset } from "~/lib/audio/synth";
+import type { PolySynth, SynthPreset } from "~/lib/audio/synth";
 import type { StepSequencer } from "~/lib/audio/stepSeq";
+
+const volToDb = (v: number) => v <= 0.001 ? -60 : 20 * Math.log10(v);
 
 const BAR_PX = 80;
 
@@ -24,6 +26,8 @@ type Deps = {
   setActivePanel: Setter<"drum" | "keys" | null>;
   setDrumPanelOpen: Setter<boolean>;
   getSeq: () => StepSequencer | null;
+  getSynth: () => PolySynth | null;
+  setTrackVolume: (id: string, v: number) => void;
   save: () => Promise<void>;
   timelineEl: () => HTMLDivElement | undefined;
 };
@@ -148,6 +152,19 @@ export function useTracks(deps: Deps) {
 
   const patchTrack = (id: string, patch: Partial<UITrack>) => {
     deps.setTracks(deps.tracks().map(t => t.id === id ? { ...t, ...patch } : t));
+    if (patch.volume !== undefined) {
+      const track = deps.tracks().find(t => t.id === id);
+      if (!track) return;
+      const db = volToDb(patch.volume);
+      if (track.type === "instrument" || track.type === "bass" || track.type === "guitar") {
+        deps.getSynth()?.setMasterGainDb(db);
+      } else if (track.type === "drum") {
+        deps.getSeq()?.setMasterGainDb(db);
+      } else {
+        // voice / sampler / audio clip tracks — update the per-track gain node
+        deps.setTrackVolume(id, patch.volume);
+      }
+    }
   };
 
   const onLaneDragOver = (e: DragEvent, trackId: string) => {

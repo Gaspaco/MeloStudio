@@ -11,6 +11,7 @@
 
 import * as Tone from "tone";
 import { bindToneToContext } from "./context";
+import { getMasterBus } from "./masterBus";
 import { DrumKit, type DrumName, DRUM_NAMES } from "./synthDrums";
 
 // Sanitizes a loaded drum pattern so it doesn't break the sequencer.
@@ -84,7 +85,8 @@ export class StepSequencer {
   constructor(initial?: StepPattern) {
     this.pattern = initial ?? DEFAULT_PATTERN();
     bindToneToContext();
-    this.masterGain = new Tone.Gain(0.8).toDestination();
+    this.masterGain = new Tone.Gain(0.8);
+    this.masterGain.connect(getMasterBus().input);
     Tone.getTransport().bpm.value = this.pattern.bpm;
   }
 

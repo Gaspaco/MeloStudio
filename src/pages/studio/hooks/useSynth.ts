@@ -34,7 +34,11 @@ export function useSynth(deps: Deps) {
   const ensureSynth = (preset: SynthPreset = "piano") => {
     if (!synth) {
       synth = new PolySynth(preset);
-      const db = deps.masterVol() <= 0.001 ? -60 : 20 * Math.log10(deps.masterVol());
+      // Apply the selected instrument track's volume if available, otherwise masterVol
+      const trackId = deps.selectedTrack();
+      const track = deps.tracks().find(t => t.id === trackId);
+      const vol = track?.volume ?? deps.masterVol();
+      const db = vol <= 0.001 ? -60 : 20 * Math.log10(vol);
       synth.setMasterGainDb(db);
     } else {
       synth.setPreset(preset);

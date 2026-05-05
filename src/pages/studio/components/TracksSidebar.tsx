@@ -1,4 +1,4 @@
-import { type Component, For, Show } from "solid-js";
+import { type Component, Index, Show, For } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { KeyboardMusic, Drum, AudioWaveform, MicVocal, Disc2, Guitar } from "lucide-solid";
 import { type TrackType, type UITrack, TRACK_DEFS } from "../types";
@@ -125,8 +125,10 @@ const TracksSidebar: Component<Props> = (props) => (
                   onClick={() => props.onPatchTrack(t.id, { solo: !t.solo })}>S</button>
                 <input class="bl__slider" type="range" min="0" max="1" step="0.01"
                   value={t.volume}
-                  onChange={(e) => props.onPatchTrack(t.id, { volume: parseFloat(e.currentTarget.value) })}
+                  onInput={(e) => props.onPatchTrack(t.id, { volume: parseFloat(e.currentTarget.value) })}
+                  title={`Volume: ${Math.round(t.volume * 100)}%`}
                 />
+                <span class="bl__slider-val">{Math.round(t.volume * 100)}%</span>
               </div>
             </div>
           </div>

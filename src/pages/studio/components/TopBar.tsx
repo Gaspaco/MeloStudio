@@ -22,6 +22,8 @@ type Props = {
   onUpdateBpm: (v: number) => void;
   onSetMasterVol: (v: number) => void;
   onElapsedReset: () => void;
+  enhance: Accessor<boolean>;
+  onToggleEnhance: () => void;
 };
 
 const TopBar: Component<Props> = (props) => (
@@ -158,14 +160,19 @@ const TopBar: Component<Props> = (props) => (
       </div>
 
       <div class="bl__console-r">
-        <button class="bl__mastering" type="button" title="Mastering preset">
+        <button
+          class={`bl__mastering${props.enhance() ? " is-enhanced" : ""}`}
+          type="button"
+          title={props.enhance() ? "Audio Enhance: ON — click to disable" : "Audio Enhance: OFF — click to enable"}
+          onClick={props.onToggleEnhance}
+        >
           <span class="bl__mastering-icon" aria-hidden="true">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <circle cx="8" cy="8" r="5.2" /><path d="M8 3v2M8 11v2M3 8h2M11 8h2M4.6 4.6l1.4 1.4M10 10l1.4 1.4M11.4 4.6L10 6M6 10l-1.4 1.4" />
             </svg>
           </span>
-          <span class="bl__mastering-name">Studio</span>
-          <svg class="bl__mastering-chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5l3 3 3-3"/></svg>
+          <span class="bl__mastering-name">{props.enhance() ? "Enhanced" : "Studio"}</span>
+          <span class={`bl__enhance-led${props.enhance() ? " is-on" : ""}`} />
         </button>
         <span class="bl__field-sep" />
         <div class="bl__master-vol" title="Master volume" style={{ "--vol": `${Math.round(props.masterVol() * 100)}%` }}>

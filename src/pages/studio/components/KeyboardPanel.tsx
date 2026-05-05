@@ -23,6 +23,7 @@ interface KeyboardPanelProps {
   onUpdateEnvelope: (a: number, d: number, s: number, r: number) => void;
   onUpdateFilter:   (freq: number) => void;
   onSetOctave:      (oct: number) => void;
+  onSetVolume:      (v: number) => void;
   onCollapse:       () => void;
 }
 
@@ -200,6 +201,19 @@ const KeyboardPanel: Component<KeyboardPanelProps> = (props) => {
         </div>
 
         <div class="bl__dp-actions">
+          <div class="bl__dp-ctrl-group">
+            <span class="bl__dp-ctrl-label">
+              Vol <span class="bl__dp-ctrl-val">{Math.round((selectedTrackData()?.volume ?? 0.8) * 100)}%</span>
+            </span>
+            <input
+              class="bl__dp-swing"
+              type="range" min="0" max="1" step="0.01"
+              value={selectedTrackData()?.volume ?? 0.8}
+              onInput={(e) => props.onSetVolume(parseFloat(e.currentTarget.value))}
+              title="Instrument volume"
+            />
+          </div>
+
           <div class="bl__oct-stepper" role="group" aria-label="Octave">
             <button
               class="bl__oct-btn"

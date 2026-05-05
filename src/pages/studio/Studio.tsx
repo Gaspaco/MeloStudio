@@ -2,6 +2,7 @@ import { type Component, createSignal, createMemo, onMount, onCleanup, Show } fr
 import { useNavigate, useParams } from "@solidjs/router";
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
 import { type SynthPreset } from "~/lib/audio/synth";
+import { getMasterBus } from "~/lib/audio/masterBus";
 import { updateProjectApi } from "~/lib/api";
 import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES } from "./types";
 import { useProject }   from "./hooks/useProject";
@@ -61,6 +62,7 @@ const Studio: Component = () => {
   const [synthFilterFreq,    setSynthFilterFreq]    = createSignal<number>(PRESET_ADSR.lead.filterFreq);
   const [activeNotes,        setActiveNotes]        = createSignal<Set<number>>(new Set());
   const [playheadPx,         setPlayheadPx]         = createSignal(0);
+  const [enhance,            setEnhance]            = createSignal(true);
 
   const sth = useSynth({
     tracks, selectedTrack, masterVol,
@@ -97,13 +99,17 @@ const Studio: Component = () => {
     bpm, setError, setShowNewTrack,
     ensureSynth: sth.ensureSynth, setSynthPreset,
     setActivePanel, setDrumPanelOpen,
-    getSeq: () => seq, save: project.save,
+    getSeq: () => seq, getSynth: sth.getSynth,
+    setTrackVolume: transport.setTrackVolume,
+    save: project.save,
     timelineEl: () => timelineElRef,
   });
 
   onMount(async () => {
     seq = new StepSequencer();
     seq.onStep = (i) => setCurrentStep(i);
+    // Initialize master bus in enhanced mode (on by default)
+    getMasterBus().setEnhanced(true);
     await project.init();
   });
 
@@ -247,6 +253,12 @@ const Studio: Component = () => {
         onUpdateBpm={transport.updateBpm}
         onSetMasterVol={transport.setMasterVolume}
         onElapsedReset={() => setElapsed(0)}
+        enhance={enhance}
+        onToggleEnhance={() => {
+          const next = !enhance();
+          setEnhance(next);
+          getMasterBus().setEnhanced(next);
+        }}
       />
 
       <Show when={error()}>
@@ -283,12 +295,17 @@ const Studio: Component = () => {
         <DrumPanel
           pattern={pattern} currentStep={currentStep}
           drumSteps={drumSteps} drumSwing={drumSwing}
+          drumVolume={() => tracks().find(t => t.type === "drum")?.volume ?? 0.8}
           onToggleStep={drum.toggleStep}
           onCycleStepVelocity={drum.cycleStepVelocity}
           onToggleRowMute={drum.toggleRowMute}
           onUpdateRowGain={drum.updateRowGain}
           onUpdateSwing={drum.updateSwing}
           onUpdateDrumSteps={drum.updateDrumSteps}
+          onSetDrumVolume={(v) => {
+            const drumTrack = tracks().find(t => t.type === "drum");
+            if (drumTrack) trk.patchTrack(drumTrack.id, { volume: v });
+          }}
           onClearPattern={drum.clearPattern}
           onCollapse={() => setActivePanel(null)}
         />
@@ -307,7 +324,12 @@ const Studio: Component = () => {
           onPressKey={sth.pressKey} onReleaseKey={sth.releaseKey}
           onUpdatePreset={sth.updatePreset} onUpdateEnvelope={sth.updateEnvelope}
           onUpdateFilter={sth.updateFilterFreq}
-          onSetOctave={setOctave} onCollapse={() => setActivePanel(null)}
+          onSetOctave={setOctave}
+          onSetVolume={(v) => {
+            const id = selectedTrack();
+            if (id) trk.patchTrack(id, { volume: v });
+          }}
+          onCollapse={() => setActivePanel(null)}
         />
       </Show>
 

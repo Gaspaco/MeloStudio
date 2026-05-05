@@ -189,6 +189,15 @@ const Dashboard: Component<{
 
   const totalTracks = () => projects().reduce((a, p) => a + p.tracks, 0);
 
+  const fmtStudioTime = () => {
+    const h = studioHours();
+    if (h <= 0) return "0m";
+    if (h < 1) return `${Math.round(h * 60)}m`;
+    const hrs = Math.floor(h);
+    const mins = Math.round((h - hrs) * 60);
+    return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
+  };
+
   // Project modals
   const [createOpen, setCreateOpen] = createSignal(false);
   const [createName, setCreateName] = createSignal("New Project");
@@ -384,9 +393,9 @@ const Dashboard: Component<{
             </div>
 
             <div class="db__stat">
-              <span class="db__stat-num">{studioHours()}h</span>
+              <span class="db__stat-num">{fmtStudioTime()}</span>
               <span class="db__stat-label">Studio Time</span>
-              <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `${Math.min(studioHours() * 4, 100)}%` }} /></span>
+              <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `${Math.min(studioHours() * 10, 100)}%` }} /></span>
             </div>
           </section>
 

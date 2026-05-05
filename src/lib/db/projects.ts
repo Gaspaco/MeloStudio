@@ -50,14 +50,41 @@ export async function listProjects(userId: string): Promise<ProjectListItem[]> {
 }
 
 export async function getProjectStats(userId: string): Promise<{ studioHours: number }> {
+  // Group save events (project_versions rows) into sessions.
+  // A new session starts when there is a gap of more than 30 minutes since the last save.
+  // Each session is credited (last_save - first_save) + 5 minutes minimum.
+  // This avoids the old bug where (updated_at - created_at) counted calendar days as studio time.
   const rows = await sql`
-    SELECT
-      COALESCE(
-        SUM(EXTRACT(EPOCH FROM (updated_at - created_at))),
-        0
-      )::float / 3600 AS studio_hours
-    FROM projects
-    WHERE user_id = ${userId}
+    WITH saves AS (
+      SELECT pv.created_at
+      FROM project_versions pv
+      JOIN projects p ON pv.project_id = p.id
+      WHERE p.user_id = ${userId}
+    ),
+    gaps AS (
+      SELECT
+        created_at,
+        CASE
+          WHEN created_at - LAG(created_at) OVER (ORDER BY created_at) > INTERVAL '30 minutes'
+            OR LAG(created_at) OVER (ORDER BY created_at) IS NULL
+          THEN 1 ELSE 0
+        END AS new_session
+      FROM saves
+    ),
+    sessions AS (
+      SELECT
+        SUM(new_session) OVER (ORDER BY created_at ROWS UNBOUNDED PRECEDING) AS session_id,
+        created_at
+      FROM gaps
+    ),
+    session_times AS (
+      SELECT
+        EXTRACT(EPOCH FROM (MAX(created_at) - MIN(created_at))) + 300 AS duration_secs
+      FROM sessions
+      GROUP BY session_id
+    )
+    SELECT COALESCE(SUM(duration_secs) / 3600.0, 0)::float AS studio_hours
+    FROM session_times
   ` as Array<{ studio_hours: number }>;
   return { studioHours: Math.round((rows[0]?.studio_hours ?? 0) * 10) / 10 };
 }

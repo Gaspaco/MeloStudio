@@ -11,6 +11,7 @@
 
 import * as Tone from "tone";
 import { bindToneToContext } from "./context";
+import { getMasterBus } from "./masterBus";
 
 export type SynthPreset = "piano" | "lead" | "pad" | "bass" | "guitar";
 
@@ -38,7 +39,7 @@ const SYNTH_PRESETS: Record<"lead" | "pad" | "fallback" | "bassFallback", SynthP
       attack: 0.01, decay: 0.3, sustain: 0.4, release: 0.25,
       baseFrequency: 1500, octaves: 1.5,
     },
-    volume: -3,
+    volume: 0,
   },
   pad: {
     oscillator: { type: "fatsawtooth", count: 3, spread: 30 },
@@ -48,7 +49,7 @@ const SYNTH_PRESETS: Record<"lead" | "pad" | "fallback" | "bassFallback", SynthP
       attack: 0.8, decay: 0.4, sustain: 0.6, release: 1.0,
       baseFrequency: 800, octaves: 1,
     },
-    volume: -3,
+    volume: 0,
   },
   // Used as the silent-period fallback while samples are downloading.
   fallback: {
@@ -94,7 +95,7 @@ const SAMPLER_PRESETS: Record<"piano" | "bass" | "guitar", SamplerPreset> = {
     folder: "piano",
     ext: "mp3",
     release: 1.0,
-    volume: -6,
+    volume: 0,
     urls: {
       A1: "A1.mp3", C2: "C2.mp3", "D#2": "Ds2.mp3", "F#2": "Fs2.mp3",
       A2: "A2.mp3", C3: "C3.mp3", "D#3": "Ds3.mp3", "F#3": "Fs3.mp3",
@@ -108,7 +109,7 @@ const SAMPLER_PRESETS: Record<"piano" | "bass" | "guitar", SamplerPreset> = {
     folder: "bass-electric",
     ext: "mp3",
     release: 0.5,
-    volume: -4,
+    volume: 0,
     urls: {
       "A#1": "As1.mp3", "C#2": "Cs2.mp3", E2: "E2.mp3", G2: "G2.mp3",
       "A#2": "As2.mp3", "C#3": "Cs3.mp3", E3: "E3.mp3", G3: "G3.mp3",
@@ -119,7 +120,7 @@ const SAMPLER_PRESETS: Record<"piano" | "bass" | "guitar", SamplerPreset> = {
     folder: "guitar-acoustic",
     ext: "mp3",
     release: 0.6,
-    volume: -6,
+    volume: 0,
     urls: {
       E2: "E2.mp3", A2: "A2.mp3", D3: "D3.mp3", G3: "G3.mp3",
       B3: "B3.mp3", E4: "E4.mp3", A4: "A4.mp3", D5: "D5.mp3",
@@ -177,7 +178,8 @@ export class PolySynth {
     bindToneToContext();
     this.preset = preset;
 
-    this.master = new Tone.Gain(1).toDestination();
+    this.master = new Tone.Gain(1);
+    this.master.connect(getMasterBus().input);
     this.synth = new Tone.PolySynth(Tone.MonoSynth, buildSynthOpts(SYNTH_PRESETS.fallback))
       .connect(this.master);
     this.synth.maxPolyphony = 16;
