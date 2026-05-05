@@ -30,14 +30,14 @@ export async function saveProjectNow(): Promise<void> {
   });
 }
 
-/** Mount once: re-saves the project 1.5s after the last edit. */
 export function startAutosave(): () => void {
   let timer: ReturnType<typeof setTimeout> | null = null;
   let inflight: Promise<void> | null = null;
 
   const dispose = createEffect(
     on(
-      // Track everything the user might change — Solid will batch all of it.
+      // Solid tracks each field individually — batching them here means
+      // any single-field change triggers the same debounce, not a separate timer.
       () => [
         project.id,
         project.name,
@@ -50,7 +50,7 @@ export function startAutosave(): () => void {
         if (!project.id) return;
         if (timer) clearTimeout(timer);
         timer = setTimeout(() => {
-          if (inflight) return; // skip if a save is already going
+          if (inflight) return; // don't queue a second save while one is in flight
           inflight = saveProjectNow().finally(() => (inflight = null));
         }, SAVE_DEBOUNCE_MS);
       },

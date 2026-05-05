@@ -1,13 +1,11 @@
-// AssetManager — given an assetId, return a decoded AudioBuffer.
-// 3-tier cache: in-memory LRU → IndexedDB → network.
-// Dedupes concurrent requests for the same asset.
+// AssetManager — returns a decoded AudioBuffer for a given assetId.
+// Load order: in-memory LRU, then IndexedDB, then network.
+// If two calls come in for the same id before the first finishes, they share one fetch.
 
 import { getAudioContext } from "./context";
 import { idbGet, idbPut, idbHas } from "~/lib/storage/idb";
 import type { AssetId } from "./types";
 
-/** Resolves a signed/public URL for an asset. Pluggable so we can swap
- *  R2 / S3 / local dev URLs without touching the manager. */
 export type UrlResolver = (assetId: AssetId) => Promise<string> | string;
 
 interface Entry {
@@ -17,7 +15,7 @@ interface Entry {
 }
 
 export interface AssetManagerOptions {
-  /** Soft cap for the in-memory LRU. 256 MB default. */
+  // soft cap for the in-memory LRU. 256 MB default
   maxMemoryBytes?: number;
   resolveUrl: UrlResolver;
 }
@@ -34,7 +32,6 @@ export class AssetManager {
     this.resolveUrl = opts.resolveUrl;
   }
 
-  /** Main entry point. Returns a decoded AudioBuffer ready to play. */
   async get(id: AssetId): Promise<AudioBuffer> {
     // 1. RAM LRU
     const hit = this.mem.get(id);
@@ -52,7 +49,6 @@ export class AssetManager {
     return promise;
   }
 
-  /** Fetch ahead-of-time without forcing a play. Useful on project load. */
   async preload(ids: Iterable<AssetId>): Promise<void> {
     const tasks: Promise<unknown>[] = [];
     for (const id of ids) {
@@ -61,7 +57,6 @@ export class AssetManager {
     await Promise.all(tasks);
   }
 
-  /** Drop a buffer from RAM (kept in IDB). */
   evict(id: AssetId): void {
     const e = this.mem.get(id);
     if (e) {
@@ -70,18 +65,14 @@ export class AssetManager {
     }
   }
 
-  /** Clear everything from RAM. IDB untouched. */
   clearMemory(): void {
     this.mem.clear();
     this.currentBytes = 0;
   }
 
-  /** Quick check: is the raw byte cache populated? */
   hasInIDB(id: AssetId): Promise<boolean> {
     return idbHas(id);
   }
-
-  // ────────────────────────────────────────────────────────────────────────
 
   private async load(id: AssetId): Promise<AudioBuffer> {
     // 2. IDB byte cache
@@ -95,13 +86,13 @@ export class AssetManager {
         throw new Error(`asset ${id}: ${res.status} ${res.statusText}`);
       }
       bytes = await res.arrayBuffer();
-      // Fire-and-forget IDB write; failure shouldn't block playback.
+      // IDB write is fire-and-forget — failure shouldn't stall playback
       idbPut(id, bytes.slice(0)).catch((err) =>
         console.warn("idbPut failed", id, err),
       );
     }
 
-    // decode (decodeAudioData consumes the ArrayBuffer; clone first)
+    // decodeAudioData consumes the buffer, so slice it first
     const ctx = getAudioContext();
     const decoded = await ctx.decodeAudioData(bytes.slice(0));
 
@@ -111,9 +102,8 @@ export class AssetManager {
     return decoded;
   }
 
-  /** Insert into LRU, evicting oldest entries until under cap. */
   private admit(id: AssetId, buffer: AudioBuffer, footprint: number): void {
-    // If a single asset is huger than the cap, still admit but don't try to evict to nothing.
+    // Single oversized asset: admit it anyway, don't loop forever trying to free space.
     while (
       this.currentBytes + footprint > this.maxBytes &&
       this.mem.size > 0

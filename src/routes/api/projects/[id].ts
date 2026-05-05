@@ -1,6 +1,6 @@
-// GET    /api/projects/:id  → load full ProjectDoc
-// PUT    /api/projects/:id  → save full ProjectDoc (body = doc)
-// DELETE /api/projects/:id  → remove project
+// GET    /api/projects/:id  - load a project by id
+// PUT    /api/projects/:id  - save (body = ProjectDoc)
+// DELETE /api/projects/:id  - delete it
 import type { APIEvent } from "@solidjs/start/server";
 import {
   getProject,

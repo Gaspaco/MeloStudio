@@ -1,5 +1,5 @@
 // Standalone migration runner. Run with: bun run db:migrate
-// Uses a single WebSocket connection so the whole DDL runs atomically.
+// Uses a single WebSocket connection so the whole DDL runs in one transaction.
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";

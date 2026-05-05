@@ -98,8 +98,8 @@ const Dashboard: Component<{
           color: PROJECT_COLORS[i % PROJECT_COLORS.length] as string,
         })),
       );
-    } catch (err) {
-      console.warn("project list failed (are you signed in?)", err);
+    } catch {
+      // silently ignore — user may not be signed in yet
     }
   });
 
@@ -292,7 +292,6 @@ const Dashboard: Component<{
     }
   };
 
-  // ── Entrance ──
   onMount(() => {
     const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
     tl.fromTo(pageRef, { opacity: 0 }, { opacity: 1, duration: 0.4 });
@@ -338,7 +337,6 @@ const Dashboard: Component<{
         </div>
       </header>
 
-      {/* ── Overview ── */}
       <Show when={tab() === "overview"}>
         <div class="db__content">
 
@@ -501,7 +499,6 @@ const Dashboard: Component<{
         </div>
       </Show>
 
-      {/* ── Profile ── */}
       <Show when={tab() === "profile"}>
         <div class="db__content">
 

@@ -13,13 +13,11 @@ export interface DrumVoice {
   dispose(): void;
 }
 
-/** Returns a random value in [-range, +range]. */
 const rnd = (range: number) => (Math.random() * 2 - 1) * range;
-/** Clamps a value to [lo, hi]. */
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-/** Humanized velocity: adds ±velRange variation then clamps to 0.05–1. */
+// humanized velocity: adds ±velRange variation then clamps to 0.05-1
 const hVel = (v: number, velRange = 0.06) => clamp(v + rnd(velRange), 0.05, 1);
-/** Tiny timing nudge in seconds — used only for softer hits so the beat stays tight. */
+// tiny timing nudge — only for softer hits so the beat stays tight
 const hTime = (t: number, maxJitterMs = 6) => t + Math.random() * (maxJitterMs / 1000);
 
 export class DrumKit {
@@ -28,7 +26,7 @@ export class DrumKit {
   constructor(destination: Tone.ToneAudioNode) {
     bindToneToContext();
 
-    // ── Kick ─────────────────────────────────────────────
+    // kick
     const kick = new Tone.MembraneSynth({
       pitchDecay: 0.05,
       octaves: 6,
@@ -37,7 +35,7 @@ export class DrumKit {
       volume: -2,
     }).connect(destination);
 
-    // ── Snare (noise + body) ─────────────────────────────
+    // snare (noise layer + body)
     const snareHP = new Tone.Filter(1000, "highpass").connect(destination);
     const snareNoise = new Tone.NoiseSynth({
       noise: { type: "white" },
@@ -51,8 +49,8 @@ export class DrumKit {
       volume: -12,
     }).connect(destination);
 
-    // ── Hi-hats ──────────────────────────────────────────
-    // ── Hi-hats (NoiseSynth + highpass — more reliable than MetalSynth) ──
+    // hi-hats
+    // NoiseSynth + highpass; MetalSynth was less reliable across browsers
     const hatHp = new Tone.Filter(7000, "highpass").connect(destination);
     const hatClosed = new Tone.NoiseSynth({
       noise: { type: "white" },
@@ -67,7 +65,7 @@ export class DrumKit {
       volume: 0,
     }).connect(hatOpenHp);
 
-    // ── Clap — two noise layers for crack + body ──────────
+    // clap (two noise layers for crack + body)
     const clapHp = new Tone.Filter(800, "highpass").connect(destination);
     const clap = new Tone.NoiseSynth({
       noise: { type: "white" },
@@ -80,7 +78,7 @@ export class DrumKit {
       volume: -8,
     }).connect(clapHp);
 
-    // ── Tom Hi ────────────────────────────────────────────
+    // tom hi
     const tomHi = new Tone.MembraneSynth({
       pitchDecay: 0.03,
       octaves: 3,
@@ -89,7 +87,7 @@ export class DrumKit {
       volume: -8,
     }).connect(destination);
 
-    // ── Tom Lo ───────────────────────────────────────────
+    // tom lo
     const tomLo = new Tone.MembraneSynth({
       pitchDecay: 0.06,
       octaves: 5,
@@ -98,7 +96,7 @@ export class DrumKit {
       volume: -6,
     }).connect(destination);
 
-    // ── Rimshot ──────────────────────────────────────────
+    // rimshot
     const rimshotHP = new Tone.Filter(800, "highpass").connect(destination);
     const rimshot = new Tone.NoiseSynth({
       noise: { type: "white" },

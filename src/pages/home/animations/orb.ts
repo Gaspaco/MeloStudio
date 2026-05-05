@@ -5,12 +5,17 @@ export function setupOrb(orbRef: HTMLDivElement) {
   const core = orbRef.querySelector(".h-panel--end__core") as HTMLElement;
   const glow = orbRef.querySelector(".h-panel--end__glow") as HTMLElement;
 
+  let orbRafPending = false;
   const handleOrbMove = (e: MouseEvent) => {
-    const rect = orbRef.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const dx = (e.clientX - cx) / (rect.width / 2);
-    const dy = (e.clientY - cy) / (rect.height / 2);
+    if (orbRafPending) return;
+    orbRafPending = true;
+    requestAnimationFrame(() => {
+      orbRafPending = false;
+      const rect = orbRef.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = (e.clientX - cx) / (rect.width / 2);
+      const dy = (e.clientY - cy) / (rect.height / 2);
 
     rings.forEach((ring, i) => {
       const intensity = 25 - i * 5;
@@ -27,6 +32,7 @@ export function setupOrb(orbRef: HTMLDivElement) {
 
     gsap.to(glow, { x: dx * 30, y: dy * 30, scale: 1.4, duration: 0.6, ease: "power2.out", overwrite: "auto" });
     gsap.to(core, { x: dx * 8, y: dy * 8, duration: 0.4, ease: "power2.out", overwrite: "auto" });
+    });
   };
 
   const handleOrbLeave = () => {
@@ -57,4 +63,10 @@ export function setupOrb(orbRef: HTMLDivElement) {
   orbRef.addEventListener("mousemove", handleOrbMove);
   orbRef.addEventListener("mouseleave", handleOrbLeave);
   orbRef.addEventListener("click", handleOrbClick);
+
+  return () => {
+    orbRef.removeEventListener("mousemove", handleOrbMove);
+    orbRef.removeEventListener("mouseleave", handleOrbLeave);
+    orbRef.removeEventListener("click", handleOrbClick);
+  };
 }

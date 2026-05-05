@@ -1,5 +1,51 @@
 @use "../../../styles/variables" as *;
 
+// ── Small laptops (1280px and below) ──────────────────────────────
+@media (max-width: 80rem) {
+  .nav-menu {
+    &__char {
+      // Scale down so the huge type doesn't collide with the close button
+      font-size: clamp(2.5rem, 6vw, 6rem);
+    }
+
+    &__right {
+      // Push items clear of the close button row
+      padding-top: 6rem;
+      padding-right: 3rem;
+      justify-content: flex-start;
+    }
+
+    &__row {
+      padding: 0.75rem 0;
+    }
+  }
+}
+
+// ── Compact laptops (1024px and below) ────────────────────────────
+@media (max-width: 64rem) {
+  .nav-menu {
+    &__char {
+      font-size: clamp(2.25rem, 5.5vw, 4.5rem);
+    }
+
+    &__right {
+      padding-top: 6.5rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    &__close {
+      top: 1rem;
+      right: 2rem;
+    }
+
+    &__left {
+      top: 5.5rem;
+      left: 2rem;
+    }
+  }
+}
+
 @media (max-width: 48rem) {
   .nav {
     padding: 0.5rem 1.5rem;

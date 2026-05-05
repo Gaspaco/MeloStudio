@@ -11,11 +11,9 @@ import * as Tone from "tone";
 import { bindToneToContext } from "./context";
 import { DrumKit, type DrumName, DRUM_NAMES } from "./synthDrums";
 
-/**
- * Sanitize a saved pattern: deduplicate rows by drum name (keep first),
- * filter out unknown drum types, and ensure each row has the right number
- * of velocity slots. Call this before applying a loaded pattern.
- */
+// sanitize a saved pattern: dedup rows by drum name, drop unknown types,
+// and make sure each row has the right number of velocity slots.
+// call this before applying a loaded pattern.
 export function sanitizePattern(p: StepPattern): StepPattern {
   const seen = new Set<string>();
   const rows = (p.rows ?? []).filter(r => {
@@ -38,7 +36,7 @@ export function sanitizePattern(p: StepPattern): StepPattern {
 
 export interface StepRow {
   drum: DrumName;
-  /** length === pattern.steps. 0 = off, 1 = max velocity. */
+  // length === pattern.steps. 0 = off, 1 = max velocity
   velocities: number[];
   gainDb: number;
   muted: boolean;
@@ -75,7 +73,7 @@ export class StepSequencer {
 
   private playing = false;
 
-  /** UI tick callback: receives the *currently audible* step index. */
+  // UI tick callback: receives the currently audible step index
   onStep: ((stepIndex: number) => void) | null = null;
 
   constructor(initial?: StepPattern) {
@@ -102,7 +100,10 @@ export class StepSequencer {
   toggleStep(rowIdx: number, stepIdx: number): void {
     const row = this.pattern.rows[rowIdx];
     if (!row) return;
-    row.velocities[stepIdx] = row.velocities[stepIdx] > 0 ? 0 : 1;
+    const velocity = row.velocities[stepIdx];
+    if (velocity !== undefined) {
+      row.velocities[stepIdx] = velocity > 0 ? 0 : 1;
+    }
   }
   setStepVelocity(rowIdx: number, stepIdx: number, velocity: number): void {
     const row = this.pattern.rows[rowIdx];
@@ -139,7 +140,7 @@ export class StepSequencer {
     if (this.playing) this.rebuildSequence();
   }
 
-  /** Instantly trigger a single drum voice for UI preview (e.g. on cell click). */
+  // trigger a single drum voice immediately — for UI preview on cell click
   async previewDrum(rowIdx: number): Promise<void> {
     try { await Tone.start(); } catch { /* */ }
     if (!this.kit) this.kit = new DrumKit(this.masterGain);
@@ -173,8 +174,6 @@ export class StepSequencer {
     Tone.getDraw().schedule(() => this.onStep?.(-1), Tone.now());
   }
 
-  // ─── private ─────────────────────────────────────────────────────────────
-
   private rebuildSequence(): void {
     if (this.sequence) {
       this.sequence.stop();
@@ -202,8 +201,8 @@ export class StepSequencer {
       const vel = Math.min(1, Math.max(0, v * dbToGain(row.gainDb)));
       voice.trigger(atTime, vel);
     }
-    // Drive the UI cursor through Tone.Draw → requestAnimationFrame.
-    // This guarantees we never repaint while the audio thread is mid-tick.
+    // Tone.Draw schedules the cursor update on the next rAF after atTime,
+    // so the UI never repaints while the audio thread is mid-tick.
     Tone.getDraw().schedule(() => this.onStep?.(stepIdx), atTime);
   }
 

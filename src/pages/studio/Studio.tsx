@@ -25,12 +25,10 @@ const Studio: Component = () => {
   const params   = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // ── Mutable refs ────────────────────────────────────────────────────────
   let seq: StepSequencer | null = null;
   let timelineElRef: HTMLDivElement | undefined;
   let titleInputEl: HTMLInputElement | undefined;
 
-  // ── Signals ─────────────────────────────────────────────────────────────
   const [name,               setName]               = createSignal("New Project");
   const [tracks,             setTracks]             = createSignal<UITrack[]>([]);
   const [selectedTrack,      setSelectedTrack]      = createSignal<string | null>(null);
@@ -64,7 +62,6 @@ const Studio: Component = () => {
   const [activeNotes,        setActiveNotes]        = createSignal<Set<number>>(new Set());
   const [playheadPx,         setPlayheadPx]         = createSignal(0);
 
-  // ── Hooks ────────────────────────────────────────────────────────────────
   const sth = useSynth({
     tracks, selectedTrack, masterVol,
     synthPreset, setSynthPreset, octave, setOctave,
@@ -104,7 +101,6 @@ const Studio: Component = () => {
     timelineEl: () => timelineElRef,
   });
 
-  // ── Lifecycle ────────────────────────────────────────────────────────────
   onMount(async () => {
     seq = new StepSequencer();
     seq.onStep = (i) => setCurrentStep(i);
@@ -116,7 +112,6 @@ const Studio: Component = () => {
     sth.allNotesOff();
   });
 
-  // ── Title editing ────────────────────────────────────────────────────────
   const startEditingTitle = () => {
     setTitleEditing(true);
     queueMicrotask(() => { titleInputEl?.focus(); titleInputEl?.select(); });
@@ -134,7 +129,6 @@ const Studio: Component = () => {
     setTitleEditing(false);
   };
 
-  // ── Memos ────────────────────────────────────────────────────────────────
   const adsrPath = createMemo(() => {
     const a = Math.max(0.001, synthAttack());
     const d = Math.max(0.001, synthDecay());
@@ -152,7 +146,6 @@ const Studio: Component = () => {
 
   const drumClipBars = createMemo(() => Array.from({ length: 4 }, (_, i) => i));
 
-  // ── Nav drawer ───────────────────────────────────────────────────────────
   const buildNavCats = (): NavCategory[] => {
     const close = () => setNavOpen(false);
     const run = (fn: () => void) => () => { fn(); close(); };
@@ -220,7 +213,6 @@ const Studio: Component = () => {
     ];
   };
 
-  // ── Render ───────────────────────────────────────────────────────────────
   return (
     <div class="bl">
       <TopBar

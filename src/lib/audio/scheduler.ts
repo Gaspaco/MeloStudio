@@ -1,5 +1,5 @@
-// Look-ahead scheduler. Runs in the main thread but timing comes from
-// AudioContext.currentTime, which is locked to the audio hardware clock.
+// Timing runs off AudioContext.currentTime, not Date.now(),
+// so it stays accurate even when the main thread is busy.
 
 import type { AudioGraph } from "./graph";
 import type { AssetManager } from "./assetManager";
@@ -8,14 +8,13 @@ import { dbToGain, type Clip, type ClipId, type ProjectDoc } from "./types";
 interface ScheduledClip {
   source: AudioBufferSourceNode;
   gain: GainNode;
-  /** Project-time at which this clip was scheduled to start. */
   startedAtProjectSec: number;
 }
 
 export interface SchedulerOptions {
-  /** How far ahead to schedule, in seconds. Default 0.1s (100ms). */
+  // how far ahead to schedule, in seconds. default 0.1s (100ms)
   lookaheadSec?: number;
-  /** Wakeup interval, in ms. Default 25ms. */
+  // wakeup interval in ms. default 25ms
   tickMs?: number;
 }
 
@@ -27,20 +26,18 @@ export class Scheduler {
   private lookahead: number;
   private tickMs: number;
 
-  /** Maps clipId → scheduled instance. Reset on stop or seek. */
+  // currently scheduled clips, keyed by clip id. reset on stop or seek
   private active = new Map<ClipId, ScheduledClip>();
 
-  /** True while playing. */
   private playing = false;
 
-  /** AudioContext.currentTime when transport began. */
+  // AudioContext.currentTime captured at transport start
   private startCtxTime = 0;
-  /** Project-time corresponding to startCtxTime (i.e. the playhead at start). */
+  // project time that maps to startCtxTime (playhead position at start)
   private startProjectSec = 0;
 
   private timerHandle: ReturnType<typeof setInterval> | null = null;
 
-  /** Optional callback invoked each tick with current project time. */
   onTick: ((projectSec: number) => void) | null = null;
 
   constructor(graph: AudioGraph, assets: AssetManager, opts: SchedulerOptions = {}) {
@@ -50,24 +47,21 @@ export class Scheduler {
     this.tickMs = opts.tickMs ?? 25;
   }
 
-  /** Replace project. Stops playback if already running. */
   setProject(doc: ProjectDoc | null): void {
     if (this.playing) this.stop();
     this.doc = doc;
   }
 
-  /** Current playhead in project time (seconds). */
   get playheadSec(): number {
     if (!this.playing) return this.startProjectSec;
     return this.startProjectSec + (this.graph.ctx.currentTime - this.startCtxTime);
   }
 
-  /** Begin playback at given project time. */
   async start(fromSec: number): Promise<void> {
     if (!this.doc) return;
     if (this.playing) this.stop();
 
-    // Preload every asset referenced by clips that could play soon-ish (the whole project for now).
+    // Preload every asset the project references before we start ticking.
     const ids = new Set<string>();
     for (const t of this.doc.tracks) for (const c of t.clips) ids.add(c.assetId);
     await this.assets.preload(ids);
@@ -81,12 +75,11 @@ export class Scheduler {
     this.startProjectSec = fromSec;
     this.playing = true;
 
-    // First tick immediately, then on interval.
+    // First tick right away so there's no gap at the very start.
     this.tick();
     this.timerHandle = setInterval(() => this.tick(), this.tickMs);
   }
 
-  /** Stop playback and silence active clips. */
   stop(): void {
     this.playing = false;
     if (this.timerHandle) clearInterval(this.timerHandle);
@@ -97,22 +90,20 @@ export class Scheduler {
         sc.gain.gain.setTargetAtTime(0, now, 0.005);
         sc.source.stop(now + 0.02);
       } catch {
-        /* already stopped */
+        // already stopped
       }
     }
     this.active.clear();
     this.startProjectSec = this.playheadSec;
   }
 
-  /** Move playhead while stopped (or jump during play). */
+  // move playhead while stopped (or jump during play)
   seek(toSec: number): void {
     const wasPlaying = this.playing;
     this.stop();
     this.startProjectSec = Math.max(0, toSec);
     if (wasPlaying) void this.start(this.startProjectSec);
   }
-
-  // ──────────────────────────────────────────────────────────────────────
 
   private tick(): void {
     if (!this.playing || !this.doc) return;
@@ -133,7 +124,7 @@ export class Scheduler {
         if (clip.startSec > horizon) continue;              // not yet
         if (this.active.has(clip.id)) continue;             // already scheduled
 
-        // If the playhead is mid-clip, start partway in.
+        // When starting mid-clip, offset into the buffer by however much we've missed.
         const offsetIntoClip = Math.max(0, this.playheadSec - clip.startSec);
         const startProjSec = clip.startSec + offsetIntoClip;
         const startCtxSec = projectFromCtx(startProjSec);
@@ -145,14 +136,14 @@ export class Scheduler {
           .get(clip.assetId)
           .then((buffer) => {
             if (!this.playing || !this.doc) return;
-            // If the moment already passed (slow decode), skip.
+    // If the moment already passed while the buffer was decoding, skip it.
             if (ctx.currentTime > startCtxSec + 0.01) return;
             this.spawn(clip, trackInput, buffer, startCtxSec, offsetIntoClip, remainingDur);
           })
           .catch((err) => console.warn("clip load failed", clip.id, err));
 
-        // Reserve the slot synchronously so we don't double-schedule on the next tick.
-        // We store a placeholder; spawn() will overwrite it.
+        // Reserve the slot now so the next tick doesn't double-schedule this clip.
+        // spawn() will overwrite the placeholder once the buffer arrives.
         this.active.set(clip.id, {
           source: null as unknown as AudioBufferSourceNode,
           gain: null as unknown as GainNode,
@@ -184,7 +175,6 @@ export class Scheduler {
     source.connect(clipGain);
     clipGain.connect(trackInput);
 
-    // fades
     const fadeIn = clip.fadeInSec ?? 0;
     const fadeOut = clip.fadeOutSec ?? 0;
     if (fadeIn > 0 && offsetIntoClip < fadeIn) {
@@ -216,9 +206,10 @@ export class Scheduler {
         source.disconnect();
         clipGain.disconnect();
       } catch {
-        /* noop */
+        // noop
       }
-      // Only remove if still us (seek may have replaced it).
+      // Only evict this entry if it's still pointing at our source node
+      // — a seek may have replaced it.
       const cur = this.active.get(clip.id);
       if (cur?.source === source) this.active.delete(clip.id);
     };

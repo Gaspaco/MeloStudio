@@ -1,20 +1,13 @@
 // Instrument catalog + lazy-loading manifest fetcher.
-// Manifests are static JSON files served from /public or a CDN.
 
 import type { AssetId } from "./types";
 
-/** A single playable trigger inside a pack (one drum hit, one note, etc). */
 export interface SampleTrigger {
-  /** Stable id within the pack (e.g. "kick_01"). */
   id: string;
   name: string;
-  /** Hash-based asset id — same one the AssetManager uses. */
   assetId: AssetId;
-  /** UI tag (e.g. "kick", "snare", "808"). */
   tag?: string;
-  /** Default pitch in semitones (e.g. for chromatic instruments). */
   rootNote?: number;
-  /** Default per-trigger gain, in dB. */
   gainDb?: number;
 }
 
@@ -27,15 +20,14 @@ export interface InstrumentPack {
   triggers: SampleTrigger[];
 }
 
-/** Tiny entry in the top-level catalog — manifest URL is fetched lazily. */
+// top-level catalog entry — manifest URL is fetched lazily
 export interface CatalogEntry {
   id: string;
   name: string;
   category: InstrumentPack["category"];
   cover?: string;
-  /** URL to the full manifest (static JSON). */
   manifestUrl: string;
-  /** How many triggers, for showing in card without loading manifest. */
+  // how many triggers — for showing in the card without loading the full manifest
   triggerCount: number;
 }
 
@@ -44,13 +36,10 @@ export interface InstrumentCatalog {
   packs: CatalogEntry[];
 }
 
-// ─────────────────────────────────────────────────────────────────────────
-
 export interface InstrumentLibraryOptions {
   catalogUrl: string;
 }
 
-/** Fetches and caches the catalog + per-pack manifests. */
 export class InstrumentLibrary {
   private catalogUrl: string;
   private catalog: InstrumentCatalog | null = null;
@@ -62,7 +51,6 @@ export class InstrumentLibrary {
     this.catalogUrl = opts.catalogUrl;
   }
 
-  /** Get the top-level catalog (cached after first call). */
   async getCatalog(): Promise<InstrumentCatalog> {
     if (this.catalog) return this.catalog;
     if (this.catalogPromise) return this.catalogPromise;
@@ -76,7 +64,7 @@ export class InstrumentLibrary {
     return this.catalogPromise;
   }
 
-  /** Lazy-load a pack manifest. Dedupes concurrent calls. */
+  // lazy-load a pack manifest; dedupes concurrent calls
   async getPack(id: string): Promise<InstrumentPack> {
     const cached = this.packs.get(id);
     if (cached) return cached;
@@ -98,7 +86,7 @@ export class InstrumentLibrary {
     return promise;
   }
 
-  /** Find a trigger by its assetId across already-loaded packs (no fetch). */
+  // find a trigger by asset id across already-loaded packs (no fetch)
   findTriggerByAsset(assetId: AssetId): SampleTrigger | null {
     for (const pack of this.packs.values()) {
       const t = pack.triggers.find((x) => x.assetId === assetId);
@@ -107,7 +95,7 @@ export class InstrumentLibrary {
     return null;
   }
 
-  /** Drop a manifest from memory. Underlying audio in IDB is untouched. */
+  // drop a manifest from memory; IDB audio stays untouched
   evictPack(id: string): void {
     this.packs.delete(id);
   }

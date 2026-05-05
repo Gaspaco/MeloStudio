@@ -1,16 +1,13 @@
-// Strategies for turning an assetId → download URL.
-// AssetManager takes one of these as its `resolveUrl` option.
+// URL resolvers for asset ids. AssetManager takes one as its resolveUrl option.
 
 import type { AssetId } from "~/lib/audio/types";
 
-/** Static prefix resolver — for dev or any setup where bytes live at
- *  a public URL pattern like  https://cdn.example.com/audio/<assetId>.wav  */
+// static prefix resolver — for dev or any setup where files are at a public URL
 export function publicPrefixResolver(prefix: string, ext = "wav") {
   return (id: AssetId): string => `${prefix.replace(/\/$/, "")}/${id}.${ext}`;
 }
 
-/** Signed-URL resolver — calls our own server to mint a short-lived URL
- *  for a private R2/S3 object. Keeps bytes private and rate-limited. */
+// signed-URL resolver — hits our server to get a short-lived URL for a private object
 export function signedUrlResolver(endpoint = "/api/asset/sign") {
   return async (id: AssetId): Promise<string> => {
     const res = await fetch(`${endpoint}?id=${encodeURIComponent(id)}`, {

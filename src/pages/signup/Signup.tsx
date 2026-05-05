@@ -90,7 +90,6 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
       0.05
     );
 
-    // Big text behind
     m.fromTo(scriptRef1,
       { opacity: 0, y: 60, filter: "blur(12px)" },
       { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "expo.out" },
@@ -107,11 +106,9 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
       0.45
     );
 
-    // Back + meta
     m.fromTo(".signup__back", { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.3);
     m.fromTo(".signup__meta", { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.35);
 
-    // ── Scroll parallax — images rise at different speeds ──
     const imgs = pageRef.querySelectorAll(".signup__img");
     const speeds = [
       -0.08, -0.12, -0.06, -0.1, -0.14, -0.09,
@@ -130,7 +127,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
         gsap.set(img, { y: scrollY * speed });
       });
 
-      // Text clips from top — triggers after text fully clears past bottom images
+      // clips hero text away once mosaic scrolls past
       const mosaicBottom = mosaic.offsetTop + mosaic.offsetHeight;
       const viewBottom = scrollY + window.innerHeight;
       const buffer = window.innerHeight * 1.6;
@@ -157,15 +154,13 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
 
     pageRef.addEventListener("scroll", onScroll, { passive: true });
 
-    // ── Form reveal on scroll (wait until they scroll down to the form) ──
     const revealForm = () => {
       if (formRevealed) return;
       const rect = formRef.getBoundingClientRect();
-      const trigger = window.innerHeight * 1.0; // Trigger when form enters viewport
+      const trigger = window.innerHeight * 1.0;
       if (rect.top < trigger) {
         formRevealed = true;
         const tl = gsap.timeline();
-        // Parallel upward appearance
         tl.fromTo(
           formRef.querySelectorAll(".signup__form-title-line, .signup__form-title-script, .signup__field, .signup__form-footer"),
           { opacity: 0, y: 150 },
@@ -184,7 +179,6 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
 
   return (
     <div ref={pageRef!} class="signup">
-      {/* Top bar */}
       <button class="signup__back" onClick={props.onBack}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M19 12H5M5 12L11 6M5 12L11 18" />
@@ -198,7 +192,6 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
         <span>Step 01</span>
       </div>
 
-      {/* ── Fixed hero text — visible first, goes behind images ── */}
       <div ref={heroRef!} class="signup__hero-text">
         <div class="signup__title-row">
           <span ref={scriptRef1!} class="signup__script signup__script--accent">Begin</span>
@@ -218,10 +211,8 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
         </div>
       </div>
 
-      {/* ── Spacer so images begin just below the fold ── */}
       <div class="signup__hero-spacer" />
 
-      {/* ── Bento mosaic ── */}
       <div class="signup__mosaic">
         <div class="signup__img signup__img--0" style={`background-image:url(${covers[0]})`} />
         <div class="signup__img signup__img--1" style={`background-image:url(${covers[1]})`} />
@@ -241,7 +232,6 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
         <div class="signup__img signup__img--15" style={`background-image:url(${covers[15]})`} />
       </div>
 
-      {/* ── Form section ── */}
       <div ref={formRef!} class="signup__form-section">
         <div class="signup__form-top">
           <h2 class="signup__form-title">

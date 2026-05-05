@@ -72,7 +72,7 @@ export async function idbClearAll(): Promise<void> {
   });
 }
 
-/** Approximate total bytes used by the whole origin (browser-reported). */
+// approximate total bytes used by the whole origin (browser-reported)
 export async function idbEstimateBytes(): Promise<number> {
   if (!navigator.storage?.estimate) return 0;
   const { usage } = await navigator.storage.estimate();

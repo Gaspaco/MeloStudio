@@ -29,7 +29,6 @@ const blank = (): ProjectDoc => ({
 
 export const [project, setProject] = createStore<ProjectDoc>(blank());
 
-// ─── load / replace ────────────────────────────────────────────────────────
 export function hydrateProject(doc: ProjectDoc): void {
   setProject(doc);
 }
@@ -40,7 +39,6 @@ export function newBlankProject(id: string, name: string): void {
   setProject(d);
 }
 
-// ─── transport ─────────────────────────────────────────────────────────────
 export function setBpm(bpm: number): void {
   setProject("transport", "bpm", Math.max(20, Math.min(300, bpm)));
 }
@@ -51,7 +49,6 @@ export function patchTransport(p: Partial<Transport>): void {
   setProject("transport", (t) => ({ ...t, ...p }));
 }
 
-// ─── master ────────────────────────────────────────────────────────────────
 export function setMasterGainDb(db: number): void {
   setProject("master", "gainDb", db);
 }
@@ -59,7 +56,6 @@ export function patchMaster(p: Partial<MasterBus>): void {
   setProject("master", (m) => ({ ...m, ...p }));
 }
 
-// ─── tracks ────────────────────────────────────────────────────────────────
 export function addTrack(t: Omit<Track, "index" | "clips">): TrackId {
   const idx = project.tracks.length;
   setProject("tracks", (ts) => [...ts, { ...t, index: idx, clips: [] }]);
@@ -99,7 +95,6 @@ export function toggleTrackSolo(id: TrackId): void {
   if (t) patchTrack(id, { soloed: !t.soloed });
 }
 
-// ─── clips ─────────────────────────────────────────────────────────────────
 export function addClip(trackId: TrackId, clip: Clip): void {
   setProject(
     "tracks",
@@ -135,7 +130,6 @@ export function moveClip(trackId: TrackId, clipId: ClipId, startSec: number): vo
   patchClip(trackId, clipId, { startSec: Math.max(0, startSec) });
 }
 
-// ─── assets ────────────────────────────────────────────────────────────────
 export function registerAsset(asset: AudioAsset): void {
   setProject("assets", (a) => {
     if (a.some((x) => x.id === asset.id)) return a;

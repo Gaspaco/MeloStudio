@@ -14,21 +14,23 @@ export function animateCapabilities(refs: {
   const scrollTween = gsap.to(refs.hScrollTrackRef, {
     x: -scrollDistance,
     ease: "none",
+    force3D: true,
     scrollTrigger: {
       trigger: refs.hScrollRef,
       start: "top top",
       end: () => `+=${scrollDistance}`,
       pin: true,
-      scrub: 1,
+      scrub: 0.8,
       anticipatePin: 1,
     },
   });
 
-  // Smoothly fade out and blur as the section scrolls away
-  // Bypass pin-spacer calculation issues by tracking the entry of the next section directly
+  // track .closing entry directly to sidestep pin-spacer offset issues
   const closingSection = document.querySelector(".closing");
-  
+
   if (closingSection) {
+    // willChange before animating filter/opacity keeps it on its own layer
+    gsap.set(refs.hScrollTrackRef, { willChange: "transform, filter, opacity" });
     gsap.fromTo(
       refs.hScrollTrackRef,
       { filter: "blur(0px)", scale: 1, opacity: 1 },
@@ -39,8 +41,8 @@ export function animateCapabilities(refs: {
         ease: "none",
         scrollTrigger: {
           trigger: closingSection,
-          start: "top bottom", // Starts exactly when the .closing section enters the screen from the bottom
-          end: "top top",      // Ends when the .closing section reaches the top of the screen
+          start: "top bottom",
+          end: "top top",
           scrub: true,
         },
       }

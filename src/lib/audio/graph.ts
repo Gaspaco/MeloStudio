@@ -1,5 +1,5 @@
-// AudioGraph: per-track gain + pan, summing into a master gain.
-// Pure Web Audio nodes — no Solid coupling. State changes flow in via methods.
+// AudioGraph: per-track gain + pan summing into a master gain.
+// Pure Web Audio — no Solid coupling. State changes flow in via methods.
 
 import { dbToGain, type Track, type MasterBus, type TrackId } from "./types";
 
@@ -17,8 +17,6 @@ export class AudioGraph {
   private master: GainNode;
   private tracks = new Map<TrackId, TrackNodes>();
 
-  /** Returns the GainNode where a clip should connect for the given track.
-   *  null if track isn't in the graph (caller must add it first). */
   trackInput(id: TrackId): GainNode | null {
     return this.tracks.get(id)?.input ?? null;
   }
@@ -29,7 +27,6 @@ export class AudioGraph {
     this.master.connect(ctx.destination);
   }
 
-  /** Apply or update master settings. */
   setMaster(m: MasterBus): void {
     this.master.gain.setTargetAtTime(
       dbToGain(m.gainDb),
@@ -38,7 +35,7 @@ export class AudioGraph {
     );
   }
 
-  /** Add or update a track's nodes. Idempotent. */
+  // add or update a track's nodes. safe to call repeatedly
   upsertTrack(t: Track, anySoloed: boolean): void {
     let nodes = this.tracks.get(t.id);
     if (!nodes) {
@@ -52,7 +49,7 @@ export class AudioGraph {
       this.tracks.set(t.id, nodes);
     }
     const now = this.ctx.currentTime;
-    // gain: muted or (anySoloed && !this.soloed) → 0; else dbToGain(t.gainDb)
+    // gain: muted or (anySoloed && !this.soloed) = 0, otherwise dbToGain(t.gainDb)
     const audible = !t.muted && (!anySoloed || t.soloed);
     const targetGain = audible ? dbToGain(t.gainDb) : 0;
     nodes.output.gain.setTargetAtTime(targetGain, now, 0.01);
@@ -71,7 +68,6 @@ export class AudioGraph {
     this.tracks.delete(id);
   }
 
-  /** Disconnect everything; safe to GC. */
   destroy(): void {
     for (const id of [...this.tracks.keys()]) this.removeTrack(id);
     this.master.disconnect();

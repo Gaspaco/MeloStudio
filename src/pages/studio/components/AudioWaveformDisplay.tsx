@@ -1,5 +1,6 @@
 import { type Component, createEffect, onCleanup } from "solid-js";
 import Peaks, { type PeaksInstance } from "peaks.js";
+import { getAudioContext } from "~/lib/audio/context";
 
 const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props) => {
   let containerEl!: HTMLDivElement;
@@ -22,9 +23,8 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
         highlightOpacity: 0,
       },
       mediaElement: audioEl,
-      webAudio: { audioContext: new AudioContext() },
+      webAudio: { audioContext: getAudioContext() },
       keyboard: false,
-      logger: console.debug.bind(console),
     }, (err, peaks) => {
       if (err || !peaks) return;
       peaksInstance = peaks;

@@ -1,13 +1,11 @@
-// Tiny wrapper around fetch that attaches the current user's id as
-// `x-user-id` so the server-side shim in src/lib/auth-server.ts can identify them.
-// When we replace the shim with proper JWT verification, only this file changes.
+// Thin fetch wrapper that attaches the user's JWT as a Bearer header
+// so API routes can verify identity via JWKS without touching cookies.
 
 import { authClient } from "./auth";
 
-async function userId(): Promise<string | null> {
+async function bearerToken(): Promise<string | null> {
   try {
-    const { data } = await authClient.getSession();
-    return data?.user?.id ?? null;
+    return await authClient.getJWTToken();
   } catch {
     return null;
   }
@@ -17,12 +15,12 @@ async function call(
   path: string,
   init: RequestInit = {},
 ): Promise<Response> {
-  const id = await userId();
+  const token = await bearerToken();
   const headers = new Headers(init.headers);
   if (!headers.has("Content-Type") && init.body) {
     headers.set("Content-Type", "application/json");
   }
-  if (id) headers.set("x-user-id", id);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
   const res = await fetch(path, { ...init, headers, credentials: "include" });
   return res;
 }

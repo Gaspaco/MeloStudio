@@ -57,7 +57,6 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
       const { data } = await authClient.getSession();
       if (data?.session) setIsLoggedIn(true);
     } catch {}
-    // Lenis smooth scroll
     lenisRef = new Lenis({
       duration: 0.9,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -67,7 +66,6 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
     gsap.ticker.add((time) => lenisRef!.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
 
-    // ── Critical: intro + hero (above the fold) ──
     animateIntro({
       loaderRef, loaderMeloRef, loaderStudioRef,
       heroLine1Ref, heroLine2Ref, heroMetaRef, scrollIndRef,
@@ -77,7 +75,6 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
       heroRef, heroLine1Ref, heroLine2Ref, heroMetaRef, scrollIndRef,
     });
 
-    // ── Deferred: only init when scrolled near ──
     let dawInited = false;
     ScrollTrigger.create({
       trigger: reelRef,
@@ -113,7 +110,8 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
         if (!capsInited) {
           capsInited = true;
           animateCapabilities({ hScrollRef, hScrollTrackRef });
-          setupOrb(orbRef);
+          const cleanupOrb = setupOrb(orbRef);
+          onCleanup(() => cleanupOrb?.());
         }
       },
     });

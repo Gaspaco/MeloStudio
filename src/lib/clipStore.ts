@@ -1,8 +1,6 @@
-/**
- * IndexedDB store for audio/video clip blobs.
- * Blob URLs (blob:http://...) die on page reload — we persist the raw Blob
- * here so clips survive refreshes and navigation.
- */
+// IDB store for clip blobs.
+// Blob URLs die on page reload so we persist the raw Blob here
+// and recreate the URL when needed.
 
 const DB_NAME    = "melostudio-clips";
 const STORE_NAME = "clips";
@@ -22,7 +20,6 @@ function openDb(): Promise<IDBDatabase> {
   });
 }
 
-/** Persist a file/blob under a clip ID. */
 export async function storeClip(clipId: string, blob: Blob): Promise<void> {
   const db = await openDb();
   return new Promise((resolve, reject) => {
@@ -33,11 +30,6 @@ export async function storeClip(clipId: string, blob: Blob): Promise<void> {
   });
 }
 
-/**
- * Restore a clip from IDB.
- * Returns a fresh blob URL (caller is responsible for revoking it),
- * or null if the clip was never stored.
- */
 export async function loadClip(clipId: string): Promise<string | null> {
   const db = await openDb();
   return new Promise((resolve, reject) => {
@@ -52,7 +44,6 @@ export async function loadClip(clipId: string): Promise<string | null> {
   });
 }
 
-/** Remove a clip's blob from IDB (call when the clip is deleted). */
 export async function removeClip(clipId: string): Promise<void> {
   const db = await openDb();
   return new Promise((resolve, reject) => {

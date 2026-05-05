@@ -6,7 +6,6 @@ import * as Tone from "tone";
 let ctx: AudioContext | null = null;
 let toneBound = false;
 
-/** Returns the shared AudioContext, creating it on first call. */
 export function getAudioContext(): AudioContext {
   if (!ctx) {
     const Ctor =
@@ -21,7 +20,6 @@ export function getAudioContext(): AudioContext {
   return ctx;
 }
 
-/** Make sure Tone.js is using the same shared AudioContext. */
 export function bindToneToContext(): void {
   if (toneBound) return;
   const c = getAudioContext();
@@ -32,13 +30,11 @@ export function bindToneToContext(): void {
   toneBound = true;
 }
 
-/** Call from a click/tap handler to unblock playback. Safe to call repeatedly. */
 export async function unlockAudioContext(): Promise<void> {
   const c = getAudioContext();
   if (c.state === "suspended") {
     await c.resume();
   }
   bindToneToContext();
-  // Tone needs its own start gesture handshake.
   try { await Tone.start(); } catch { /* */ }
 }

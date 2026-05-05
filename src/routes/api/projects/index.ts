@@ -1,5 +1,5 @@
-// GET  /api/projects        → list current user's projects
-// POST /api/projects        → create a new project { name }
+// GET  /api/projects        - list the current user's projects
+// POST /api/projects        - create a new project { name }
 import type { APIEvent } from "@solidjs/start/server";
 import { listProjects, createProject } from "~/lib/db/projects";
 import { requireUserId } from "~/lib/auth-server";

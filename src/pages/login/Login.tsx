@@ -55,31 +55,22 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
   onMount(() => {
     const m = gsap.timeline();
 
-    // Page in
     m.fromTo(pageRef, { opacity: 0 }, { opacity: 1, duration: 0.4 });
-
-    // Big script word
     m.fromTo(".login__script",
       { opacity: 0, y: 60, filter: "blur(12px)" },
       { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "expo.out" },
       0.2
     );
-
-    // Display chars
     m.fromTo(".login__display-char",
       { y: "130%", opacity: 0, rotateZ: 6 },
       { y: "0%", opacity: 1, rotateZ: 0, duration: 1, stagger: 0.03, ease: "expo.out" },
       0.3
     );
-
-    // Form fields slide up
     m.fromTo(".login__field",
       { opacity: 0, y: 30 },
       { opacity: 1, y: 0, duration: 0.8, stagger: 0.12, ease: "expo.out" },
       0.6
     );
-
-    // Options row + footer
     m.fromTo(".login__row",
       { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 0.85);
     m.fromTo(".login__form-footer",
@@ -89,15 +80,12 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
     );
     m.fromTo(".login__divider, .login__socials, .login__signup-text",
       { opacity: 0 }, { opacity: 1, duration: 0.5, stagger: 0.08 }, 1.0);
-
-    // Back + meta
     m.fromTo(".login__back", { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.3);
     m.fromTo(".login__meta", { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.35);
   });
 
   return (
     <div ref={pageRef!} class="login">
-      {/* Top bar */}
       <button class="login__back" onClick={props.onBack}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M19 12H5M5 12L11 6M5 12L11 18" />
@@ -111,9 +99,7 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
         <span>2026</span>
       </div>
 
-      {/* ── Center stage ── */}
       <div class="login__stage">
-        {/* Typography */}
         <div class="login__hero">
           <div class="login__title-row">
             <span class="login__script">Welcome</span>
@@ -127,7 +113,6 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
           </div>
         </div>
 
-        {/* Form */}
         <form class="login__form" onSubmit={handleSubmit}>
           <div class="login__field login__field--first">
             <span class="login__field-num">01</span>

@@ -21,7 +21,6 @@ export function animateClosing(closingWordsRefs: HTMLSpanElement[]) {
     wordEl.textContent = frozenNoise + " ";
   });
 
-  // Use the section as the trigger so all words resolve within its scroll range
   const section = closingWordsRefs[0]?.closest(".closing");
   if (!section) return;
 
@@ -37,7 +36,7 @@ export function animateClosing(closingWordsRefs: HTMLSpanElement[]) {
         const realText = closingWords[i]!;
         const frozenNoise = noiseMap[i]!;
 
-        // Each word gets its own slice of the overall progress
+        // each word resolves within its own slice of the scroll range
         const wordStart = i / total;
         const wordEnd = (i + 1) / total;
         const wordProgress = Math.min(1, Math.max(0, (p - wordStart) / (wordEnd - wordStart)));
