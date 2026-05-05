@@ -8,11 +8,12 @@ import { dbToGain, type Clip, type ClipId, type ProjectDoc } from "./types";
 interface ScheduledClip {
   source: AudioBufferSourceNode;
   gain: GainNode;
+  // project time at which this clip was scheduled to start
   startedAtProjectSec: number;
 }
 
 export interface SchedulerOptions {
-  // how far ahead to schedule, in seconds. default 0.1s (100ms)
+  // how far ahead to schedule, in seconds. default 100ms
   lookaheadSec?: number;
   // wakeup interval in ms. default 25ms
   tickMs?: number;
@@ -29,6 +30,7 @@ export class Scheduler {
   // currently scheduled clips, keyed by clip id. reset on stop or seek
   private active = new Map<ClipId, ScheduledClip>();
 
+  // true while playing
   private playing = false;
 
   // AudioContext.currentTime captured at transport start
@@ -38,6 +40,7 @@ export class Scheduler {
 
   private timerHandle: ReturnType<typeof setInterval> | null = null;
 
+  // optional callback invoked each tick with current project time
   onTick: ((projectSec: number) => void) | null = null;
 
   constructor(graph: AudioGraph, assets: AssetManager, opts: SchedulerOptions = {}) {
@@ -52,11 +55,13 @@ export class Scheduler {
     this.doc = doc;
   }
 
+  // current playhead in project time (seconds)
   get playheadSec(): number {
     if (!this.playing) return this.startProjectSec;
     return this.startProjectSec + (this.graph.ctx.currentTime - this.startCtxTime);
   }
 
+  // begin playback at given project time
   async start(fromSec: number): Promise<void> {
     if (!this.doc) return;
     if (this.playing) this.stop();
@@ -90,14 +95,13 @@ export class Scheduler {
         sc.gain.gain.setTargetAtTime(0, now, 0.005);
         sc.source.stop(now + 0.02);
       } catch {
-        // already stopped
       }
     }
     this.active.clear();
     this.startProjectSec = this.playheadSec;
   }
 
-  // move playhead while stopped (or jump during play)
+  // move playhead while stopped or playing. if playing, clips will be rescheduled on the next tick
   seek(toSec: number): void {
     const wasPlaying = this.playing;
     this.stop();
@@ -206,7 +210,6 @@ export class Scheduler {
         source.disconnect();
         clipGain.disconnect();
       } catch {
-        // noop
       }
       // Only evict this entry if it's still pointing at our source node
       // — a seek may have replaced it.
