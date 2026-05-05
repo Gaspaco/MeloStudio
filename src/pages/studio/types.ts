@@ -62,3 +62,92 @@ export const PRESET_ADSR = {
   lead: { attack: 0.005, decay: 0.2,  sustain: 0.7, release: 0.25, filterFreq: 1500 },
   pad:  { attack: 0.6,   decay: 0.3,  sustain: 0.8, release: 1.2,  filterFreq: 800  },
 } as const;
+
+export interface StudioTemplate {
+  id:      string;
+  name:    string;
+  genre:   string;
+  bpm:     number;
+  color:   string;
+  tracks:  Array<{ type: TrackType; name: string }>;
+  pattern?: Partial<Record<string, number[]>>;
+}
+
+const _v = (on: number[], len = 16): number[] =>
+  Array.from({ length: len }, (_, i) => (on.includes(i) ? 0.85 : 0));
+const _s = (on: number[], len = 16): number[] =>
+  Array.from({ length: len }, (_, i) => (on.includes(i) ? 0.45 : 0));
+
+export const TEMPLATES: StudioTemplate[] = [
+  {
+    id: "boom-bap", name: "Boom Bap", genre: "Hip Hop", bpm: 90, color: "#f5b53e",
+    tracks: [
+      { type: "drum",       name: "Drums" },
+      { type: "bass",       name: "Bass"  },
+      { type: "instrument", name: "Keys"  },
+    ],
+    pattern: {
+      kick:       _v([0, 6, 8, 14]),
+      snare:      _v([4, 12]),
+      hat_closed: _v([0, 2, 4, 6, 8, 10, 12, 14]),
+      hat_open:   _s([6, 14]),
+      clap:       _s([4, 12]),
+    },
+  },
+  {
+    id: "trap", name: "Trap", genre: "Trap", bpm: 140, color: "#a93ef5",
+    tracks: [
+      { type: "drum",       name: "Drums"  },
+      { type: "bass",       name: "808s"   },
+      { type: "instrument", name: "Melody" },
+    ],
+    pattern: {
+      kick:       _v([0, 3, 9]),
+      snare:      _v([4, 12]),
+      hat_closed: Array(16).fill(0.45) as number[],
+      hat_open:   _v([6, 14]),
+    },
+  },
+  {
+    id: "lo-fi", name: "Lo-Fi", genre: "Chill", bpm: 75, color: "#3eddf5",
+    tracks: [
+      { type: "drum",       name: "Drums" },
+      { type: "instrument", name: "Piano" },
+      { type: "bass",       name: "Bass"  },
+    ],
+    pattern: {
+      kick:       _v([0, 9, 11]),
+      snare:      _v([4, 12]),
+      hat_closed: _s([0, 2, 4, 6, 8, 10, 12, 14]),
+      hat_open:   _s([14]),
+    },
+  },
+  {
+    id: "pop", name: "Pop", genre: "Pop", bpm: 120, color: "#f53e8a",
+    tracks: [
+      { type: "drum",       name: "Drums" },
+      { type: "instrument", name: "Lead"  },
+      { type: "bass",       name: "Bass"  },
+    ],
+    pattern: {
+      kick:       _v([0, 4, 8, 12]),
+      snare:      _v([4, 12]),
+      hat_closed: _v([0, 2, 4, 6, 8, 10, 12, 14]),
+      clap:       _s([4, 12]),
+    },
+  },
+  {
+    id: "house", name: "House", genre: "Electronic", bpm: 126, color: "#3ee08b",
+    tracks: [
+      { type: "drum",       name: "Drums" },
+      { type: "instrument", name: "Synth" },
+      { type: "bass",       name: "Bass"  },
+    ],
+    pattern: {
+      kick:       _v([0, 4, 8, 12]),
+      clap:       _v([4, 12]),
+      hat_closed: _s([2, 6, 10, 14]),
+      hat_open:   _v([6, 14]),
+    },
+  },
+];

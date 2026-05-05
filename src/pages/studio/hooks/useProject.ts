@@ -1,3 +1,8 @@
+// `useProject` handles the initial data load, parsing, and structured initialization
+// of a Studio project when you hit the `/studio/[id]` route. It wraps API calls 
+// securely, hydrates the UI state from the DB JSON doc, and resolves legacy tracks 
+// into currently supported tracks. It's also fully async via `suspense` in SolidJS,
+// putting up a clean loading state until the studio is absolutely ready to play.
 import { onMount } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { authClient } from "~/lib/auth";

@@ -1,5 +1,9 @@
-// Timing runs off AudioContext.currentTime, not Date.now(),
-// so it stays accurate even when the main thread is busy.
+// The Scheduler is responsible for playing audio accurately.
+// It uses the "A Tale of Two Clocks" approach:
+// 1. A Javascript timer (setInterval) wakes up periodically (the 'tick').
+// 2. On each tick, it looks ahead into the future and schedules audio events 
+//    using the Web Audio API's highly accurate `AudioContext.currentTime`.
+// This ensures that even if the main thread is blocked, audio never stutters.
 
 import type { AudioGraph } from "./graph";
 import type { AssetManager } from "./assetManager";
@@ -13,9 +17,14 @@ interface ScheduledClip {
 }
 
 export interface SchedulerOptions {
-  // how far ahead to schedule, in seconds. default 100ms
+  // How far ahead into the future to schedule, in seconds. Default is 100ms.
+  // Larger lookaheads are safer against CPU spikes, but increase the latency
+  // whenever playback needs to stop or seek (since scheduled nodes are hard to cancel).
   lookaheadSec?: number;
-  // wakeup interval in ms. default 25ms
+  
+  // The wakeup interval for the setInterval timer, in milliseconds.
+  // This determines how often the scheduler wakes up to check if more audio needs scheduling.
+  // Default is 25ms, which is frequent enough to keep the lookahead buffer filled.
   tickMs?: number;
 }
 
@@ -27,15 +36,17 @@ export class Scheduler {
   private lookahead: number;
   private tickMs: number;
 
-  // currently scheduled clips, keyed by clip id. reset on stop or seek
+  // We maintain a map of currently scheduled clips so we can stop them if the user pauses or seeks,
+  // and to ensure we don't accidentally schedule the same clip twice.
   private active = new Map<ClipId, ScheduledClip>();
 
-  // true while playing
   private playing = false;
 
-  // AudioContext.currentTime captured at transport start
+  // Web Audio's context clock starts at 0 when the page loads and never stops.
+  // We capture it when the user presses play so we can map project time to context time.
   private startCtxTime = 0;
-  // project time that maps to startCtxTime (playhead position at start)
+  
+  // The playhead position in seconds when playback was last started.
   private startProjectSec = 0;
 
   private timerHandle: ReturnType<typeof setInterval> | null = null;
@@ -55,13 +66,17 @@ export class Scheduler {
     this.doc = doc;
   }
 
-  // current playhead in project time (seconds)
+  // Returns the current playhead position in project time (seconds).
+  // When stopped, it's just the last saved position.
+  // When playing, it sweeps forward from the start time, syncing exactly with the Web Audio context clock.
   get playheadSec(): number {
     if (!this.playing) return this.startProjectSec;
     return this.startProjectSec + (this.graph.ctx.currentTime - this.startCtxTime);
   }
 
-  // begin playback at given project time
+  // Starts the timeline playing from a specific project time in seconds.
+  // This involves preloading assets, upserting tracks to the graph, 
+  // and capturing the synchronization points for our two clocks.
   async start(fromSec: number): Promise<void> {
     if (!this.doc) return;
     if (this.playing) this.stop();
@@ -101,7 +116,10 @@ export class Scheduler {
     this.startProjectSec = this.playheadSec;
   }
 
-  // move playhead while stopped or playing. if playing, clips will be rescheduled on the next tick
+  // move playhead while stopped or playing.
+  // If playing, clips will be rescheduled on the next tick because the seek
+  // stops the transport, updates the start project time, and restarts the transport,
+  // which clears the `active` list and recalculates `startCtxTime`.
   seek(toSec: number): void {
     const wasPlaying = this.playing;
     this.stop();
@@ -109,11 +127,21 @@ export class Scheduler {
     if (wasPlaying) void this.start(this.startProjectSec);
   }
 
+  // The core loop of the scheduler. It is called repeatedly by setInterval.
+  // Its job is to look slightly ahead of the current playhead, find any clips 
+  // that need to start playing during that window, and schedule them on the Web Audio API.
   private tick(): void {
     if (!this.playing || !this.doc) return;
 
+    // Use the extremely reliable AudioContext clock to determine where we are.
     const ctx = this.graph.ctx;
+    
+    // Calculate the right edge of our scheduling window.
+    // Anything that starts before this horizon gets scheduled now.
     const horizon = this.playheadSec + this.lookahead;
+    
+    // A mapping helper: it takes a time on the project line (in seconds)
+    // and converts it to corresponding time on the AudioContext line.
     const projectFromCtx = (projectSec: number): number =>
       this.startCtxTime + (projectSec - this.startProjectSec);
 
@@ -124,30 +152,43 @@ export class Scheduler {
       for (const clip of track.clips) {
         if (clip.muted) continue;
         const clipEnd = clip.startSec + clip.durationSec;
-        if (clipEnd <= this.playheadSec) continue;          // already past
-        if (clip.startSec > horizon) continue;              // not yet
-        if (this.active.has(clip.id)) continue;             // already scheduled
+        // We skip clips that are entirely past the playhead,
+        // ones that start after the lookahead horizon,
+        // and ones we have already scheduled.
+        if (clipEnd <= this.playheadSec) continue;          
+        if (clip.startSec > horizon) continue;              
+        if (this.active.has(clip.id)) continue;             
 
-        // When starting mid-clip, offset into the buffer by however much we've missed.
+        // If the user starts playback in the middle of a clip, 
+        // we figure out how far into the clip we should start playing.
         const offsetIntoClip = Math.max(0, this.playheadSec - clip.startSec);
+        
+        // This calculates the project time and exact AudioContext time
+        // when this clip needs to be scheduled to hit the speakers.
         const startProjSec = clip.startSec + offsetIntoClip;
         const startCtxSec = projectFromCtx(startProjSec);
+        
+        // Calculate how much audio buffer is actually left to play.
         const remainingDur = clip.durationSec - offsetIntoClip;
         if (remainingDur <= 0) continue;
 
-        // Fire-and-forget; we attach when buffer arrives.
+        // Fetching the audio buffer is asynchronous.
+        // We set up the fetch and attach the audio to the graph when it arrives.
         this.assets
           .get(clip.assetId)
           .then((buffer) => {
             if (!this.playing || !this.doc) return;
-    // If the moment already passed while the buffer was decoding, skip it.
+            // The buffer might load too late! If the moment it was supposed to play 
+            // has already passed by more than 10ms, just drop it so it doesn't sound delayed.
             if (ctx.currentTime > startCtxSec + 0.01) return;
             this.spawn(clip, trackInput, buffer, startCtxSec, offsetIntoClip, remainingDur);
           })
           .catch((err) => console.warn("clip load failed", clip.id, err));
 
-        // Reserve the slot now so the next tick doesn't double-schedule this clip.
-        // spawn() will overwrite the placeholder once the buffer arrives.
+        // We mark the clip as active immediately with placeholder nodes.
+        // This prevents the next `tick` from trying to schedule the same clip again
+        // while the buffer is still downloading. The `spawn` method will replace 
+        // these placeholders with the real nodes once the fetch completes.
         this.active.set(clip.id, {
           source: null as unknown as AudioBufferSourceNode,
           gain: null as unknown as GainNode,

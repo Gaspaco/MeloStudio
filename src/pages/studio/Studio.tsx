@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "@solidjs/router";
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
 import { type SynthPreset } from "~/lib/audio/synth";
 import { updateProjectApi } from "~/lib/api";
-import { type TrackType, type UITrack, PRESET_ADSR } from "./types";
+import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES } from "./types";
 import { useProject }   from "./hooks/useProject";
 import { useTransport } from "./hooks/useTransport";
 import { useDrum }      from "./hooks/useDrum";
@@ -127,6 +127,23 @@ const Studio: Component = () => {
   const cancelTitle = () => {
     if (titleInputEl) titleInputEl.value = name();
     setTitleEditing(false);
+  };
+
+  const applyTemplate = (templateId: string) => {
+    const tmpl = TEMPLATES.find(t => t.id === templateId);
+    if (!tmpl) return;
+    transport.updateBpm(tmpl.bpm);
+    const base = DEFAULT_PATTERN();
+    base.bpm = tmpl.bpm;
+    if (tmpl.pattern) {
+      for (const row of base.rows) {
+        const vels = tmpl.pattern[row.drum];
+        if (vels) row.velocities = [...vels];
+      }
+    }
+    setPattern(base);
+    seq?.setPattern(base);
+    trk.addTrackBatch(tmpl.tracks);
   };
 
   const adsrPath = createMemo(() => {
@@ -253,7 +270,11 @@ const Studio: Component = () => {
           dropTarget={trk.dropTarget} globalDragOver={trk.globalDragOver}
           onLaneDragOver={trk.onLaneDragOver} onLaneDragLeave={trk.onLaneDragLeave} onLaneDrop={trk.onLaneDrop}
           onLanesDragOver={trk.onLanesDragOver} onLanesDragLeave={trk.onLanesDragLeave} onLanesDrop={trk.onLanesDrop}
-          onDeleteClip={trk.deleteClip} onImportFiles={trk.importFiles}
+          onDeleteClip={trk.deleteClip}
+          onMoveClip={trk.moveClip}
+          onCreateRegion={trk.createRegion}
+          onApplyTemplate={applyTemplate}
+          onImportFiles={trk.importFiles}
           onAddTrack={trk.addTrack} onShowNewTrack={() => setShowNewTrack(true)}
         />
       </div>

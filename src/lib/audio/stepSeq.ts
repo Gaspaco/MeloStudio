@@ -1,19 +1,24 @@
-// Step sequencer powered by Tone.Transport + Tone.Sequence.
+// Step sequencer essentially powered by:
+// 1. Tone.Transport - a master clock that organizes musical timing (BPM, Bars, Beats, Sixteenths).
+// 2. Tone.Sequence - a tool to fire a specific callback sequentially over an array of steps.
 //
-// Why this matters for UI smoothness:
-// - Tone's clock ticks inside an internal Web Worker, so we no longer run
-//   a setInterval on the main thread.
-// - Audio scheduling happens on the audio thread (Web Audio).
-// - UI cursor updates are pushed through Tone.Draw, which lines them up
-//   with requestAnimationFrame so they never block paint.
+// Why this architecture is crucial for a smooth Digital Audio Workstation (DAW):
+// - Tone's clock internally uses Web Workers, meaning it ticks completely independently 
+//   of the main Javascript thread. If the UI freezes for 50ms, audio still plays on rhythm.
+// - Callbacks triggered by Tone are pre-scheduled in the exact Web Audio context time.
+// - Tone.Draw coordinates visual UI updates (like playhead sweeping) to paint 
+//   exactly when the scheduled note hits the speaker, removing visual lag.
 
 import * as Tone from "tone";
 import { bindToneToContext } from "./context";
 import { DrumKit, type DrumName, DRUM_NAMES } from "./synthDrums";
 
-// sanitize a saved pattern: dedup rows by drum name, drop unknown types,
-// and make sure each row has the right number of velocity slots.
-// call this before applying a loaded pattern.
+// Sanitizes a loaded drum pattern so it doesn't break the sequencer.
+// If the loaded JSON is corrupt or from an older version, this fixes it:
+// 1. Drops unrecognized drum names.
+// 2. Deduplicates rows with the same drum name.
+// 3. Fills missing array velocity slots with zeros (so the sequencer doesn't crash).
+// 4. Guarantees that ALL canonical drums in `DRUM_NAMES` have an exact row in the array.
 export function sanitizePattern(p: StepPattern): StepPattern {
   const seen = new Set<string>();
   const rows = (p.rows ?? []).filter(r => {

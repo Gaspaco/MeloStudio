@@ -1,6 +1,11 @@
-// AssetManager — returns a decoded AudioBuffer for a given assetId.
-// Load order: in-memory LRU, then IndexedDB, then network.
-// If two calls come in for the same id before the first finishes, they share one fetch.
+// AssetManager is the core audio sample loader, decoding compressed audio into raw PCM Web Audio Buffers.
+// It uses a robust three-tier caching system to make the DAW feel instant:
+// 1. RAM (LRU Cache) - Instant playback if the sample was used recently.
+// 2. IndexedDB - Local browser storage. Survives page reloads without network hits.
+// 3. Network Fetch - If missing locally, it fetches from the CDN or edge storage.
+// 
+// Coalescing: It prevents duplicate downloads. If ten tracks simultaneously request "kick.wav", 
+// the AssetManager collapses them into a single inflight fetch promise.
 
 import { getAudioContext } from "./context";
 import { idbGet, idbPut, idbHas } from "~/lib/storage/idb";

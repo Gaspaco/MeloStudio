@@ -1,7 +1,7 @@
-import { type Component, For, Show, onMount, onCleanup } from "solid-js";
+import { type Component, For, Show, createSignal, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { MicVocal, FileMusic } from "lucide-solid";
-import { type TrackType, type UITrack } from "../types";
+import { type TrackType, type UITrack, TEMPLATES } from "../types";
 import type { StepPattern } from "~/lib/audio/stepSeq";
 import AudioWaveformDisplay from "./AudioWaveformDisplay";
 
@@ -11,6 +11,8 @@ const MediaClipIcon: Component<{ kind: string }> = (props) => {
   const Icon = MEDIA_ICON_MAP[props.kind];
   return Icon ? <Icon size={11} stroke-width={1.6} aria-hidden="true" /> : null;
 };
+
+const BAR_PX = 80;
 
 type Props = {
   tracks: Accessor<UITrack[]>;
@@ -28,6 +30,9 @@ type Props = {
   onLanesDragLeave: (e: DragEvent) => void;
   onLanesDrop: (e: DragEvent) => Promise<void>;
   onDeleteClip: (trackId: string, clipId: string) => void;
+  onMoveClip: (trackId: string, clipId: string, newBarStart: number) => void;
+  onCreateRegion: (trackId: string, barStart: number) => void;
+  onApplyTemplate: (templateId: string) => void;
   onImportFiles: (files: File[]) => Promise<void>;
   onAddTrack: (type: TrackType, openModal?: boolean) => void;
   onShowNewTrack: () => void;
@@ -40,6 +45,10 @@ const TimelineArea: Component<Props> = (props) => {
   let dragState: { x: number; scroll: number } | null = null;
   let playheadDragState: { startX: number; startPx: number } | null = null;
   let importInputEl: HTMLInputElement | undefined;
+
+  // clip drag state
+  let clipDrag: { clipId: string; trackId: string; offsetPx: number } | null = null;
+  const [draggedClip, setDraggedClip] = createSignal<{ clipId: string; barStart: number } | null>(null);
 
   const onTimelineWheel = (e: WheelEvent) => {
     if (!timelineEl) return;
@@ -70,11 +79,31 @@ const TimelineArea: Component<Props> = (props) => {
   const onWinMouseMove = (e: MouseEvent) => {
     if (dragState && timelineEl) timelineEl.scrollLeft = dragState.scroll - (e.clientX - dragState.x);
     if (playheadDragState) props.setPlayheadPx(Math.max(0, playheadDragState.startPx + (e.clientX - playheadDragState.startX)));
+    if (clipDrag && timelineEl) {
+      const rect = timelineEl.getBoundingClientRect();
+      const x = e.clientX - rect.left + timelineEl.scrollLeft - clipDrag.offsetPx;
+      setDraggedClip({ clipId: clipDrag.clipId, barStart: Math.max(0, Math.round(x / BAR_PX)) });
+    }
   };
 
   const onWinMouseUp = () => {
     if (dragState) { dragState = null; document.body.style.cursor = ""; }
     if (playheadDragState) { playheadDragState = null; document.body.style.cursor = ""; }
+    if (clipDrag) {
+      const dc = draggedClip();
+      if (dc) props.onMoveClip(clipDrag.trackId, clipDrag.clipId, dc.barStart);
+      clipDrag = null;
+      setDraggedClip(null);
+      document.body.style.cursor = "";
+    }
+  };
+
+  const onLaneDblClick = (e: MouseEvent, trackId: string, trackType: TrackType) => {
+    if (trackType === "drum" || trackType === "voice") return;
+    if ((e.target as HTMLElement).closest(".bl__mclip")) return;
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = e.clientX - rect.left + (timelineEl?.scrollLeft ?? 0);
+    props.onCreateRegion(trackId, Math.max(0, Math.floor(x / BAR_PX)));
   };
 
   onMount(() => {
@@ -115,10 +144,28 @@ const TimelineArea: Component<Props> = (props) => {
               }>
                 <span class="bl__stage-empty-eyebrow">Empty session</span>
                 <h2 class="bl__stage-empty-title">Your canvas awaits</h2>
-                <p class="bl__stage-empty-sub">Add a track from the left, or drag any audio / MIDI / video file here.</p>
+                <p class="bl__stage-empty-sub">Add a track, pick a template, or drop any audio / MIDI / video file here.</p>
                 <div class="bl__stage-empty-actions">
                   <button class="bl__btn-pink" onClick={props.onShowNewTrack}>+ Add a track</button>
                   <button class="bl__btn-ghost" onClick={() => props.onAddTrack("drum")}>Drum machine</button>
+                </div>
+                <div class="bl__stage-templates">
+                  <span class="bl__stage-tmpl-label">Quick start</span>
+                  <div class="bl__stage-tmpl-row">
+                    <For each={TEMPLATES}>
+                      {(tmpl) => (
+                        <button
+                          class="bl__stage-tmpl-card"
+                          style={{ "--tc": tmpl.color }}
+                          onClick={() => props.onApplyTemplate(tmpl.id)}
+                        >
+                          <span class="bl__stage-tmpl-genre">{tmpl.genre}</span>
+                          <span class="bl__stage-tmpl-name">{tmpl.name}</span>
+                          <span class="bl__stage-tmpl-bpm">{tmpl.bpm} BPM</span>
+                        </button>
+                      )}
+                    </For>
+                  </div>
                 </div>
               </Show>
             </div>
@@ -133,11 +180,12 @@ const TimelineArea: Component<Props> = (props) => {
               onDragOver={(e) => props.onLaneDragOver(e, t.id)}
               onDragLeave={props.onLaneDragLeave}
               onDrop={(e) => props.onLaneDrop(e, t.id)}
+              onDblClick={(e) => onLaneDblClick(e, t.id, t.type)}
             >
               <Show when={t.type === "drum"}>
                 <For each={props.drumClipBars()}>
                   {(barIdx) => (
-                    <div class="bl__clip" style={{ left: `${barIdx * 80}px`, width: "78px", "--tc": t.color }}>
+                    <div class="bl__clip" style={{ left: `${barIdx * BAR_PX}px`, width: `${BAR_PX - 2}px`, "--tc": t.color }}>
                       <div class="bl__clip-header">
                         <span class="bl__clip-dot-led" /><span class="bl__clip-name">DRUMS</span>
                       </div>
@@ -165,7 +213,9 @@ const TimelineArea: Component<Props> = (props) => {
                   <span class="bl__inst-ghost-name">
                     {t.type === "bass" ? "BASS" : t.type === "guitar" ? "GUITAR" : t.type === "voice" ? "VOICE" : "LEAD"}
                   </span>
-                  <span class="bl__inst-ghost-hint">play keys to record</span>
+                  <span class="bl__inst-ghost-hint">
+                    {t.type === "voice" ? "record audio" : "dbl-click to create region"}
+                  </span>
                 </div>
               </Show>
 
@@ -173,13 +223,31 @@ const TimelineArea: Component<Props> = (props) => {
                 {(c) => (
                   <div
                     class={`bl__mclip is-${c.kind}`}
-                    style={{ left: `${c.barStart * 80}px`, width: `${c.bars * 80 - 2}px`, "--tc": t.color }}
+                    classList={{ "is-dragging": draggedClip()?.clipId === c.id }}
+                    style={{
+                      left: `${(draggedClip()?.clipId === c.id ? draggedClip()!.barStart : c.barStart) * BAR_PX}px`,
+                      width: `${c.bars * BAR_PX - 2}px`,
+                      "--tc": t.color,
+                    }}
                     title={`${c.name} · ${c.bars} bar${c.bars > 1 ? "s" : ""}`}
+                    onMouseDown={(e) => {
+                      if (e.button !== 0) return;
+                      e.stopPropagation();
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                      clipDrag = { clipId: c.id, trackId: t.id, offsetPx: e.clientX - rect.left };
+                      setDraggedClip({ clipId: c.id, barStart: c.barStart });
+                      document.body.style.cursor = "grabbing";
+                    }}
                   >
                     <div class="bl__mclip-head">
                       <span class="bl__mclip-icon" aria-hidden="true"><MediaClipIcon kind={c.kind} /></span>
                       <span class="bl__mclip-name">{c.name}</span>
-                      <button class="bl__mclip-x" onClick={(e) => { e.stopPropagation(); props.onDeleteClip(t.id, c.id); }} title="Remove clip">×</button>
+                      <button
+                        class="bl__mclip-x"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => { e.stopPropagation(); props.onDeleteClip(t.id, c.id); }}
+                        title="Remove clip"
+                      >×</button>
                     </div>
                     <div class="bl__mclip-body">
                       <Show when={c.kind !== "midi" && c.url}>
@@ -191,7 +259,7 @@ const TimelineArea: Component<Props> = (props) => {
               </For>
 
               <Show when={props.dropTarget()?.trackId === t.id}>
-                <div class="bl__drop-marker" style={{ left: `${(props.dropTarget()?.bar ?? 0) * 80}px` }} />
+                <div class="bl__drop-marker" style={{ left: `${(props.dropTarget()?.bar ?? 0) * BAR_PX}px` }} />
               </Show>
             </div>
           )}

@@ -1,4 +1,9 @@
-// Instrument catalog + lazy-loading manifest fetcher.
+// This module acts as the "Record Store" for the DAW, managing available instruments.
+// Rather than hardcoding multi-megabyte soundbanks into the Javascript bundle,
+// we define a Catalog structure.
+// 1. The main app loads a tiny `catalog.json` listing available packs.
+// 2. When the user clicks an instrument pack, we lazily fetch its `manifestUrl` 
+//    which contains the actual asset pointers to preload into the audio graph.
 
 import type { AssetId } from "./types";
 

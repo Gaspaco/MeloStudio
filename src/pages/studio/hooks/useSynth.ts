@@ -1,3 +1,9 @@
+// `useSynth` acts as the bridge connecting physical computer keyboard inputs,
+// on-screen MIDI piano keys, and the DAW's `PolySynth` Web Audio engine. 
+// It handles real-time Web Audio voice generation when typing e.g. "zxcv", 
+// converting QWERTY scan codes straight into MIDI note numbers.
+// Crucially, it manages the Set of active pressed keys (`activeNotes`) to light up 
+// the UI keyboard accurately, and prevents rapid-fire key repeat events making the synth glitch.
 import { createEffect, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { unlockAudioContext } from "~/lib/audio/context";

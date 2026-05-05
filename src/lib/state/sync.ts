@@ -1,5 +1,10 @@
-// Connects projectStore and transportStore to the audio engine (AudioGraph + Scheduler).
-// Each reactive effect only re-runs for the piece of state it reads.
+// The sync engine is the glue between the reactive frontend (SolidJS) and the imperative backend (Web Audio).
+// 
+// Why do we need this? 
+// Web Audio graphs are complex mutable object trees, while our UI state is a serializable JSON tree.
+// We NEVER want a SolidJS component modifying a Web Audio GainNode directly.
+// Instead, Solid reads the reactive state, and this file acts as a 'controller' or 'reactor' — 
+// it watches the reactive state and issues the corresponding imperative commands to the Web Audio engine.
 
 import { createEffect, createRoot, on, onCleanup } from "solid-js";
 import { project } from "./projectStore";
@@ -29,8 +34,10 @@ export interface CreateEngineOptions {
   maxMemoryBytes?: number;
 }
 
-// set up the audio engine and wire reactive effects to the project store.
-// call once when the studio mounts; call dispose() on unmount.
+  // Instantiates the core audio engine components (Graph, Scheduler, AssetManager)
+  // and establishes the reactive bindings between the UI state and the audio backend.
+  // This must be called exactly once when the Studio editor mounts, 
+  // and the returned `dispose()` MUST be called when the component tears down to prevent memory leaks.
 export function createEngine(opts: CreateEngineOptions = {}): EngineHandles {
   const ctx = getAudioContext();
   const graph = new AudioGraph(ctx);
