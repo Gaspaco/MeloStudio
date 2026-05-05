@@ -1,7 +1,7 @@
 import { type Component, createSignal, onMount, onCleanup, For, Show } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
-import { listProjectsApi, deleteProjectApi, updateProjectApi } from "../../lib/api";
+import { listProjectsApi, deleteProjectApi, updateProjectApi, getProjectStatsApi } from "../../lib/api";
 import "./dashboard.scss";
 
 interface Project {
@@ -33,6 +33,7 @@ const Dashboard: Component<{
   const [projects, setProjects] = createSignal<Project[]>([]);
   const [time, setTime] = createSignal(new Date());
   const [tab, setTab] = createSignal<Tab>("overview");
+  const [studioHours, setStudioHours] = createSignal(0);
 
   // Profile form
   const [profileName, setProfileName] = createSignal("");
@@ -93,11 +94,13 @@ const Dashboard: Component<{
           name: p.name,
           bpm: p.bpm,
           key: "—",
-          tracks: 0,
+          tracks: p.trackCount,
           updatedAt: new Date(p.updatedAt).toLocaleDateString(),
           color: PROJECT_COLORS[i % PROJECT_COLORS.length] as string,
         })),
       );
+      const stats = await getProjectStatsApi();
+      setStudioHours(stats.studioHours);
     } catch {
       // silently ignore — user may not be signed in yet
     }
@@ -381,15 +384,9 @@ const Dashboard: Component<{
             </div>
 
             <div class="db__stat">
-              <span class="db__stat-num">0h</span>
+              <span class="db__stat-num">{studioHours()}h</span>
               <span class="db__stat-label">Studio Time</span>
-              <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: "0%" }} /></span>
-            </div>
-
-            <div class="db__stat">
-              <span class="db__stat-num">0</span>
-              <span class="db__stat-label">Templates</span>
-              <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: "0%" }} /></span>
+              <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `${Math.min(studioHours() * 4, 100)}%` }} /></span>
             </div>
           </section>
 

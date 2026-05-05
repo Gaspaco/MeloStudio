@@ -161,16 +161,16 @@ function getSampler(preset: "piano" | "bass" | "guitar"): Tone.Sampler {
 
 export class PolySynth {
   private master: Tone.Gain;
-  // always present — used standalone for lead/pad and as a fallback while samples load
+  /** Always present — used standalone for lead/pad and as a fallback while samples load. */
   private synth: Tone.PolySynth<Tone.MonoSynth>;
-  // only set when the active preset is sample-backed
+  /** Present only when the active preset is sample-backed. */
   private sampler: Tone.Sampler | null = null;
   private samplerReady = false;
   private preset: SynthPreset;
-  // tracks which engine handled each note so noteOff goes to the right one
+  /** Track which engine handled each note so noteOff goes to the right one. */
   private noteOwner = new Map<number, "synth" | "sampler">();
   private active = new Set<number>();
-  // stored so setFilterFreq can preserve Q when only changing frequency
+  /** Stored so setFilterFreq can preserve Q when only changing frequency. */
   private filterQ = 1.0;
 
   constructor(preset: SynthPreset = "piano") {
@@ -273,7 +273,7 @@ export class PolySynth {
     this.noteOwner.clear();
   }
 
-  // live-tweak ADSR envelope — only works for lead/pad presets
+  /** Live-tweak ADSR envelope — only effective for lead/pad presets. */
   setEnvelope(attack: number, decay: number, sustain: number, release: number): void {
     if (this.preset !== "lead" && this.preset !== "pad") return;
     this.synth.set({
@@ -282,7 +282,7 @@ export class PolySynth {
     });
   }
 
-  // live-tweak filter cutoff — only works for lead/pad presets
+  /** Live-tweak filter cutoff — only effective for lead/pad presets. */
   setFilterFreq(freq: number): void {
     if (this.preset !== "lead" && this.preset !== "pad") return;
     this.synth.set({ filter: { type: "lowpass" as const, frequency: freq, Q: this.filterQ } });

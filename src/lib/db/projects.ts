@@ -7,6 +7,7 @@ export interface ProjectListItem {
   name: string;
   bpm: number;
   updatedAt: string;
+  trackCount: number;
 }
 
 // blank doc for a new project. the id gets set after the INSERT.
@@ -31,18 +32,34 @@ export function makeBlankDoc(id: string, name: string): ProjectDoc {
 
 export async function listProjects(userId: string): Promise<ProjectListItem[]> {
   const rows = await sql`
-    SELECT id, name, bpm, updated_at
+    SELECT
+      id, name, bpm, updated_at,
+      COALESCE(jsonb_array_length(data->'tracks'), 0) AS track_count
     FROM projects
     WHERE user_id = ${userId}
     ORDER BY updated_at DESC
     LIMIT 200
-  ` as Array<{ id: string; name: string; bpm: number; updated_at: string }>;
+  ` as Array<{ id: string; name: string; bpm: number; updated_at: string; track_count: number }>;
   return rows.map((r) => ({
     id: r.id,
     name: r.name,
     bpm: r.bpm,
     updatedAt: r.updated_at,
+    trackCount: r.track_count ?? 0,
   }));
+}
+
+export async function getProjectStats(userId: string): Promise<{ studioHours: number }> {
+  const rows = await sql`
+    SELECT
+      COALESCE(
+        SUM(EXTRACT(EPOCH FROM (updated_at - created_at))),
+        0
+      )::float / 3600 AS studio_hours
+    FROM projects
+    WHERE user_id = ${userId}
+  ` as Array<{ studio_hours: number }>;
+  return { studioHours: Math.round((rows[0]?.studio_hours ?? 0) * 10) / 10 };
 }
 
 export async function getProject(
