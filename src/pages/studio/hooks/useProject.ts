@@ -4,8 +4,8 @@
 // into currently supported tracks. It's also fully async via `suspense` in SolidJS,
 // putting up a clean loading state until the studio is absolutely ready to play.
 import { onMount } from "solid-js";
-import type { Accessor, Setter } from "solid-js";
 import { getJWTToken } from "~/lib/auth";
+import type { Accessor, Setter } from "solid-js";
 import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer } from "~/lib/audio/stepSeq";
 import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
 import { loadClip, removeClip } from "~/lib/clipStore";
@@ -20,6 +20,8 @@ type Deps = {
   tracks: Accessor<UITrack[]>; setTracks: Setter<UITrack[]>;
   selectedTrack: Accessor<string | null>; setSelectedTrack: Setter<string | null>;
   bpm: Accessor<number>; setBpm: Setter<number>;
+  timeSig: Accessor<[number, number]>; setTimeSig: Setter<[number, number]>;
+  musicalKey: Accessor<string>; setMusicalKey: Setter<string>;
   pattern: Accessor<StepPattern>; setPattern: Setter<StepPattern>;
   synthPreset: Accessor<SynthPreset>; setSynthPreset: Setter<SynthPreset>;
   setDrumPanelOpen: Setter<boolean>;
@@ -45,6 +47,8 @@ export function useProject(deps: Deps) {
   const applyDoc = async (doc: any) => {
     deps.setName(doc.name ?? "Untitled");
     if (doc.transport?.bpm) deps.setBpm(doc.transport.bpm);
+    if (doc.transport?.timeSig) deps.setTimeSig(doc.transport.timeSig as [number, number]);
+    if (doc.musicalKey) deps.setMusicalKey(doc.musicalKey);
 
     const pat: StepPattern | undefined = doc.beat?.pattern;
     if (pat?.rows?.length) {
@@ -100,13 +104,14 @@ export function useProject(deps: Deps) {
     pendingDoc = null;
     const headers = await authHeaders().catch(() => null);
     if (!headers) return;
-    const res = await fetch(`/api/projects/${deps.projectId}`, { headers });
+    const res = await fetch(`/api/projects/${deps.projectId}`, { headers, credentials: "include" });
     if (!res.ok) return;
     const doc = await res.json();
     await fetch(`/api/projects/${deps.projectId}`, {
       method: "PUT",
-      headers: await authHeaders(true) ?? {},
+      headers: authHeaders(true),
       body: JSON.stringify({ ...doc, uiTracks: [], beat: { pattern: DEFAULT_PATTERN() } }),
+      credentials: "include",
     });
     deps.setShowNewTrack(true);
   };
@@ -118,7 +123,7 @@ export function useProject(deps: Deps) {
     try {
       const headers = await authHeaders();
       if (!headers) throw new Error("not signed in");
-      const res = await fetch(`/api/projects/${deps.projectId}`, { headers });
+      const res = await fetch(`/api/projects/${deps.projectId}`, { headers, credentials: "include" });
       if (!res.ok) throw new Error(`load failed: ${res.status}`);
       const doc = await res.json();
       const uiTracksForSave = deps.tracks().map(t => ({
@@ -128,13 +133,15 @@ export function useProject(deps: Deps) {
       const updated = {
         ...doc,
         beat: { pattern: seq.getPattern() },
-        transport: { ...(doc.transport ?? {}), bpm: deps.bpm() },
+        transport: { ...(doc.transport ?? {}), bpm: deps.bpm(), timeSig: deps.timeSig() },
+        musicalKey: deps.musicalKey(),
         uiTracks: uiTracksForSave,
       };
       const put = await fetch(`/api/projects/${deps.projectId}`, {
         method: "PUT",
         headers: await authHeaders(true) ?? {},
         body: JSON.stringify(updated),
+        credentials: "include",
       });
       if (!put.ok) throw new Error(`save failed: ${put.status}`);
       deps.setSaveState("saved");
@@ -150,7 +157,7 @@ export function useProject(deps: Deps) {
     try {
       const headers = await authHeaders();
       if (!headers) { deps.setError("Not signed in"); return; }
-      const res = await fetch(`/api/projects/${deps.projectId}`, { headers });
+      const res = await fetch(`/api/projects/${deps.projectId}`, { headers, credentials: "include" });
       if (!res.ok) { deps.setError(`Couldn't load (${res.status})`); return; }
       const doc = await res.json();
 

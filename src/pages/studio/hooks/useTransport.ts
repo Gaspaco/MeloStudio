@@ -22,6 +22,7 @@ type Deps = {
   masterVol: Accessor<number>; setMasterVol: Setter<number>;
   playheadPx: Accessor<number>; setPlayheadPx: Setter<number>;
   pattern: Accessor<StepPattern>; setPattern: Setter<StepPattern>;
+  loopEnabled: Accessor<boolean>;
 };
 
 export function useTransport(deps: Deps) {
@@ -60,9 +61,29 @@ export function useTransport(deps: Deps) {
     playbackStartCtxTime    = ctx.currentTime;
     playbackStartTimelineSecs = timelineStartSecs;
 
+    // Loop end: last audio clip end, or fall back to sequencer pattern length (in bars)
+    const audioEnds = deps.tracks().flatMap(t =>
+      (t.clips ?? []).filter(c => c.url).map(c => (c.barStart + c.bars) * 80)
+    );
+    const patternBars = (deps.pattern().steps ?? 16) / 16; // 16 steps = 1 bar
+    const loopEndPx = audioEnds.length > 0 ? Math.max(...audioEnds) : patternBars * 80 * 4;
+
+    const doLoop = () => {
+      deps.setPlayheadPx(0);
+      startTime = performance.now();
+      deps.setElapsed(0);
+      stopAudioPlayback();
+      void startAudioPlayback();
+    };
+
     const tickPlayhead = () => {
       const el = getAudioContext().currentTime - playbackStartCtxTime;
-      deps.setPlayheadPx(secsToPx(playbackStartTimelineSecs + el));
+      const newPx = secsToPx(playbackStartTimelineSecs + el);
+      if (deps.loopEnabled() && newPx >= loopEndPx) {
+        doLoop();
+        return;
+      }
+      deps.setPlayheadPx(newPx);
       playbackRaf = requestAnimationFrame(tickPlayhead);
     };
     playbackRaf = requestAnimationFrame(tickPlayhead);

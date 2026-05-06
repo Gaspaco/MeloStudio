@@ -1,6 +1,7 @@
 import { type Component, createSignal, onMount, onCleanup, For, Show } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
+import { socialAuthClient } from "../../lib/social-auth";
 import { listProjectsApi, deleteProjectApi, updateProjectApi, getProjectStatsApi } from "../../lib/api";
 import "./dashboard.scss";
 
@@ -58,15 +59,16 @@ const Dashboard: Component<{
 
   onMount(async () => {
     try {
-      const { data } = await authClient.getSession();
-      if (data?.user) {
+      let userData = (await authClient.getSession()).data?.user;
+      if (!userData) userData = (await socialAuthClient.getSession()).data?.user;
+      if (userData) {
         setUser({
-          name: data.user.name,
-          email: data.user.email,
-          image: data.user.image ?? undefined,
-          createdAt: typeof data.user.createdAt === "string" ? data.user.createdAt : data.user.createdAt?.toISOString?.() ?? undefined,
+          name: userData.name,
+          email: userData.email,
+          image: userData.image ?? undefined,
+          createdAt: typeof userData.createdAt === "string" ? userData.createdAt : (userData.createdAt as any)?.toISOString?.() ?? undefined,
         });
-        setProfileName(data.user.name ?? "");
+        setProfileName(userData.name ?? "");
       }
     } catch {}
   });

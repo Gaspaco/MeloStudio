@@ -1,5 +1,6 @@
-import { type Component, createSignal, createMemo, onMount, onCleanup, Show } from "solid-js";
+import { type Component, createSignal, createMemo, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
+import * as Tone from "tone";
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
 import { type SynthPreset } from "~/lib/audio/synth";
 import { getMasterBus } from "~/lib/audio/masterBus";
@@ -40,6 +41,9 @@ const Studio: Component = () => {
   const [elapsed,            setElapsed]            = createSignal(0);
   const [masterVol,          setMasterVol]          = createSignal(0.8);
   const [saveState,          setSaveState]          = createSignal<"idle" | "saving" | "saved">("idle");
+  const [lastSaved,          setLastSaved]          = createSignal<Date | null>(null);
+  const [timeSig,            setTimeSig]            = createSignal<[number, number]>([4, 4]);
+  const [musicalKey,         setMusicalKey]         = createSignal("Auto");
   const [error,              setError]              = createSignal("");
   const [showNewTrack,       setShowNewTrack]       = createSignal(false);
   const [showAddMenu,        setShowAddMenu]        = createSignal(false);
@@ -63,6 +67,55 @@ const Studio: Component = () => {
   const [activeNotes,        setActiveNotes]        = createSignal<Set<number>>(new Set());
   const [playheadPx,         setPlayheadPx]         = createSignal(0);
   const [enhance,            setEnhance]            = createSignal(true);
+  const [metronomeOn,        setMetronomeOn]        = createSignal(false);
+  const [loopOn,             setLoopOn]             = createSignal(false);
+
+  // ── Undo / Redo history ───────────────────────────────────────────────────
+  type HistorySnap = { tracks: UITrack[]; pattern: StepPattern; bpm: number };
+  let historyStack: HistorySnap[] = [];
+  let historyIndex = -1;
+  const MAX_HISTORY = 50;
+
+  const snapHistory = () => {
+    const snap: HistorySnap = {
+      tracks: JSON.parse(JSON.stringify(tracks())),
+      pattern: JSON.parse(JSON.stringify(pattern())),
+      bpm: bpm(),
+    };
+    // Discard future if we branched
+    historyStack = historyStack.slice(0, historyIndex + 1);
+    historyStack.push(snap);
+    if (historyStack.length > MAX_HISTORY) historyStack.shift();
+    historyIndex = historyStack.length - 1;
+  };
+
+  // Timestamp lock: applySnap locks for 600ms so the 400ms debounce that fires
+  // due to its own signal changes can't snapshot and wipe the redo stack.
+  let snapLockUntil = 0;
+  const applySnap = (snap: HistorySnap) => {
+    if (snapTimer) { clearTimeout(snapTimer); snapTimer = null; }
+    snapLockUntil = Date.now() + 600;
+    setTracks(snap.tracks);
+    setPattern(snap.pattern);
+    setBpm(snap.bpm);
+    seq?.setBpm(snap.bpm);
+    seq?.setPattern(snap.pattern);
+  };
+
+  const canUndo = () => historyIndex > 0;
+  const canRedo = () => historyIndex < historyStack.length - 1;
+
+  const undo = () => {
+    if (!canUndo()) return;
+    historyIndex--;
+    applySnap(historyStack[historyIndex]!);
+  };
+
+  const redo = () => {
+    if (!canRedo()) return;
+    historyIndex++;
+    applySnap(historyStack[historyIndex]!);
+  };
 
   const sth = useSynth({
     tracks, selectedTrack, masterVol,
@@ -77,6 +130,7 @@ const Studio: Component = () => {
     tracks, bpm, setBpm, playing, setPlaying,
     elapsed, setElapsed, masterVol, setMasterVol,
     playheadPx, setPlayheadPx, pattern, setPattern,
+    loopEnabled: loopOn,
   });
 
   const drum = useDrum({
@@ -88,7 +142,8 @@ const Studio: Component = () => {
     projectId: params.id, navigate,
     getSeq: () => seq, ensureSynth: sth.ensureSynth,
     name, setName, tracks, setTracks, selectedTrack, setSelectedTrack,
-    bpm, setBpm, pattern, setPattern,
+    bpm, setBpm, timeSig, setTimeSig, musicalKey, setMusicalKey,
+    pattern, setPattern,
     synthPreset, setSynthPreset,
     setDrumPanelOpen, setShowNewTrack,
     saveState, setSaveState, setError, setShowRestoreDialog,
@@ -111,11 +166,97 @@ const Studio: Component = () => {
     // Initialize master bus in enhanced mode (on by default)
     getMasterBus().setEnhanced(true);
     await project.init();
+    // Seed initial history snapshot once the project is loaded
+    snapHistory();
+
+    const handleGlobalKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        void handleSave();
+      } else if ((e.metaKey || e.ctrlKey) && (e.shiftKey && e.key === "z" || e.key === "y")) {
+        e.preventDefault();
+        redo();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        e.preventDefault();
+        undo();
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKey);
+    // eslint-disable-next-line solid/reactivity
+    return () => window.removeEventListener("keydown", handleGlobalKey);
   });
 
   onCleanup(() => {
     seq?.stop();
     sth.allNotesOff();
+    metronomePart?.dispose();
+  });
+
+  // ── Metronome ─────────────────────────────────────────────────────────────
+  let metronomePart: Tone.Part | null = null;
+
+  const playMetronomeClick = (time: number, isDownbeat: boolean) => {
+    const ac = Tone.getContext().rawContext as AudioContext;
+    const osc = ac.createOscillator();
+    const gain = ac.createGain();
+    osc.connect(gain);
+    gain.connect(ac.destination);
+    osc.frequency.value = isDownbeat ? 1800 : 1200;
+    gain.gain.setValueAtTime(0.35, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
+    osc.start(time);
+    osc.stop(time + 0.05);
+  };
+
+  const startMetronome = () => {
+    metronomePart?.dispose();
+    const [num] = timeSig();
+    metronomePart = new Tone.Part((time: number, ev: unknown) => {
+      const beat = (ev as { beat: number }).beat;
+      playMetronomeClick(time, beat === 0);
+    }, Array.from({ length: num }, (_, i) => [`${i}*4n`, { beat: i }]));
+    metronomePart.loop = true;
+    metronomePart.loopEnd = `${timeSig()[0]}*4n`;
+    metronomePart.start(0);
+  };
+
+  const stopMetronome = () => {
+    metronomePart?.stop();
+    metronomePart?.dispose();
+    metronomePart = null;
+  };
+
+  const toggleMetronome = async () => {
+    const next = !metronomeOn();
+    setMetronomeOn(next);
+    if (next && playing()) {
+      await Tone.start();
+      startMetronome();
+    } else {
+      stopMetronome();
+    }
+  };
+
+  const handleSave = async () => {
+    await project.save();
+    setLastSaved(new Date());
+  };
+
+  // Auto-snapshot: debounced 400ms after any real user change.
+  // Skipped if still inside the applySnap lock window (undo/redo applied < 600ms ago).
+  let snapTimer: ReturnType<typeof setTimeout> | null = null;
+  const scheduleSnap = () => {
+    if (snapTimer) clearTimeout(snapTimer);
+    snapTimer = setTimeout(() => {
+      snapTimer = null;
+      if (Date.now() >= snapLockUntil) snapHistory();
+    }, 400);
+  };
+  createEffect(() => {
+    JSON.stringify(tracks());
+    JSON.stringify(pattern());
+    bpm();
+    scheduleSnap();
   });
 
   const startEditingTitle = () => {
@@ -178,7 +319,7 @@ const Studio: Component = () => {
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V4l6-1.2v7"/><circle cx="5" cy="11.5" r="1.4"/><circle cx="11" cy="9.8" r="1.4"/></svg>,
         items: [
           { label: "New Project",    kbd: "⌘N", action: run(() => navigate("/dashboard?new=1")) },
-          { label: "Save",           kbd: "⌘S", action: run(() => { void project.save(); }), disabled: () => saveState() === "saving" },
+          { label: "Save",           kbd: "⌘S", action: run(() => { void handleSave(); }), disabled: () => saveState() === "saving" },
           { label: "Rename\u2026",   kbd: "",   action: run(() => startEditingTitle()) },
           { label: "Open Dashboard", kbd: "⌘D", action: run(() => navigate("/dashboard")) },
         ],
@@ -239,18 +380,32 @@ const Studio: Component = () => {
   return (
     <div class="bl">
       <TopBar
-        name={name} titleEditing={titleEditing} saveState={saveState}
-        bpm={bpm} playing={playing} elapsed={elapsed} masterVol={masterVol}
+        name={name} titleEditing={titleEditing} saveState={saveState} lastSaved={lastSaved}
+        bpm={bpm} meter={timeSig} musicalKey={musicalKey}
+        playing={playing} elapsed={elapsed} masterVol={masterVol}
         titleInputRef={(el) => (titleInputEl = el)}
         onNavToggle={() => setNavOpen(!navOpen())}
         onDashboard={() => navigate("/dashboard")}
         onStartEditTitle={startEditingTitle}
         onCommitTitle={commitTitle}
         onCancelTitle={cancelTitle}
-        onSave={project.save}
-        onTogglePlay={transport.togglePlay}
+        onSave={handleSave}
+        canUndo={canUndo} canRedo={canRedo}
+        onUndo={undo} onRedo={redo}
+        metronomeOn={metronomeOn} onToggleMetronome={toggleMetronome}
+        loopOn={loopOn} onToggleLoop={() => setLoopOn(v => !v)}
+        onTogglePlay={async () => {
+          await transport.togglePlay();
+          // Start/stop metronome to stay in sync with playback
+          if (metronomeOn()) {
+            if (!playing()) stopMetronome();
+            else { await Tone.start(); startMetronome(); }
+          }
+        }}
         onStopAll={transport.stopAll}
         onUpdateBpm={transport.updateBpm}
+        onUpdateMeter={setTimeSig}
+        onUpdateKey={setMusicalKey}
         onSetMasterVol={transport.setMasterVolume}
         onElapsedReset={() => setElapsed(0)}
         enhance={enhance}

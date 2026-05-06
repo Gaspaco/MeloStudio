@@ -85,6 +85,8 @@ export interface ProjectDoc {
   tracks: Track[];
   // asset references used by this project. actual blobs live in R2
   assets: AudioAsset[];
+  // optional musical key label, e.g. "C Major" or "F# Minor"
+  musicalKey?: string;
 }
 
 export const dbToGain = (db: number): number =>

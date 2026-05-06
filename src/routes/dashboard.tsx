@@ -3,17 +3,18 @@ import { createResource, Show } from "solid-js";
 import Dashboard from "~/pages/dashboard/Dashboard";
 import { createProjectApi } from "~/lib/api";
 import { authClient } from "~/lib/auth";
+import { socialAuthClient } from "~/lib/social-auth";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
 
   const [session] = createResource(async () => {
     const { data } = await authClient.getSession();
-    if (!data?.user) {
-      navigate("/login", { replace: true });
-      return null;
-    }
-    return data;
+    if (data?.user) return data;
+    const { data: baData } = await socialAuthClient.getSession();
+    if (baData?.user) return baData;
+    navigate("/login", { replace: true });
+    return null;
   });
 
   const handleNewProject = async (name: string = "Untitled Project") => {

@@ -1,12 +1,26 @@
-import { type Component, Show } from "solid-js";
+import { type Component, Show, For, createSignal, onMount, onCleanup } from "solid-js";
 import type { Accessor } from "solid-js";
 import { fmtTime } from "../types";
+
+// Ticks every 10 s so the "X min ago" label stays fresh without hammering the DOM.
+const [_tick, setTick] = createSignal(0);
+let _tickInterval: ReturnType<typeof setInterval> | null = null;
+let _tickRefs = 0;
+const startTick = () => { if (!_tickInterval) _tickInterval = setInterval(() => setTick(t => t + 1), 10_000); _tickRefs++; };
+const stopTick = () => { _tickRefs--; if (_tickRefs <= 0 && _tickInterval) { clearInterval(_tickInterval); _tickInterval = null; } };
+
+const METER_OPTIONS: [number, number][] = [[2, 4], [3, 4], [4, 4], [5, 4], [6, 8], [7, 8], [12, 8]];
+const KEY_ROOTS = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
+const KEY_MODES = ["Major", "Minor"];
 
 type Props = {
   name: Accessor<string>;
   titleEditing: Accessor<boolean>;
   saveState: Accessor<"idle" | "saving" | "saved">;
+  lastSaved: Accessor<Date | null>;
   bpm: Accessor<number>;
+  meter: Accessor<[number, number]>;
+  musicalKey: Accessor<string>;
   playing: Accessor<boolean>;
   elapsed: Accessor<number>;
   masterVol: Accessor<number>;
@@ -17,16 +31,41 @@ type Props = {
   onCommitTitle: () => Promise<void>;
   onCancelTitle: () => void;
   onSave: () => void;
+  canUndo: () => boolean;
+  canRedo: () => boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  metronomeOn: Accessor<boolean>;
+  onToggleMetronome: () => void;
+  loopOn: Accessor<boolean>;
+  onToggleLoop: () => void;
   onTogglePlay: () => void;
   onStopAll: () => void;
   onUpdateBpm: (v: number) => void;
+  onUpdateMeter: (v: [number, number]) => void;
+  onUpdateKey: (v: string) => void;
   onSetMasterVol: (v: number) => void;
   onElapsedReset: () => void;
   enhance: Accessor<boolean>;
   onToggleEnhance: () => void;
 };
 
-const TopBar: Component<Props> = (props) => (
+const TopBar: Component<Props> = (props) => {
+  onMount(startTick);
+  onCleanup(stopTick);
+  const [meterOpen, setMeterOpen] = createSignal(false);
+  const [keyOpen, setKeyOpen] = createSignal(false);
+  const [keyRoot, setKeyRoot] = createSignal("C");
+  const [keyMode, setKeyMode] = createSignal("Major");
+
+  const commitKey = (root: string, mode: string) => {
+    props.onUpdateKey(`${root} ${mode}`);
+  };
+
+  const meterLabel = () => `${props.meter()[0]}/${props.meter()[1]}`;
+  const keyLabel = () => props.musicalKey() === "Auto" ? "Auto" : props.musicalKey();
+
+  return (
   <header class="bl__top">
     {/* ROW 1 — title strip */}
     <div class="bl__strip">
@@ -69,7 +108,21 @@ const TopBar: Component<Props> = (props) => (
       <div class="bl__strip-r">
         <div class="bl__save-status">
           <span class="bl__save-label">Last Saved</span>
-          <span class="bl__save-sub">{props.saveState() === "saved" ? "Just now" : "Never"}</span>
+          <span class="bl__save-sub">
+            {props.saveState() === "saving"
+              ? "Saving…"
+              : props.lastSaved()
+                ? (() => {
+                    _tick(); // reactive dependency — refreshes every 10 s
+                    const diff = Math.floor((Date.now() - props.lastSaved()!.getTime()) / 1000);
+                    if (diff < 10) return "Just now";
+                    if (diff < 60) return `${diff}s ago`;
+                    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+                    return props.lastSaved()!.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                  })()
+                : "Never saved"
+            }
+          </span>
         </div>
         <button class="bl__btn-ghost" onClick={props.onSave} disabled={props.saveState() === "saving"}>
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7l3 3v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M5 3v3h5"/><circle cx="8" cy="10" r="1.5"/></svg>
@@ -94,13 +147,17 @@ const TopBar: Component<Props> = (props) => (
     <div class="bl__console">
       <div class="bl__console-l">
         <div class="bl__tools">
-          <button class="bl__icon-btn" title="Undo">
+          <button class="bl__icon-btn" title="Undo (⌘Z)" onClick={props.onUndo} disabled={!props.canUndo()}>
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h7a3 3 0 0 1 0 6H6"/><path d="M5.5 4.5L3 7l2.5 2.5"/></svg>
           </button>
-          <button class="bl__icon-btn" title="Redo">
+          <button class="bl__icon-btn" title="Redo (⌘⇧Z)" onClick={props.onRedo} disabled={!props.canRedo()}>
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 7H6a3 3 0 0 0 0 6h4"/><path d="M10.5 4.5L13 7l-2.5 2.5"/></svg>
           </button>
-          <button class="bl__icon-btn" title="Metronome">
+          <button
+            class={`bl__icon-btn${props.metronomeOn() ? " is-active" : ""}`}
+            title={props.metronomeOn() ? "Metronome: ON" : "Metronome: OFF"}
+            onClick={props.onToggleMetronome}
+          >
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l-2 10h10L11 3z"/><path d="M8 6v5"/></svg>
           </button>
         </div>
@@ -121,28 +178,83 @@ const TopBar: Component<Props> = (props) => (
               <span class="bl__session-unit">bpm</span>
             </span>
           </div>
-          <div class="bl__session-cell">
+          <button class={`bl__session-cell bl__session-cell--btn${meterOpen() ? " is-open" : ""}`} type="button" onClick={() => { setMeterOpen(!meterOpen()); setKeyOpen(false); }}>
             <span class="bl__session-key">
               <span class="bl__session-num">02</span>
               <span class="bl__session-key-text">Meter</span>
             </span>
-            <span class="bl__session-value">4<span class="bl__session-slash">⁄</span>4</span>
-          </div>
-          <button class="bl__session-cell bl__session-cell--btn" type="button">
+            <span class="bl__session-value">
+              {props.meter()[0]}<span class="bl__session-slash">⁄</span>{props.meter()[1]}
+              <svg class="bl__session-chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5l3 3 3-3"/></svg>
+            </span>
+            <Show when={meterOpen()}>
+              <div class="bl__session-picker bl__session-picker--meter" onClick={(e) => e.stopPropagation()}>
+                <For each={METER_OPTIONS}>
+                  {(opt) => (
+                    <button
+                      class={`bl__session-picker-item${props.meter()[0] === opt[0] && props.meter()[1] === opt[1] ? " is-active" : ""}`}
+                      type="button"
+                      onClick={() => { props.onUpdateMeter(opt); setMeterOpen(false); }}
+                    >
+                      {opt[0]}/{opt[1]}
+                    </button>
+                  )}
+                </For>
+              </div>
+            </Show>
+          </button>
+          <button class={`bl__session-cell bl__session-cell--btn${keyOpen() ? " is-open" : ""}`} type="button" onClick={() => { setKeyOpen(!keyOpen()); setMeterOpen(false); }}>
             <span class="bl__session-key">
               <span class="bl__session-num">03</span>
               <span class="bl__session-key-text">Key</span>
             </span>
             <span class="bl__session-value bl__session-value--script">
-              Auto
+              {keyLabel()}
               <svg class="bl__session-chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5l3 3 3-3"/></svg>
             </span>
+            <Show when={keyOpen()}>
+              <div class="bl__session-picker bl__session-picker--key" onClick={(e) => e.stopPropagation()}>
+                <button
+                  class={`bl__session-picker-item bl__session-picker-item--auto${props.musicalKey() === "Auto" ? " is-active" : ""}`}
+                  type="button"
+                  onClick={() => { props.onUpdateKey("Auto"); setKeyOpen(false); }}
+                >
+                  Auto
+                </button>
+                <div class="bl__session-picker-modes">
+                  <For each={KEY_MODES}>
+                    {(mode) => (
+                      <button
+                        class={`bl__session-picker-mode${keyMode() === mode ? " is-active" : ""}`}
+                        type="button"
+                        onClick={() => { setKeyMode(mode); commitKey(keyRoot(), mode); }}
+                      >
+                        {mode}
+                      </button>
+                    )}
+                  </For>
+                </div>
+                <div class="bl__session-picker-roots">
+                  <For each={KEY_ROOTS}>
+                    {(root) => (
+                      <button
+                        class={`bl__session-picker-item${props.musicalKey() === `${root} ${keyMode()}` ? " is-active" : ""}`}
+                        type="button"
+                        onClick={() => { setKeyRoot(root); commitKey(root, keyMode()); setKeyOpen(false); }}
+                      >
+                        {root}
+                      </button>
+                    )}
+                  </For>
+                </div>
+              </div>
+            </Show>
           </button>
         </div>
       </div>
 
       <div class="bl__console-c">
-        <button class="bl__t-btn" onClick={props.onElapsedReset} title="Skip to start">
+        <button class="bl__t-btn" onClick={props.onStopAll} title="Skip to start">
           <svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="3.5" width="1.5" height="9" rx="0.5"/><path d="M13 3.5v9L5.5 8z"/></svg>
         </button>
         <button class={`bl__t-play ${props.playing() ? "is-on" : ""}`} onClick={props.onTogglePlay} title={props.playing() ? "Pause" : "Play"}>
@@ -153,7 +265,11 @@ const TopBar: Component<Props> = (props) => (
         <button class="bl__t-btn bl__t-rec" title="Record" onClick={props.onStopAll}>
           <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="4"/></svg>
         </button>
-        <button class="bl__t-btn" title="Loop">
+        <button
+          class={`bl__t-btn${props.loopOn() ? " is-on" : ""}`}
+          title={props.loopOn() ? "Loop: ON" : "Loop: OFF"}
+          onClick={props.onToggleLoop}
+        >
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6V5a2 2 0 0 1 2-2h6"/><path d="M9 1l2 2-2 2"/><path d="M13 10v1a2 2 0 0 1-2 2H5"/><path d="M7 15l-2-2 2-2"/></svg>
         </button>
         <div class="bl__timecode">{fmtTime(props.elapsed())}</div>
@@ -206,6 +322,7 @@ const TopBar: Component<Props> = (props) => (
       </div>
     </div>
   </header>
-);
+  );
+};
 
 export default TopBar;
