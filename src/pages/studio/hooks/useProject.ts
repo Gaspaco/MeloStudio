@@ -35,10 +35,10 @@ export function useProject(deps: Deps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let pendingDoc: any = null;
 
-  const authHeaders = async (json = false): Promise<Record<string, string> | null> => {
+  const authHeaders = async (json = false): Promise<Record<string, string>> => {
     const token = await getJWTToken();
-    if (!token) return null;
-    const headers: Record<string, string> = { Authorization: `Bearer ${token}` };
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
     if (json) headers["Content-Type"] = "application/json";
     return headers;
   };
@@ -156,7 +156,6 @@ export function useProject(deps: Deps) {
   const init = async () => {
     try {
       const headers = await authHeaders();
-      if (!headers) { deps.setError("Not signed in"); return; }
       const res = await fetch(`/api/projects/${deps.projectId}`, { headers, credentials: "include" });
       if (!res.ok) { deps.setError(`Couldn't load (${res.status})`); return; }
       const doc = await res.json();
