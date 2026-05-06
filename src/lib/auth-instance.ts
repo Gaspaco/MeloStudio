@@ -51,6 +51,7 @@ export const auth = betterAuth({
 
   trustedOrigins: [
     "https://melostudio.app",
+    "https://melo-studio.netlify.app",
     "http://localhost:3000",
     "http://localhost:3001",
     "http://localhost:3002",
