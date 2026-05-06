@@ -102,7 +102,7 @@ const DrumPanel: Component<DrumPanelProps> = (props) => {
                   class="bl__dp-vol"
                   type="range" min="-20" max="6" step="1"
                   value={row.gainDb}
-                  onChange={(e) => props.onUpdateRowGain(rowIdx(), parseInt(e.currentTarget.value, 10))}
+                  onInput={(e) => props.onUpdateRowGain(rowIdx(), parseInt(e.currentTarget.value, 10))}
                   title={`Volume: ${row.gainDb}dB`}
                 />
               </div>

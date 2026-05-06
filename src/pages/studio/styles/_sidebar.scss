@@ -465,7 +465,7 @@
 /* Drop zone — large dashed box below all tracks */
 .bl__import-drop {
   position: sticky;
-  left: 0;
+  left: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -508,9 +508,10 @@
 
 /* Centered empty state on the timeline stage */
 .bl__stage-empty {
-  position: sticky;
-  left: 0;
-  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 3rem;
+  width: calc(100% - 3rem);
   height: calc(100vh - 22rem);
   min-height: 22rem;
   display: grid;

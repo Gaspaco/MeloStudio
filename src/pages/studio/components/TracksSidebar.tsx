@@ -92,48 +92,48 @@ const TracksSidebar: Component<Props> = (props) => (
     </button>
 
     <div class="bl__track-list">
-      <For each={props.tracks()}>
+      <Index each={props.tracks()}>
         {(t) => (
           <div
-            class={`bl__track ${props.selectedTrack() === t.id ? "is-sel" : ""}`}
-            style={{ "--tc": t.color }}
-            onClick={() => props.onSelectTrack(t.id)}
+            class={`bl__track ${props.selectedTrack() === t().id ? "is-sel" : ""}`}
+            style={{ "--tc": t().color }}
+            onClick={() => props.onSelectTrack(t().id)}
           >
             <div class="bl__track-col">
-              <TrackIcon name={TRACK_DEFS.find(d => d.type === t.type)?.icon ?? ""} />
+              <TrackIcon name={TRACK_DEFS.find(d => d.type === t().type)?.icon ?? ""} />
             </div>
             <div class="bl__track-body">
               <div class="bl__track-head">
                 <input
                   class="bl__track-name"
-                  value={t.name}
-                  onInput={(e) => props.onPatchTrack(t.id, { name: e.currentTarget.value })}
+                  value={t().name}
+                  onInput={(e) => props.onPatchTrack(t().id, { name: e.currentTarget.value })}
                   onClick={(e) => e.stopPropagation()}
                 />
                 <button
                   class="bl__track-x"
-                  onClick={(e) => { e.stopPropagation(); props.onDeleteTrack(t.id); }}
+                  onClick={(e) => { e.stopPropagation(); props.onDeleteTrack(t().id); }}
                   title="Delete track"
                 >
                   <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
                 </button>
               </div>
               <div class="bl__track-controls" onClick={(e) => e.stopPropagation()}>
-                <button class={`bl__chip-btn ${t.muted ? "is-on-mute" : ""}`} title="Mute"
-                  onClick={() => props.onPatchTrack(t.id, { muted: !t.muted })}>M</button>
-                <button class={`bl__chip-btn ${t.solo ? "is-on-solo" : ""}`} title="Solo"
-                  onClick={() => props.onPatchTrack(t.id, { solo: !t.solo })}>S</button>
+                <button class={`bl__chip-btn ${t().muted ? "is-on-mute" : ""}`} title="Mute"
+                  onClick={() => props.onPatchTrack(t().id, { muted: !t().muted })}>M</button>
+                <button class={`bl__chip-btn ${t().solo ? "is-on-solo" : ""}`} title="Solo"
+                  onClick={() => props.onPatchTrack(t().id, { solo: !t().solo })}>S</button>
                 <input class="bl__slider" type="range" min="0" max="1" step="0.01"
-                  value={t.volume}
-                  onInput={(e) => props.onPatchTrack(t.id, { volume: parseFloat(e.currentTarget.value) })}
-                  title={`Volume: ${Math.round(t.volume * 100)}%`}
+                  value={t().volume}
+                  onInput={(e) => props.onPatchTrack(t().id, { volume: parseFloat(e.currentTarget.value) })}
+                  title={`Volume: ${Math.round(t().volume * 100)}%`}
                 />
-                <span class="bl__slider-val">{Math.round(t.volume * 100)}%</span>
+                <span class="bl__slider-val">{Math.round(t().volume * 100)}%</span>
               </div>
             </div>
           </div>
         )}
-      </For>
+      </Index>
       <Show when={props.tracks().length === 0}>
         <div class="bl__sidebar-hint" />
       </Show>

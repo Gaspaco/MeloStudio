@@ -213,9 +213,7 @@ const TimelineArea: Component<Props> = (props) => {
                   <span class="bl__inst-ghost-name">
                     {t.type === "bass" ? "BASS" : t.type === "guitar" ? "GUITAR" : t.type === "voice" ? "VOICE" : "LEAD"}
                   </span>
-                  <span class="bl__inst-ghost-hint">
-                    {t.type === "voice" ? "record audio" : "dbl-click to create region"}
-                  </span>
+
                 </div>
               </Show>
 
@@ -265,10 +263,9 @@ const TimelineArea: Component<Props> = (props) => {
           )}
         </For>
 
-        <Show when={props.tracks().length > 0}>
-          <div
-            class={`bl__import-drop ${props.globalDragOver() ? "is-over" : ""}`}
-            role="button" tabIndex={0}
+        <div
+          class={`bl__import-drop ${props.globalDragOver() ? "is-over" : ""}`}
+          role="button" tabIndex={0}
             onClick={() => importInputEl?.click()}
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); importInputEl?.click(); } }}
             onDragOver={(e) => {
@@ -297,7 +294,7 @@ const TimelineArea: Component<Props> = (props) => {
             </svg>
             <span>Drop a loop or an audio/MIDI/video file</span>
           </div>
-        </Show>
+
       </div>
 
       <div

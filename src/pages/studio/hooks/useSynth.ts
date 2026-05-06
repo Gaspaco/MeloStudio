@@ -81,6 +81,12 @@ export function useSynth(deps: Deps) {
   };
 
   const onKeyDown = async (e: KeyboardEvent) => {
+    if (
+      e.target instanceof HTMLInputElement ||
+      e.target instanceof HTMLTextAreaElement ||
+      (e.target as HTMLElement).isContentEditable
+    ) return;
+    
     const sel = deps.tracks().find(t => t.id === deps.selectedTrack());
     if (!sel || (sel.type !== "instrument" && sel.type !== "bass" && sel.type !== "guitar")) return;
     if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
