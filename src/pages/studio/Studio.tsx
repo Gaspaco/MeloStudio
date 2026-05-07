@@ -21,6 +21,7 @@ import DrumPanel        from "./components/DrumPanel";
 import KeyboardPanel    from "./components/KeyboardPanel";
 import NavDrawer, { type NavCategory } from "./components/NavDrawer";
 import NewTrackModal    from "./components/NewTrackModal";
+import PublishModal     from "./components/PublishModal";
 import "./studio.scss";
 
 const Studio: Component = () => {
@@ -69,6 +70,8 @@ const Studio: Component = () => {
   const [enhance,            setEnhance]            = createSignal(true);
   const [metronomeOn,        setMetronomeOn]        = createSignal(false);
   const [loopOn,             setLoopOn]             = createSignal(false);
+  const [published,          setPublished]          = createSignal(false);
+  const [showPublish,        setShowPublish]        = createSignal(false);
 
   // ── Undo / Redo history ───────────────────────────────────────────────────
   type HistorySnap = { tracks: UITrack[]; pattern: StepPattern; bpm: number };
@@ -147,6 +150,7 @@ const Studio: Component = () => {
     synthPreset, setSynthPreset,
     setDrumPanelOpen, setShowNewTrack,
     saveState, setSaveState, setError, setShowRestoreDialog,
+    setPublished,
   });
 
   const trk = useTracks({
@@ -414,6 +418,8 @@ const Studio: Component = () => {
           setEnhance(next);
           getMasterBus().setEnhanced(next);
         }}
+        published={published}
+        onPublish={() => setShowPublish(true)}
       />
 
       <Show when={error()}>
@@ -514,6 +520,15 @@ const Studio: Component = () => {
 
       <Show when={showNewTrack()}>
         <NewTrackModal onAddTrack={trk.addTrack} onClose={() => setShowNewTrack(false)} />
+      </Show>
+
+      <Show when={showPublish()}>
+        <PublishModal
+          projectId={params.id}
+          published={published}
+          setPublished={setPublished}
+          onClose={() => setShowPublish(false)}
+        />
       </Show>
     </div>
   );

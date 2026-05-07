@@ -29,6 +29,7 @@ type Deps = {
   saveState: Accessor<"idle" | "saving" | "saved">; setSaveState: Setter<"idle" | "saving" | "saved">;
   setError: Setter<string>;
   setShowRestoreDialog: Setter<boolean>;
+  setPublished?: (v: boolean) => void;
 };
 
 export function useProject(deps: Deps) {
@@ -158,7 +159,11 @@ export function useProject(deps: Deps) {
       const headers = await authHeaders();
       const res = await fetch(`/api/projects/${deps.projectId}`, { headers, credentials: "include" });
       if (!res.ok) { deps.setError(`Couldn't load (${res.status})`); return; }
-      const doc = await res.json();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data: any = await res.json();
+      deps.setPublished?.(data._published ?? false);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const doc: any = data;
 
       const hasTracks = ((doc.uiTracks as UITrack[] | undefined)?.length ?? 0) > 0;
       const hasBeat = (doc.beat?.pattern?.rows as unknown[] | undefined)?.some(

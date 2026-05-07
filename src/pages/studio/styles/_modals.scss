@@ -353,3 +353,65 @@
 /* legacy */
 .bl__nt-num, .bl__nt-tag, .bl__modal-head, .bl__modal-headline, .bl__modal-grid, .bl__modal-foot { display: none; }
 
+
+/* ─────────────── PUBLISH MODAL ─────────────── */
+.bl__publish-modal {
+  width: min(36rem, 94vw);
+  padding: 2rem 2.2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.4rem;
+
+  .bl__pm-close {
+    all: unset;
+    cursor: pointer;
+    position: absolute;
+    top: 1rem; right: 1rem;
+    width: 2rem; height: 2rem;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    color: rgba(#fff, 0.4);
+    transition: color 0.15s, background 0.15s;
+    svg { width: 0.85rem; height: 0.85rem; }
+    &:hover { color: #fff; background: rgba(#fff, 0.08); }
+  }
+
+  .bl__pm-header {
+    display: flex; align-items: flex-start; gap: 1rem; padding-right: 2rem;
+    .bl__pm-icon { flex-shrink: 0; width: 2rem; height: 2rem; color: $accent; margin-top: 0.15rem; }
+    h2 { margin: 0 0 0.3rem; font-size: 1.05rem; font-weight: 600; color: #fff; }
+    p  { margin: 0; font-size: 0.8rem; color: rgba(#fff, 0.45); }
+  }
+
+  .bl__pm-url-row {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: rgba(#fff, 0.05);
+    border: 1px solid rgba(#fff, 0.1);
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.7rem;
+    min-width: 0;
+  }
+
+  .bl__pm-url {
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-size: 0.75rem; font-family: $font-mono; color: rgba(#fff, 0.7);
+  }
+
+  .bl__pm-copy {
+    all: unset; cursor: pointer; flex-shrink: 0;
+    font-size: 0.72rem; font-weight: 600; color: $accent;
+    padding: 0.25rem 0.6rem; border-radius: 0.3rem;
+    background: rgba($accent, 0.12);
+    transition: background 0.15s;
+    &:hover { background: rgba($accent, 0.22); }
+  }
+
+  .bl__pm-err { margin: 0; font-size: 0.78rem; color: #ff5454; }
+
+  .bl__pm-actions {
+    display: flex; gap: 0.8rem; flex-wrap: wrap;
+    .bl__btn-ghost--danger { color: rgba(#fff, 0.5); &:hover { color: #ff5454; } }
+    a.bl__btn-accent { text-decoration: none; display: inline-flex; align-items: center; }
+  }
+}

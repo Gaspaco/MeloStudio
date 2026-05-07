@@ -92,13 +92,50 @@ export async function getProjectStats(userId: string): Promise<{ studioHours: nu
 export async function getProject(
   userId: string,
   projectId: string,
-): Promise<ProjectDoc | null> {
+): Promise<{ doc: ProjectDoc; published: boolean } | null> {
   const rows = await sql`
-    SELECT data FROM projects
+    SELECT data, published FROM projects
     WHERE id = ${projectId} AND user_id = ${userId}
     LIMIT 1
-  ` as Array<{ data: ProjectDoc }>;
-  return rows[0]?.data ?? null;
+  ` as Array<{ data: ProjectDoc; published: boolean }>;
+  if (!rows[0]) return null;
+  return { doc: rows[0].data, published: rows[0].published ?? false };
+}
+
+export async function setPublished(
+  userId: string,
+  projectId: string,
+  published: boolean,
+): Promise<void> {
+  await sql`
+    UPDATE projects SET published = ${published}
+    WHERE id = ${projectId} AND user_id = ${userId}
+  `;
+}
+
+export interface PublicProjectView {
+  id: string;
+  name: string;
+  bpm: number;
+  key: string;
+  trackCount: number;
+}
+
+export async function getPublicProject(projectId: string): Promise<PublicProjectView | null> {
+  const rows = await sql`
+    SELECT id, name, bpm, data FROM projects
+    WHERE id = ${projectId} AND published = true
+    LIMIT 1
+  ` as Array<{ id: string; name: string; bpm: number; data: any }>;
+  if (!rows[0]) return null;
+  const doc = rows[0].data;
+  return {
+    id: rows[0].id,
+    name: rows[0].name,
+    bpm: rows[0].bpm,
+    key: doc.musicalKey ?? "—",
+    trackCount: (doc.uiTracks ?? doc.tracks ?? []).length,
+  };
 }
 
 export async function createProject(

@@ -61,6 +61,14 @@ export async function deleteProjectApi(id: string): Promise<void> {
   if (!res.ok) throw new Error(`delete project: ${res.status}`);
 }
 
+export async function publishProjectApi(id: string, published: boolean): Promise<void> {
+  const res = await call(`/api/projects/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ published }),
+  });
+  if (!res.ok) throw new Error(`publish project: ${res.status}`);
+}
+
 export async function getProjectStatsApi(): Promise<{ studioHours: number }> {
   const res = await call("/api/projects/stats");
   if (!res.ok) return { studioHours: 0 };

@@ -48,6 +48,8 @@ type Props = {
   onElapsedReset: () => void;
   enhance: Accessor<boolean>;
   onToggleEnhance: () => void;
+  published: Accessor<boolean>;
+  onPublish: () => void;
 };
 
 const TopBar: Component<Props> = (props) => {
@@ -128,9 +130,9 @@ const TopBar: Component<Props> = (props) => {
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7l3 3v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M5 3v3h5"/><circle cx="8" cy="10" r="1.5"/></svg>
           <span>{props.saveState() === "saving" ? "Saving" : props.saveState() === "saved" ? "Saved" : "Save"}</span>
         </button>
-        <button class="bl__btn-pink-out" disabled>
+        <button class="bl__btn-pink-out" onClick={props.onPublish}>
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 12V3"/><path d="M5 6l3-3 3 3"/><path d="M3 13h10"/></svg>
-          <span>Publish</span>
+          <span>{props.published() ? "Published ✓" : "Publish"}</span>
         </button>
         <button class="bl__btn-ghost bl__btn-invite" disabled>
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="5" r="2.5"/><path d="M3 13a5 5 0 0 1 10 0"/></svg>

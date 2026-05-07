@@ -72,3 +72,9 @@ DROP TRIGGER IF EXISTS projects_set_updated_at ON projects;
 CREATE TRIGGER projects_set_updated_at
   BEFORE UPDATE ON projects
   FOR EACH ROW EXECUTE FUNCTION trg_set_updated_at();
+
+-- =========================================================================
+-- Published / public share link support.
+-- =========================================================================
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS published BOOLEAN NOT NULL DEFAULT FALSE;
+CREATE INDEX IF NOT EXISTS idx_projects_published ON projects (id) WHERE published = TRUE;
