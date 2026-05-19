@@ -13,6 +13,35 @@ const Nav: Component<{
   let glowEl!: HTMLDivElement;
   let cubeEl!: HTMLDivElement;
 
+  const handleNavClick = (label: string) => {
+    if (label === "Sign in") {
+      props.setMenuOpen(false);
+      props.onLogin?.();
+      return;
+    }
+    if (label === "Profile") {
+      props.setMenuOpen(false);
+      props.onProfile?.();
+      return;
+    }
+    
+    props.setMenuOpen(false);
+    let selector = "";
+    if (label === "Timeline") selector = ".reel";
+    else if (label === "Mixer") selector = ".h-scroll";
+    else if (label === "Engine") selector = ".manifesto";
+    else if (label === "Cloud") selector = ".closing";
+    
+    if (selector) {
+      setTimeout(() => {
+        const el = document.querySelector(selector);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 400); // Wait for menu close animation
+    }
+  };
+
   return (
     <>
       <nav class={`nav${props.menuOpen() ? " nav--hidden" : ""}`}>
@@ -73,11 +102,7 @@ const Nav: Component<{
             <a
               class="nav-menu__row"
               style={{ "--i": i() } as any}
-              onClick={
-                label === "Sign in" ? () => { props.setMenuOpen(false); props.onLogin?.(); }
-                : label === "Profile" ? () => { props.setMenuOpen(false); props.onProfile?.(); }
-                : undefined
-              }
+              onClick={() => handleNavClick(label)}
             >
               <span class="nav-menu__num">{String(i() + 1).padStart(2, "0")}</span>
               <span class="nav-menu__divider" />

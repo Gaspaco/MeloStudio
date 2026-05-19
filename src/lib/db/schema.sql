@@ -78,3 +78,11 @@ CREATE TRIGGER projects_set_updated_at
 -- =========================================================================
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS published BOOLEAN NOT NULL DEFAULT FALSE;
 CREATE INDEX IF NOT EXISTS idx_projects_published ON projects (id) WHERE published = TRUE;
+
+-- =========================================================================
+-- Soft-delete / trash support.
+-- deleted_at = NULL  → active project
+-- deleted_at = <ts>  → in trash; auto-purged after 10 days
+-- =========================================================================
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_projects_deleted_at ON projects (user_id, deleted_at) WHERE deleted_at IS NOT NULL;

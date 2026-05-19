@@ -61,6 +61,34 @@ export async function deleteProjectApi(id: string): Promise<void> {
   if (!res.ok) throw new Error(`delete project: ${res.status}`);
 }
 
+export async function permanentlyDeleteProjectApi(id: string): Promise<void> {
+  const res = await call(`/api/projects/${id}?permanent=true`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`permanently delete project: ${res.status}`);
+}
+
+export async function restoreProjectApi(id: string): Promise<void> {
+  const res = await call(`/api/projects/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({ restore: true }),
+  });
+  if (!res.ok) throw new Error(`restore project: ${res.status}`);
+}
+
+export interface DeletedProjectListItem {
+  id: string;
+  name: string;
+  bpm: number;
+  deletedAt: string;
+  expiresAt: string;
+  trackCount: number;
+}
+
+export async function listDeletedProjectsApi(): Promise<DeletedProjectListItem[]> {
+  const res = await call("/api/projects?deleted=true");
+  if (!res.ok) throw new Error(`list deleted projects: ${res.status}`);
+  return res.json();
+}
+
 export async function publishProjectApi(id: string, published: boolean): Promise<void> {
   const res = await call(`/api/projects/${id}`, {
     method: "PATCH",

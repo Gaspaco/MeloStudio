@@ -2,7 +2,7 @@ import { type Component, createSignal, onMount, onCleanup, For, Show } from "sol
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
 import { socialAuthClient } from "../../lib/social-auth";
-import { listProjectsApi, deleteProjectApi, updateProjectApi, getProjectStatsApi } from "../../lib/api";
+import { listProjectsApi, deleteProjectApi, updateProjectApi, getProjectStatsApi, listDeletedProjectsApi, restoreProjectApi, permanentlyDeleteProjectApi, type DeletedProjectListItem } from "../../lib/api";
 import "./dashboard.scss";
 
 interface Project {
@@ -15,7 +15,7 @@ interface Project {
   color: string;
 }
 
-type Tab = "overview" | "profile";
+type Tab = "overview" | "profile" | "library";
 
 const Dashboard: Component<{
   onLogout: () => void;
@@ -52,6 +52,10 @@ const Dashboard: Component<{
   const [passwordSaved, setPasswordSaved] = createSignal(false);
 
   // Delete
+  // Library
+  const [libCat, setLibCat] = createSignal<"all" | "mine" | "liked" | "deleted">("all");
+  const [libSearch, setLibSearch] = createSignal("");
+
   const [deleteStep, setDeleteStep] = createSignal<"none" | "confirm" | "password">("none");
   const [deletePassword, setDeletePassword] = createSignal("");
   const [deleteLoading, setDeleteLoading] = createSignal(false);
@@ -80,6 +84,7 @@ const Dashboard: Component<{
         if (createOpen()) setCreateOpen(false);
         if (renameTarget()) setRenameTarget(null);
         if (deleteTarget()) setDeleteTarget(null);
+        if (permDeleteTarget()) setPermDeleteTarget(null);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -209,6 +214,60 @@ const Dashboard: Component<{
   const [projectActionError, setProjectActionError] = createSignal("");
   const [projectActionLoading, setProjectActionLoading] = createSignal(false);
 
+  // Deleted / trash tab
+  const [deletedProjects, setDeletedProjects] = createSignal<DeletedProjectListItem[]>([]);
+  const [deletedLoading, setDeletedLoading] = createSignal(false);
+  const [permDeleteTarget, setPermDeleteTarget] = createSignal<DeletedProjectListItem | null>(null);
+  const [permDeleteLoading, setPermDeleteLoading] = createSignal(false);
+  const [trashActionError, setTrashActionError] = createSignal("");
+
+  const loadDeletedProjects = async () => {
+    setDeletedLoading(true);
+    try {
+      setDeletedProjects(await listDeletedProjectsApi());
+    } catch {
+      // silently ignore
+    } finally {
+      setDeletedLoading(false);
+    }
+  };
+
+  const handleRestore = async (item: DeletedProjectListItem) => {
+    setTrashActionError("");
+    try {
+      await restoreProjectApi(item.id);
+      setDeletedProjects((prev) => prev.filter((p) => p.id !== item.id));
+      // Reload active projects so the restored one appears
+      const list = await listProjectsApi();
+      const PROJECT_COLORS = ["#e05297", "#7c5cff", "#ff5454", "#14f195", "#00d2ff", "#ffaa00", "#ff00ff", "#a3ff00"];
+      setProjects(list.map((p, i) => ({ id: p.id, name: p.name, bpm: p.bpm, key: "—", tracks: p.trackCount, updatedAt: new Date(p.updatedAt).toLocaleDateString(), color: PROJECT_COLORS[i % PROJECT_COLORS.length] as string })));
+    } catch {
+      setTrashActionError("Failed to restore project.");
+    }
+  };
+
+  const submitPermDelete = async () => {
+    const target = permDeleteTarget();
+    if (!target) return;
+    setPermDeleteLoading(true);
+    setTrashActionError("");
+    try {
+      await permanentlyDeleteProjectApi(target.id);
+      setDeletedProjects((prev) => prev.filter((p) => p.id !== target.id));
+      setPermDeleteTarget(null);
+    } catch {
+      setTrashActionError("Failed to permanently delete project.");
+    } finally {
+      setPermDeleteLoading(false);
+    }
+  };
+
+  const daysLeft = (expiresAt: string) => {
+    const diff = new Date(expiresAt).getTime() - Date.now();
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return Math.max(0, days);
+  };
+
   const openCreate = () => {
     setCreateName("New Project");
     setProjectActionError("");
@@ -335,6 +394,7 @@ const Dashboard: Component<{
         </div>
         <nav class="db__nav">
           <button class={`db__nav-link${tab() === "overview" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("overview")}>Overview</button>
+          <button class={`db__nav-link${tab() === "library" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("library")}>Library</button>
           <button class={`db__nav-link${tab() === "profile" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("profile")}>Profile</button>
         </nav>
         <div class="db__bar-right">
@@ -516,32 +576,72 @@ const Dashboard: Component<{
       <Show when={tab() === "profile"}>
         <div class="db__content db__content--profile">
 
-          {/* ── Identity card ── */}
-          <div class="db__pcard db__pcard--identity">
-            <div class="db__pcard-avatar-wrap">
-              <input type="file" accept="image/*" onChange={handleImageUpload} class="db__profile-upload-input" title="Change profile picture" />
-              <div class="db__pcard-avatar">
-                <Show when={user()?.image} fallback={<span class="db__profile-initials">{initials()}</span>}>
-                  <img class="db__profile-img" src={user()!.image!} alt="" />
-                </Show>
-                <div class="db__pcard-avatar-overlay">
-                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H7L5 7H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-3l-2-4z"/><circle cx="10" cy="12" r="3"/></svg>
-                  <span>Change</span>
+          {/* ── Ticket identity card ── */}
+          <div class="db__ticket">
+            <div class="db__ticket-stripe">
+              <span class="db__ticket-stripe-text">ADMIT ONE</span>
+            </div>
+            <div class="db__ticket-main">
+              <div class="db__ticket-toprow">
+                <span class="db__ticket-logo">MELO STUDIO</span>
+                <span class="db__ticket-season">Artist Pass · Season 2026</span>
+              </div>
+              <div class="db__ticket-head">
+                <div class="db__ticket-event">
+                  <h1 class="db__ticket-name">{(user()?.name ?? "Artist").toUpperCase()}</h1>
+                  <span class="db__ticket-email">{user()?.email}</span>
+                  <div class="db__ticket-tags">
+                    <span class="db__ticket-tag">Producer</span>
+                    <span class="db__ticket-tag">Free Tier</span>
+                    <span class="db__ticket-tag db__ticket-tag--live">
+                      <span class="db__ticket-tag-dot" />
+                      Active
+                    </span>
+                  </div>
+                </div>
+                <div class="db__ticket-photo-wrap">
+                  <input type="file" accept="image/*" onChange={handleImageUpload} class="db__profile-upload-input" title="Change profile picture" />
+                  <div class="db__ticket-photo">
+                    <Show when={user()?.image} fallback={<span class="db__profile-initials">{initials()}</span>}>
+                      <img class="db__profile-img" src={user()!.image!} alt="" />
+                    </Show>
+                    <div class="db__ticket-photo-overlay">
+                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H7L5 7H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-3l-2-4z"/><circle cx="10" cy="12" r="3"/></svg>
+                    </div>
+                  </div>
+                  <span class="db__ticket-photo-label">Artist</span>
                 </div>
               </div>
-              <div class="db__pcard-avatar-ring" />
-            </div>
-            <div class="db__pcard-info">
-              <h1 class="db__pcard-name">{user()?.name ?? "—"}</h1>
-              <span class="db__pcard-email">{user()?.email}</span>
-              <div class="db__pcard-chips">
-                <span class="db__chip db__chip--accent">
-                  <svg viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="5"/></svg>
-                  Since {memberSince()}
-                </span>
-                <span class="db__chip">{projects().length} projects</span>
-                <span class="db__chip">{totalTracks()} tracks</span>
-                <span class="db__chip">{fmtStudioTime()} studio time</span>
+              <div class="db__ticket-perf" />
+              <div class="db__ticket-body">
+                <div class="db__ticket-field">
+                  <span class="db__ticket-field-label">Member Since</span>
+                  <span class="db__ticket-field-val">{memberSince()}</span>
+                </div>
+                <div class="db__ticket-vdivider" />
+                <div class="db__ticket-field">
+                  <span class="db__ticket-field-label">Projects</span>
+                  <span class="db__ticket-field-val">{projects().length}</span>
+                </div>
+                <div class="db__ticket-vdivider" />
+                <div class="db__ticket-field">
+                  <span class="db__ticket-field-label">Tracks</span>
+                  <span class="db__ticket-field-val">{totalTracks()}</span>
+                </div>
+                <div class="db__ticket-vdivider" />
+                <div class="db__ticket-field">
+                  <span class="db__ticket-field-label">Studio Time</span>
+                  <span class="db__ticket-field-val">{fmtStudioTime()}</span>
+                </div>
+                <div class="db__ticket-vdivider" />
+                <div class="db__ticket-field">
+                  <span class="db__ticket-field-label">Venue</span>
+                  <span class="db__ticket-field-val">Web</span>
+                </div>
+                <div class="db__ticket-barcode" aria-hidden="true">
+                  <div class="db__ticket-bars" />
+                  <span class="db__ticket-barcode-num">MS · {memberSince()}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -665,7 +765,124 @@ const Dashboard: Component<{
         </div>
       </Show>
 
-      {/* Delete account modal */}
+      <Show when={tab() === "library"}>
+        <div class="db__content db__content--library">
+
+            {/* ── Sidebar ── */}
+          <aside class="db__lib-sidebar">
+            <nav class="db__lib-sidenav">
+              <button class={`db__lib-sidelink${libCat() === "all" ? " db__lib-sidelink--active" : ""}`} onClick={() => setLibCat("all")}>
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 5h14M3 10h14M3 15h14" /></svg>
+                All Projects
+              </button>
+              <button class={`db__lib-sidelink${libCat() === "mine" ? " db__lib-sidelink--active" : ""}`} onClick={() => setLibCat("mine")}>
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="10" cy="7" r="3.5" /><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" /></svg>
+                My Projects
+              </button>
+              <button class={`db__lib-sidelink${libCat() === "liked" ? " db__lib-sidelink--active" : ""}`} onClick={() => setLibCat("liked")}>
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 16s-7-4.3-7-8.5A4.5 4.5 0 0 1 10 5a4.5 4.5 0 0 1 7 2.5C17 11.7 10 16 10 16z" /></svg>
+                Liked Projects
+              </button>
+              <div class="db__lib-side-divider" />
+              <button class={`db__lib-sidelink${libCat() === "deleted" ? " db__lib-sidelink--active" : ""}`} onClick={() => { setLibCat("deleted"); loadDeletedProjects(); }}>
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 6h12M7 6V4h6v2M8 9v6m4-6v6M5 6l1 10h8l1-10" /></svg>
+                Deleted Projects
+              </button>
+            </nav>
+          </aside>
+
+          {/* ── Main ── */}
+          <div class="db__lib-main">
+            <div class="db__lib-topbar">
+              <div class="db__lib-topbar-left">
+                <h1 class="db__lib-main-title">
+                  {libCat() === "all" ? "All Projects" : libCat() === "mine" ? "My Projects" : libCat() === "liked" ? "Liked Projects" : "Deleted Projects"}
+                </h1>
+                <Show when={libCat() === "all" || libCat() === "mine"}>
+                  <span class="db__lib-main-count">{projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase())).length} projects</span>
+                </Show>
+              </div>
+              <div class="db__lib-topbar-right">
+                <div class="db__lib-search">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 3 3" /></svg>
+                  <input class="db__lib-search-input" type="text" placeholder="Search projects..." value={libSearch()} onInput={(e) => setLibSearch(e.currentTarget.value)} />
+                </div>
+                <button class="db__lib-upload-btn" onClick={openCreate}>
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 4v12M4 10h12" /></svg>
+                  New
+                </button>
+              </div>
+            </div>
+
+            <div class="db__lib-list">
+              <Show when={libCat() === "all" || libCat() === "mine"}>
+                <Show when={projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase())).length === 0}>
+                  <div class="db__lib-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" /></svg>
+                    <span>No projects yet</span>
+                    <button class="db__lib-empty-cta" onClick={openCreate}>Create your first project</button>
+                  </div>
+                </Show>
+                <For each={projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase()))}>{(project) =>
+                  <div class="db__lib-row" style={{ "--proj-color": project.color || "#e05297" } as any} onClick={() => props.onOpenProject(project.id)}>
+                    <div class="db__lib-row-thumb">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" /></svg>
+                    </div>
+                    <div class="db__lib-row-info">
+                      <span class="db__lib-row-name">{project.name}</span>
+                      <span class="db__lib-row-meta">{project.bpm || 100} BPM {project.key && project.key !== "—" ? `• ${project.key} ` : ""}• {project.tracks || 1} track{(project.tracks || 1) !== 1 ? "s" : ""}</span>
+                    </div>
+                    <span class="db__lib-row-date">{project.updatedAt}</span>
+                    <button class="db__lib-row-btn" onClick={(e) => { e.stopPropagation(); props.onOpenProject(project.id); }}>Open</button>
+                  </div>
+                }</For>
+              </Show>
+              <Show when={libCat() === "liked"}>
+                <div class="db__lib-empty">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                  <span>No liked projects yet</span>
+                </div>
+              </Show>
+              <Show when={libCat() === "deleted"}>
+                <Show when={deletedLoading()}>
+                  <div class="db__lib-empty"><span>Loading trash...</span></div>
+                </Show>
+                <Show when={!deletedLoading() && deletedProjects().length === 0}>
+                  <div class="db__lib-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+                    <span>Trash is empty</span>
+                  </div>
+                </Show>
+                <Show when={!deletedLoading() && deletedProjects().length > 0}>
+                  <div class="db__lib-trash-note">
+                    Projects are automatically deleted after <strong>10 days</strong> in trash.
+                  </div>
+                  <For each={deletedProjects()}>{(item) =>
+                    <div class="db__lib-row db__lib-row--deleted" style={{ "--proj-color": "#888" } as any}>
+                      <div class="db__lib-row-thumb db__lib-row-thumb--deleted">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+                      </div>
+                      <div class="db__lib-row-info">
+                        <span class="db__lib-row-name">{item.name}</span>
+                        <span class="db__lib-row-meta">{item.bpm} BPM • {item.trackCount} track{item.trackCount !== 1 ? "s" : ""}</span>
+                      </div>
+                      <span class="db__lib-row-expiry">{daysLeft(item.expiresAt)}d left</span>
+                      <div class="db__lib-row-trash-acts">
+                        <button class="db__lib-row-btn" onClick={() => handleRestore(item)}>Restore</button>
+                        <button class="db__lib-row-btn db__lib-row-btn--danger" onClick={() => { setPermDeleteTarget(item); setTrashActionError(""); }}>Delete Forever</button>
+                      </div>
+                    </div>
+                  }</For>
+                  <Show when={trashActionError()}>
+                    <span class="db__lib-trash-err">{trashActionError()}</span>
+                  </Show>
+                </Show>
+              </Show>
+            </div>
+          </div>
+
+        </div>
+      </Show>
       <Show when={deleteStep() !== "none"}>
         <div class="db__modal-overlay" onClick={handleCancelDelete}>
           <div class="db__modal" onClick={(e) => e.stopPropagation()}>
@@ -774,8 +991,32 @@ const Dashboard: Component<{
             </div>
             <Show when={projectActionError()}><span class="db__pm-error">{projectActionError()}</span></Show>
             <div class="db__pm-row">
-              <button type="button" class="db__pm-btn db__pm-btn--danger" disabled={projectActionLoading()} onClick={submitDelete}>{projectActionLoading() ? "Deleting" : "Delete"}</button>
+              <button type="button" class="db__pm-btn db__pm-btn--danger" disabled={projectActionLoading()} onClick={submitDelete}>{projectActionLoading() ? "Moving to trash..." : "Move to Trash"}</button>
               <button type="button" class="db__pm-btn db__pm-btn--ghost" onClick={() => setDeleteTarget(null)}>Keep it</button>
+            </div>
+          </div>
+        </div>
+      </Show>
+
+      {/* Permanent delete confirmation modal */}
+      <Show when={permDeleteTarget()}>
+        <div class="db__pm-overlay" onClick={() => setPermDeleteTarget(null)}>
+          <div class="db__pm" onClick={(e) => e.stopPropagation()}>
+            <div class="db__pm-meta">
+              <span>Delete Forever</span>
+              <span class="db__pm-sep">/</span>
+              <span>{permDeleteTarget()?.name}</span>
+              <span class="db__pm-sep">/</span>
+              <span>Cannot undo</span>
+            </div>
+            <div class="db__pm-display">
+              <span class="db__pm-line db__pm-line--danger">Gone.</span>
+              <span class="db__pm-line db__pm-line--stroke">No recovery.</span>
+            </div>
+            <Show when={trashActionError()}><span class="db__pm-error">{trashActionError()}</span></Show>
+            <div class="db__pm-row">
+              <button type="button" class="db__pm-btn db__pm-btn--danger" disabled={permDeleteLoading()} onClick={submitPermDelete}>{permDeleteLoading() ? "Deleting..." : "Yes, Delete Forever"}</button>
+              <button type="button" class="db__pm-btn db__pm-btn--ghost" onClick={() => setPermDeleteTarget(null)}>Cancel</button>
             </div>
           </div>
         </div>

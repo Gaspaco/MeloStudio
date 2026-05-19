@@ -36,7 +36,7 @@ export async function listProjects(userId: string): Promise<ProjectListItem[]> {
       id, name, bpm, updated_at,
       COALESCE(jsonb_array_length(data->'tracks'), 0) AS track_count
     FROM projects
-    WHERE user_id = ${userId}
+    WHERE user_id = ${userId} AND deleted_at IS NULL
     ORDER BY updated_at DESC
     LIMIT 200
   ` as Array<{ id: string; name: string; bpm: number; updated_at: string; track_count: number }>;
@@ -95,7 +95,7 @@ export async function getProject(
 ): Promise<{ doc: ProjectDoc; published: boolean } | null> {
   const rows = await sql`
     SELECT data, published FROM projects
-    WHERE id = ${projectId} AND user_id = ${userId}
+    WHERE id = ${projectId} AND user_id = ${userId} AND deleted_at IS NULL
     LIMIT 1
   ` as Array<{ data: ProjectDoc; published: boolean }>;
   if (!rows[0]) return null;
@@ -198,6 +198,61 @@ export async function deleteProject(
   userId: string,
   projectId: string,
 ): Promise<void> {
+  // Soft-delete: move to trash. Auto-purged after 10 days.
+  await sql`
+    UPDATE projects
+    SET deleted_at = now()
+    WHERE id = ${projectId} AND user_id = ${userId} AND deleted_at IS NULL
+  `;
+}
+
+export interface DeletedProjectListItem {
+  id: string;
+  name: string;
+  bpm: number;
+  deletedAt: string;
+  expiresAt: string;
+  trackCount: number;
+}
+
+export async function listDeletedProjects(userId: string): Promise<DeletedProjectListItem[]> {
+  // Auto-purge anything older than 10 days first
+  await sql`
+    DELETE FROM projects
+    WHERE user_id = ${userId}
+      AND deleted_at IS NOT NULL
+      AND deleted_at < now() - INTERVAL '10 days'
+  `;
+
+  const rows = await sql`
+    SELECT
+      id, name, bpm, deleted_at,
+      deleted_at + INTERVAL '10 days' AS expires_at,
+      COALESCE(jsonb_array_length(data->'tracks'), 0) AS track_count
+    FROM projects
+    WHERE user_id = ${userId} AND deleted_at IS NOT NULL
+    ORDER BY deleted_at DESC
+  ` as Array<{ id: string; name: string; bpm: number; deleted_at: string; expires_at: string; track_count: number }>;
+
+  return rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    bpm: r.bpm,
+    deletedAt: r.deleted_at,
+    expiresAt: r.expires_at,
+    trackCount: r.track_count ?? 0,
+  }));
+}
+
+export async function restoreProject(userId: string, projectId: string): Promise<void> {
+  await sql`
+    UPDATE projects
+    SET deleted_at = NULL
+    WHERE id = ${projectId} AND user_id = ${userId}
+  `;
+}
+
+export async function permanentlyDeleteProject(userId: string, projectId: string): Promise<void> {
   await sql`
     DELETE FROM projects
     WHERE id = ${projectId} AND user_id = ${userId}

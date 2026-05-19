@@ -1,13 +1,16 @@
 // GET    /api/projects/:id  → load full ProjectDoc (includes _published metadata)
 // PUT    /api/projects/:id  → save full ProjectDoc (body = doc)
-// PATCH  /api/projects/:id  → update name or published state
-// DELETE /api/projects/:id  → remove project
+// PATCH  /api/projects/:id  → update name or published state, or restore from trash
+// DELETE /api/projects/:id  → soft-delete (move to trash, auto-purge after 10 days)
+// DELETE /api/projects/:id?permanent=true  → permanently destroy
 import type { APIEvent } from "@solidjs/start/server";
 import {
   getProject,
   saveProject,
   deleteProject,
   setPublished,
+  restoreProject,
+  permanentlyDeleteProject,
 } from "~/lib/db/projects";
 import type { ProjectDoc } from "~/lib/audio/types";
 import { requireUserId } from "~/lib/auth-server";
@@ -43,6 +46,12 @@ export async function PATCH(event: APIEvent) {
   if (!id) return new Response("missing id", { status: 400 });
   const body = await event.request.json();
 
+  // Restore from trash
+  if (body.restore === true) {
+    await restoreProject(userId, id);
+    return new Response(null, { status: 204 });
+  }
+
   // Published toggle — only touches the projects row, not the doc
   if (body.published !== undefined) {
     await setPublished(userId, id, Boolean(body.published));
@@ -62,6 +71,11 @@ export async function DELETE(event: APIEvent) {
   if (!userId) return new Response("unauthorized", { status: 401 });
   const id = event.params.id;
   if (!id) return new Response("missing id", { status: 400 });
-  await deleteProject(userId, id);
+  const url = new URL(event.request.url);
+  if (url.searchParams.get("permanent") === "true") {
+    await permanentlyDeleteProject(userId, id);
+  } else {
+    await deleteProject(userId, id);
+  }
   return new Response(null, { status: 204 });
 }
