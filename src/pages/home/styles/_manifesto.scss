@@ -11,12 +11,26 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 50vh;
 
+  // Ambient glow behind the text
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% 50%, rgba(124, 58, 237, 0.06) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 50% at 80% 30%, rgba(224, 82, 151, 0.04) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
   &__text {
     text-align: center;
     display: flex;
     align-items: baseline;
     justify-content: center;
     gap: 3em;
+    position: relative;
+    z-index: 1;
   }
 
   &__script {

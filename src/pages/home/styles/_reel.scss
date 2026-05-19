@@ -8,6 +8,17 @@
   justify-content: center;
   background: $bg-primary;
 
+  // Radial glow behind the mockup
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 65% 65% at 50% 50%, rgba(224, 82, 151, 0.07) 0%, transparent 65%),
+      radial-gradient(ellipse 40% 40% at 30% 80%, rgba(124, 58, 237, 0.04) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
   &__inner {
     width: 82%;
     max-width: 71.25rem;
@@ -15,6 +26,11 @@
     overflow: hidden;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 0.125rem;
-    box-shadow: 0 2.5rem 7.5rem rgba(0, 0, 0, 0.9);
+    position: relative;
+    z-index: 1;
+    box-shadow:
+      0 2.5rem 7.5rem rgba(0, 0, 0, 0.9),
+      0 0 5rem rgba(224, 82, 151, 0.07),
+      0 0 10rem rgba(124, 58, 237, 0.04);
   }
 }

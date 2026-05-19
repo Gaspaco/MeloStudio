@@ -20,7 +20,7 @@ const Capabilities: Component<{
 
         {/* Capability panels */}
         <For each={capabilities}>{(cap) =>
-          <div class="h-panel">
+          <div class="h-panel" style={{ "--cap-accent": cap.accent } as any}>
             <span class="h-panel__num" style={{ color: cap.accent }}>{cap.num}</span>
             <h3 class="h-panel__title">
               <span class="h-panel__title-script">{cap.titleScript}</span>

@@ -399,6 +399,12 @@ const Dashboard: Component<{
               <span class="db__stat-label">Studio Time</span>
               <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `${Math.min(studioHours() * 10, 100)}%` }} /></span>
             </div>
+
+            <div class="db__stat">
+              <span class="db__stat-num">0</span>
+              <span class="db__stat-label">Templates</span>
+              <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `0%` }} /></span>
+            </div>
           </section>
 
           <div class="db__rule" />
@@ -508,137 +514,149 @@ const Dashboard: Component<{
       </Show>
 
       <Show when={tab() === "profile"}>
-        <div class="db__content">
+        <div class="db__content db__content--profile">
 
-          <section class="db__profile-hero">
-            <div class="db__profile-avatar-wrap">
-              <input type="file" accept="image/*" onChange={handleImageUpload} class="db__profile-upload-input" title="Change Profile Picture" />
-              <div class="db__profile-avatar">
+          {/* ── Identity card ── */}
+          <div class="db__pcard db__pcard--identity">
+            <div class="db__pcard-avatar-wrap">
+              <input type="file" accept="image/*" onChange={handleImageUpload} class="db__profile-upload-input" title="Change profile picture" />
+              <div class="db__pcard-avatar">
                 <Show when={user()?.image} fallback={<span class="db__profile-initials">{initials()}</span>}>
                   <img class="db__profile-img" src={user()!.image!} alt="" />
                 </Show>
+                <div class="db__pcard-avatar-overlay">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H7L5 7H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-3l-2-4z"/><circle cx="10" cy="12" r="3"/></svg>
+                  <span>Change</span>
+                </div>
               </div>
-              <div class="db__profile-ring" />
+              <div class="db__pcard-avatar-ring" />
             </div>
-            <div class="db__profile-text">
-              <h1 class="db__profile-name">{user()?.name ?? "—"}</h1>
-              <span class="db__profile-email">{user()?.email}</span>
-              <div class="db__profile-badges">
-                <span class="db__badge db__badge--accent">Since {memberSince()}</span>
-                <span class="db__badge">{projects().length} projects</span>
-                <span class="db__badge">{totalTracks()} tracks</span>
+            <div class="db__pcard-info">
+              <h1 class="db__pcard-name">{user()?.name ?? "—"}</h1>
+              <span class="db__pcard-email">{user()?.email}</span>
+              <div class="db__pcard-chips">
+                <span class="db__chip db__chip--accent">
+                  <svg viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="6" r="5"/></svg>
+                  Since {memberSince()}
+                </span>
+                <span class="db__chip">{projects().length} projects</span>
+                <span class="db__chip">{totalTracks()} tracks</span>
+                <span class="db__chip">{fmtStudioTime()} studio time</span>
               </div>
             </div>
-          </section>
+          </div>
 
-          <div class="db__rule" />
+          {/* ── Two-column form grid ── */}
+          <div class="db__pgrid">
 
-          <section class="db__section">
-            <div class="db__section-header">
-              <span class="db__section-idx">01</span>
-              <h2 class="db__section-title">Edit Profile</h2>
-            </div>
-            <div class="db__form-rows">
-              <div class="db__frow">
-                <label class="db__flabel">Display Name</label>
-                <input class="db__finput" type="text" value={profileName()} onInput={(e) => setProfileName(e.currentTarget.value)} placeholder="Your name" />
-                <div class="db__fline" />
+            {/* Left: Edit Profile */}
+            <div class="db__pcard db__pcard--form">
+              <div class="db__pcard-header">
+                <span class="db__pcard-idx">01</span>
+                <h2 class="db__pcard-title">Edit Profile</h2>
               </div>
+              <div class="db__pfields">
 
-              <div class="db__frow">
-                <label class="db__flabel">Email</label>
-                <input class="db__finput db__finput--locked" type="email" value={user()?.email ?? ""} disabled />
-                <div class="db__fline" />
-                <span class="db__fhint">Managed by your auth provider</span>
-              </div>
+                <div class="db__pfield">
+                  <label class="db__pfield-label">Display Name</label>
+                  <input class="db__pfield-input" type="text" value={profileName()} onInput={(e) => setProfileName(e.currentTarget.value)} placeholder="Your name" />
+                </div>
 
-              <div class="db__frow-pair">
-                <div class="db__frow">
-                  <label class="db__flabel">Instagram</label>
-                  <div class="db__finput-pre">
-                    <span class="db__fpre">@</span>
-                    <input class="db__finput" type="text" value={profileInstagram()} onInput={(e) => setProfileInstagram(e.currentTarget.value)} placeholder="username" />
+                <div class="db__pfield db__pfield--locked">
+                  <label class="db__pfield-label">
+                    Email
+                    <span class="db__pfield-lock">
+                      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5.5" width="8" height="5.5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg>
+                      managed
+                    </span>
+                  </label>
+                  <input class="db__pfield-input" type="email" value={user()?.email ?? ""} disabled />
+                </div>
+
+                <div class="db__pfield">
+                  <label class="db__pfield-label">Bio</label>
+                  <textarea class="db__pfield-textarea" value={profileBio()} onInput={(e) => setProfileBio(e.currentTarget.value)} placeholder="Tell the world about yourself..." rows={3} />
+                </div>
+
+                <div class="db__pfield">
+                  <label class="db__pfield-label">Website</label>
+                  <div class="db__pfield-pre">
+                    <span class="db__pfield-pre-icon">
+                      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.5"/><path d="M1.5 7h11M7 1.5c-1.5 2-2 3.5-2 5.5s.5 3.5 2 5.5M7 1.5c1.5 2 2 3.5 2 5.5s-.5 3.5-2 5.5"/></svg>
+                    </span>
+                    <input class="db__pfield-input" type="url" value={profileWebsite()} onInput={(e) => setProfileWebsite(e.currentTarget.value)} placeholder="https://yoursite.com" />
                   </div>
-                  <div class="db__fline" />
                 </div>
-                <div class="db__frow">
-                  <label class="db__flabel">Twitter / X</label>
-                  <div class="db__finput-pre">
-                    <span class="db__fpre">@</span>
-                    <input class="db__finput" type="text" value={profileTwitter()} onInput={(e) => setProfileTwitter(e.currentTarget.value)} placeholder="handle" />
+
+                <div class="db__pfield-pair">
+                  <div class="db__pfield">
+                    <label class="db__pfield-label">Instagram</label>
+                    <div class="db__pfield-pre">
+                      <span class="db__pfield-pre-at">@</span>
+                      <input class="db__pfield-input" type="text" value={profileInstagram()} onInput={(e) => setProfileInstagram(e.currentTarget.value)} placeholder="username" />
+                    </div>
                   </div>
-                  <div class="db__fline" />
+                  <div class="db__pfield">
+                    <label class="db__pfield-label">Twitter / X</label>
+                    <div class="db__pfield-pre">
+                      <span class="db__pfield-pre-at">@</span>
+                      <input class="db__pfield-input" type="text" value={profileTwitter()} onInput={(e) => setProfileTwitter(e.currentTarget.value)} placeholder="handle" />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="db__pcard-actions">
+                <button class="db__btn db__btn--fill" onClick={handleSaveProfile} disabled={profileSaving()}>
+                  {profileSaving() ? "Saving..." : profileSaved() ? "Saved ✓" : "Save Changes"}
+                </button>
+                <button class="db__btn db__btn--ghost" onClick={() => { setProfileName(user()?.name ?? ""); setProfileBio(""); setProfileInstagram(""); setProfileTwitter(""); setProfileWebsite(""); }}>
+                  Reset
+                </button>
+              </div>
+            </div>
+
+            {/* Right: Password + Danger */}
+            <div class="db__pstack">
+
+              <div class="db__pcard db__pcard--form">
+                <div class="db__pcard-header">
+                  <span class="db__pcard-idx">02</span>
+                  <h2 class="db__pcard-title">Change Password</h2>
+                </div>
+                <div class="db__pfields">
+                  <div class="db__pfield">
+                    <label class="db__pfield-label">Current Password</label>
+                    <input class="db__pfield-input" type="password" value={currentPassword()} onInput={(e) => setCurrentPassword(e.currentTarget.value)} placeholder="••••••••" />
+                  </div>
+                  <div class="db__pfield">
+                    <label class="db__pfield-label">New Password</label>
+                    <input class="db__pfield-input" type="password" value={newPassword()} onInput={(e) => setNewPassword(e.currentTarget.value)} placeholder="Min 8 characters" />
+                  </div>
+                </div>
+                <Show when={passwordError()}>
+                  <span class="db__form-err">{passwordError()}</span>
+                </Show>
+                <div class="db__pcard-actions">
+                  <button class="db__btn db__btn--ghost" onClick={handleChangePassword}>
+                    {passwordSaved() ? "Updated ✓" : "Update Password"}
+                  </button>
                 </div>
               </div>
 
-              <div class="db__frow">
-                <label class="db__flabel">Website</label>
-                <input class="db__finput" type="url" value={profileWebsite()} onInput={(e) => setProfileWebsite(e.currentTarget.value)} placeholder="https://yoursite.com" />
-                <div class="db__fline" />
-              </div>
-
-              <div class="db__frow">
-                <label class="db__flabel">Bio</label>
-                <textarea class="db__ftextarea" value={profileBio()} onInput={(e) => setProfileBio(e.currentTarget.value)} placeholder="Tell the world about yourself..." rows={3} />
-                <div class="db__fline" />
-              </div>
-            </div>
-            <div class="db__form-btns">
-              <button class="db__btn db__btn--fill" onClick={handleSaveProfile} disabled={profileSaving()}>
-                {profileSaving() ? "Saving..." : profileSaved() ? "Saved ✓" : "Save Changes"}
-              </button>
-              <button class="db__btn db__btn--ghost" onClick={() => { setProfileName(user()?.name ?? ""); setProfileBio(""); setProfileInstagram(""); setProfileTwitter(""); setProfileWebsite(""); }}>
-                Reset
-              </button>
-            </div>
-          </section>
-
-          <div class="db__rule" />
-
-          <section class="db__section">
-            <div class="db__section-header">
-              <span class="db__section-idx">02</span>
-              <h2 class="db__section-title">Change Password</h2>
-            </div>
-            <div class="db__form-rows">
-              <div class="db__frow-pair">
-                <div class="db__frow">
-                  <label class="db__flabel">Current Password</label>
-                  <input class="db__finput" type="password" value={currentPassword()} onInput={(e) => setCurrentPassword(e.currentTarget.value)} placeholder="••••••••" />
-                  <div class="db__fline" />
+              <div class="db__pcard db__pcard--danger">
+                <div class="db__pcard-header">
+                  <span class="db__pcard-idx db__pcard-idx--danger">03</span>
+                  <h2 class="db__pcard-title">Danger Zone</h2>
                 </div>
-                <div class="db__frow">
-                  <label class="db__flabel">New Password</label>
-                  <input class="db__finput" type="password" value={newPassword()} onInput={(e) => setNewPassword(e.currentTarget.value)} placeholder="Min 8 characters" />
-                  <div class="db__fline" />
+                <p class="db__pcard-danger-sub">Permanently delete your account and all associated data. This action <strong>cannot be undone</strong>.</p>
+                <div class="db__pcard-actions">
+                  <button class="db__btn db__btn--danger" onClick={handleStartDelete}>Delete Account</button>
                 </div>
               </div>
-            </div>
-            <Show when={passwordError()}>
-              <span class="db__form-err">{passwordError()}</span>
-            </Show>
-            <div class="db__form-btns">
-              <button class="db__btn db__btn--ghost" onClick={handleChangePassword}>
-                {passwordSaved() ? "Updated ✓" : "Update Password"}
-              </button>
-            </div>
-          </section>
 
-          <div class="db__rule" />
-
-          <section class="db__section db__section--danger">
-            <div class="db__section-header">
-              <span class="db__section-idx db__section-idx--danger">03</span>
-              <h2 class="db__section-title">Danger Zone</h2>
             </div>
-            <div class="db__danger">
-              <div class="db__danger-info">
-                <span class="db__danger-label">Delete Account</span>
-                <span class="db__danger-sub">Permanently delete your account and all data. This cannot be undone.</span>
-              </div>
-              <button class="db__btn db__btn--danger" onClick={handleStartDelete}>Delete Account</button>
-            </div>
-          </section>
+          </div>
 
           <footer class="db__brand">
             <span class="db__brand-melo">Melo</span>

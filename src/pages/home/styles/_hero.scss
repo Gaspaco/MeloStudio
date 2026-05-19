@@ -10,6 +10,68 @@
   padding: 0 3rem 5rem;
   overflow: hidden;
 
+  // Ambient background orbs
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 65% at 80% 10%, rgba(224, 82, 151, 0.13) 0%, transparent 62%),
+      radial-gradient(ellipse 55% 50% at 12% 72%, rgba(124, 58, 237, 0.08) 0%, transparent 62%),
+      radial-gradient(ellipse 45% 45% at 50% 100%, rgba(14, 165, 233, 0.06) 0%, transparent 62%);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  // Subtle dot-grid texture
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 2.5rem 2.5rem;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  // Eyebrow label
+  &__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 2.5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__eyebrow-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: $accent;
+    flex-shrink: 0;
+    animation: dotPulse 3s ease-in-out infinite;
+  }
+
+  &__eyebrow-text {
+    font-family: $font-mono;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $text-muted;
+  }
+
+  &__eyebrow-badge {
+    padding: 0.125rem 0.625rem;
+    border: 1px solid rgba(224, 82, 151, 0.35);
+    border-radius: 100px;
+    font-family: $font-mono;
+    font-size: 0.55rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $accent;
+  }
+
   &__title {
     position: relative;
     z-index: 2;
@@ -69,10 +131,93 @@
     animation: scrollPulse 2.5s ease-in-out infinite 3s;
   }
 
+  // Site stats under the title
+  &__site-stats {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__s-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  &__s-num {
+    font-family: $font-display;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: $text-primary;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  &__s-plus {
+    color: $accent;
+  }
+
+  &__s-lbl {
+    font-family: $font-mono;
+    font-size: 0.5rem;
+    color: $text-secondary;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  &__s-div {
+    width: 1px;
+    height: 1.75rem;
+    background: rgba(255,255,255,0.1);
+  }
+
   &__actions {
     display: flex;
     gap: 1rem;
     margin-top: 3rem;
+  }
+
+  // Feature stats row
+  &__stats-row {
+    display: flex;
+    align-items: center;
+    margin-top: 2.5rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__stat-num {
+    font-family: $font-mono;
+    font-size: 1rem;
+    font-weight: 600;
+    color: $text-primary;
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+
+  &__stat-lbl {
+    font-family: $font-mono;
+    font-size: 0.5rem;
+    color: $text-muted;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  &__stat-div {
+    width: 1px;
+    height: 2rem;
+    background: $border;
+    margin: 0 1.75rem;
+    flex-shrink: 0;
   }
 
   &__btn {
@@ -115,4 +260,9 @@
 @keyframes scrollPulse {
   0%, 100% { transform: scaleY(1); opacity: 0.7; }
   50% { transform: scaleY(0.3); opacity: 0.15; }
+}
+
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0.5rem rgba(224, 82, 151, 0.5); }
+  50% { box-shadow: 0 0 1.25rem rgba(224, 82, 151, 1); }
 }

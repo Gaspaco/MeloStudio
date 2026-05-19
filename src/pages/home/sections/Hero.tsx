@@ -5,7 +5,6 @@ const Hero: Component<{
   heroTitleRef: (el: HTMLDivElement) => void;
   heroLine1Ref: (el: HTMLDivElement) => void;
   heroLine2Ref: (el: HTMLDivElement) => void;
-  heroMetaRef: (el: HTMLDivElement) => void;
   scrollIndRef: (el: HTMLDivElement) => void;
   onLogin?: () => void;
   onSignup?: () => void;
@@ -14,6 +13,11 @@ const Hero: Component<{
 }> = (props) => {
   return (
     <section ref={props.heroRef} class="hero">
+      <div class="hero__eyebrow">
+        <span class="hero__eyebrow-dot" />
+        <span class="hero__eyebrow-text">Browser-Native Music Production</span>
+        <span class="hero__eyebrow-badge">Beta</span>
+      </div>
       <div ref={props.heroTitleRef} class="hero__title">
         <div class="hero__clip">
           <div ref={props.heroLine1Ref} class="hero__word hero__word--pink">Melo</div>
@@ -22,12 +26,21 @@ const Hero: Component<{
           <div ref={props.heroLine2Ref} class="hero__word hero__word--stroke">Studio</div>
         </div>
       </div>
-      <div ref={props.heroMetaRef} class="hero__meta">
-        <span>Browser-native DAW</span>
-        <span class="hero__sep">/</span>
-        <span>WASM Engine</span>
-        <span class="hero__sep">/</span>
-        <span>2026</span>
+      <div class="hero__site-stats">
+        <div class="hero__s-stat">
+          <span class="hero__s-num">15k<span class="hero__s-plus">+</span></span>
+          <span class="hero__s-lbl">Creators</span>
+        </div>
+        <div class="hero__s-div" />
+        <div class="hero__s-stat">
+          <span class="hero__s-num">2.4m<span class="hero__s-plus">+</span></span>
+          <span class="hero__s-lbl">Tracks Made</span>
+        </div>
+        <div class="hero__s-div" />
+        <div class="hero__s-stat">
+          <span class="hero__s-num">0<span class="hero__s-plus">ms</span></span>
+          <span class="hero__s-lbl">Latency Engine</span>
+        </div>
       </div>
       <div class="hero__actions">
         <Show when={!props.isLoggedIn?.()} fallback={

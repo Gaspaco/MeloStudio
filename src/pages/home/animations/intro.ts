@@ -6,7 +6,6 @@ export function animateIntro(refs: {
   loaderStudioRef: HTMLDivElement;
   heroLine1Ref: HTMLDivElement;
   heroLine2Ref: HTMLDivElement;
-  heroMetaRef: HTMLDivElement;
   scrollIndRef: HTMLDivElement;
 }) {
   const hasLoaded = sessionStorage.getItem("melostudio_loaded");
@@ -40,9 +39,6 @@ export function animateIntro(refs: {
     }, {
       clipPath: "inset(0 0 0 0%)", x: 0, y: 0, duration: 1.3, ease: "power4.inOut",
     }, hasLoaded ? 0.2 : 1.1)
-    .from(refs.heroMetaRef.children as any, {
-      opacity: 0, y: 12, stagger: 0.06, duration: 0.5, ease: "power3.out",
-    }, hasLoaded ? 1.0 : 1.9)
     .fromTo(refs.scrollIndRef, { scaleY: 0 }, { scaleY: 1, duration: 0.8, transformOrigin: "top" }, hasLoaded ? 1.2 : 2.1);
 
   return intro;

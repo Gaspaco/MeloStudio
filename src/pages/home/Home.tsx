@@ -35,7 +35,6 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
   let heroTitleRef!: HTMLDivElement;
   let heroLine1Ref!: HTMLDivElement;
   let heroLine2Ref!: HTMLDivElement;
-  let heroMetaRef!: HTMLDivElement;
   let scrollIndRef!: HTMLDivElement;
   let reelRef!: HTMLElement;
   let dawWrapRef!: HTMLDivElement;
@@ -68,11 +67,11 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
 
     animateIntro({
       loaderRef, loaderMeloRef, loaderStudioRef,
-      heroLine1Ref, heroLine2Ref, heroMetaRef, scrollIndRef,
+      heroLine1Ref, heroLine2Ref, scrollIndRef,
     });
 
     animateHeroExit({
-      heroRef, heroLine1Ref, heroLine2Ref, heroMetaRef, scrollIndRef,
+      heroRef, heroLine1Ref, heroLine2Ref, scrollIndRef,
     });
 
     let dawInited = false;
@@ -179,7 +178,6 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
         heroTitleRef={(el) => (heroTitleRef = el)}
         heroLine1Ref={(el) => (heroLine1Ref = el)}
         heroLine2Ref={(el) => (heroLine2Ref = el)}
-        heroMetaRef={(el) => (heroMetaRef = el)}
         scrollIndRef={(el) => (scrollIndRef = el)}
         onLogin={props.onLogin}
         onSignup={props.onSignup}

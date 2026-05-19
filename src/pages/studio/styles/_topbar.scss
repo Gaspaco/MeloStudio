@@ -391,6 +391,30 @@
   min-width: 4.5rem;
   text-align: left;
 }
+.bl__time-pills {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.5rem;
+
+  .bl__pill {
+    padding: 0.25rem 0.4rem;
+    background: rgba(#fff, 0.05);
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-family: $font-display;
+    color: $text-secondary;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+
+    span {
+      font-size: 0.65rem;
+      color: $text-muted;
+    }
+  }
+}
 
 /* mastering preset — slim spec-sheet cell, matches volume widget */
 .bl__mastering {

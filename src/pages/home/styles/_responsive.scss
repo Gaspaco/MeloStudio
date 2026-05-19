@@ -146,6 +146,18 @@
       flex-wrap: wrap;
     }
 
+    &__eyebrow {
+      margin-bottom: 1.25rem;
+    }
+
+    &__eyebrow-text {
+      display: none;
+    }
+
+    &__stats-row {
+      display: none;
+    }
+
     &__scroll {
       right: 1.5rem;
     }

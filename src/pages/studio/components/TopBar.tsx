@@ -275,6 +275,10 @@ const TopBar: Component<Props> = (props) => {
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6V5a2 2 0 0 1 2-2h6"/><path d="M9 1l2 2-2 2"/><path d="M13 10v1a2 2 0 0 1-2 2H5"/><path d="M7 15l-2-2 2-2"/></svg>
         </button>
         <div class="bl__timecode">{fmtTime(props.elapsed())}</div>
+        <div class="bl__time-pills">
+          <div class="bl__pill">{props.bpm()} <span>BPM</span></div>
+          <div class="bl__pill">{props.meter()[0]}/{props.meter()[1]}</div>
+        </div>
       </div>
 
       <div class="bl__console-r">

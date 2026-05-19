@@ -42,10 +42,17 @@ export const DRUM_LABEL: Record<string, string> = {
 
 export const fmtTime = (sec: number): string => {
   if (sec < 0 || !isFinite(sec)) sec = 0;
-  const m = Math.floor(sec / 60);
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
   const s = Math.floor(sec % 60);
-  const ms = Math.floor((sec % 1) * 10);
-  return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}.${ms}`;
+  const ms = Math.floor((sec % 1) * 100); // 2-digit ms feels more standard for a DAW
+  
+  const mStr = h > 0 ? m.toString().padStart(2, "0") : m.toString().padStart(2, "0");
+  const sStr = s.toString().padStart(2, "0");
+  const msStr = ms.toString().padStart(2, "0");
+  
+  if (h > 0) return `${h.toString().padStart(2, "0")}:${mStr}:${sStr}.${msStr}`;
+  return `${mStr}:${sStr}.${msStr}`;
 };
 
 export const TRACK_COLORS = [
