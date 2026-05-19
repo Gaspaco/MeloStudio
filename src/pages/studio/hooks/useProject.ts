@@ -110,7 +110,7 @@ export function useProject(deps: Deps) {
     const doc = await res.json();
     await fetch(`/api/projects/${deps.projectId}`, {
       method: "PUT",
-      headers: authHeaders(true),
+      headers: await authHeaders(true),
       body: JSON.stringify({ ...doc, uiTracks: [], beat: { pattern: DEFAULT_PATTERN() } }),
       credentials: "include",
     });

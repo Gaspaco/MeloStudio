@@ -8,10 +8,7 @@ export function animateDaw(refs: {
   dawWrapRef: HTMLDivElement;
   reelRef: HTMLElement;
 }) {
-  // hate-me.wav is absent from public/ — .mp3 fallback prevents a 404 NotSupportedError
-  const audio = new Audio("/hate-me.mp3");
-  audio.volume = 0.6;
-  audio.preload = "auto";
+  const audio = refs.dawWrapRef.querySelector("audio") as HTMLAudioElement;
 
   // defer AudioContext creation until a user gesture to avoid Chrome autoplay block
   let audioCtx: AudioContext | null = null;
@@ -40,6 +37,8 @@ export function animateDaw(refs: {
   const barCount = wavBars.length;
   const heightSetters = Array.from(wavBars).map((bar) => gsap.quickSetter(bar, "height", "%"));
   const opacitySetters = Array.from(wavBars).map((bar) => gsap.quickSetter(bar, "opacity"));
+
+  const allBlocks = refs.dawWrapRef.querySelectorAll(".daw__block") as NodeListOf<HTMLElement>;
 
   const FLOOR = 10;
   const CEIL = 95;
@@ -146,12 +145,26 @@ export function animateDaw(refs: {
       volOpacitySetters[idx]!(0.45 + pulse * 0.35 * energyBoost);
     }
 
-    if (timeEl && playing) {
+    if (timeEl && isPlaying) {
       const elapsed = audio.currentTime - AUDIO_START;
       const mins = Math.floor(Math.max(0, elapsed) / 60);
       const secs = Math.floor(Math.max(0, elapsed) % 60);
       const cs = Math.floor((Math.max(0, elapsed) % 1) * 100);
       timeEl.textContent = `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}.${String(cs).padStart(2, "0")}`;
+    }
+
+    if (allBlocks.length > 0) {
+      const playheadPct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
+      for (let b = 0; b < allBlocks.length; b++) {
+        const block = allBlocks[b]!;
+        const blockLeft = parseFloat(block.style.left);
+        const blockRight = blockLeft + parseFloat(block.style.width);
+        if (playheadPct >= blockLeft && playheadPct <= blockRight) {
+          block.classList.add("daw__block--active");
+        } else {
+          block.classList.remove("daw__block--active");
+        }
+      }
     }
   };
 
@@ -184,63 +197,12 @@ export function animateDaw(refs: {
     isPlaying = false;
   };
 
+  audio.addEventListener("play", startWaveform);
+  audio.addEventListener("pause", stopWaveform);
+  
   let playing = false;
-  let started = false;
-  let playheadTween: gsap.core.Tween | null = null;
 
-  const startAudio = () => {
-    if (playing) return;
-    playing = true;
-    if (!started) {
-      audio.currentTime = AUDIO_START;
-      started = true;
-    }
-
-    audio.play().then(() => {
-      if (playing && playheadTween) {
-        playheadTween.play();
-      }
-      startWaveform();
-    }).catch((e) => {
-      console.warn("Audio blocked or failed to play.", e);
-      playing = false;
-    });
-  };
-
-  const stopAudio = () => {
-    if (!playing) return;
-    playing = false;
-    audio.pause();
-    if (playheadTween) playheadTween.pause();
-    stopWaveform();
-  };
-
-  const playBtn = refs.dawWrapRef.querySelector(".daw__btn-play") as HTMLElement;
-  const stopBtn = refs.dawWrapRef.querySelector(".daw__btn-stop") as HTMLElement;
-
-  if (playBtn) {
-    playBtn.addEventListener("click", () => {
-      if (playing) {
-        stopAudio();
-        playBtn.classList.remove("daw__btn-play--active");
-      } else {
-        startAudio();
-        playBtn.classList.add("daw__btn-play--active");
-      }
-    });
-  }
-
-  if (stopBtn) {
-    stopBtn.addEventListener("click", () => {
-      stopAudio();
-      if (playBtn) playBtn.classList.remove("daw__btn-play--active");
-      started = false;
-      audio.currentTime = AUDIO_START;
-      if (playheadTween) {
-        playheadTween.progress(0);
-      }
-    });
-  }
+  const playhead = refs.dawWrapRef.querySelector(".daw__playhead") as HTMLElement;
 
   gsap.fromTo(
     refs.dawWrapRef,
@@ -256,48 +218,15 @@ export function animateDaw(refs: {
         end: "+=200%",
         pin: true,
         scrub: 0.8,
-        onLeave: () => stopAudio(),
-        onLeaveBack: () => stopAudio(),
+        onLeave: () => audio.pause(),
+        onLeaveBack: () => audio.pause(),
       },
     }
   );
 
-  const playhead = refs.dawWrapRef.querySelector(".daw__playhead") as HTMLElement;
-  const allBlocks = refs.dawWrapRef.querySelectorAll(".daw__block") as NodeListOf<HTMLElement>;
-
-  if (playhead && allBlocks.length) {
-    const timeline = refs.dawWrapRef.querySelector(".daw__timeline") as HTMLElement;
-
-    playheadTween = gsap.fromTo(
-      playhead,
-      { left: "0%" },
-      {
-        left: "100%",
-        duration: AUDIO_DURATION,
-        repeat: -1,
-        ease: "none",
-        delay: 0,
-        paused: true,
-        onRepeat() {
-          audio.currentTime = AUDIO_START;
-        },
-        onUpdate() {
-          // tween progress avoids getBoundingClientRect reflow
-          if (!playheadTween) return;
-          const playheadPct = playheadTween.progress() * 100;
-
-          for (let b = 0; b < allBlocks.length; b++) {
-            const block = allBlocks[b]!;
-            const blockLeft = parseFloat(block.style.left);
-            const blockRight = blockLeft + parseFloat(block.style.width);
-            if (playheadPct >= blockLeft && playheadPct <= blockRight) {
-              block.classList.add("daw__block--active");
-            } else {
-              block.classList.remove("daw__block--active");
-            }
-          }
-        },
-      }
-    );
-  }
+  // Instead of GSAP animating the playhead, we can just toggle active state of blocks inside onTick using audio.currentTime
+  // But wait, audio.currentTime is already polled in requestAnimationFrame inside Reel.tsx!
+  // To avoid duplicate tickers, we can just let Reel.tsx handle all DOM updating for playhead,
+  // OR we can add the block active logic here in a simple ticker.
+  // Actually, let's just add it to `onTickGuarded` up at line 165
 }
