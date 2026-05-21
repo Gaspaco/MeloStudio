@@ -43,6 +43,7 @@ const Studio: Component = () => {
   const [masterVol,          setMasterVol]          = createSignal(0.8);
   const [saveState,          setSaveState]          = createSignal<"idle" | "saving" | "saved">("idle");
   const [lastSaved,          setLastSaved]          = createSignal<Date | null>(null);
+  const [showSaveToast,      setShowSaveToast]      = createSignal(false);
   const [timeSig,            setTimeSig]            = createSignal<[number, number]>([4, 4]);
   const [musicalKey,         setMusicalKey]         = createSignal("Auto");
   const [error,              setError]              = createSignal("");
@@ -244,6 +245,8 @@ const Studio: Component = () => {
   const handleSave = async () => {
     await project.save();
     setLastSaved(new Date());
+    setShowSaveToast(true);
+    setTimeout(() => setShowSaveToast(false), 6000);
   };
 
   // Auto-snapshot: debounced 400ms after any real user change.
@@ -424,6 +427,19 @@ const Studio: Component = () => {
 
       <Show when={error()}>
         <div class="bl__toast">{error()}</div>
+      </Show>
+
+      <Show when={showSaveToast()}>
+        <div class="bl__save-toast">
+          <span class="bl__save-toast-label">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 8.5l4 4 8-8" /></svg>
+            Saved
+          </span>
+          <a class="bl__save-toast-btn" href={`/share/${params.id}`} target="_blank">
+            View track
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M8 3l5 5-5 5" /></svg>
+          </a>
+        </div>
       </Show>
 
       <div class="bl__main">

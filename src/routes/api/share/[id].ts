@@ -1,12 +1,35 @@
 // GET /api/share/:id — public endpoint, no auth required.
-// Returns project summary only when published = true.
+// Returns project summary when published = true.
+// Falls back to owner preview when the authenticated user owns the project.
 import type { APIEvent } from "@solidjs/start/server";
-import { getPublicProject } from "~/lib/db/projects";
+import { getPublicProject, getProject } from "~/lib/db/projects";
+import { requireUserId } from "~/lib/auth-server";
 
 export async function GET(event: APIEvent) {
   const id = event.params.id;
   if (!id) return new Response("missing id", { status: 400 });
-  const project = await getPublicProject(id);
-  if (!project) return new Response("not found", { status: 404 });
-  return Response.json(project);
+
+  // Try public project first (published = true, anyone can view)
+  const publicProject = await getPublicProject(id);
+  if (publicProject) return Response.json(publicProject);
+
+  // Fall back: allow the owner to preview their own unpublished project
+  const userId = await requireUserId(event.request);
+  if (userId) {
+    const owned = await getProject(userId, id);
+    if (owned) {
+      const doc = owned.doc as any;
+      return Response.json({
+        id,
+        name: doc.name ?? "Untitled",
+        bpm: doc.bpm ?? 120,
+        key: doc.musicalKey ?? "—",
+        trackCount: (doc.uiTracks ?? doc.tracks ?? []).length,
+        updatedAt: doc.updatedAt ?? new Date().toISOString(),
+        isOwnerPreview: true,
+      });
+    }
+  }
+
+  return new Response("not found", { status: 404 });
 }

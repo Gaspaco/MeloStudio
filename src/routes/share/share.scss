@@ -1,0 +1,588 @@
+@use "../../styles/variables" as *;
+
+// ── Animations ───────────────────────────────────────────
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); filter: blur(2px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+}
+
+// Cover swings in like a record from a sleeve
+@keyframes sleeveIn {
+  from {
+    opacity: 0;
+    transform: perspective(600px) rotateY(-10deg) translateX(-10px);
+    filter: blur(1px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(600px) rotateY(0deg) translateX(0);
+    filter: blur(0);
+  }
+}
+
+// Waveform bars breathe
+@keyframes barBeat {
+  0%, 100% { transform: scaleY(0.25); opacity: 0.45; }
+  50%       { transform: scaleY(1);   opacity: 1;    }
+}
+
+@keyframes glowBreath {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.75; }
+}
+
+
+// ── Root ─────────────────────────────────────────────────
+
+.sp {
+  min-height: 100svh;
+  background: $bg-primary;
+  color: $text-primary;
+  font-family: $font-sans;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 clamp(1rem, 5vw, 2rem) 6rem;
+  padding-top: 5rem; // below fixed nav
+  overflow-x: hidden;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.016) 1px, transparent 1px);
+    background-size: 2.5rem 2.5rem;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  > * { position: relative; z-index: 1; }
+}
+
+
+// ── Ambient glow ─────────────────────────────────────────
+
+.sp__glow {
+  position: fixed;
+  top: -30vh;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 80vh;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  animation: fadeIn 2s ease 0.3s forwards, glowBreath 14s ease-in-out 2.3s infinite;
+}
+
+
+// ── Nav ──────────────────────────────────────────────────
+
+.sp__nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.1rem clamp(1.25rem, 5vw, 2.5rem);
+  animation: fadeIn 0.5s ease both;
+
+  // Subtle frost effect when scrolled
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba($bg-primary, 0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  }
+
+  > * { position: relative; }
+}
+
+.sp__logo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15em;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  &:hover { opacity: 0.6; }
+}
+.sp__logo-melo {
+  font-family: $font-display;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: $accent;
+}
+.sp__logo-studio {
+  font-family: $font-script;
+  font-size: 1.15rem;
+  color: $text-primary;
+}
+.sp__nav-link {
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $text-muted;
+  text-decoration: none;
+  transition: color 0.2s;
+  &:hover { color: $text-secondary; }
+}
+
+
+// ── Preview banner ───────────────────────────────────────
+
+.sp__banner {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+  max-width: 960px;
+  background: rgba($accent, 0.05);
+  border: 1px solid rgba($accent, 0.14);
+  border-radius: $radius-pill;
+  color: rgba($accent, 0.78);
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: fadeUp 0.4s ease both;
+  svg { flex-shrink: 0; }
+}
+
+
+// ── Main card ────────────────────────────────────────────
+
+.sp__card {
+  width: 100%;
+  max-width: 960px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0;
+  background: $bg-card;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: $radius-xl;
+  overflow: hidden;
+  box-shadow:
+    0 32px 100px rgba(0, 0, 0, 0.55),
+    0 4px 20px rgba(0, 0, 0, 0.3);
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+// ── Cover ────────────────────────────────────────────────
+
+.sp__cover {
+  width: clamp(160px, 20vw, 220px);
+  align-self: stretch;
+  animation: sleeveIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+
+  @media (max-width: 580px) {
+    width: 100%;
+    height: 200px;
+  }
+}
+
+.sp__thumb {
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  overflow: hidden;
+
+  @media (max-width: 560px) {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+}
+
+.sp__thumb-icon {
+  width: clamp(2rem, 5vw, 2.8rem);
+  height: clamp(2rem, 5vw, 2.8rem);
+  color: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+
+// ── Body ─────────────────────────────────────────────────
+
+.sp__body {
+  display: flex;
+  flex-direction: column;
+  padding: 1.4rem 1.5rem 1.3rem;
+  min-width: 0;
+}
+
+
+// ── Header row ───────────────────────────────────────────
+
+.sp__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.22s both;
+}
+
+.sp__title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.sp__title {
+  font-family: $font-display;
+  font-size: clamp(1.3rem, 3.5vw, 1.75rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.sp__badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  padding: 0.18rem 0.52rem;
+  border-radius: $radius-pill;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: $text-muted;
+  font-family: $font-mono;
+  font-size: 0.46rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  svg { flex-shrink: 0; }
+}
+
+// Three-dot menu button
+.sp__menu {
+  all: unset;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: $radius-md;
+  transition: background 0.2s;
+
+  &:hover { background: rgba(255, 255, 255, 0.06); }
+
+  span {
+    display: block;
+    width: 3.5px;
+    height: 3.5px;
+    border-radius: 50%;
+    background: $text-muted;
+    transition: background 0.2s;
+  }
+
+  &:hover span { background: $text-secondary; }
+}
+
+
+// ── Meta ─────────────────────────────────────────────────
+
+.sp__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  color: $text-secondary;
+  margin-bottom: 0.65rem;
+  flex-wrap: wrap;
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both;
+}
+
+.sp__meta-artist { font-weight: 500; color: $text-primary; }
+.sp__meta-sep    { color: rgba(255, 255, 255, 0.15); }
+
+.sp__dur {
+  font-family: $font-mono;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  color: $text-muted;
+  margin-bottom: 0.9rem;
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both;
+}
+
+
+// ── Waveform (WaveSurfer container) ─────────────────────
+
+.sp__wave-wrap {
+  width: 100%;
+  margin-bottom: 1.15rem;
+  animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.38s both;
+
+  // WaveSurfer renders into shadow DOM — size the host element
+  > div {
+    width: 100% !important;
+  }
+}
+
+
+// ── Actions ───────────────────────────────────────────────
+
+.sp__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.44s both;
+}
+
+.sp__actions-left  { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+.sp__actions-right { display: flex; align-items: center; gap: 0.35rem; }
+
+.sp__btn {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.44rem 0.85rem;
+  border-radius: $radius-pill;
+  font-family: $font-sans;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: $text-secondary;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s, box-shadow 0.2s;
+  white-space: nowrap;
+  svg { flex-shrink: 0; }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.13);
+    color: $text-primary;
+    transform: translateY(-1px);
+  }
+  &:active { transform: translateY(0) scale(0.97); }
+
+  &--primary {
+    background: $accent;
+    border-color: $accent;
+    color: #fff;
+    box-shadow: 0 0 20px -5px rgba($accent, 0.5);
+    &:hover {
+      background: $accent-hover;
+      border-color: $accent-hover;
+      color: #fff;
+      box-shadow: 0 0 28px -3px rgba($accent, 0.65);
+      transform: translateY(-1px);
+    }
+  }
+
+  &--studio {
+    background: rgba($accent, 0.05);
+    border-color: rgba($accent, 0.16);
+    color: rgba($accent, 0.85);
+    &:hover {
+      background: rgba($accent, 0.1);
+      border-color: rgba($accent, 0.28);
+      color: $accent;
+    }
+  }
+}
+
+
+// ── Below card: What's next ─────────────────────────────
+
+.sp__below {
+  width: 100%;
+  max-width: 960px;
+  margin-top: 2.5rem;
+  animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.55s both;
+}
+
+.sp__section-label {
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin-bottom: 1rem;
+}
+
+.sp__services {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.65rem;
+
+  @media (max-width: 700px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (max-width: 420px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sp__service-card {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+  padding: 1rem 0.9rem;
+  background: rgba(255, 255, 255, 0.018);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.18s;
+
+  &:hover {
+    border-color: rgba($accent, 0.18);
+    background: rgba($accent, 0.03);
+    transform: translateY(-2px);
+  }
+}
+
+.sp__service-icon {
+  flex-shrink: 0;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: $radius-sm;
+  background: rgba($accent, 0.07);
+  border: 1px solid rgba($accent, 0.11);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $accent;
+  svg { width: 11px; height: 11px; }
+}
+
+.sp__service-body { min-width: 0; }
+
+.sp__service-name {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 0.22rem;
+}
+
+.sp__service-new {
+  padding: 0.1rem 0.3rem;
+  background: $accent;
+  border-radius: 3px;
+  font-family: $font-mono;
+  font-size: 0.4rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  font-weight: 700;
+}
+
+.sp__service-desc {
+  font-size: 0.65rem;
+  color: $text-muted;
+  line-height: 1.55;
+}
+
+
+// ── Footer ────────────────────────────────────────────────
+
+.sp__footer {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  animation: fadeIn 0.7s ease 0.9s both;
+
+  a, span {
+    font-family: $font-mono;
+    font-size: 0.48rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.18);
+    text-decoration: none;
+  }
+  a:hover { color: $text-muted; }
+}
+
+
+// ── Loading / empty ───────────────────────────────────────
+
+.sp__state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  color: $text-muted;
+  animation: fadeIn 0.4s ease both;
+  text-align: center;
+
+  svg { color: $text-muted; }
+
+  span {
+    font-family: $font-mono;
+    font-size: 0.54rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  &--empty {
+    h2 {
+      font-family: $font-display;
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      color: $text-secondary;
+    }
+    p {
+      font-size: 0.8rem;
+      color: $text-muted;
+    }
+    a {
+      color: $accent;
+      font-size: 0.76rem;
+      font-family: $font-mono;
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      &:hover { text-decoration: underline; }
+    }
+  }
+}

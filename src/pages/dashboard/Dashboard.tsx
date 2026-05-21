@@ -85,6 +85,7 @@ const Dashboard: Component<{
         if (renameTarget()) setRenameTarget(null);
         if (deleteTarget()) setDeleteTarget(null);
         if (permDeleteTarget()) setPermDeleteTarget(null);
+        if (menuProjectId()) setMenuProjectId(null);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -213,6 +214,14 @@ const Dashboard: Component<{
   const [deleteTarget, setDeleteTarget] = createSignal<Project | null>(null);
   const [projectActionError, setProjectActionError] = createSignal("");
   const [projectActionLoading, setProjectActionLoading] = createSignal(false);
+
+  // Row context menu
+  const [menuProjectId, setMenuProjectId] = createSignal<string | null>(null);
+  const closeMenu = () => setMenuProjectId(null);
+  const toggleMenu = (e: Event, id: string) => {
+    e.stopPropagation();
+    setMenuProjectId((prev) => (prev === id ? null : id));
+  };
 
   // Deleted / trash tab
   const [deletedProjects, setDeletedProjects] = createSignal<DeletedProjectListItem[]>([]);
@@ -814,7 +823,7 @@ const Dashboard: Component<{
               </div>
             </div>
 
-            <div class="db__lib-list">
+            <div class="db__lib-list" onClick={() => menuProjectId() && closeMenu()}>
               <Show when={libCat() === "all" || libCat() === "mine"}>
                 <Show when={projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase())).length === 0}>
                   <div class="db__lib-empty">
@@ -824,7 +833,7 @@ const Dashboard: Component<{
                   </div>
                 </Show>
                 <For each={projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase()))}>{(project) =>
-                  <div class="db__lib-row" style={{ "--proj-color": project.color || "#e05297" } as any} onClick={() => props.onOpenProject(project.id)}>
+                  <div class="db__lib-row" style={{ "--proj-color": project.color || "#e05297" } as any} onClick={() => { if (!menuProjectId()) props.onOpenProject(project.id); }}>
                     <div class="db__lib-row-thumb">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" /></svg>
                     </div>
@@ -833,7 +842,28 @@ const Dashboard: Component<{
                       <span class="db__lib-row-meta">{project.bpm || 100} BPM {project.key && project.key !== "—" ? `• ${project.key} ` : ""}• {project.tracks || 1} track{(project.tracks || 1) !== 1 ? "s" : ""}</span>
                     </div>
                     <span class="db__lib-row-date">{project.updatedAt}</span>
-                    <button class="db__lib-row-btn" onClick={(e) => { e.stopPropagation(); props.onOpenProject(project.id); }}>Open</button>
+                    <div class="db__lib-row-menu-wrap">
+                      <button class="db__lib-row-dots" onClick={(e) => toggleMenu(e, project.id)} title="More options">
+                        <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="4" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="16" cy="10" r="1.5"/></svg>
+                      </button>
+                      <Show when={menuProjectId() === project.id}>
+                        <div class="db__lib-row-dropdown" onClick={(e) => e.stopPropagation()}>
+                          <button class="db__lib-row-dd-item" onClick={() => { closeMenu(); props.onOpenProject(project.id); }}>
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4a6 6 0 100 12A6 6 0 0010 4zM4 10h12" /></svg>
+                            Open
+                          </button>
+                          <button class="db__lib-row-dd-item" onClick={(e) => { closeMenu(); openRename(e, project); }}>
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 3l4 4-9 9H4v-4z" /></svg>
+                            Rename
+                          </button>
+                          <div class="db__lib-row-dd-sep" />
+                          <button class="db__lib-row-dd-item db__lib-row-dd-item--danger" onClick={(e) => { closeMenu(); openDelete(e, project); }}>
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h12M7 6V4h6v2M8 9v6m4-6v6M5 6l.867 10.4A1 1 0 006.86 17.5h6.28a1 1 0 00.993-.9L15 6" /></svg>
+                            Delete
+                          </button>
+                        </div>
+                      </Show>
+                    </div>
                   </div>
                 }</For>
               </Show>

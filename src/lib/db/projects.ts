@@ -119,14 +119,15 @@ export interface PublicProjectView {
   bpm: number;
   key: string;
   trackCount: number;
+  updatedAt: string;
 }
 
 export async function getPublicProject(projectId: string): Promise<PublicProjectView | null> {
   const rows = await sql`
-    SELECT id, name, bpm, data FROM projects
+    SELECT id, name, bpm, updated_at, data FROM projects
     WHERE id = ${projectId} AND published = true
     LIMIT 1
-  ` as Array<{ id: string; name: string; bpm: number; data: any }>;
+  ` as Array<{ id: string; name: string; bpm: number; updated_at: string; data: any }>;
   if (!rows[0]) return null;
   const doc = rows[0].data;
   return {
@@ -135,6 +136,7 @@ export async function getPublicProject(projectId: string): Promise<PublicProject
     bpm: rows[0].bpm,
     key: doc.musicalKey ?? "—",
     trackCount: (doc.uiTracks ?? doc.tracks ?? []).length,
+    updatedAt: rows[0].updated_at,
   };
 }
 

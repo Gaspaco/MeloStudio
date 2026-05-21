@@ -1558,6 +1558,87 @@
     }
   }
 
+  &__lib-row-menu-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  &__lib-row-dots {
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    color: $text-muted;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+    opacity: 0;
+
+    .db__lib-row:hover &,
+    .db__lib-row-menu-wrap:focus-within & { opacity: 1; }
+
+    &:hover { background: $border; color: $text-primary; }
+    &:focus-visible { opacity: 1; outline: none; background: $border; color: $text-primary; }
+
+    svg { width: 1.1rem; height: 1.1rem; pointer-events: none; }
+  }
+
+  &__lib-row-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 200;
+    min-width: 175px;
+    background: #1a1a1a;
+    border: 1px solid $border-hover;
+    border-radius: 10px;
+    padding: 0.35rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+    animation: ddFadeIn 0.1s ease;
+  }
+
+  @keyframes ddFadeIn {
+    from { opacity: 0; transform: translateY(-4px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0)   scale(1); }
+  }
+
+  &__lib-row-dd-item {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.55rem 0.75rem;
+    border-radius: 6px;
+    font-family: $font-sans;
+    font-size: 0.82rem;
+    color: $text-primary;
+    cursor: pointer;
+    transition: background 0.1s;
+
+    svg { width: 1rem; height: 1rem; flex-shrink: 0; color: $text-muted; }
+
+    &:hover {
+      background: $border-hover;
+      svg { color: $text-secondary; }
+    }
+
+    &--danger {
+      color: #ff5454;
+      svg { color: rgba(#ff5454, 0.7); }
+      &:hover { background: rgba(#ff5454, 0.08); svg { color: #ff5454; } }
+    }
+  }
+
+  &__lib-row-dd-sep {
+    height: 1px;
+    background: $border;
+    margin: 0.3rem 0.4rem;
+  }
+
   &__lib-row--deleted {
     opacity: 0.75;
     &:hover { opacity: 1; }
