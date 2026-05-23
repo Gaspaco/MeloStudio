@@ -18,15 +18,27 @@ export async function GET(event: APIEvent) {
   if (userId) {
     const owned = await getProject(userId, id);
     if (owned) {
-      const doc = owned.doc as any;
+      const doc = owned.doc;
+      let durationSec = 0;
+      for (const track of doc.tracks ?? []) {
+        for (const clip of track.clips ?? []) {
+          const end = (clip.startSec ?? 0) + (clip.durationSec ?? 0);
+          if (end > durationSec) durationSec = end;
+        }
+      }
+      const bpm = doc.transport?.bpm ?? 120;
+
       return Response.json({
         id,
         name: doc.name ?? "Untitled",
-        bpm: doc.bpm ?? 120,
+        bpm,
         key: doc.musicalKey ?? "—",
-        trackCount: (doc.uiTracks ?? doc.tracks ?? []).length,
+        trackCount: (doc.tracks ?? []).length,
         updatedAt: doc.updatedAt ?? new Date().toISOString(),
         isOwnerPreview: true,
+        ownerId: userId,
+        mixUrl: doc.mixUrl ?? null,
+        durationSec,
       });
     }
   }

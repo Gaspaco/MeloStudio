@@ -97,7 +97,7 @@ const Studio: Component = () => {
   // due to its own signal changes can't snapshot and wipe the redo stack.
   let snapLockUntil = 0;
   const applySnap = (snap: HistorySnap) => {
-    if (snapTimer) { clearTimeout(snapTimer); snapTimer = null; }
+    if (snapTimer) { clearTimeout(snapTimer); snapTimer = undefined; }
     snapLockUntil = Date.now() + 600;
     setTracks(snap.tracks);
     setPattern(snap.pattern);
@@ -187,8 +187,7 @@ const Studio: Component = () => {
       }
     };
     window.addEventListener("keydown", handleGlobalKey);
-    // eslint-disable-next-line solid/reactivity
-    return () => window.removeEventListener("keydown", handleGlobalKey);
+    onCleanup(() => window.removeEventListener("keydown", handleGlobalKey));
   });
 
   onCleanup(() => {
@@ -242,20 +241,24 @@ const Studio: Component = () => {
     }
   };
 
+  let toastTimer: ReturnType<typeof setTimeout> | undefined;
+  onCleanup(() => clearTimeout(toastTimer));
   const handleSave = async () => {
     await project.save();
     setLastSaved(new Date());
     setShowSaveToast(true);
-    setTimeout(() => setShowSaveToast(false), 6000);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => setShowSaveToast(false), 6000);
   };
 
   // Auto-snapshot: debounced 400ms after any real user change.
   // Skipped if still inside the applySnap lock window (undo/redo applied < 600ms ago).
-  let snapTimer: ReturnType<typeof setTimeout> | null = null;
+  let snapTimer: ReturnType<typeof setTimeout> | undefined;
+  onCleanup(() => clearTimeout(snapTimer));
   const scheduleSnap = () => {
-    if (snapTimer) clearTimeout(snapTimer);
+    clearTimeout(snapTimer);
     snapTimer = setTimeout(() => {
-      snapTimer = null;
+      snapTimer = undefined;
       if (Date.now() >= snapLockUntil) snapHistory();
     }, 400);
   };

@@ -120,23 +120,38 @@ export interface PublicProjectView {
   key: string;
   trackCount: number;
   updatedAt: string;
+  ownerId?: string;
+  mixUrl?: string;
+  durationSec?: number;
 }
 
 export async function getPublicProject(projectId: string): Promise<PublicProjectView | null> {
   const rows = await sql`
-    SELECT id, name, bpm, updated_at, data FROM projects
+    SELECT id, name, bpm, updated_at, data, user_id FROM projects
     WHERE id = ${projectId} AND published = true
     LIMIT 1
-  ` as Array<{ id: string; name: string; bpm: number; updated_at: string; data: any }>;
+  ` as Array<{ id: string; name: string; bpm: number; updated_at: string; data: ProjectDoc; user_id: string }>;
   if (!rows[0]) return null;
   const doc = rows[0].data;
+
+  let durationSec = 0;
+  for (const track of doc.tracks ?? []) {
+    for (const clip of track.clips ?? []) {
+      const end = (clip.startSec ?? 0) + (clip.durationSec ?? 0);
+      if (end > durationSec) durationSec = end;
+    }
+  }
+
   return {
     id: rows[0].id,
     name: rows[0].name,
     bpm: rows[0].bpm,
     key: doc.musicalKey ?? "—",
-    trackCount: (doc.uiTracks ?? doc.tracks ?? []).length,
+    trackCount: (doc.tracks ?? []).length,
     updatedAt: rows[0].updated_at,
+    ownerId: rows[0].user_id,
+    mixUrl: doc.mixUrl,
+    durationSec,
   };
 }
 

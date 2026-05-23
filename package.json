@@ -26,6 +26,7 @@
     "@types/three": "^0.183.1",
     "@types/ws": "^8.18.1",
     "better-auth": "^1.6.9",
+    "color-thief-browser": "^2.0.2",
     "gsap": "^3.14.2",
     "html2canvas": "^1.4.1",
     "konva": "^9.3.6",

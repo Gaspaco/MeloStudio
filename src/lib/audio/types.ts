@@ -23,6 +23,8 @@ export interface AudioAsset {
 }
 
 export interface Clip {
+  barStart: number;
+  bars: number;
   id: ClipId;
   assetId: AssetId;
   // project-time start in seconds (not beats — beats are derived from BPM)
@@ -87,6 +89,8 @@ export interface ProjectDoc {
   assets: AudioAsset[];
   // optional musical key label, e.g. "C Major" or "F# Minor"
   musicalKey?: string;
+  // optional pre-rendered stereo mix URL (set after export)
+  mixUrl?: string;
 }
 
 export const dbToGain = (db: number): number =>
