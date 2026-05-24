@@ -331,14 +331,33 @@ const SharePage: Component = () => {
 
           const parseLrc = (lrc: string): LrcLine[] => {
             const lines: LrcLine[] = [];
-            for (const raw of lrc.split("\n")) {
-              const m = raw.match(/^\[(\d+):(\d+\.?\d*)\](.*)/);
-              if (m) {
-                const timeSec = parseInt(m[1]!) * 60 + parseFloat(m[2]!);
-                const text = m[3]!.trim();
-                if (text) lines.push({ timeSec, text });
+
+            // Standard multi-line LRC: each line starts with [mm:ss.xx]
+            if (lrc.includes("\n")) {
+              for (const raw of lrc.split("\n")) {
+                const m = raw.match(/^\[(\d+):(\d+\.?\d*)\](.*)/);
+                if (m) {
+                  const timeSec = parseInt(m[1]!) * 60 + parseFloat(m[2]!);
+                  const text = m[3]!.trim();
+                  if (text) lines.push({ timeSec, text });
+                }
               }
+              if (lines.length > 0) return lines;
             }
+
+            // Fallback: embedded timestamps in a single line, e.g. [t1]text1[t2]text2...
+            const timeRe = /\[(\d+):(\d+\.?\d*)\]/g;
+            const stamps: Array<{ timeSec: number; start: number; end: number }> = [];
+            let m: RegExpExecArray | null;
+            while ((m = timeRe.exec(lrc)) !== null) {
+              stamps.push({ timeSec: parseInt(m[1]!) * 60 + parseFloat(m[2]!), start: m.index, end: m.index + m[0].length });
+            }
+            for (let i = 0; i < stamps.length; i++) {
+              const textEnd = i + 1 < stamps.length ? stamps[i + 1]!.start : lrc.length;
+              const text = lrc.slice(stamps[i]!.end, textEnd).trim();
+              if (text) lines.push({ timeSec: stamps[i]!.timeSec, text });
+            }
+
             return lines;
           };
 

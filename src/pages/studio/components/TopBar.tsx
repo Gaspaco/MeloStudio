@@ -31,6 +31,7 @@ type Props = {
   onCommitTitle: () => Promise<void>;
   onCancelTitle: () => void;
   onSave: () => void;
+  canSave: Accessor<boolean>;
   canUndo: () => boolean;
   canRedo: () => boolean;
   onUndo: () => void;
@@ -126,7 +127,7 @@ const TopBar: Component<Props> = (props) => {
             }
           </span>
         </div>
-        <button class="bl__btn-ghost" onClick={props.onSave} disabled={props.saveState() === "saving"}>
+        <button class="bl__btn-ghost" onClick={props.onSave} disabled={props.saveState() === "saving" || !props.canSave()}>
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7l3 3v7a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M5 3v3h5"/><circle cx="8" cy="10" r="1.5"/></svg>
           <span>{props.saveState() === "saving" ? "Saving" : props.saveState() === "saved" ? "Saved" : "Save"}</span>
         </button>

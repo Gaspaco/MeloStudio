@@ -5,6 +5,8 @@ import { type TrackType, type UITrack, TEMPLATES } from "../types";
 import type { StepPattern } from "~/lib/audio/stepSeq";
 import AudioWaveformDisplay from "./AudioWaveformDisplay";
 
+type ClipCtxMenu = { x: number; y: number; trackId: string; clipId: string; clipName: string; renaming?: boolean };
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MEDIA_ICON_MAP: Record<string, Component<any>> = { audio: MicVocal, midi: FileMusic, video: MicVocal };
 const MediaClipIcon: Component<{ kind: string }> = (props) => {
@@ -31,6 +33,8 @@ type Props = {
   onLanesDrop: (e: DragEvent) => Promise<void>;
   onDeleteClip: (trackId: string, clipId: string) => void;
   onMoveClip: (trackId: string, clipId: string, newBarStart: number) => void;
+  onRenameClip: (trackId: string, clipId: string, name: string) => void;
+  onDuplicateClip: (trackId: string, clipId: string) => void;
   onCreateRegion: (trackId: string, barStart: number) => void;
   onApplyTemplate: (templateId: string) => void;
   onImportFiles: (files: File[]) => Promise<void>;
@@ -43,12 +47,17 @@ const BARS = Array.from({ length: 450 }, (_, i) => i + 1);
 const TimelineArea: Component<Props> = (props) => {
   let timelineEl: HTMLDivElement | undefined;
   let dragState: { x: number; scroll: number } | null = null;
+  let renameInputEl: HTMLInputElement | undefined;
   let playheadDragState: { startX: number; startPx: number } | null = null;
   let importInputEl: HTMLInputElement | undefined;
 
   // clip drag state
   let clipDrag: { clipId: string; trackId: string; offsetPx: number } | null = null;
   const [draggedClip, setDraggedClip] = createSignal<{ clipId: string; barStart: number } | null>(null);
+
+  // clip context menu
+  const [ctxMenu, setCtxMenu] = createSignal<ClipCtxMenu | null>(null);
+  const closeCtx = () => setCtxMenu(null);
 
   const onTimelineWheel = (e: WheelEvent) => {
     if (!timelineEl) return;
@@ -109,10 +118,13 @@ const TimelineArea: Component<Props> = (props) => {
   onMount(() => {
     window.addEventListener("mousemove", onWinMouseMove);
     window.addEventListener("mouseup", onWinMouseUp);
+    window.addEventListener("click", closeCtx);
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCtx(); });
   });
   onCleanup(() => {
     window.removeEventListener("mousemove", onWinMouseMove);
     window.removeEventListener("mouseup", onWinMouseUp);
+    window.removeEventListener("click", closeCtx);
   });
 
   return (
@@ -236,6 +248,11 @@ const TimelineArea: Component<Props> = (props) => {
                       setDraggedClip({ clipId: c.id, barStart: c.barStart });
                       document.body.style.cursor = "grabbing";
                     }}
+                    onContextMenu={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setCtxMenu({ x: e.clientX, y: e.clientY, trackId: t.id, clipId: c.id, clipName: c.name });
+                    }}
                   >
                     <div class="bl__mclip-head">
                       <span class="bl__mclip-icon" aria-hidden="true"><MediaClipIcon kind={c.kind} /></span>
@@ -308,6 +325,80 @@ const TimelineArea: Component<Props> = (props) => {
           document.body.style.cursor = "col-resize";
         }}
       />
+
+      <Show when={ctxMenu()}>
+        {(menu) => (
+          <div
+            class="bl__clip-ctx"
+            style={{ left: `${Math.min(menu().x, window.innerWidth - 210)}px`, top: `${Math.min(menu().y, window.innerHeight - 280)}px` }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Show when={menu().renaming} fallback={
+              <>
+                <button class="bl__clip-ctx-item" onClick={() => { props.onDuplicateClip(menu().trackId, menu().clipId); closeCtx(); }}>
+                  <span>Duplicate</span>
+                  <span class="bl__clip-ctx-kbd">⌘D</span>
+                </button>
+                <button class="bl__clip-ctx-item" onClick={() => { props.onDeleteClip(menu().trackId, menu().clipId); closeCtx(); }}>
+                  <span>Cut</span>
+                  <span class="bl__clip-ctx-kbd">⌘X</span>
+                </button>
+                <div class="bl__clip-ctx-sep" />
+                <button class="bl__clip-ctx-item" onClick={() => setCtxMenu(m => m ? { ...m, renaming: true } : null)}>
+                  <span>Rename Region</span>
+                </button>
+                <div class="bl__clip-ctx-sep" />
+                <button class="bl__clip-ctx-item is-soon" disabled>
+                  <span>Export as WAV</span>
+                  <span class="bl__clip-ctx-soon">Soon</span>
+                </button>
+                <button class="bl__clip-ctx-item is-soon" disabled>
+                  <span>Reverse Region</span>
+                  <span class="bl__clip-ctx-soon">Soon</span>
+                </button>
+                <button class="bl__clip-ctx-item is-soon" disabled>
+                  <span>Normalize</span>
+                  <span class="bl__clip-ctx-soon">Soon</span>
+                </button>
+                <div class="bl__clip-ctx-sep" />
+                <button class="bl__clip-ctx-item is-danger" onClick={() => { props.onDeleteClip(menu().trackId, menu().clipId); closeCtx(); }}>
+                  <span>Delete</span>
+                  <span class="bl__clip-ctx-kbd">⌫</span>
+                </button>
+              </>
+            }>
+              <div class="bl__clip-ctx-renaming">
+                <span class="bl__clip-ctx-rename-label">Rename Region</span>
+                <input
+                  class="bl__clip-ctx-input"
+                  ref={(el) => { renameInputEl = el; requestAnimationFrame(() => { el.focus(); el.select(); }); }}
+                  value={menu().clipName}
+                  onInput={(e) => setCtxMenu(m => m ? { ...m, clipName: e.currentTarget.value } : null)}
+                  onKeyDown={(e) => {
+                    e.stopPropagation();
+                    if (e.key === "Enter") {
+                      const val = (renameInputEl?.value ?? "").trim();
+                      if (val) props.onRenameClip(menu().trackId, menu().clipId, val);
+                      closeCtx();
+                    }
+                    if (e.key === "Escape") closeCtx();
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <div class="bl__clip-ctx-rename-row">
+                  <button class="bl__clip-ctx-rename-cancel" onMouseDown={(e) => { e.preventDefault(); closeCtx(); }}>Cancel</button>
+                  <button class="bl__clip-ctx-rename-ok" onMouseDown={(e) => {
+                    e.preventDefault();
+                    const val = (renameInputEl?.value ?? "").trim();
+                    if (val) props.onRenameClip(menu().trackId, menu().clipId, val);
+                    closeCtx();
+                  }}>Rename</button>
+                </div>
+              </div>
+            </Show>
+          </div>
+        )}
+      </Show>
     </section>
   );
 };

@@ -401,6 +401,7 @@ const Studio: Component = () => {
         onCommitTitle={commitTitle}
         onCancelTitle={cancelTitle}
         onSave={handleSave}
+        canSave={() => tracks().length > 0 || pattern().rows.some(r => r.velocities.some(v => v > 0))}
         canUndo={canUndo} canRedo={canRedo}
         onUndo={undo} onRedo={redo}
         metronomeOn={metronomeOn} onToggleMetronome={toggleMetronome}
@@ -439,7 +440,7 @@ const Studio: Component = () => {
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 8.5l4 4 8-8" /></svg>
             Saved
           </span>
-          <a class="bl__save-toast-btn" href={`/share/${params.id}`} target="_blank">
+          <a class="bl__save-toast-btn" href={`/share/${params.id}`}>
             View track
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M8 3l5 5-5 5" /></svg>
           </a>
@@ -465,6 +466,8 @@ const Studio: Component = () => {
           onLanesDragOver={trk.onLanesDragOver} onLanesDragLeave={trk.onLanesDragLeave} onLanesDrop={trk.onLanesDrop}
           onDeleteClip={trk.deleteClip}
           onMoveClip={trk.moveClip}
+          onRenameClip={trk.renameClip}
+          onDuplicateClip={trk.duplicateClip}
           onCreateRegion={trk.createRegion}
           onApplyTemplate={applyTemplate}
           onImportFiles={trk.importFiles}

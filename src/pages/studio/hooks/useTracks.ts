@@ -272,5 +272,27 @@ export function useTracks(deps: Deps) {
       deps.setShowNewTrack(false);
       void deps.save();
     },
+
+    renameClip(trackId: string, clipId: string, name: string) {
+      deps.setTracks(deps.tracks().map(t =>
+        t.id !== trackId ? t : {
+          ...t,
+          clips: (t.clips ?? []).map(c => c.id === clipId ? { ...c, name } : c),
+        }
+      ));
+      void deps.save();
+    },
+
+    duplicateClip(trackId: string, clipId: string) {
+      const track = deps.tracks().find(t => t.id === trackId);
+      if (!track) return;
+      const clip = (track.clips ?? []).find(c => c.id === clipId);
+      if (!clip) return;
+      const newClip: MediaClip = { ...clip, id: crypto.randomUUID(), barStart: clip.barStart + clip.bars, url: undefined };
+      deps.setTracks(deps.tracks().map(t =>
+        t.id !== trackId ? t : { ...t, clips: [...(t.clips ?? []), newClip] }
+      ));
+      void deps.save();
+    },
   };
 }

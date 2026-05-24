@@ -218,6 +218,123 @@
   pointer-events: none;
   z-index: 5;
 }
+
+/* ── Clip right-click context menu ───────────────────────────────────── */
+.bl__clip-ctx {
+  position: fixed;
+  z-index: 2000;
+  min-width: 175px;
+  padding: 0.3rem;
+  background: #1c1c1f;
+  border: 1px solid rgba(#fff, 0.1);
+  border-radius: 0.65rem;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(#fff, 0.03) inset;
+  animation: blCtxIn 0.12s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes blCtxIn {
+  from { transform: scale(0.94) translateY(-4px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);        opacity: 1; }
+}
+.bl__clip-ctx-item {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.48rem 0.75rem;
+  border-radius: 0.42rem;
+  font-size: 0.84rem;
+  color: rgba(#fff, 0.82);
+  transition: background 0.1s, color 0.1s;
+  &:hover {
+    background: rgba(#fff, 0.07);
+    color: #fff;
+  }
+  &.is-danger:hover {
+    background: rgba(255, 60, 60, 0.15);
+    color: #ff7070;
+  }
+  &.is-soon {
+    cursor: default;
+    opacity: 0.4;
+    &:hover { background: transparent; color: rgba(#fff, 0.82); }
+  }
+}
+.bl__clip-ctx-soon {
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba($accent, 0.7);
+  background: rgba($accent, 0.1);
+  border: 1px solid rgba($accent, 0.2);
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+}
+.bl__clip-ctx-sep {
+  height: 1px;
+  background: rgba(#fff, 0.07);
+  margin: 0.25rem 0.5rem;
+}
+/* ── Inline rename mode ── */
+.bl__clip-ctx-renaming {
+  padding: 0.5rem 0.6rem 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.bl__clip-ctx-rename-label {
+  font-family: $font-mono;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(#fff, 0.4);
+}
+.bl__clip-ctx-input {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.42rem 0.6rem;
+  background: rgba(#fff, 0.06);
+  border: 1px solid rgba(#fff, 0.14);
+  border-radius: 0.4rem;
+  font-size: 0.84rem;
+  color: #fff;
+  &:focus { border-color: rgba($accent, 0.55); background: rgba($accent, 0.06); outline: none; }
+}
+.bl__clip-ctx-rename-row {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+.bl__clip-ctx-rename-cancel {
+  all: unset;
+  cursor: pointer;
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.38rem;
+  font-size: 0.76rem;
+  color: rgba(#fff, 0.5);
+  transition: color 0.13s, background 0.13s;
+  &:hover { color: #fff; background: rgba(#fff, 0.06); }
+}
+.bl__clip-ctx-rename-ok {
+  all: unset;
+  cursor: pointer;
+  padding: 0.3rem 0.8rem;
+  border-radius: 0.38rem;
+  background: rgba($accent, 0.18);
+  border: 1px solid rgba($accent, 0.35);
+  font-size: 0.76rem;
+  color: $accent;
+  transition: background 0.13s, border-color 0.13s;
+  &:hover { background: rgba($accent, 0.28); border-color: rgba($accent, 0.55); }
+}
 .bl__drop {
   display: flex;
   align-items: center;

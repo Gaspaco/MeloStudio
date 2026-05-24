@@ -79,7 +79,13 @@ export const auth = betterAuth({
       clientId: process.env.TWITTER_CLIENT_ID!,
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
       disableDefaultScope: true,
-      scope: ["users.read", "tweet.read"],
+      scope: ["users.read", "tweet.read", "offline.access"],
+      mapProfileToUser: (profile: { data?: { id?: string; email?: string } }) => ({
+        // Twitter doesn't reliably return email without the users.email scope
+        // (which requires special app approval). Fall back to a unique placeholder
+        // so Better Auth can satisfy the NOT NULL email constraint in the DB.
+        email: profile.data?.email ?? `twitter_${profile.data?.id ?? "user"}@twitter.placeholder.local`,
+      }),
     },
   },
 

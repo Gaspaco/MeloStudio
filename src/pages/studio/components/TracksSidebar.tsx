@@ -113,9 +113,9 @@ const TracksSidebar: Component<Props> = (props) => (
                 <button
                   class="bl__track-x"
                   onClick={(e) => { e.stopPropagation(); props.onDeleteTrack(t().id); }}
-                  title="Delete track"
+                  title="Remove track"
                 >
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 4.5h11M6 4.5V3h4v1.5M4 4.5l.8 8.5A.7.7 0 0 0 5.5 13.6h5a.7.7 0 0 0 .7-.6L12 4.5M6.5 7.5v3.5M9.5 7.5v3.5"/></svg>
                 </button>
               </div>
               <div class="bl__track-controls" onClick={(e) => e.stopPropagation()}>
