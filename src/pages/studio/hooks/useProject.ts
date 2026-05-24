@@ -38,6 +38,9 @@ type Deps = {
 export function useProject(deps: Deps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let pendingDoc: any = null;
+  const MAX_SAVE_PAYLOAD_BYTES = 4_500_000;
+  const MAX_INLINE_CLIP_BYTES = 2_000_000;
+  const MAX_INLINE_CLIP_DATA_URL_CHARS = 2_800_000;
 
   const authHeaders = async (json = false): Promise<Record<string, string>> => {
     const token = await getJWTToken();
@@ -55,10 +58,39 @@ export function useProject(deps: Deps) {
   });
 
   const clipDataUrl = async (clip: MediaClip): Promise<string | undefined> => {
-    if (clip.dataUrl) return clip.dataUrl;
+    if (clip.dataUrl) return clip.dataUrl.length <= MAX_INLINE_CLIP_DATA_URL_CHARS ? clip.dataUrl : undefined;
     let blob = await loadClipBlob(clip.id).catch(() => null);
     if (!blob && clip.url) blob = await fetch(clip.url).then((res) => res.blob()).catch(() => null);
+    if (blob && blob.size > MAX_INLINE_CLIP_BYTES) return undefined;
     return blob ? blobToDataUrl(blob) : undefined;
+  };
+
+  const jsonByteLength = (value: unknown) => new TextEncoder().encode(JSON.stringify(value)).length;
+
+  const fitProjectSavePayload = <T extends { uiTracks?: UITrack[] }>(doc: T): { payload: T; json: string } => {
+    let json = JSON.stringify(doc);
+    if (new TextEncoder().encode(json).length <= MAX_SAVE_PAYLOAD_BYTES) return { payload: doc, json };
+
+    const payload = {
+      ...doc,
+      uiTracks: doc.uiTracks?.map((track) => ({
+        ...track,
+        clips: track.clips?.map((clip) => ({ ...clip })),
+      })),
+    } as T;
+
+    const clips = payload.uiTracks?.flatMap((track) => track.clips ?? []) ?? [];
+    const clipsWithData = clips
+      .filter((clip) => clip.kind !== "midi" && clip.dataUrl)
+      .sort((a, b) => (b.dataUrl?.length ?? 0) - (a.dataUrl?.length ?? 0));
+
+    for (const clip of clipsWithData) {
+      delete clip.dataUrl;
+      if (jsonByteLength(payload) <= MAX_SAVE_PAYLOAD_BYTES) break;
+    }
+
+    json = JSON.stringify(payload);
+    return { payload, json };
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -171,10 +203,11 @@ export function useProject(deps: Deps) {
         uiTracks: uiTracksForSave,
         lyrics: deps.lyricsText?.() ?? doc.lyrics ?? "",
       };
+      const { json } = fitProjectSavePayload(updated);
       const put = await fetch(`/api/projects/${deps.projectId}`, {
         method: "PUT",
         headers: await authHeaders(true) ?? {},
-        body: JSON.stringify(updated),
+        body: json,
         credentials: "include",
       });
       if (!put.ok) throw new Error(`save failed: ${put.status}`);
