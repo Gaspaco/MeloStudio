@@ -12,7 +12,7 @@ const pool = new Pool({
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL ?? "https://melo-studio.netlify.app",
+  baseURL: process.env.BETTER_AUTH_URL ?? "https://melostudio.nl",
   basePath: "/api/auth",
 
   database: pool,
@@ -50,6 +50,12 @@ export const auth = betterAuth({
   },
 
   trustedOrigins: [
+    "https://melostudio.nl",
+    "https://www.melostudio.nl",
+    "https://melostudio.online",
+    "https://www.melostudio.online",
+    "https://melostudio.site",
+    "https://www.melostudio.site",
     "https://melostudio.app",
     "https://melo-studio.netlify.app",
     "http://localhost:3000",

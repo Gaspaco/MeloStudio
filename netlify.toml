@@ -4,6 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  BETTER_AUTH_URL = "https://melostudio.nl"
 
 [[headers]]
   for = "/_build/*"
