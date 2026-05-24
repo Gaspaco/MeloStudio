@@ -4,6 +4,7 @@
 import type { APIEvent } from "@solidjs/start/server";
 import { getPublicProject, getProject } from "~/lib/db/projects";
 import { requireUserId } from "~/lib/auth-server";
+import { getProjectDurationSec, getProjectTrackCount } from "~/lib/audio/projectTimeline";
 
 export async function GET(event: APIEvent) {
   const id = event.params.id;
@@ -19,13 +20,6 @@ export async function GET(event: APIEvent) {
     const owned = await getProject(userId, id);
     if (owned) {
       const doc = owned.doc;
-      let durationSec = 0;
-      for (const track of doc.tracks ?? []) {
-        for (const clip of track.clips ?? []) {
-          const end = (clip.startSec ?? 0) + (clip.durationSec ?? 0);
-          if (end > durationSec) durationSec = end;
-        }
-      }
       const bpm = doc.transport?.bpm ?? 120;
 
       return Response.json({
@@ -33,12 +27,14 @@ export async function GET(event: APIEvent) {
         name: doc.name ?? "Untitled",
         bpm,
         key: doc.musicalKey ?? "—",
-        trackCount: (doc.tracks ?? []).length,
+        trackCount: getProjectTrackCount(doc),
+        createdAt: doc.createdAt ?? new Date().toISOString(),
         updatedAt: doc.updatedAt ?? new Date().toISOString(),
         isOwnerPreview: true,
         ownerId: userId,
         mixUrl: doc.mixUrl ?? null,
-        durationSec,
+        durationSec: getProjectDurationSec(doc, bpm),
+        lyrics: doc.lyrics ?? null,
       });
     }
   }

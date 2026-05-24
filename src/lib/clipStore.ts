@@ -30,7 +30,7 @@ export async function storeClip(clipId: string, blob: Blob): Promise<void> {
   });
 }
 
-export async function loadClip(clipId: string): Promise<string | null> {
+export async function loadClipBlob(clipId: string): Promise<Blob | null> {
   const db = await openDb();
   return new Promise((resolve, reject) => {
     const req = db.transaction(STORE_NAME, "readonly")
@@ -38,10 +38,15 @@ export async function loadClip(clipId: string): Promise<string | null> {
                   .get(clipId);
     req.onsuccess = () => {
       if (!req.result) { resolve(null); return; }
-      resolve(URL.createObjectURL(req.result as Blob));
+      resolve(req.result as Blob);
     };
     req.onerror = () => reject(req.error);
   });
+}
+
+export async function loadClip(clipId: string): Promise<string | null> {
+  const blob = await loadClipBlob(clipId);
+  return blob ? URL.createObjectURL(blob) : null;
 }
 
 export async function removeClip(clipId: string): Promise<void> {

@@ -1,4 +1,4 @@
-import { type Component, createResource, createSignal, For, onCleanup, onMount, Show } from "solid-js";
+import { type Component, createEffect, createMemo, createResource, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import { Portal } from "solid-js/web";
 import { useParams } from "@solidjs/router";
 import { authClient, getJWTToken } from "../../lib/auth";
@@ -11,11 +11,16 @@ interface PublicProject {
   bpm: number;
   key: string;
   trackCount: number;
+  createdAt?: string;
   updatedAt?: string;
   isOwnerPreview?: boolean;
   ownerId?: string;
   mixUrl?: string | null;
   durationSec?: number;
+  genre?: string;
+  description?: string;
+  explicit?: boolean;
+  lyrics?: string | null;
 }
 
 async function fetchPublicProject(id: string): Promise<PublicProject | null> {
@@ -64,12 +69,9 @@ function buildPeaks(seed: string, count = 300): number[] {
 }
 
 function relativeDate(iso?: string): string {
-  if (!iso) return "Today";
+  if (!iso) return "Unknown";
   const d = new Date(iso);
-  const diffSec = (Date.now() - d.getTime()) / 1000;
-  if (diffSec < 86400 * 1.5) return "Today";
-  if (diffSec < 86400 * 7)   return `${Math.floor(diffSec / 86400)}d ago`;
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
 // ── Background Image Color Hook ──
@@ -159,7 +161,7 @@ const SILENT_WAV =
   "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAgD4AAAB9AAACABAAZGF0YQAAAAA=";
 
 // ── Waveform — crisp white bars, interactive cursor ──────
-type WsHandle = { playPause(): void; destroy(): void; on(e: string, cb: () => void): void; seekTo(progress: number): void };
+type WsHandle = { playPause(): void; destroy(): void; on(e: string, cb: (...args: unknown[]) => void): void; seekTo(progress: number): void };
 
 const Waveform: Component<{
   id: string;
@@ -313,12 +315,113 @@ const SharePage: Component = () => {
           const [menuRect, setMenuRect] = createSignal({ top: 0, right: 0 });
           const [showDetails, setShowDetails] = createSignal(false);
           const [showSettings, setShowSettings] = createSignal(false);
-          const [settingsDesc, setSettingsDesc] = createSignal("");
-          const [settingsGenre, setSettingsGenre] = createSignal("None");
-          const [settingsExplicit, setSettingsExplicit] = createSignal(false);
+          const [settingsDesc, setSettingsDesc] = createSignal(p().description || "");
+          const [settingsGenre, setSettingsGenre] = createSignal(p().genre || "None");
+          const [settingsExplicit, setSettingsExplicit] = createSignal<boolean>(p().explicit || false);
+
+          // ── Synced lyrics (LRCLIB + AudD fingerprinting) ─────────────────
+          interface LrcLine { timeSec: number; text: string }
+          const [lyricsOpen, setLyricsOpen] = createSignal(false);
+          const [lyricsLines, setLyricsLines] = createSignal<LrcLine[]>([]);
+          const [lyricsLoading, setLyricsLoading] = createSignal(false);
+          const [lyricsErr, setLyricsErr] = createSignal("");
+          let lyricsScrollEl: HTMLDivElement | undefined;
+          const lyricLineEls: (HTMLParagraphElement | undefined)[] = [];
+
+          const parseLrc = (lrc: string): LrcLine[] => {
+            const lines: LrcLine[] = [];
+            for (const raw of lrc.split("\n")) {
+              const m = raw.match(/^\[(\d+):(\d+\.?\d*)\](.*)/);
+              if (m) {
+                const timeSec = parseInt(m[1]!) * 60 + parseFloat(m[2]!);
+                const text = m[3]!.trim();
+                if (text) lines.push({ timeSec, text });
+              }
+            }
+            return lines;
+          };
+
+
+          const openLyrics = async () => {
+            setLyricsOpen(true);
+            if (lyricsLoading()) return;
+
+            // 1. Use lyrics already saved in the project
+            const saved = p().lyrics;
+            if (saved?.trim()) {
+              if (saved.includes("[") && /\[\d+:\d+/.test(saved)) {
+                setLyricsLines(parseLrc(saved));
+              } else {
+                setLyricsLines(
+                  saved.split("\n").filter(Boolean).map((text, i) => ({ timeSec: i * 4, text }))
+                );
+              }
+              return;
+            }
+
+            // 2. No saved lyrics — auto-transcribe via Groq Whisper (mix or clips)
+            setLyricsLoading(true);
+            setLyricsErr("");
+            try {
+              // Attempt to get auth token (optional — public projects work without it)
+              let token: string | null = null;
+              try { token = await getJWTToken(); } catch { /* unauthenticated */ }
+
+              const headers: HeadersInit = { "Content-Type": "application/json" };
+              if (token) headers["Authorization"] = `Bearer ${token}`;
+
+              const res = await fetch("/api/transcribe", {
+                method: "POST",
+                headers,
+                body: JSON.stringify({ projectId: p().id }),
+              });
+              if (!res.ok) { setLyricsErr("no-lyrics"); return; }
+              const { lrc } = (await res.json()) as { lrc: string };
+              if (!lrc?.trim()) { setLyricsErr("no-lyrics"); return; }
+
+              // Show lyrics immediately
+              if (lrc.includes("[") && /\[\d+:\d+/.test(lrc)) {
+                setLyricsLines(parseLrc(lrc));
+              } else {
+                setLyricsLines(lrc.split("\n").filter(Boolean).map((text, i) => ({ timeSec: i * 4, text })));
+              }
+
+              // Cache back to the project if authenticated (non-critical)
+              if (token) {
+                fetch(`/api/projects/${p().id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                  body: JSON.stringify({ lyrics: lrc }),
+                }).catch(() => { /* ignore */ });
+              }
+            } catch {
+              setLyricsErr("no-lyrics");
+            } finally {
+              setLyricsLoading(false);
+            }
+          };
+
           const [isPlaying, setIsPlaying] = createSignal(false);
           const [playheadSec, setPlayheadSec] = createSignal(0);
           const [totalSec, setTotalSec] = createSignal(p().durationSec ?? 0);
+
+          const activeLyricIdx = createMemo(() => {
+            const lines = lyricsLines();
+            const t = playheadSec();
+            let idx = -1;
+            for (let i = 0; i < lines.length; i++) {
+              if (lines[i]!.timeSec <= t) idx = i; else break;
+            }
+            return idx;
+          });
+
+          // Auto-scroll active line into centre of the lyrics panel
+          createEffect(() => {
+            const idx = activeLyricIdx();
+            if (idx >= 0 && lyricLineEls[idx] && lyricsScrollEl) {
+              lyricLineEls[idx]!.scrollIntoView({ block: "center", behavior: "smooth" });
+            }
+          });
           let wsRef: WsHandle | undefined;
           let rafId = 0;
           let menuRef!: HTMLDivElement;
@@ -377,12 +480,13 @@ const SharePage: Component = () => {
               const res = await fetch(`/api/share-clips/${p().id}`, { headers: clipsHeaders });
               if (!res.ok) { setIsPlaying(false); return; }
 
-              const { bpm, tracks, pattern } = (await res.json()) as {
+              const { bpm, tracks, durationSec, pattern } = (await res.json()) as {
                 bpm: number;
                 tracks: Array<{
                   id: string; name: string; volume: number; muted: boolean;
-                  clips: Array<{ id: string; barStart: number; bars: number }>;
+                  clips: Array<{ id: string; startSec: number; durationSec: number; dataUrl?: string }>;
                 }>;
+                durationSec?: number;
                 pattern: unknown | null;
               };
 
@@ -392,12 +496,11 @@ const SharePage: Component = () => {
               audioCtx ??= new AudioContext();
               if (audioCtx.state === "suspended") await audioCtx.resume();
 
-              const secPerBar = (4 * 60) / bpm;
               const now = audioCtx.currentTime;
               startedAt = now - pausedAt;
 
               let scheduled = 0;
-              let maxEndSec = 0;
+              let maxEndSec = durationSec ?? 0;
 
               if (pattern) {
                 const { StepSequencer, sanitizePattern } = await import("~/lib/audio/stepSeq");
@@ -411,7 +514,7 @@ const SharePage: Component = () => {
               for (const track of tracks) {
                 if (track.muted) continue;
                 for (const clip of track.clips) {
-                  const blobUrl = await loadClip(clip.id).catch(() => null);
+                  const blobUrl = clip.dataUrl ?? await loadClip(clip.id).catch(() => null);
                   if (!blobUrl) continue;
 
                   const arrayBuf = await fetch(blobUrl).then((r) => r.arrayBuffer()).catch(() => null);
@@ -420,8 +523,9 @@ const SharePage: Component = () => {
                   const decoded = await audioCtx.decodeAudioData(arrayBuf.slice(0)).catch(() => null);
                   if (!decoded) continue;
 
-                  const clipStartSec = clip.barStart * secPerBar;
-                  const clipEndSec = clipStartSec + decoded.duration;
+
+                  const clipStartSec = clip.startSec ?? 0;
+                  const clipEndSec = clipStartSec + Math.max(decoded.duration, clip.durationSec ?? 0);
                   if (clipEndSec > maxEndSec) maxEndSec = clipEndSec;
                   // skip clips that are entirely behind the current pause point
                   if (pausedAt > clipEndSec) continue;
@@ -479,19 +583,92 @@ const SharePage: Component = () => {
 
           const handleWsReady = (ws: NonNullable<typeof wsRef>) => {
             wsRef = ws;
-            // WaveSurfer is visual-only here (no real audio route through it)
+            // When user clicks the waveform, seek to that position in the custom audio engine
+            ws.on("interaction", (...args: unknown[]) => {
+              const dur = totalSec();
+              if (dur <= 0) return;
+              const currentTimeSec = args[0] as number | undefined;
+              if (currentTimeSec == null) return;
+              const newPos = Math.max(0, Math.min(dur, currentTimeSec));
+              pausedAt = newPos;
+              setPlayheadSec(newPos);
+              if (isPlaying()) {
+                cancelAnimationFrame(rafId);
+                stopSources();
+                stopDrums();
+                setIsPlaying(false);
+                void togglePlayback();
+              }
+            });
           };
 
           return (
-            <>
-              {/* ── Player card ── */}
-              <div 
-                class="sp__card" 
-                style={{ 
-                  "--card-accent": extractedColor() || accentColor,
-                  "box-shadow": `0 24px 72px rgba(0,0,0,0.8), 0 0 140px ${extractedColor() || accentColor}99`
-                }}
-              >
+            <div class={`sp__layout ${lyricsOpen() ? "sp__layout--lyrics" : ""}`}>
+              {/* ── Main Lyrics Panel (when open) ── */}
+              <Show when={lyricsOpen()}>
+                <div
+                  class="sp__lyrics-page"
+                  style={{ 
+                    "--card-accent": extractedColor() || accentColor
+                  }}
+                >
+                  <Show when={lyricsLines().length > 0} fallback={
+                    <div class="sp__lyrics-empty sp__lyrics-empty--page">
+                      <Show when={lyricsLoading()} fallback={
+                        <Show when={lyricsErr() === "no-lyrics"}>
+                          <p>No lyrics available for this track.</p>
+                          <a href={`/studio/${p().id}`} class="sp__lyrics-empty-link">Add lyrics in Studio →</a>
+                        </Show>
+                      }>
+                        <svg class="sp__lyrics-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                        <p>Transcribing vocals…</p>
+                      </Show>
+                    </div>
+                  }>
+                    <div class="sp__lyrics-scroll" ref={lyricsScrollEl!}>
+                      <For each={lyricsLines()}>
+                      {(line, i) => (
+                        <p
+                          ref={(el) => (lyricLineEls[i()] = el)}
+                          class={`sp__lyrics-line${
+                            i() === activeLyricIdx()
+                              ? " sp__lyrics-line--active"
+                              : i() < activeLyricIdx()
+                                ? " sp__lyrics-line--past"
+                                : ""
+                          }`}
+                          onClick={() => {
+                            pausedAt = line.timeSec;
+                            setPlayheadSec(line.timeSec);
+                            if (totalSec() > 0) wsRef?.seekTo(line.timeSec / totalSec());
+                            if (isPlaying()) {
+                              cancelAnimationFrame(rafId);
+                              stopSources();
+                              stopDrums();
+                              setIsPlaying(false);
+                              void togglePlayback();
+                            }
+                          }}
+                        >
+                          {line.text}
+                        </p>
+                      )}
+                    </For>
+                    </div>
+                  </Show>
+                </div>
+              </Show>
+
+              {/* ── Right Column (Player & Queue) ── */}
+              <div class="sp__layout-right">
+                {/* ── Player card ── */}
+                <div 
+                  class="sp__card" 
+                  style={{ 
+                    "--card-accent": extractedColor() || accentColor,
+                    "box-shadow": `0 24px 72px rgba(0,0,0,0.8), 0 0 140px ${extractedColor() || accentColor}99`
+                  }}
+                >
 
                 {/* Vinyl disc cover */}
                 <div class="sp__cover">
@@ -600,7 +777,7 @@ const SharePage: Component = () => {
                   <p class="sp__meta">
                     <span class="sp__meta-artist">MeloStudio</span>
                     <span class="sp__meta-sep">·</span>
-                    <span>{relativeDate(p().updatedAt)}</span>
+                    <span>{relativeDate(p().createdAt || p().updatedAt)}</span>
                     <Show when={p().key && p().key !== "—"}>
                       <span class="sp__meta-sep">·</span>
                       <span>{p().key}</span>
@@ -625,20 +802,20 @@ const SharePage: Component = () => {
                             <circle cx="8" cy="8" r="6.5"/>
                             <path d="M5.5 8h5M8 5.5v5"/>
                           </svg>
-                          Publish
+                          <span class="sp__btn-label">Publish</span>
                         </button>
                       </Show>
                       <button class="sp__btn" onClick={copyLink}>
                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12">
                           <path d="M9 2h5v5M14 2l-6 6M7 4H3a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V9"/>
                         </svg>
-                        {copied() ? "Copied!" : "Share privately"}
+                        <span class="sp__btn-label">{copied() ? "Copied!" : "Share privately"}</span>
                       </button>
                       <button class="sp__btn">
                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12">
                           <path d="M8 2v9M4 8l4 4 4-4M2 14h12"/>
                         </svg>
-                        Download
+                        <span class="sp__btn-label">Download</span>
                       </button>
                     </div>
                     <div class="sp__actions-right">
@@ -649,7 +826,7 @@ const SharePage: Component = () => {
                           <rect x="1" y="9" width="6" height="6" rx="1"/>
                           <rect x="9" y="9" width="6" height="6" rx="1"/>
                         </svg>
-                        Studio
+                        <span class="sp__btn-label">Studio</span>
                       </a>
                     </div>
                   </div>
@@ -663,7 +840,18 @@ const SharePage: Component = () => {
                   <div class="sp__services">
                     <For each={SERVICES}>
                       {(s) => (
-                        <div class="sp__service-item">
+                        <div
+                          class={`sp__service-item${s.name === "Lyrics" ? " sp__service-item--clickable" + (lyricsOpen() ? " sp__service-item--active" : "") : ""}`}
+                          onClick={s.name === "Lyrics" ? () => {
+                            if (lyricsOpen() && lyricsLines().length > 0) {
+                              setLyricsOpen(false); // close if showing results
+                            } else {
+                              // open (or retry if open but no results yet)
+                              setLyricsErr("");
+                              void openLyrics();
+                            }
+                          } : undefined}
+                        >
                           <div class="sp__service-circle">
                             {s.icon}
                           </div>
@@ -677,8 +865,7 @@ const SharePage: Component = () => {
                   </div>
                 </div>
               </div>
-
-              {/* ── CTA banner removed ── */}
+            </div>
 
               {/* ── Project Details modal ── */}
               <Show when={showDetails()}>
@@ -878,12 +1065,30 @@ const SharePage: Component = () => {
                         </button>
                       </div>
 
-                      <button class="sp__modal-save">Save Changes</button>
+                      <button
+                        class="sp__modal-save"
+                        onClick={async () => {
+                          const res = await fetch(`/api/projects/${p().id}`, {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              genre: settingsGenre() === "None" ? null : settingsGenre(),
+                              description: settingsDesc() || null,
+                              explicit: settingsExplicit(),
+                            })
+                          });
+                          if (res.ok) {
+                            setShowSettings(false);
+                            // Optionally refresh project data here or let reactivity take care of whatever we render
+                            window.location.reload();
+                          }
+                        }}
+                      >Save Changes</button>
                     </div>
                   </div>
                 </Portal>
               </Show>
-            </>
+            </div>
           );
         }}
       </Show>

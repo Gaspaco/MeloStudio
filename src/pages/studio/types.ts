@@ -9,6 +9,7 @@ export interface MediaClip {
   barStart: number;
   bars: number;
   url?: string;
+  dataUrl?: string;
 }
 
 export interface UITrack {

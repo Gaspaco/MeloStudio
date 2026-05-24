@@ -1,6 +1,7 @@
 // Server-side project CRUD.
 import { sql } from "./client";
 import { SCHEMA_VERSION, type ProjectDoc } from "~/lib/audio/types";
+import { getProjectDurationSec, getProjectTrackCount } from "~/lib/audio/projectTimeline";
 
 export interface ProjectListItem {
   id: string;
@@ -119,40 +120,53 @@ export interface PublicProjectView {
   bpm: number;
   key: string;
   trackCount: number;
+  createdAt: string;
   updatedAt: string;
   ownerId?: string;
   mixUrl?: string;
   durationSec?: number;
+  genre?: string;
+  description?: string;
+  explicit?: boolean;
+  lyrics?: string;
 }
 
 export async function getPublicProject(projectId: string): Promise<PublicProjectView | null> {
   const rows = await sql`
-    SELECT id, name, bpm, updated_at, data, user_id FROM projects
+    SELECT id, name, bpm, created_at, updated_at, data, user_id FROM projects
     WHERE id = ${projectId} AND published = true
     LIMIT 1
-  ` as Array<{ id: string; name: string; bpm: number; updated_at: string; data: ProjectDoc; user_id: string }>;
+  ` as Array<{ id: string; name: string; bpm: number; created_at: string; updated_at: string; data: ProjectDoc; user_id: string }>;
   if (!rows[0]) return null;
   const doc = rows[0].data;
-
-  let durationSec = 0;
-  for (const track of doc.tracks ?? []) {
-    for (const clip of track.clips ?? []) {
-      const end = (clip.startSec ?? 0) + (clip.durationSec ?? 0);
-      if (end > durationSec) durationSec = end;
-    }
-  }
+  const bpm = rows[0].bpm || doc.transport?.bpm || 120;
 
   return {
     id: rows[0].id,
     name: rows[0].name,
-    bpm: rows[0].bpm,
+    bpm,
     key: doc.musicalKey ?? "—",
-    trackCount: (doc.tracks ?? []).length,
+    trackCount: getProjectTrackCount(doc),
+    createdAt: rows[0].created_at ?? doc.createdAt,
     updatedAt: rows[0].updated_at,
     ownerId: rows[0].user_id,
     mixUrl: doc.mixUrl,
-    durationSec,
+    durationSec: getProjectDurationSec(doc, bpm),
+    genre: doc.genre,
+    description: doc.description,
+    explicit: doc.explicit,
+    lyrics: doc.lyrics,
   };
+}
+
+/** Returns the raw doc for a *published* project — used by the transcribe endpoint to scan clips. */
+export async function getPublicProjectDoc(projectId: string): Promise<ProjectDoc | null> {
+  const rows = await sql`
+    SELECT data FROM projects
+    WHERE id = ${projectId} AND published = true
+    LIMIT 1
+  ` as Array<{ data: ProjectDoc }>;
+  return rows[0]?.data ?? null;
 }
 
 export async function createProject(

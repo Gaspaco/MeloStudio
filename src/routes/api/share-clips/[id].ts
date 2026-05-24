@@ -4,21 +4,7 @@
 import type { APIEvent } from "@solidjs/start/server";
 import { sql } from "~/lib/db/client";
 import { requireUserId } from "~/lib/auth-server";
-
-interface SavedClip {
-  id: string;
-  kind: string;
-  barStart?: number;
-  bars?: number;
-}
-
-interface SavedTrack {
-  id: string;
-  name: string;
-  volume?: number;
-  muted?: boolean;
-  clips?: SavedClip[];
-}
+import { getProjectDurationSec, getSharePlaybackTracks, type TimelineDoc } from "~/lib/audio/projectTimeline";
 
 interface SavedStepPattern {
   steps?: number;
@@ -40,7 +26,7 @@ export async function GET(event: APIEvent) {
     SELECT data, bpm, user_id, published FROM projects
     WHERE id = ${id} AND deleted_at IS NULL
     LIMIT 1
-  ` as Array<{ data: { uiTracks?: SavedTrack[]; transport?: { bpm?: number }; beat?: { pattern?: SavedStepPattern } }; bpm: number; user_id: string; published: boolean }>;
+  ` as Array<{ data: TimelineDoc & { transport?: { bpm?: number }; beat?: { pattern?: SavedStepPattern } }; bpm: number; user_id: string; published: boolean }>;
 
   if (!rows[0]) return new Response("not found", { status: 404 });
 
@@ -52,23 +38,12 @@ export async function GET(event: APIEvent) {
 
   const doc = row.data;
   const bpm: number = doc.transport?.bpm ?? row.bpm ?? 120;
-
-  const tracks = (doc.uiTracks ?? [])
-    .map((t) => ({
-      id: t.id,
-      name: t.name,
-      volume: t.volume ?? 1,
-      muted: t.muted ?? false,
-      clips: (t.clips ?? [])
-        .filter((c) => c.kind !== "midi")
-        .map((c) => ({ id: c.id, barStart: c.barStart ?? 0, bars: c.bars ?? 1 })),
-    }))
-    .filter((t) => t.clips.length > 0);
+  const tracks = getSharePlaybackTracks(doc, bpm);
 
   const pattern = doc.beat?.pattern;
   const hasDrums = !!pattern?.rows?.some((row) =>
     !row.muted && (row.velocities ?? []).some((velocity) => velocity > 0),
   );
 
-  return Response.json({ bpm, tracks, pattern: hasDrums ? pattern : null });
+  return Response.json({ bpm, tracks, durationSec: getProjectDurationSec(doc, bpm), pattern: hasDrums ? pattern : null });
 }

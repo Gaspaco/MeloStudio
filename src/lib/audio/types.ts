@@ -91,6 +91,12 @@ export interface ProjectDoc {
   musicalKey?: string;
   // optional pre-rendered stereo mix URL (set after export)
   mixUrl?: string;
+  // track metadata
+  genre?: string;
+  description?: string;
+  explicit?: boolean;
+  // lyrics (plain text or LRC format with [MM:SS.xx] timestamps)
+  lyrics?: string;
 }
 
 export const dbToGain = (db: number): number =>

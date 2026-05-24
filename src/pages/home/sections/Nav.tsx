@@ -44,7 +44,7 @@ const Nav: Component<{
 
   return (
     <>
-      <nav class={`nav${props.menuOpen() ? " nav--hidden" : ""}`}>
+      <nav class="nav" classList={{ "nav--hidden": props.menuOpen() }}>
         <span class="nav__logo">
           <span class="nav__logo-melo">Melo</span>
           <span class="nav__logo-studio">Studio</span>
@@ -86,7 +86,7 @@ const Nav: Component<{
       </nav>
 
       {/* Nav Menu Overlay */}
-      <div class={`nav-menu${props.menuOpen() ? " nav-menu--open" : ""}`}>
+      <div class="nav-menu" classList={{ "nav-menu--open": props.menuOpen() }}>
         <div class="nav-menu__bg" />
         <div class="nav-menu__close" onClick={() => props.setMenuOpen(false)}>
           <svg class="nav-menu__close-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

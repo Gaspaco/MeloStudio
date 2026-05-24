@@ -152,6 +152,7 @@ const Studio: Component = () => {
     setDrumPanelOpen, setShowNewTrack,
     saveState, setSaveState, setError, setShowRestoreDialog,
     setPublished,
+    lyricsText, setLyricsText,
   });
 
   const trk = useTracks({
@@ -530,7 +531,7 @@ const Studio: Component = () => {
       </Show>
 
       <Show when={lyricsOpen()}>
-        <LyricsPanel text={lyricsText} onSetText={setLyricsText} onClose={() => setLyricsOpen(false)} />
+        <LyricsPanel text={lyricsText} onSetText={setLyricsText} onClose={() => setLyricsOpen(false)} projectName={name} projectId={params.id} />
       </Show>
 
       <Show when={showRestoreDialog()}>

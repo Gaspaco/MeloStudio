@@ -7,10 +7,18 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
   let audioEl!: HTMLAudioElement;
   let peaksInstance: PeaksInstance | null = null;
 
-  const initPeaks = (url: string) => {
+  const initPeaks = async (url: string) => {
     if (peaksInstance) { peaksInstance.destroy(); peaksInstance = null; }
     if (!containerEl || !audioEl) return;
     audioEl.src = url;
+
+    // Peaks.js decodes audio via decodeAudioData which requires a running context.
+    // Browsers start AudioContext in "suspended" state; resume before initialising.
+    const ac = getAudioContext();
+    if (ac.state !== "running") {
+      await ac.resume().catch(() => {});
+    }
+
     Peaks.init({
       overview: {
         container: containerEl,
@@ -23,10 +31,13 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
         highlightOpacity: 0,
       },
       mediaElement: audioEl,
-      webAudio: { audioContext: getAudioContext() },
+      webAudio: { audioContext: ac },
       keyboard: false,
     }, (err, peaks) => {
-      if (err || !peaks) return;
+      if (err || !peaks) {
+        console.warn("[AudioWaveformDisplay] peaks.js init failed:", err);
+        return;
+      }
       peaksInstance = peaks;
       const view = peaks.views.getView("overview");
       if (view) {
@@ -39,7 +50,7 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
 
   createEffect(() => {
     const url = props.url;
-    if (url) initPeaks(url);
+    if (url) void initPeaks(url);
   });
 
   onCleanup(() => {

@@ -5,11 +5,12 @@
 // putting up a clean loading state until the studio is absolutely ready to play.
 import { onMount } from "solid-js";
 import { getJWTToken } from "~/lib/auth";
+import { unlockAudioContext } from "~/lib/audio/context";
 import type { Accessor, Setter } from "solid-js";
 import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer } from "~/lib/audio/stepSeq";
 import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
-import { loadClip, removeClip } from "~/lib/clipStore";
-import { type UITrack, TRACK_DEFS } from "../types";
+import { loadClip, loadClipBlob, removeClip, storeClip } from "~/lib/clipStore";
+import { type MediaClip, type UITrack, TRACK_DEFS } from "../types";
 
 type Deps = {
   projectId: string;
@@ -30,6 +31,8 @@ type Deps = {
   setError: Setter<string>;
   setShowRestoreDialog: Setter<boolean>;
   setPublished?: (v: boolean) => void;
+  lyricsText?: Accessor<string>;
+  setLyricsText?: Setter<string>;
 };
 
 export function useProject(deps: Deps) {
@@ -44,9 +47,24 @@ export function useProject(deps: Deps) {
     return headers;
   };
 
+  const blobToDataUrl = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+
+  const clipDataUrl = async (clip: MediaClip): Promise<string | undefined> => {
+    if (clip.dataUrl) return clip.dataUrl;
+    let blob = await loadClipBlob(clip.id).catch(() => null);
+    if (!blob && clip.url) blob = await fetch(clip.url).then((res) => res.blob()).catch(() => null);
+    return blob ? blobToDataUrl(blob) : undefined;
+  };
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const applyDoc = async (doc: any) => {
     deps.setName(doc.name ?? "Untitled");
+    if (doc.lyrics != null) deps.setLyricsText?.(doc.lyrics as string);
     if (doc.transport?.bpm) deps.setBpm(doc.transport.bpm);
     if (doc.transport?.timeSig) deps.setTimeSig(doc.transport.timeSig as [number, number]);
     if (doc.musicalKey) deps.setMusicalKey(doc.musicalKey);
@@ -67,7 +85,14 @@ export function useProject(deps: Deps) {
         const restoredClips = [];
         for (const clip of t.clips ?? []) {
           if (clip.kind !== "midi") {
-            const url = await loadClip(clip.id).catch(() => null);
+            let url = await loadClip(clip.id).catch(() => null);
+            if (!url && clip.dataUrl) {
+              const blob = await fetch(clip.dataUrl).then((res) => res.blob()).catch(() => null);
+              if (blob) {
+                await storeClip(clip.id, blob).catch(() => {});
+                url = URL.createObjectURL(blob);
+              }
+            }
             restoredClips.push({ ...clip, url: url ?? undefined });
           } else {
             restoredClips.push(clip);
@@ -92,6 +117,9 @@ export function useProject(deps: Deps) {
 
   const restoreSession = async () => {
     deps.setShowRestoreDialog(false);
+    // Unlock AudioContext within the user-gesture callback so Peaks.js can
+    // call decodeAudioData without hitting the browser's autoplay block.
+    await unlockAudioContext().catch(() => {});
     if (pendingDoc) await applyDoc(pendingDoc);
     pendingDoc = null;
   };
@@ -127,16 +155,21 @@ export function useProject(deps: Deps) {
       const res = await fetch(`/api/projects/${deps.projectId}`, { headers, credentials: "include" });
       if (!res.ok) throw new Error(`load failed: ${res.status}`);
       const doc = await res.json();
-      const uiTracksForSave = deps.tracks().map(t => ({
+      const uiTracksForSave = await Promise.all(deps.tracks().map(async t => ({
         ...t,
-        clips: (t.clips ?? []).map(c => ({ ...c, url: undefined })),
-      }));
+        clips: await Promise.all((t.clips ?? []).map(async c => ({
+          ...c,
+          url: undefined,
+          dataUrl: c.kind === "midi" ? undefined : await clipDataUrl(c),
+        }))),
+      })));
       const updated = {
         ...doc,
         beat: { pattern: seq.getPattern() },
         transport: { ...(doc.transport ?? {}), bpm: deps.bpm(), timeSig: deps.timeSig() },
         musicalKey: deps.musicalKey(),
         uiTracks: uiTracksForSave,
+        lyrics: deps.lyricsText?.() ?? doc.lyrics ?? "",
       };
       const put = await fetch(`/api/projects/${deps.projectId}`, {
         method: "PUT",

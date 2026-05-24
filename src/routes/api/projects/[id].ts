@@ -62,6 +62,10 @@ export async function PATCH(event: APIEvent) {
   if (!result) return new Response("not found", { status: 404 });
   const doc = result.doc;
   if (body.name !== undefined) doc.name = body.name;
+  if (body.genre !== undefined) doc.genre = body.genre;
+  if (body.description !== undefined) doc.description = body.description;
+  if (body.explicit !== undefined) doc.explicit = Boolean(body.explicit);
+  if (body.lyrics !== undefined) doc.lyrics = body.lyrics;
   await saveProject(userId, id, doc);
   return new Response(null, { status: 204 });
 }

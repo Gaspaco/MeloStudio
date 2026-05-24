@@ -1,0 +1,20 @@
+--- src/routes/share/[id].tsx
++++ src/routes/share/[id].tsx
+@@ -783,16 +783,10 @@
+ 
+                       <Show when={lyricsLines().length > 0} fallback={
+                         <div class="sp__lyrics-empty">
+-                          <Show when={lyricsLoading()}>
+-                            <p>Identifying song…</p>
+-                          </Show>
+-                          <Show when={!lyricsLoading() && lyricsErr() === "no-match"}>
+-                            <p>Couldn't identify this song.</p>
+-                            <a href={`/studio/${p().id}`} class="sp__lyrics-empty-link">Add lyrics in Studio →</a>
+-                          </Show>
+-                          <Show when={!lyricsLoading() && lyricsErr() === "no-lyrics"}>
++                          <Show when={!lyricsLoading()}>
+                             <p>No lyrics found for this song.</p>
+                             <a href={`/studio/${p().id}`} class="sp__lyrics-empty-link">Add lyrics in Studio →</a>
+                           </Show>
+                         </div>
+                       }>
