@@ -1,0 +1,742 @@
+@use "../../../styles/variables" as *;
+
+// ── Modals ─────────────────────────────────────────────────────────
+
+.sp__modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 10000;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  animation: paneFadeIn 0.22s ease both;
+}
+
+@keyframes paneFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.sp__modal {
+  background: #0c0c0c;
+  border-left: 1px solid rgba(255, 255, 255, 0.07);
+  width: 480px;
+  max-width: 96vw;
+  height: 100%;
+  padding: 2rem 1.75rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto;
+  animation: slideInRight 0.3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.sp__modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.25rem;
+}
+
+.sp__modal-title {
+  font-family: $font-display;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-primary;
+}
+
+.sp__modal-close {
+  all: unset;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: rgba(255, 255, 255, 0.55);
+  transition: background 0.15s, color 0.15s;
+  &:hover { background: rgba(255,255,255,0.08); color: #fff; }
+}
+
+// ── Project Details modal ──────────────────────────────────────────
+
+.sp__modal-project-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sp__modal-thumb {
+  width: 90px;
+  height: 90px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #1e1e1e;
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.sp__modal-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-display;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.7);
+}
+
+.sp__modal-project-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sp__modal-project-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sp__modal-owner-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sp__modal-owner-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+
+  &--placeholder {
+    background: rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #fff;
+  }
+}
+
+.sp__modal-owner-name {
+  font-size: 0.95rem;
+  color: $text-secondary;
+}
+
+.sp__modal-kebab {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background 0.15s;
+  &:hover { background: rgba(255,255,255,0.07); }
+  span {
+    display: block;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.5);
+  }
+}
+
+.sp__modal-section-label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 0.85rem;
+}
+
+.sp__modal-collab-avatars {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sp__modal-collab-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #111;
+
+  &--placeholder {
+    background: rgba(255,255,255,0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+  }
+}
+
+.sp__modal-collab-add {
+  all: unset;
+  cursor: pointer;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.4);
+  transition: border-color 0.15s, color 0.15s;
+  &:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+}
+
+.sp__modal-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.sp__modal-link-hint {
+  font-size: 0.92rem;
+  color: $text-muted;
+  flex: 1;
+}
+
+.sp__modal-copy-btn {
+  all: unset;
+  cursor: pointer;
+  padding: 0.65rem 1.35rem;
+  border-radius: $radius-pill;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: $text-primary;
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.15s;
+  &:hover { background: rgba(255,255,255,0.16); }
+}
+
+.sp__modal-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 0 -0.25rem;
+}
+
+.sp__modal-version-card {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 1.05rem 1.15rem;
+}
+
+.sp__modal-version-row {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.sp__modal-version-thumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+  background: $bg-elevated;
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.sp__modal-version-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+}
+
+.sp__modal-version-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sp__modal-version-date {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.sp__modal-version-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  color: $text-secondary;
+}
+
+.sp__modal-version-sep { color: rgba(255, 255, 255, 0.18); }
+
+.sp__modal-private {
+  color: #e05353;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.sp__modal-version-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  flex-shrink: 0;
+}
+
+.sp__modal-version-icon-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: $text-muted;
+  transition: background 0.15s, color 0.15s;
+  &:hover { background: rgba(255, 255, 255, 0.06); color: $text-secondary; }
+}
+
+.sp__modal-version-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.sp__modal-version-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.sp__modal-vbtn {
+  all: unset;
+  cursor: pointer;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: $bg-elevated;
+  color: $text-secondary;
+  transition: background 0.15s, color 0.15s;
+  &:hover { background: $bg-tertiary; color: $text-primary; }
+  
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.sp__modal-studio-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: $radius-pill;
+  background: $accent;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s;
+  &:hover { background: $accent-hover; }
+}
+
+// ── Settings panel ─────────────────────────────────────────────────
+
+.sp__modal-subtitle {
+  font-size: 0.72rem;
+  color: $text-muted;
+  margin-top: 0.15rem;
+  font-family: $font-mono;
+  letter-spacing: 0.05em;
+}
+
+.sp__modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sp__modal-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sp__modal-label {
+  font-family: $font-mono;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $text-muted;
+}
+
+.sp__modal-char-count {
+  font-family: $font-mono;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: $text-muted;
+}
+
+.sp__modal-textarea-wrap {
+  position: relative;
+}
+
+.sp__modal-textarea {
+  all: unset;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 100px;
+  padding: 0.85rem 1rem 2.2rem;
+  background: $bg-tertiary;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: $radius-lg;
+  color: $text-primary;
+  font-family: $font-sans;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  resize: none;
+  transition: border-color 0.15s;
+  &::placeholder { color: $text-muted; font-style: italic; }
+  &:focus { border-color: rgba(224, 82, 151, 0.4); outline: none; }
+}
+
+.sp__modal-emoji {
+  position: absolute;
+  bottom: 0.65rem;
+  right: 0.85rem;
+  font-size: 1rem;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity 0.15s;
+  &:hover { opacity: 0.9; }
+}
+
+.sp__modal-select-wrap {
+  position: relative;
+}
+
+.sp__modal-select {
+  all: unset;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 0.8rem 2.5rem 0.8rem 1rem;
+  background: $bg-tertiary;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: $radius-lg;
+  color: $text-primary;
+  font-family: $font-sans;
+  font-size: 0.9rem;
+  cursor: pointer;
+  appearance: none;
+  transition: border-color 0.15s;
+  &:focus { border-color: rgba(224, 82, 151, 0.4); outline: none; }
+  option { background: $bg-elevated; }
+}
+
+.sp__modal-select-caret {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $text-muted;
+  pointer-events: none;
+}
+
+.sp__modal-hint {
+  font-size: 0.78rem;
+  color: $text-muted;
+  line-height: 1.5;
+}
+
+.sp__modal-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sp__modal-toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.sp__modal-toggle {
+  all: unset;
+  box-sizing: border-box;
+  cursor: pointer;
+  flex-shrink: 0;
+  width: 46px;
+  height: 26px;
+  border-radius: $radius-pill;
+  background: $bg-elevated;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  transition: background 0.2s, border-color 0.2s;
+
+  &--on {
+    background: $accent;
+    border-color: $accent;
+  }
+
+  &-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: $text-secondary;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  &--on &-thumb {
+    transform: translateX(20px);
+    background: #fff;
+  }
+}
+
+.sp__modal-save {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.9rem;
+  border-radius: $radius-pill;
+  background: $accent;
+  color: #fff;
+  font-family: $font-sans;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  transition: background 0.15s, transform 0.1s;
+  &:hover { background: $accent-hover; }
+  &:active { transform: scale(0.98); }
+}
+
+/* ─────────────── SPOTIFY-STYLE SYNCED LYRICS ─────────────── */
+.sp__service-item--clickable {
+  cursor: pointer;
+  &:hover .sp__service-circle {
+    background: rgba(#fff, 0.1);
+    border-color: rgba($accent, 0.5);
+  }
+  &:hover .sp__service-label { color: $text-primary; }
+}
+
+.sp__lyrics-inline {
+  margin-top: 1rem;
+  width: 100%;
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: spLyricsIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes spLyricsIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.sp__service-item--active .sp__service-circle {
+  background: rgba($accent, 0.15);
+  border-color: rgba($accent, 0.5);
+}
+.sp__service-item--active .sp__service-label {
+  color: $accent;
+}
+
+.sp__lyrics-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.2rem 0.7rem;
+  background: rgba(255, 255, 255, 0.018);
+  border-bottom: 1px solid rgba(#fff, 0.05);
+  flex-shrink: 0;
+  > .sp__lyrics-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(#fff, 1);
+    svg { opacity: 1; }
+  }
+}
+
+.sp__lyrics-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.sp__lyrics-back-btn {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  color: $text-muted;
+  transition: background 0.14s, color 0.14s;
+  &:hover { background: rgba(#fff, 0.08); color: $text-primary; }
+}
+
+.sp__lyrics-close-btn {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  width: 2rem; height: 2rem;
+  border-radius: 50%;
+  color: rgba(#fff, 1);
+  transition: background 0.14s, color 0.14s;
+  &:hover { background: rgba(#fff, 0.08); color: rgba(#fff, 1); }
+}
+
+.sp__lyrics-empty {
+  padding: 2.5rem 1.2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  p {
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    color: $text-muted;
+    letter-spacing: 0.06em;
+    margin: 0;
+  }
+}
+
+.sp__lyrics-spinner {
+  color: $text-muted;
+  animation: spLyricsSpin 0.9s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spLyricsSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.sp__lyrics-empty-link {
+  font-family: $font-mono;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: $accent;
+  text-decoration: none;
+  border: 1px solid rgba($accent, 0.3);
+  border-radius: 6px;
+  padding: 0.4rem 0.9rem;
+  transition: background 0.15s;
+  &:hover { background: rgba($accent, 0.12); }
+}
+
+.sp__lyrics-track-info,
+.sp__lyrics-track-name {
+  display: none;
+}
+
+.sp__lyrics-scroll {
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 1rem 1.2rem 1.4rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(#fff, 0.12) transparent;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: rgba(#fff, 0.12); border-radius: 4px; }
+}
+
+.sp__lyrics-line {
+  display: block;
+  font-family: $font-sans;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.5;
+  margin-bottom: 0.1rem;
+  padding: 0.45rem 0;
+  color: rgba(#fff, 0.22);
+  cursor: pointer;
+  transition: color 0.3s, font-size 0.25s, opacity 0.3s;
+  user-select: none;
+
+  &--active {
+    font-size: 1.5rem;
+    color: #fff;
+    text-shadow: 0 0 28px rgba($accent, 0.45);
+  }
+
+  &--past {
+    color: rgba(#fff, 0.35);
+  }
+
+  &:hover { color: rgba(#fff, 0.7) !important; }
+}
+
+.sp__lyrics-state {
+  padding: 3rem 0;
+  text-align: center;
+  font-family: $font-mono;
+  font-size: 0.7rem;
+  color: $text-muted;
+  letter-spacing: 0.08em;
+  &--err { color: rgba(#ff6b6b, 0.7); }
+}
+

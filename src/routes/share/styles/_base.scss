@@ -1,0 +1,49 @@
+@use "../../../styles/variables" as *;
+
+// ── Animations ─────────────────────────────────────────────────────
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// Cover slides in like pulling a record from a sleeve
+@keyframes sleeveIn {
+  from {
+    opacity: 0;
+    transform: perspective(700px) rotateY(-14deg) translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(700px) rotateY(0deg) translateX(0);
+  }
+}
+
+@keyframes discSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+
+// ── Root ───────────────────────────────────────────────────────────
+
+.sp {
+  min-height: 100svh;
+  background: $bg-primary;
+  color: $text-primary;
+  font-family: $font-sans;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 clamp(1rem, 5vw, 2rem) 6rem;
+  padding-top: 4.5rem; // reduced space to move the card higher
+  overflow-x: hidden;
+}
+
+

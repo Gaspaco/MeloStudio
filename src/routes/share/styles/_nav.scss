@@ -1,0 +1,131 @@
+@use "../../../styles/variables" as *;
+
+// ── Nav ────────────────────────────────────────────────────────────
+
+.sp__nav {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem clamp(1.25rem, 5vw, 2.5rem);
+  animation: fadeIn 0.5s ease both;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba($bg-primary, 0.75);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  > * { position: relative; }
+}
+
+.sp__logo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15em;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  &:hover { opacity: 0.6; }
+}
+.sp__logo-melo {
+  font-family: $font-display;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: $accent;
+}
+.sp__logo-studio {
+  font-family: $font-script;
+  font-size: 1.12rem;
+  color: $text-primary;
+}
+
+.sp__nav-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sp__nav-divider {
+  width: 1px;
+  height: 0.9rem;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 0.15rem;
+}
+
+.sp__nav-link {
+  font-family: $font-mono;
+  font-size: 0.52rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+  padding: 0.4rem 0.65rem;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+
+  &:hover {
+    color: #fff;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+  }
+}
+
+.sp__nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.85rem;
+  padding: 0 1rem;
+  border-radius: $radius-pill;
+  background: $text-primary;
+  color: $bg-primary;
+  font-family: $font-sans;
+  font-size: 0.63rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: transform 0.15s, opacity 0.15s;
+
+  &:hover { transform: translateY(-1px); opacity: 0.88; }
+  &:active { transform: translateY(0) scale(0.97); }
+}
+
+.sp__nav-avatar-wrap {
+  display: block;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: opacity 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    opacity: 0.8;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+  }
+}
+
+.sp__nav-avatar {
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+
+  &--initials {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-sans;
+    font-size: 0.45rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: $text-secondary;
+  }
+}
+

@@ -1,4 +1,5 @@
 import { type Component, createEffect, createMemo, createResource, createSignal, For, onCleanup, onMount, Show } from "solid-js";
+import gsap from "gsap";
 import { Portal } from "solid-js/web";
 import { useParams } from "@solidjs/router";
 import { authClient, getJWTToken } from "../../lib/auth";
@@ -607,6 +608,15 @@ const SharePage: Component = () => {
               {/* ── Main Lyrics Panel (when open) ── */}
               <Show when={lyricsOpen()}>
                 <div
+                  ref={(el) => {
+                    gsap.from(el, {
+                      x: -48,
+                      opacity: 0,
+                      duration: 0.65,
+                      ease: "expo.out",
+                      clearProps: "x,opacity",
+                    });
+                  }}
                   class="sp__lyrics-page"
                   style={{ 
                     "--card-accent": extractedColor() || accentColor
