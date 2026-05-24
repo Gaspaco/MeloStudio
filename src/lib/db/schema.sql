@@ -86,3 +86,6 @@ CREATE INDEX IF NOT EXISTS idx_projects_published ON projects (id) WHERE publish
 -- =========================================================================
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS idx_projects_deleted_at ON projects (user_id, deleted_at) WHERE deleted_at IS NOT NULL;
+
+-- Ensure schema_ver exists (may have been missing if table was created before this column was added).
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS schema_ver INTEGER NOT NULL DEFAULT 1;

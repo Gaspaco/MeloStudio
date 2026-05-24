@@ -5,6 +5,8 @@ import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/st
 import { type SynthPreset } from "~/lib/audio/synth";
 import { getMasterBus } from "~/lib/audio/masterBus";
 import { updateProjectApi } from "~/lib/api";
+import { authClient } from "~/lib/auth";
+import { socialAuthClient } from "~/lib/social-auth";
 import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES } from "./types";
 import { useProject }   from "./hooks/useProject";
 import { useTransport } from "./hooks/useTransport";
@@ -73,6 +75,7 @@ const Studio: Component = () => {
   const [loopOn,             setLoopOn]             = createSignal(false);
   const [published,          setPublished]          = createSignal(false);
   const [showPublish,        setShowPublish]        = createSignal(false);
+  const [userImage,          setUserImage]          = createSignal<string | null>(null);
 
   // ── Undo / Redo history ───────────────────────────────────────────────────
   type HistorySnap = { tracks: UITrack[]; pattern: StepPattern; bpm: number };
@@ -172,6 +175,13 @@ const Studio: Component = () => {
     // Initialize master bus in enhanced mode (on by default)
     getMasterBus().setEnhanced(true);
     await project.init();
+
+    // Fetch user avatar for the save toast
+    try {
+      let img = (await authClient.getSession()).data?.user?.image;
+      if (!img) img = (await socialAuthClient.getSession()).data?.user?.image ?? undefined;
+      if (img) setUserImage(img);
+    } catch { /* non-critical */ }
     // Seed initial history snapshot once the project is loaded
     snapHistory();
 
@@ -436,14 +446,29 @@ const Studio: Component = () => {
 
       <Show when={showSaveToast()}>
         <div class="bl__save-toast">
-          <span class="bl__save-toast-label">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 8.5l4 4 8-8" /></svg>
-            Saved
-          </span>
-          <a class="bl__save-toast-btn" href={`/share/${params.id}`}>
-            View track
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 8h10M8 3l5 5-5 5" /></svg>
-          </a>
+          <div class="bl__save-toast-thumb">
+            <Show
+              when={userImage()}
+              fallback={
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="4"  y1="12" x2="4"  y2="12"/>
+                  <line x1="8"  y1="8"  x2="8"  y2="16"/>
+                  <line x1="12" y1="4"  x2="12" y2="20"/>
+                  <line x1="16" y1="9"  x2="16" y2="15"/>
+                  <line x1="20" y1="11" x2="20" y2="13"/>
+                </svg>
+              }
+            >
+              <img src={userImage()!} alt="" />
+            </Show>
+          </div>
+          <div class="bl__save-toast-body">
+            <span class="bl__save-toast-title">Project saved</span>
+            <a class="bl__save-toast-link" href={`/share/${params.id}`}>View Revision</a>
+          </div>
+          <button class="bl__save-toast-close" onClick={() => setShowSaveToast(false)} aria-label="Dismiss">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
         </div>
       </Show>
 

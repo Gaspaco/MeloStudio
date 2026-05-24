@@ -79,6 +79,7 @@ export const auth = betterAuth({
       clientId: process.env.TWITTER_CLIENT_ID!,
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
       disableDefaultScope: true,
+      authorizationEndpoint: "https://x.com/i/oauth2/authorize?prompt=consent",
       scope: ["users.read", "tweet.read", "offline.access"],
       mapProfileToUser: (profile: { data?: { id?: string; email?: string } }) => ({
         // Twitter doesn't reliably return email without the users.email scope
