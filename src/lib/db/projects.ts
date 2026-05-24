@@ -3,6 +3,23 @@ import { sql } from "./client";
 import { SCHEMA_VERSION, type ProjectDoc } from "~/lib/audio/types";
 import { getProjectDurationSec, getProjectTrackCount } from "~/lib/audio/projectTimeline";
 
+export class ProjectNotFoundError extends Error {
+  constructor(projectId: string) {
+    super(`Project not found: ${projectId}`);
+    this.name = "ProjectNotFoundError";
+  }
+}
+
+function cleanProjectName(value: unknown): string {
+  const name = typeof value === "string" ? value.trim().replace(/[\u0000-\u001f\u007f]/g, "") : "";
+  return (name || "Untitled Project").slice(0, 100);
+}
+
+function clampBpm(value: unknown): number {
+  const bpm = typeof value === "number" && Number.isFinite(value) ? value : 120;
+  return Math.min(300, Math.max(20, bpm));
+}
+
 export interface ProjectListItem {
   id: string;
   name: string;
@@ -107,11 +124,13 @@ export async function setPublished(
   userId: string,
   projectId: string,
   published: boolean,
-): Promise<void> {
-  await sql`
+): Promise<boolean> {
+  const rows = await sql`
     UPDATE projects SET published = ${published}
-    WHERE id = ${projectId} AND user_id = ${userId}
-  `;
+    WHERE id = ${projectId} AND user_id = ${userId} AND deleted_at IS NULL
+    RETURNING id
+  ` as Array<{ id: string }>;
+  return rows.length > 0;
 }
 
 export interface PublicProjectView {
@@ -173,17 +192,18 @@ export async function createProject(
   userId: string,
   name: string,
 ): Promise<ProjectDoc> {
+  const safeName = cleanProjectName(name);
   // Insert with an empty placeholder, then UPDATE once we have the real id.
   const inserted = await sql`
     INSERT INTO projects (user_id, name, bpm, data, schema_ver)
-    VALUES (${userId}, ${name}, 120, '{}'::jsonb, ${SCHEMA_VERSION})
+    VALUES (${userId}, ${safeName}, 120, '{}'::jsonb, ${SCHEMA_VERSION})
     RETURNING id
   ` as Array<{ id: string }>;
   const id = inserted[0]?.id;
   if (!id) {
     throw new Error("Failed to create project");
   }
-  const doc = makeBlankDoc(id, name);
+  const doc = makeBlankDoc(id, safeName);
   await sql`
     UPDATE projects SET data = ${JSON.stringify(doc)}::jsonb
     WHERE id = ${id}
@@ -202,39 +222,55 @@ export async function saveProject(
   if (doc.id !== projectId) {
     throw new Error("doc.id must match projectId");
   }
+  const name = cleanProjectName(doc.name);
+  const bpm = clampBpm(doc.transport?.bpm);
   const docJson = JSON.stringify({
     ...doc,
+    name,
+    transport: {
+      ...doc.transport,
+      bpm,
+    },
     schemaVersion: SCHEMA_VERSION,
     updatedAt: new Date().toISOString(),
   });
 
-  // one transaction: update doc + snapshot insert
-  await sql.transaction([
-    sql`
-      UPDATE projects
-      SET data = ${docJson}::jsonb,
-          name = ${doc.name},
-          bpm = ${doc.transport.bpm},
-          schema_ver = ${SCHEMA_VERSION}
-      WHERE id = ${projectId} AND user_id = ${userId}
-    `,
-    sql`
+  // Update the main project row first — this is the critical operation.
+  const updated = await sql`
+    UPDATE projects
+    SET data = ${docJson}::jsonb,
+        name = ${name},
+        bpm = ${bpm},
+        schema_ver = ${SCHEMA_VERSION}
+    WHERE id = ${projectId} AND user_id = ${userId} AND deleted_at IS NULL
+    RETURNING id
+  ` as Array<{ id: string }>;
+  if (!updated[0]) throw new ProjectNotFoundError(projectId);
+
+  // Append a version snapshot — best-effort, never fails the save.
+  try {
+    await sql`
       INSERT INTO project_versions (project_id, data, schema_ver)
       VALUES (${projectId}, ${docJson}::jsonb, ${SCHEMA_VERSION})
-    `,
-  ]);
+    `;
+  } catch (err) {
+    // Non-critical: version history is optional. Log but don't throw.
+    console.warn("[saveProject] version snapshot insert failed (non-fatal)", err);
+  }
 }
 
 export async function deleteProject(
   userId: string,
   projectId: string,
-): Promise<void> {
+): Promise<boolean> {
   // Soft-delete: move to trash. Auto-purged after 10 days.
-  await sql`
+  const rows = await sql`
     UPDATE projects
     SET deleted_at = now()
     WHERE id = ${projectId} AND user_id = ${userId} AND deleted_at IS NULL
-  `;
+    RETURNING id
+  ` as Array<{ id: string }>;
+  return rows.length > 0;
 }
 
 export interface DeletedProjectListItem {
@@ -275,17 +311,21 @@ export async function listDeletedProjects(userId: string): Promise<DeletedProjec
   }));
 }
 
-export async function restoreProject(userId: string, projectId: string): Promise<void> {
-  await sql`
+export async function restoreProject(userId: string, projectId: string): Promise<boolean> {
+  const rows = await sql`
     UPDATE projects
     SET deleted_at = NULL
     WHERE id = ${projectId} AND user_id = ${userId}
-  `;
+    RETURNING id
+  ` as Array<{ id: string }>;
+  return rows.length > 0;
 }
 
-export async function permanentlyDeleteProject(userId: string, projectId: string): Promise<void> {
-  await sql`
+export async function permanentlyDeleteProject(userId: string, projectId: string): Promise<boolean> {
+  const rows = await sql`
     DELETE FROM projects
     WHERE id = ${projectId} AND user_id = ${userId}
-  `;
+    RETURNING id
+  ` as Array<{ id: string }>;
+  return rows.length > 0;
 }

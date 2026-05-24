@@ -11,75 +11,156 @@ import {
   setPublished,
   restoreProject,
   permanentlyDeleteProject,
+  ProjectNotFoundError,
 } from "~/lib/db/projects";
 import type { ProjectDoc } from "~/lib/audio/types";
 import { requireUserId } from "~/lib/auth-server";
+import {
+  cleanOptionalString,
+  cleanString,
+  isPlainObject,
+  isUuid,
+  parseBoolean,
+  readJsonObject,
+  textResponse,
+} from "../_utils";
+
+function isProjectDocPayload(value: unknown, id: string): value is ProjectDoc {
+  return isPlainObject(value)
+    && value.id === id
+    && typeof value.name === "string"
+    && isPlainObject(value.transport)
+    && typeof value.transport.bpm === "number"
+    && Array.isArray(value.tracks)
+    && Array.isArray(value.assets)
+    && isPlainObject(value.master);
+}
+
+function saveErrorResponse(err: unknown): Response {
+  if (err instanceof ProjectNotFoundError) return textResponse("not found", 404);
+  console.error("[api/projects/:id] save failed:", err);
+  return textResponse("save failed", 500);
+}
 
 export async function GET(event: APIEvent) {
   const userId = await requireUserId(event.request);
-  if (!userId) return new Response("unauthorized", { status: 401 });
+  if (!userId) return textResponse("unauthorized", 401);
   const id = event.params.id;
-  if (!id) return new Response("missing id", { status: 400 });
-  const result = await getProject(userId, id);
-  if (!result) return new Response("not found", { status: 404 });
-  // Embed published flag as _published — not part of ProjectDoc schema
-  return Response.json({ ...result.doc, _published: result.published });
+  if (!isUuid(id)) return textResponse("invalid id", 400);
+  try {
+    const result = await getProject(userId, id);
+    if (!result) return textResponse("not found", 404);
+    // Embed published flag as _published — not part of ProjectDoc schema
+    return Response.json({ ...result.doc, _published: result.published });
+  } catch (err) {
+    console.error("[GET /api/projects/:id] failed:", err);
+    return textResponse("server error", 500);
+  }
 }
 
 export async function PUT(event: APIEvent) {
   const userId = await requireUserId(event.request);
-  if (!userId) return new Response("unauthorized", { status: 401 });
+  if (!userId) return textResponse("unauthorized", 401);
   const id = event.params.id;
-  if (!id) return new Response("missing id", { status: 400 });
-  const doc = (await event.request.json()) as ProjectDoc;
-  if (!doc || typeof doc !== "object" || doc.id !== id) {
-    return new Response("bad payload", { status: 400 });
+  if (!isUuid(id)) return textResponse("invalid id", 400);
+  let doc: unknown;
+  try {
+    doc = await event.request.json();
+  } catch {
+    return textResponse("invalid json", 400);
   }
-  await saveProject(userId, id, doc);
+  if (!isProjectDocPayload(doc, id)) return textResponse("bad payload", 400);
+  try {
+    await saveProject(userId, id, doc);
+  } catch (err) {
+    return saveErrorResponse(err);
+  }
   return new Response(null, { status: 204 });
 }
 
 export async function PATCH(event: APIEvent) {
   const userId = await requireUserId(event.request);
-  if (!userId) return new Response("unauthorized", { status: 401 });
+  if (!userId) return textResponse("unauthorized", 401);
   const id = event.params.id;
-  if (!id) return new Response("missing id", { status: 400 });
-  const body = await event.request.json();
+  if (!isUuid(id)) return textResponse("invalid id", 400);
+  const body = await readJsonObject(event.request);
+  if (body instanceof Response) return body;
 
   // Restore from trash
   if (body.restore === true) {
-    await restoreProject(userId, id);
-    return new Response(null, { status: 204 });
+    try {
+      const restored = await restoreProject(userId, id);
+      return restored ? new Response(null, { status: 204 }) : textResponse("not found", 404);
+    } catch (err) {
+      console.error("[PATCH /api/projects/:id restore] failed:", err);
+      return textResponse("server error", 500);
+    }
   }
 
   // Published toggle — only touches the projects row, not the doc
   if (body.published !== undefined) {
-    await setPublished(userId, id, Boolean(body.published));
-    return new Response(null, { status: 204 });
+    const published = parseBoolean(body.published);
+    if (published === null) return textResponse("published must be boolean", 400);
+    try {
+      const updated = await setPublished(userId, id, published);
+      return updated ? new Response(null, { status: 204 }) : textResponse("not found", 404);
+    } catch (err) {
+      console.error("[PATCH /api/projects/:id published] failed:", err);
+      return textResponse("server error", 500);
+    }
   }
 
-  const result = await getProject(userId, id);
-  if (!result) return new Response("not found", { status: 404 });
-  const doc = result.doc;
-  if (body.name !== undefined) doc.name = body.name;
-  if (body.genre !== undefined) doc.genre = body.genre;
-  if (body.description !== undefined) doc.description = body.description;
-  if (body.explicit !== undefined) doc.explicit = Boolean(body.explicit);
-  if (body.lyrics !== undefined) doc.lyrics = body.lyrics;
-  await saveProject(userId, id, doc);
-  return new Response(null, { status: 204 });
+  try {
+    const result = await getProject(userId, id);
+    if (!result) return textResponse("not found", 404);
+    const doc = result.doc;
+
+    if (body.name !== undefined) {
+      const name = cleanString(body.name, 100);
+      if (!name) return textResponse("name must be a non-empty string", 400);
+      doc.name = name;
+    }
+    if (body.genre !== undefined) {
+      const genre = cleanOptionalString(body.genre, 80);
+      if (genre) doc.genre = genre;
+      else delete doc.genre;
+    }
+    if (body.description !== undefined) {
+      const description = cleanOptionalString(body.description, 2000);
+      if (description) doc.description = description;
+      else delete doc.description;
+    }
+    if (body.explicit !== undefined) {
+      const explicit = parseBoolean(body.explicit);
+      if (explicit === null) return textResponse("explicit must be boolean", 400);
+      doc.explicit = explicit;
+    }
+    if (body.lyrics !== undefined) {
+      const lyrics = cleanOptionalString(body.lyrics, 50000);
+      if (lyrics) doc.lyrics = lyrics;
+      else delete doc.lyrics;
+    }
+
+    await saveProject(userId, id, doc);
+    return new Response(null, { status: 204 });
+  } catch (err) {
+    return saveErrorResponse(err);
+  }
 }
 
 export async function DELETE(event: APIEvent) {
   const userId = await requireUserId(event.request);
-  if (!userId) return new Response("unauthorized", { status: 401 });
+  if (!userId) return textResponse("unauthorized", 401);
   const id = event.params.id;
-  if (!id) return new Response("missing id", { status: 400 });
+  if (!isUuid(id)) return textResponse("invalid id", 400);
   const url = new URL(event.request.url);
-  if (url.searchParams.get("permanent") === "true") {
-    await permanentlyDeleteProject(userId, id);
-  } else {
-    await deleteProject(userId, id);
+  try {
+    const deleted = url.searchParams.get("permanent") === "true"
+      ? await permanentlyDeleteProject(userId, id)
+      : await deleteProject(userId, id);
+    return deleted ? new Response(null, { status: 204 }) : textResponse("not found", 404);
+  } catch (err) {
+    console.error("[DELETE /api/projects/:id] failed:", err);
+    return textResponse("server error", 500);
   }
-  return new Response(null, { status: 204 });
 }

@@ -6,6 +6,7 @@ import type { APIEvent } from "@solidjs/start/server";
 import { requireUserId } from "~/lib/auth-server";
 import { getProject, getPublicProjectDoc } from "~/lib/db/projects";
 import type { TimelineDoc } from "~/lib/audio/projectTimeline";
+import { isPlainObject, isSafeRemoteUrl, isUuid, textResponse, truncateForLog } from "./_utils";
 
 interface GroqSegment { start: number; end: number; text: string }
 interface GroqVerboseResponse { segments?: GroqSegment[]; text?: string }
@@ -46,14 +47,15 @@ function firstClipDataUri(doc: TimelineDoc) {
 
 export async function POST(event: APIEvent) {
   const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return new Response("Groq not configured", { status: 503 });
+  if (!apiKey) return textResponse("transcription not configured", 503);
 
-  let body: { projectId?: string };
-  try { body = (await event.request.json()) as { projectId?: string }; }
-  catch { return new Response("invalid body", { status: 400 }); }
+  let body: unknown;
+  try { body = await event.request.json(); }
+  catch { return textResponse("invalid json", 400); }
+  if (!isPlainObject(body)) return textResponse("bad payload", 400);
 
-  const { projectId } = body;
-  if (!projectId) return new Response("missing projectId", { status: 400 });
+  const projectId = body.projectId;
+  if (!isUuid(projectId)) return textResponse("invalid projectId", 400);
 
   let mixUrl: string | undefined;
   let clipFallback: ReturnType<typeof firstClipDataUri> = null;
@@ -80,18 +82,8 @@ export async function POST(event: APIEvent) {
   }
 
   if (!mixUrl && !clipFallback) {
-    // Debug: log what the doc actually contains
-    const dbg = await getPublicProjectDoc(projectId);
-    const dbgDoc = dbg as unknown as TimelineDoc & { mixUrl?: string } | null;
-    console.error("[transcribe] 422 debug", {
-      projectId, userId,
-      hasPubDoc: !!dbg,
-      mixUrl: dbgDoc?.mixUrl,
-      uiTracksLen: dbgDoc?.uiTracks?.length ?? 0,
-      tracksLen: dbgDoc?.tracks?.length ?? 0,
-      firstClipKinds: dbgDoc?.uiTracks?.slice(0,2).map(t => t.clips?.slice(0,2).map(c => ({ kind: c.kind, hasDataUrl: !!c.dataUrl }))),
-    });
-    return new Response("no audio for this project", { status: 422 });
+    console.warn("[transcribe] no audio for project", { projectId, userId: userId ?? null });
+    return textResponse("no audio for this project", 422);
   }
 
   let audioBuffer: ArrayBuffer;
@@ -99,12 +91,17 @@ export async function POST(event: APIEvent) {
   let audioExt: string;
 
   if (mixUrl) {
+    if (!isSafeRemoteUrl(mixUrl)) {
+      console.warn("[transcribe] blocked unsafe mixUrl", { projectId });
+      return textResponse("audio source is not allowed", 422);
+    }
     let r: Response;
     try {
       r = await fetch(mixUrl);
       if (!r.ok) throw new Error(`${r.status}`);
     } catch (e) {
-      return new Response(`failed to download audio: ${e}`, { status: 502 });
+      console.error("[transcribe] failed to download audio", e);
+      return textResponse("failed to download audio", 502);
     }
     audioBuffer = await r.arrayBuffer();
     audioExt = (new URL(mixUrl).pathname.split(".").pop() ?? "mp3").toLowerCase();
@@ -112,8 +109,14 @@ export async function POST(event: APIEvent) {
     audioMime = ME[audioExt] ?? "audio/mpeg";
   } else {
     const commaIdx = clipFallback!.dataUri.indexOf(",");
+    if (commaIdx < 0) return textResponse("invalid audio data", 422);
     const b64 = clipFallback!.dataUri.slice(commaIdx + 1);
-    const binary = atob(b64);
+    let binary: string;
+    try {
+      binary = atob(b64);
+    } catch {
+      return textResponse("invalid audio data", 422);
+    }
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     audioBuffer = bytes.buffer;
@@ -122,7 +125,7 @@ export async function POST(event: APIEvent) {
   }
 
   if (audioBuffer.byteLength > 25 * 1024 * 1024) {
-    return new Response("audio exceeds 25 MB limit", { status: 413 });
+    return textResponse("audio exceeds 25 MB limit", 413);
   }
 
   const form = new FormData();
@@ -142,7 +145,8 @@ export async function POST(event: APIEvent) {
 
   if (!groqRes.ok) {
     const errText = await groqRes.text();
-    return new Response(`Groq error: ${errText}`, { status: 502 });
+    console.error("[transcribe] Groq error", groqRes.status, truncateForLog(errText));
+    return textResponse("transcription failed", 502);
   }
 
   const data = (await groqRes.json()) as GroqVerboseResponse;

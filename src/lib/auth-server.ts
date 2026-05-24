@@ -6,12 +6,12 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
 import { auth } from "./auth-instance";
 
-const authUrl = process.env.NEON_AUTH_URL ?? process.env.VITE_NEON_AUTH_URL ?? "";
+const authUrl = (process.env.NEON_AUTH_URL ?? process.env.VITE_NEON_AUTH_URL ?? "").replace(/\/$/, "");
 
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 function getJwks() {
   if (!jwks && authUrl) {
-    jwks = createRemoteJWKSet(new URL(`${authUrl.replace(/\/$/, "")}/.well-known/jwks.json`));
+    jwks = createRemoteJWKSet(new URL(`${authUrl}/.well-known/jwks.json`));
   }
   return jwks;
 }

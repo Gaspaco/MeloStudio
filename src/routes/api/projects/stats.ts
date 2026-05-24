@@ -2,10 +2,16 @@
 import type { APIEvent } from "@solidjs/start/server";
 import { getProjectStats } from "~/lib/db/projects";
 import { requireUserId } from "~/lib/auth-server";
+import { textResponse } from "../_utils";
 
 export async function GET(event: APIEvent) {
   const userId = await requireUserId(event.request);
-  if (!userId) return new Response("unauthorized", { status: 401 });
-  const stats = await getProjectStats(userId);
-  return Response.json(stats);
+  if (!userId) return textResponse("unauthorized", 401);
+  try {
+    const stats = await getProjectStats(userId);
+    return Response.json(stats);
+  } catch (err) {
+    console.error("[GET /api/projects/stats] failed:", err);
+    return textResponse("server error", 500);
+  }
 }

@@ -4,15 +4,57 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error("DATABASE_URL env var is required");
+}
+
+const fallbackBaseUrl = process.env.BETTER_AUTH_URL ?? "https://melostudio.nl";
+const allowedHosts = [
+  "melostudio.nl",
+  "www.melostudio.nl",
+  "melostudio.online",
+  "www.melostudio.online",
+  "melostudio.site",
+  "www.melostudio.site",
+  "melostudio.app",
+  "www.melostudio.app",
+  "melo-studio.netlify.app",
+  "localhost:*",
+  "127.0.0.1:*",
+];
+
+const trustedOrigins = [
+  "https://melostudio.nl",
+  "https://www.melostudio.nl",
+  "https://melostudio.online",
+  "https://www.melostudio.online",
+  "https://melostudio.site",
+  "https://www.melostudio.site",
+  "https://melostudio.app",
+  "https://www.melostudio.app",
+  "https://melo-studio.netlify.app",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
+  "http://127.0.0.1:3002",
+];
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: databaseUrl,
   ssl: { rejectUnauthorized: false },
   max: 5,
 });
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL ?? "https://melostudio.nl",
+  baseURL: {
+    allowedHosts,
+    protocol: "auto",
+    fallback: fallbackBaseUrl,
+  },
   basePath: "/api/auth",
 
   database: pool,
@@ -29,7 +71,7 @@ export const auth = betterAuth({
     facebook: {
       clientId: process.env.FACEBOOK_CLIENT_ID!,
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-      mapProfileToUser: (profile: any) => ({
+      mapProfileToUser: (profile: { email?: string | null; id?: string | number }) => ({
         email: profile.email ?? `${profile.id}@facebook.placeholder.local`,
       }),
     },
@@ -49,17 +91,15 @@ export const auth = betterAuth({
     storeStateStrategy: "cookie",
   },
 
-  trustedOrigins: [
-    "https://melostudio.nl",
-    "https://www.melostudio.nl",
-    "https://melostudio.online",
-    "https://www.melostudio.online",
-    "https://melostudio.site",
-    "https://www.melostudio.site",
-    "https://melostudio.app",
-    "https://melo-studio.netlify.app",
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:3002",
-  ],
+  trustedOrigins,
+
+  advanced: {
+    useSecureCookies: process.env.NODE_ENV === "production",
+  },
+
+  onAPIError: {
+    onError: (error) => {
+      console.error("[Better Auth] API error:", error);
+    },
+  },
 });

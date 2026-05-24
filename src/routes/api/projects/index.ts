@@ -4,24 +4,42 @@
 import type { APIEvent } from "@solidjs/start/server";
 import { listProjects, listDeletedProjects, createProject } from "~/lib/db/projects";
 import { requireUserId } from "~/lib/auth-server";
+import { cleanString, isPlainObject, textResponse } from "../_utils";
 
 export async function GET(event: APIEvent) {
   const userId = await requireUserId(event.request);
-  if (!userId) return new Response("unauthorized", { status: 401 });
-  const url = new URL(event.request.url);
-  if (url.searchParams.get("deleted") === "true") {
-    const items = await listDeletedProjects(userId);
+  if (!userId) return textResponse("unauthorized", 401);
+  try {
+    const url = new URL(event.request.url);
+    if (url.searchParams.get("deleted") === "true") {
+      const items = await listDeletedProjects(userId);
+      return Response.json(items);
+    }
+    const items = await listProjects(userId);
     return Response.json(items);
+  } catch (err) {
+    console.error("[GET /api/projects] failed:", err);
+    return textResponse("server error", 500);
   }
-  const items = await listProjects(userId);
-  return Response.json(items);
 }
 
 export async function POST(event: APIEvent) {
   const userId = await requireUserId(event.request);
-  if (!userId) return new Response("unauthorized", { status: 401 });
-  const body = await event.request.json().catch(() => ({}));
-  const name = (body?.name ?? "Untitled Project").toString().slice(0, 100);
-  const doc = await createProject(userId, name);
-  return Response.json(doc, { status: 201 });
+  if (!userId) return textResponse("unauthorized", 401);
+  let body: unknown = {};
+  try {
+    body = await event.request.json();
+  } catch {
+    body = {};
+  }
+  if (!isPlainObject(body)) return textResponse("bad payload", 400);
+
+  const name = cleanString(body.name ?? "Untitled Project", 100) || "Untitled Project";
+  try {
+    const doc = await createProject(userId, name);
+    return Response.json(doc, { status: 201 });
+  } catch (err) {
+    console.error("[POST /api/projects] failed:", err);
+    return textResponse("server error", 500);
+  }
 }
