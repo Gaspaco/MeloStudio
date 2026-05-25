@@ -44,11 +44,20 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
 
   const handleSocialLogin = async (provider: "google" | "twitter") => {
     try {
-      const client = provider === "twitter" ? socialAuthClient : (authClient as any);
-      await client.signIn.social({
-        provider,
-        callbackURL: "/dashboard",
-      });
+      if (provider === "twitter") {
+        // Sign out of any active Neon Auth session first so the Twitter
+        // Better-Auth session takes priority on the dashboard.
+        try { await (authClient as any).signOut(); } catch {}
+        await socialAuthClient.signIn.social({
+          provider: "twitter",
+          callbackURL: "/dashboard",
+        });
+      } else {
+        await (authClient as any).signIn.social({
+          provider,
+          callbackURL: "/dashboard",
+        });
+      }
     } catch (err: any) {
       setErrorMsg(err.message || "Social login failed");
     }
@@ -101,7 +110,7 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
     <div ref={pageRef!} class="login">
       {/* Top bar */}
       <button class="login__back" onClick={props.onBack}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M19 12H5M5 12L11 6M5 12L11 18" />
         </svg>
         <span>Back</span>

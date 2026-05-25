@@ -311,6 +311,27 @@
     }
   }
 
+
+  // ── Loading skeleton ─────────────────────────────────────────────
+  &__skeletons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__skeleton-row {
+    height: 3.25rem;
+    border-radius: 0.5rem;
+    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.4s ease-in-out infinite;
+  }
+
+  @keyframes skeletonShimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
   // ── Empty state ───────────────────────────────────────────────────
   &__empty {
     position: relative;

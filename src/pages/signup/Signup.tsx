@@ -180,7 +180,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
   return (
     <div ref={pageRef!} class="signup">
       <button class="signup__back" onClick={props.onBack}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M19 12H5M5 12L11 6M5 12L11 18" />
         </svg>
         <span>Back</span>

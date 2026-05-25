@@ -32,6 +32,7 @@ const Dashboard: Component<{
     createdAt?: string;
   } | null>(null);
   const [projects, setProjects] = createSignal<Project[]>([]);
+  const [loadingProjects, setLoadingProjects] = createSignal(true);
   const [time, setTime] = createSignal(new Date());
   const [tab, setTab] = createSignal<Tab>("overview");
   const [studioHours, setStudioHours] = createSignal(0);
@@ -63,8 +64,14 @@ const Dashboard: Component<{
 
   onMount(async () => {
     try {
-      let userData = (await authClient.getSession()).data?.user;
-      if (!userData) userData = (await socialAuthClient.getSession()).data?.user;
+      // If a Better Auth (Twitter) session is active, prefer it and clear any
+      // stale Neon Auth session so the wrong user is never shown.
+      const socialSession = await socialAuthClient.getSession();
+      if (socialSession.data?.user) {
+        try { await (authClient as any).signOut(); } catch {}
+      }
+      let userData = socialSession.data?.user;
+      if (!userData) userData = (await authClient.getSession()).data?.user;
       if (userData) {
         setUser({
           name: userData.name,
@@ -111,6 +118,8 @@ const Dashboard: Component<{
       setStudioHours(stats.studioHours);
     } catch {
       // silently ignore — user may not be signed in yet
+    } finally {
+      setLoadingProjects(false);
     }
   });
 
@@ -487,18 +496,23 @@ const Dashboard: Component<{
                 New project
               </button>
             </div>
-            <Show when={projects().length > 0} fallback={
-              <div class="db__empty">
-                <div class="db__empty-glow" />
-                <span class="db__empty-note">♪</span>
-                <h3 class="db__empty-title">Nothing here yet</h3>
-                <p class="db__empty-sub">Create your first project and start making music.</p>
-                <button class="db__empty-cta" onClick={openCreate}>
-                  <span>Start creating</span>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
-                </button>
+            <Show when={!loadingProjects()} fallback={
+              <div class="db__skeletons">
+                {[1,2,3].map(() => <div class="db__skeleton-row" />)}
               </div>
             }>
+              <Show when={projects().length > 0} fallback={
+                <div class="db__empty">
+                  <div class="db__empty-glow" />
+                  <span class="db__empty-note">♪</span>
+                  <h3 class="db__empty-title">Nothing here yet</h3>
+                  <p class="db__empty-sub">Create your first project and start making music.</p>
+                  <button class="db__empty-cta" onClick={openCreate}>
+                    <span>Start creating</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
+                  </button>
+                </div>
+              }>
               <div class="db__table">
                 <div class="db__table-head">
                   <span class="db__th db__th--num">#</span>
@@ -531,6 +545,7 @@ const Dashboard: Component<{
                   </div>
                 }</For>
               </div>
+            </Show>
             </Show>
           </section>
 

@@ -90,6 +90,8 @@
     color: $text-primary;
     text-transform: uppercase;
     will-change: transform;
+    // Start hidden so there's no flash before GSAP sets the from-state
+    clip-path: inset(0 100% 0 0);
   }
 
   &__word--pink {
@@ -128,6 +130,7 @@
     height: 4rem;
     background: $accent;
     transform-origin: top;
+    transform: scaleY(0); // hidden until GSAP animates it in
     animation: scrollPulse 2.5s ease-in-out infinite 3s;
   }
 

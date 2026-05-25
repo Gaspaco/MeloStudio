@@ -102,7 +102,7 @@
   border-radius: 0.875rem;
   cursor: pointer;
   perspective: 600px;
-  transform-style: preserve-3d;
+  // NOTE: do NOT add transform-style:preserve-3d here — it disables overflow:hidden
   will-change: transform;
   background: linear-gradient(145deg, #2a2a30 0%, #1c1c22 100%);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -159,6 +159,7 @@
     background: #000;
     border: 1px solid rgba(255, 255, 255, 0.06);
     overflow: hidden;
+    clip-path: inset(0); // belt-and-suspenders: clip even under preserve-3d parents
     display: flex;
     align-items: center;
     justify-content: flex-start;
