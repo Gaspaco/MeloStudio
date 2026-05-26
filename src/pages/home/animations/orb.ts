@@ -19,8 +19,8 @@ export function setupOrb(orbRef: HTMLDivElement) {
 
     rings.forEach((ring, i) => {
       const intensity = 25 - i * 5;
-      const baseX = [70, 50, 30][i]!;
-      const baseY = [0, 40, -60][i]!;
+      const baseX = [70, 50, 30][i] ?? 30;
+      const baseY = [0, 40, -60][i] ?? 0;
       gsap.to(ring, {
         rotateX: -dy * intensity + baseX,
         rotateY: dx * intensity + baseY,

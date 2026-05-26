@@ -11,7 +11,7 @@ export function startTypewriter(
   let twTimer: ReturnType<typeof setTimeout> | undefined;
 
   const type = () => {
-    const word = typewriterWords[wordIdx]!;
+    const word = typewriterWords[wordIdx] ?? "";
     if (!isDeleting) {
       charIdx++;
       setTwText(word.slice(0, charIdx));

@@ -7,9 +7,9 @@ const Reel: Component<{
   reelRef: (el: HTMLElement) => void;
   dawWrapRef: (el: HTMLDivElement) => void;
 }> = (props) => {
-  let audioEl!: HTMLAudioElement;
-  let waveformEl!: HTMLDivElement;
-  let playheadEl!: HTMLDivElement;
+  let audioEl: HTMLAudioElement | undefined;
+  let waveformEl: HTMLDivElement | undefined;
+  let playheadEl: HTMLDivElement | undefined;
   let peaksInstance: PeaksInstance | null = null;
   let rafHandle: number | null = null;
 
@@ -45,6 +45,7 @@ const Reel: Component<{
   };
 
   onMount(() => {
+    if (!audioEl || !waveformEl) return;
     Peaks.init({
       overview: {
         container: waveformEl,
@@ -147,7 +148,7 @@ const Reel: Component<{
                   </div>
                 }</For>
               </div>
-              <div ref={playheadEl!} class="daw__playhead" />
+              <div ref={(el) => { playheadEl = el; }} class="daw__playhead" />
             </div>
           </div>
 
@@ -158,8 +159,8 @@ const Reel: Component<{
               <span class="daw__bottom-sub">Waveform</span>
             </div>
             <div class="daw__waveform">
-              <audio ref={audioEl!} src="/hate-me.mp3" preload="metadata" style={{ display: "none" }} />
-              <div ref={waveformEl!} style={{ width: "100%", height: "100%" }} />
+              <audio ref={(el) => { audioEl = el; }} src="/hate-me.mp3" preload="metadata" style={{ display: "none" }} />
+              <div ref={(el) => { waveformEl = el; }} style={{ width: "100%", height: "100%" }} />
             </div>
           </div>
         </div>

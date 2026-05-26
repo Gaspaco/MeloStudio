@@ -4,7 +4,7 @@
 // into currently supported tracks. It's also fully async via `suspense` in SolidJS,
 // putting up a clean loading state until the studio is absolutely ready to play.
 import { onMount } from "solid-js";
-import { getJWTToken } from "~/lib/auth";
+import { apiFetch } from "~/lib/api";
 import { unlockAudioContext } from "~/lib/audio/context";
 import type { Accessor, Setter } from "solid-js";
 import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer } from "~/lib/audio/stepSeq";
@@ -41,14 +41,6 @@ export function useProject(deps: Deps) {
   const MAX_SAVE_PAYLOAD_BYTES = 4_500_000;
   const MAX_INLINE_CLIP_BYTES = 2_000_000;
   const MAX_INLINE_CLIP_DATA_URL_CHARS = 2_800_000;
-
-  const authHeaders = async (json = false): Promise<Record<string, string>> => {
-    const token = await getJWTToken();
-    const headers: Record<string, string> = {};
-    if (token) headers["Authorization"] = `Bearer ${token}`;
-    if (json) headers["Content-Type"] = "application/json";
-    return headers;
-  };
 
   const blobToDataUrl = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -163,16 +155,12 @@ export function useProject(deps: Deps) {
       for (const clip of t.clips ?? []) removeClip(clip.id).catch(() => {});
     }
     pendingDoc = null;
-    const headers = await authHeaders().catch(() => null);
-    if (!headers) return;
-    const res = await fetch(`/api/projects/${deps.projectId}`, { headers, credentials: "include" });
+    const res = await apiFetch(`/api/projects/${deps.projectId}`);
     if (!res.ok) return;
     const doc = await res.json();
-    await fetch(`/api/projects/${deps.projectId}`, {
+    await apiFetch(`/api/projects/${deps.projectId}`, {
       method: "PUT",
-      headers: await authHeaders(true),
       body: JSON.stringify({ ...doc, uiTracks: [], beat: { pattern: DEFAULT_PATTERN() } }),
-      credentials: "include",
     });
     deps.setShowNewTrack(true);
   };
@@ -182,9 +170,7 @@ export function useProject(deps: Deps) {
     if (!seq) return;
     deps.setSaveState("saving");
     try {
-      const headers = await authHeaders();
-      if (!headers) throw new Error("not signed in");
-      const res = await fetch(`/api/projects/${deps.projectId}`, { headers, credentials: "include" });
+      const res = await apiFetch(`/api/projects/${deps.projectId}`);
       if (!res.ok) throw new Error(`load failed: ${res.status}`);
       const doc = await res.json();
       const uiTracksForSave = await Promise.all(deps.tracks().map(async t => ({
@@ -204,11 +190,9 @@ export function useProject(deps: Deps) {
         lyrics: deps.lyricsText?.() ?? doc.lyrics ?? "",
       };
       const { json } = fitProjectSavePayload(updated);
-      const put = await fetch(`/api/projects/${deps.projectId}`, {
+      const put = await apiFetch(`/api/projects/${deps.projectId}`, {
         method: "PUT",
-        headers: await authHeaders(true) ?? {},
         body: json,
-        credentials: "include",
       });
       if (!put.ok) throw new Error(`save failed: ${put.status}`);
       deps.setSaveState("saved");
@@ -222,8 +206,7 @@ export function useProject(deps: Deps) {
 
   const init = async () => {
     try {
-      const headers = await authHeaders();
-      const res = await fetch(`/api/projects/${deps.projectId}`, { headers, credentials: "include" });
+      const res = await apiFetch(`/api/projects/${deps.projectId}`);
       if (!res.ok) { deps.setError(`Couldn't load (${res.status})`); return; }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data: any = await res.json();

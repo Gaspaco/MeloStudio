@@ -15,7 +15,7 @@ export function animateClosing(closingWordsRefs: HTMLSpanElement[]) {
 
   closingWordsRefs.forEach((wordEl, i) => {
     if (!wordEl) return;
-    const realText = closingWords[i]!;
+    const realText = closingWords[i] ?? "";
     const frozenNoise = makeNoise(realText.length);
     noiseMap[i] = frozenNoise;
     wordEl.textContent = frozenNoise + " ";
@@ -33,8 +33,8 @@ export function animateClosing(closingWordsRefs: HTMLSpanElement[]) {
       const p = self.progress;
       closingWordsRefs.forEach((wordEl, i) => {
         if (!wordEl) return;
-        const realText = closingWords[i]!;
-        const frozenNoise = noiseMap[i]!;
+        const realText = closingWords[i] ?? "";
+        const frozenNoise = noiseMap[i] ?? makeNoise(realText.length);
 
         // each word resolves within its own slice of the scroll range
         const wordStart = i / total;

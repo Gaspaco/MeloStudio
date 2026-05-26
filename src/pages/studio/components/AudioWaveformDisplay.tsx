@@ -3,8 +3,8 @@ import Peaks, { type PeaksInstance } from "peaks.js";
 import { getAudioContext } from "~/lib/audio/context";
 
 const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props) => {
-  let containerEl!: HTMLDivElement;
-  let audioEl!: HTMLAudioElement;
+  let containerEl: HTMLDivElement | undefined;
+  let audioEl: HTMLAudioElement | undefined;
   let peaksInstance: PeaksInstance | null = null;
 
   const initPeaks = async (url: string) => {
@@ -59,8 +59,8 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
 
   return (
     <div style={{ width: "100%", height: "100%", position: "relative" }}>
-      <audio ref={audioEl!} style={{ display: "none" }} preload="metadata" />
-      <div ref={containerEl!} style={{ width: "100%", height: "100%" }} />
+      <audio ref={(el) => { audioEl = el; }} style={{ display: "none" }} preload="metadata" />
+      <div ref={(el) => { containerEl = el; }} style={{ width: "100%", height: "100%" }} />
     </div>
   );
 };

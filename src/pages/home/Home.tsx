@@ -28,23 +28,23 @@ gsap.registerPlugin(ScrollTrigger);
 
 const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?: () => void }> = (props) => {
   let lenisRef: InstanceType<typeof Lenis> | undefined;
-  let loaderRef!: HTMLDivElement;
-  let loaderMeloRef!: HTMLDivElement;
-  let loaderStudioRef!: HTMLDivElement;
-  let heroRef!: HTMLElement;
-  let heroTitleRef!: HTMLDivElement;
-  let heroLine1Ref!: HTMLDivElement;
-  let heroLine2Ref!: HTMLDivElement;
-  let scrollIndRef!: HTMLDivElement;
-  let reelRef!: HTMLElement;
-  let dawWrapRef!: HTMLDivElement;
-  let manifestoRef!: HTMLElement;
-  let manifestoTextRef!: HTMLDivElement;
-  let hScrollRef!: HTMLElement;
-  let hScrollTrackRef!: HTMLDivElement;
+  let loaderRef: HTMLDivElement | undefined;
+  let loaderMeloRef: HTMLDivElement | undefined;
+  let loaderStudioRef: HTMLDivElement | undefined;
+  let heroRef: HTMLElement | undefined;
+  let heroTitleRef: HTMLDivElement | undefined;
+  let heroLine1Ref: HTMLDivElement | undefined;
+  let heroLine2Ref: HTMLDivElement | undefined;
+  let scrollIndRef: HTMLDivElement | undefined;
+  let reelRef: HTMLElement | undefined;
+  let dawWrapRef: HTMLDivElement | undefined;
+  let manifestoRef: HTMLElement | undefined;
+  let manifestoTextRef: HTMLDivElement | undefined;
+  let hScrollRef: HTMLElement | undefined;
+  let hScrollTrackRef: HTMLDivElement | undefined;
   let closingWordsRefs: HTMLSpanElement[] = [];
-  let footerRef!: HTMLElement;
-  let orbRef!: HTMLDivElement;
+  let footerRef: HTMLElement | undefined;
+  let orbRef: HTMLDivElement | undefined;
 
   const [twText, setTwText] = createSignal("");
   const [twCursor, setTwCursor] = createSignal(true);
@@ -62,34 +62,55 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
       smoothWheel: true,
     });
     lenisRef.on("scroll", ScrollTrigger.update);
-    gsap.ticker.add((time) => lenisRef!.raf(time * 1000));
+    const lenisTick = (time: number) => lenisRef?.raf(time * 1000);
+    gsap.ticker.add(lenisTick);
     gsap.ticker.lagSmoothing(0);
 
+    if (!loaderRef || !loaderMeloRef || !loaderStudioRef || !heroRef || !heroLine1Ref || !heroLine2Ref || !scrollIndRef || !reelRef || !dawWrapRef || !manifestoRef || !hScrollRef || !hScrollTrackRef || !footerRef || !orbRef) {
+      gsap.ticker.remove(lenisTick);
+      return;
+    }
+
+    const loader = loaderRef;
+    const loaderMelo = loaderMeloRef;
+    const loaderStudio = loaderStudioRef;
+    const hero = heroRef;
+    const heroLine1 = heroLine1Ref;
+    const heroLine2 = heroLine2Ref;
+    const scrollIndicator = scrollIndRef;
+    const reel = reelRef;
+    const dawWrap = dawWrapRef;
+    const manifesto = manifestoRef;
+    const hScroll = hScrollRef;
+    const hScrollTrack = hScrollTrackRef;
+    const footer = footerRef;
+    const orb = orbRef;
+
     animateIntro({
-      loaderRef, loaderMeloRef, loaderStudioRef,
-      heroLine1Ref, heroLine2Ref, scrollIndRef,
+      loaderRef: loader, loaderMeloRef: loaderMelo, loaderStudioRef: loaderStudio,
+      heroLine1Ref: heroLine1, heroLine2Ref: heroLine2, scrollIndRef: scrollIndicator,
     });
 
     animateHeroExit({
-      heroRef, heroLine1Ref, heroLine2Ref, scrollIndRef,
+      heroRef: hero, heroLine1Ref: heroLine1, heroLine2Ref: heroLine2, scrollIndRef: scrollIndicator,
     });
 
     let dawInited = false;
     ScrollTrigger.create({
-      trigger: reelRef,
+      trigger: reel,
       start: "top 120%",
       once: true,
       onEnter: () => {
         if (!dawInited) {
           dawInited = true;
-          animateDaw({ dawWrapRef, reelRef });
+          animateDaw({ dawWrapRef: dawWrap, reelRef: reel });
         }
       },
     });
 
     let twCleanup: (() => void) | null = null;
     ScrollTrigger.create({
-      trigger: manifestoRef,
+      trigger: manifesto,
       start: "top 120%",
       once: true,
       onEnter: () => {
@@ -102,14 +123,14 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
 
     let capsInited = false;
     ScrollTrigger.create({
-      trigger: hScrollRef,
+      trigger: hScroll,
       start: "top 120%",
       once: true,
       onEnter: () => {
         if (!capsInited) {
           capsInited = true;
-          animateCapabilities({ hScrollRef, hScrollTrackRef });
-          const cleanupOrb = setupOrb(orbRef);
+          animateCapabilities({ hScrollRef: hScroll, hScrollTrackRef: hScrollTrack });
+          const cleanupOrb = setupOrb(orb);
           onCleanup(() => cleanupOrb?.());
         }
       },
@@ -130,13 +151,13 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
 
     let footerInited = false;
     ScrollTrigger.create({
-      trigger: footerRef,
+      trigger: footer,
       start: "top 130%",
       once: true,
       onEnter: () => {
         if (!footerInited) {
           footerInited = true;
-          animateFooter(footerRef);
+          animateFooter(footer);
         }
       },
     });
@@ -150,6 +171,8 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
         document.body.style.overflow = "";
       }
     });
+
+    onCleanup(() => gsap.ticker.remove(lenisTick));
   });
 
   onCleanup(() => {

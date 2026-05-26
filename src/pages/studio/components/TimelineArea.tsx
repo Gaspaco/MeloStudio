@@ -235,7 +235,7 @@ const TimelineArea: Component<Props> = (props) => {
                     class={`bl__mclip is-${c.kind}`}
                     classList={{ "is-dragging": draggedClip()?.clipId === c.id }}
                     style={{
-                      left: `${(draggedClip()?.clipId === c.id ? draggedClip()!.barStart : c.barStart) * BAR_PX}px`,
+                      left: `${(draggedClip()?.clipId === c.id ? draggedClip()?.barStart ?? c.barStart : c.barStart) * BAR_PX}px`,
                       width: `${c.bars * BAR_PX - 2}px`,
                       "--tc": t.color,
                     }}

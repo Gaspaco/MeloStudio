@@ -23,7 +23,7 @@ const Dashboard: Component<{
   onOpenProject: (id: string) => void;
   onHome: () => void;
 }> = (props) => {
-  let pageRef!: HTMLDivElement;
+  let pageRef: HTMLDivElement | undefined;
 
   const [user, setUser] = createSignal<{
     name?: string;
@@ -63,9 +63,11 @@ const Dashboard: Component<{
   const [deleteError, setDeleteError] = createSignal("");
 
   onMount(async () => {
+    // ── 1. Resolve auth session (must finish BEFORE loading projects so the
+    //       right Bearer token / cookie is used for API calls) ──────────────
     try {
       // If a Better Auth (Twitter) session is active, prefer it and clear any
-      // stale Neon Auth session so the wrong user is never shown.
+      // stale Neon Auth JWT so the server uses the Better Auth cookie instead.
       const socialSession = await socialAuthClient.getSession();
       if (socialSession.data?.user) {
         try { await (authClient as any).signOut(); } catch {}
@@ -73,33 +75,20 @@ const Dashboard: Component<{
       let userData = socialSession.data?.user;
       if (!userData) userData = (await authClient.getSession()).data?.user;
       if (userData) {
+        // Upgrade Twitter _normal (48px) images to _400x400 for display
+        const rawImage = userData.image ?? undefined;
+        const image = rawImage?.replace(/_normal(\.[^.]+)$/, "_400x400$1") ?? rawImage;
         setUser({
           name: userData.name,
           email: userData.email,
-          image: userData.image ?? undefined,
+          image,
           createdAt: typeof userData.createdAt === "string" ? userData.createdAt : (userData.createdAt as any)?.toISOString?.() ?? undefined,
         });
         setProfileName(userData.name ?? "");
       }
     } catch {}
-  });
 
-  onMount(() => {
-    const interval = setInterval(() => setTime(new Date()), 1000);
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (createOpen()) setCreateOpen(false);
-        if (renameTarget()) setRenameTarget(null);
-        if (deleteTarget()) setDeleteTarget(null);
-        if (permDeleteTarget()) setPermDeleteTarget(null);
-        if (menuProjectId()) setMenuProjectId(null);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    onCleanup(() => { clearInterval(interval); window.removeEventListener("keydown", onKey); });
-  });
-
-  onMount(async () => {
+    // ── 2. Now load projects (JWT cleared above if Twitter user) ─────────
     try {
       const list = await listProjectsApi();
       const PROJECT_COLORS = ["#e05297", "#7c5cff", "#ff5454", "#14f195", "#00d2ff", "#ffaa00", "#ff00ff", "#a3ff00"];
@@ -121,6 +110,21 @@ const Dashboard: Component<{
     } finally {
       setLoadingProjects(false);
     }
+  });
+
+  onMount(() => {
+    const interval = setInterval(() => setTime(new Date()), 1000);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (createOpen()) setCreateOpen(false);
+        if (renameTarget()) setRenameTarget(null);
+        if (deleteTarget()) setDeleteTarget(null);
+        if (permDeleteTarget()) setPermDeleteTarget(null);
+        if (menuProjectId()) setMenuProjectId(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    onCleanup(() => { clearInterval(interval); window.removeEventListener("keydown", onKey); });
   });
 
   const handleLogout = async () => {
@@ -384,6 +388,7 @@ const Dashboard: Component<{
   };
 
   onMount(() => {
+    if (!pageRef) return;
     const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
     tl.fromTo(pageRef, { opacity: 0 }, { opacity: 1, duration: 0.4 });
     tl.fromTo(".db__bar", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9 }, 0.1);
@@ -397,7 +402,7 @@ const Dashboard: Component<{
   });
 
   return (
-    <div ref={pageRef!} class="db">
+    <div ref={(el) => { pageRef = el; }} class="db">
 
       {/* Bar */}
       <header class="db__bar">
@@ -418,8 +423,8 @@ const Dashboard: Component<{
         <div class="db__bar-right">
           <span class="db__clock">{formatTime()}</span>
           <button class="db__bar-avatar" onClick={() => switchTab("profile")}>
-            <Show when={user()?.image} fallback={<span class="db__bar-avatar-initials">{initials()}</span>}>
-              <img src={user()!.image!} alt="" />
+            <Show when={user()?.image} keyed fallback={<span class="db__bar-avatar-initials">{initials()}</span>}>
+              {(image) => <img src={image} alt="" />}
             </Show>
           </button>
           <button class="db__bar-logout" onClick={handleLogout}>
@@ -451,8 +456,8 @@ const Dashboard: Component<{
               </div>
             </div>
             <button class="db__hero-avatar" onClick={() => switchTab("profile")}>
-              <Show when={user()?.image} fallback={<span class="db__hero-avatar-text">{initials()}</span>}>
-                <img class="db__hero-avatar-img" src={user()!.image!} alt="" />
+              <Show when={user()?.image} keyed fallback={<span class="db__hero-avatar-text">{initials()}</span>}>
+                {(image) => <img class="db__hero-avatar-img" src={image} alt="" />}
               </Show>
             </button>
           </section>
@@ -626,8 +631,8 @@ const Dashboard: Component<{
                 <div class="db__ticket-photo-wrap">
                   <input type="file" accept="image/*" onChange={handleImageUpload} class="db__profile-upload-input" title="Change profile picture" />
                   <div class="db__ticket-photo">
-                    <Show when={user()?.image} fallback={<span class="db__profile-initials">{initials()}</span>}>
-                      <img class="db__profile-img" src={user()!.image!} alt="" />
+                    <Show when={user()?.image} keyed fallback={<span class="db__profile-initials">{initials()}</span>}>
+                      {(image) => <img class="db__profile-img" src={image} alt="" />}
                     </Show>
                     <div class="db__ticket-photo-overlay">
                       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H7L5 7H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-3l-2-4z"/><circle cx="10" cy="12" r="3"/></svg>

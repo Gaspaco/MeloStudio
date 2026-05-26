@@ -23,8 +23,11 @@ function parseSignedRequest(signedRequest: string, secret: string): { user_id?: 
   const expected = createHmac("sha256", secret).update(payloadB64).digest();
   if (signature.length !== expected.length || !timingSafeEqual(signature, expected)) return null;
 
-  const payload = JSON.parse(decodeBase64Url(payloadB64).toString("utf-8")) as { user_id?: string };
-  return payload;
+  try {
+    return JSON.parse(decodeBase64Url(payloadB64).toString("utf-8")) as { user_id?: string };
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(event: APIEvent): Promise<Response> {
@@ -53,8 +56,11 @@ export async function POST(event: APIEvent): Promise<Response> {
 
     const baseUrl = process.env.VITE_APP_URL ?? process.env.BETTER_AUTH_URL ?? "https://melostudio.nl";
 
+    const statusUrl = new URL("/data-deletion", baseUrl);
+    statusUrl.searchParams.set("code", confirmationCode);
+
     return Response.json({
-      url: `${baseUrl}/data-deletion?code=${confirmationCode}`,
+      url: statusUrl.href,
       confirmation_code: confirmationCode,
     });
   } catch (err) {

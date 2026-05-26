@@ -117,11 +117,13 @@ const TopBar: Component<Props> = (props) => {
               : props.lastSaved()
                 ? (() => {
                     _tick(); // reactive dependency — refreshes every 10 s
-                    const diff = Math.floor((Date.now() - props.lastSaved()!.getTime()) / 1000);
+                    const lastSaved = props.lastSaved();
+                    if (!lastSaved) return "Never saved";
+                    const diff = Math.floor((Date.now() - lastSaved.getTime()) / 1000);
                     if (diff < 10) return "Just now";
                     if (diff < 60) return `${diff}s ago`;
                     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-                    return props.lastSaved()!.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+                    return lastSaved.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
                   })()
                 : "Never saved"
             }

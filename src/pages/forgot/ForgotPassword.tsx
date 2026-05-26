@@ -3,12 +3,13 @@ import { gsap } from "gsap";
 import "./forgot-password.scss";
 
 const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (props) => {
-  let pageRef!: HTMLDivElement;
+  let pageRef: HTMLDivElement | undefined;
 
   const [email, setEmail] = createSignal("");
   const [sent, setSent] = createSignal(false);
 
   onMount(() => {
+    if (!pageRef) return;
     const m = gsap.timeline();
 
     m.fromTo(pageRef, { opacity: 0 }, { opacity: 1, duration: 0.4 });
@@ -62,7 +63,7 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
   };
 
   return (
-    <div ref={pageRef!} class="forgot">
+    <div ref={(el) => { pageRef = el; }} class="forgot">
       <button class="forgot__back" onClick={props.onBack}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M19 12H5M5 12L11 6M5 12L11 18" />

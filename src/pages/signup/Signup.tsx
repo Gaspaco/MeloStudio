@@ -34,12 +34,12 @@ const covers = [
 ];
 
 const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: () => void }> = (props) => {
-  let pageRef!: HTMLDivElement;
-  let heroRef!: HTMLDivElement;
-  let scriptRef1!: HTMLSpanElement;
-  let scriptRef2!: HTMLSpanElement;
+  let pageRef: HTMLDivElement | undefined;
+  let heroRef: HTMLDivElement | undefined;
+  let scriptRef1: HTMLSpanElement | undefined;
+  let scriptRef2: HTMLSpanElement | undefined;
 
-  let formRef!: HTMLDivElement;
+  let formRef: HTMLDivElement | undefined;
 
   const [name, setName] = createSignal("");
   const [email, setEmail] = createSignal("");
@@ -78,10 +78,17 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
   };
 
   onMount(() => {
+    const page = pageRef;
+    const hero = heroRef;
+    const script1 = scriptRef1;
+    const script2 = scriptRef2;
+    const form = formRef;
+    if (!page || !hero || !script1 || !script2 || !form) return;
+
     const m = gsap.timeline();
 
     // Page fade
-    m.fromTo(pageRef, { opacity: 0 }, { opacity: 1, duration: 0.35 });
+    m.fromTo(page, { opacity: 0 }, { opacity: 1, duration: 0.35 });
 
     // Grid images reveal — staggered scale up
     m.fromTo(".signup__img",
@@ -90,7 +97,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
       0.05
     );
 
-    m.fromTo(scriptRef1,
+    m.fromTo(script1,
       { opacity: 0, y: 60, filter: "blur(12px)" },
       { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "expo.out" },
       0.2
@@ -100,7 +107,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
       { y: "0%", opacity: 1, rotateZ: 0, duration: 1, stagger: 0.03, ease: "expo.out" },
       0.3
     );
-    m.fromTo(scriptRef2,
+    m.fromTo(script2,
       { opacity: 0, y: 60, filter: "blur(12px)" },
       { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, ease: "expo.out" },
       0.45
@@ -109,19 +116,20 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
     m.fromTo(".signup__back", { x: -20, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.3);
     m.fromTo(".signup__meta", { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.35);
 
-    const imgs = pageRef.querySelectorAll(".signup__img");
+    const imgs = page.querySelectorAll(".signup__img");
     const speeds = [
       -0.08, -0.12, -0.06, -0.1, -0.14, -0.09,
       -0.07, -0.11, -0.13, -0.08, -0.1, -0.06,
       -0.12, -0.09, -0.07, -0.11,
     ];
 
-    const mosaic = pageRef.querySelector(".signup__mosaic") as HTMLElement;
+    const mosaic = page.querySelector(".signup__mosaic") as HTMLElement | null;
 
     let formRevealed = false;
 
     const onScroll = () => {
-      const scrollY = pageRef.scrollTop;
+      if (!mosaic) return;
+      const scrollY = page.scrollTop;
       imgs.forEach((img, i) => {
         const speed = speeds[i % speeds.length] ?? -0.25;
         gsap.set(img, { y: scrollY * speed });
@@ -136,14 +144,14 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
       
       if (pastImages > 0) {
         const progress = Math.min(1, pastImages / slideZone);
-        gsap.to(heroRef, {
+        gsap.to(hero, {
           clipPath: `inset(${progress * 100}% 0 0 0)`,
           duration: 0.6,
           ease: "power2.out",
           overwrite: true,
         });
       } else {
-        gsap.to(heroRef, {
+        gsap.to(hero, {
           clipPath: "inset(0% 0 0 0)",
           duration: 0.6,
           ease: "power2.out",
@@ -152,33 +160,33 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
       }
     };
 
-    pageRef.addEventListener("scroll", onScroll, { passive: true });
+    page.addEventListener("scroll", onScroll, { passive: true });
 
     const revealForm = () => {
       if (formRevealed) return;
-      const rect = formRef.getBoundingClientRect();
+      const rect = form.getBoundingClientRect();
       const trigger = window.innerHeight * 1.0;
       if (rect.top < trigger) {
         formRevealed = true;
         const tl = gsap.timeline();
         tl.fromTo(
-          formRef.querySelectorAll(".signup__form-title-line, .signup__form-title-script, .signup__field, .signup__form-footer"),
+          form.querySelectorAll(".signup__form-title-line, .signup__form-title-script, .signup__field, .signup__form-footer"),
           { opacity: 0, y: 150 },
           { opacity: 1, y: 0, duration: 1.4, stagger: 0.05, ease: "power4.out", clipPath: "none" }
         );
       }
     };
     
-    pageRef.addEventListener("scroll", revealForm, { passive: true });
+    page.addEventListener("scroll", revealForm, { passive: true });
 
     onCleanup(() => {
-      pageRef.removeEventListener("scroll", onScroll);
-      pageRef.removeEventListener("scroll", revealForm);
+      page.removeEventListener("scroll", onScroll);
+      page.removeEventListener("scroll", revealForm);
     });
   });
 
   return (
-    <div ref={pageRef!} class="signup">
+    <div ref={(el) => { pageRef = el; }} class="signup">
       <button class="signup__back" onClick={props.onBack}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M19 12H5M5 12L11 6M5 12L11 18" />
@@ -192,9 +200,9 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
         <span>Step 01</span>
       </div>
 
-      <div ref={heroRef!} class="signup__hero-text">
+      <div ref={(el) => { heroRef = el; }} class="signup__hero-text">
         <div class="signup__title-row">
-          <span ref={scriptRef1!} class="signup__script signup__script--accent">Begin</span>
+          <span ref={(el) => { scriptRef1 = el; }} class="signup__script signup__script--accent">Begin</span>
           <div class="signup__display-clip">
             <For each={"Your".split("")}>{(ch) =>
               <span class="signup__display-char">{ch}</span>
@@ -207,7 +215,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
               <span class="signup__display-char">{ch}</span>
             }</For>
           </div>
-          <span ref={scriptRef2!} class="signup__script signup__script--accent">today</span>
+          <span ref={(el) => { scriptRef2 = el; }} class="signup__script signup__script--accent">today</span>
         </div>
       </div>
 
@@ -232,7 +240,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
         <div class="signup__img signup__img--15" style={`background-image:url(${covers[15]})`} />
       </div>
 
-      <div ref={formRef!} class="signup__form-section">
+      <div ref={(el) => { formRef = el; }} class="signup__form-section">
         <div class="signup__form-top">
           <h2 class="signup__form-title">
             <div class="signup__form-title-line">LET’S</div>

@@ -9,9 +9,9 @@ const Nav: Component<{
   isLoggedIn?: Accessor<boolean>;
   onProfile?: () => void;
 }> = (props) => {
-  let slabEl!: HTMLDivElement;
-  let glowEl!: HTMLDivElement;
-  let cubeEl!: HTMLDivElement;
+  let slabEl: HTMLDivElement | undefined;
+  let glowEl: HTMLDivElement | undefined;
+  let cubeEl: HTMLDivElement | undefined;
 
   const handleNavClick = (label: string) => {
     if (label === "Sign in") {
@@ -52,11 +52,12 @@ const Nav: Component<{
 
         {/* 3D Slab Widget */}
         <div
-          ref={slabEl!}
+          ref={(el) => { slabEl = el; }}
           class="slab"
           onClick={() => props.setMenuOpen(!props.menuOpen())}
           onMouseMove={(e) => {
             if (props.menuOpen()) return;
+            if (!slabEl || !glowEl || !cubeEl) return;
             const rect = slabEl.getBoundingClientRect();
             const x = (e.clientX - rect.left) / rect.width - 0.5;
             const y = (e.clientY - rect.top) / rect.height - 0.5;
@@ -65,14 +66,15 @@ const Nav: Component<{
             gsap.to(cubeEl, { rotateY: x * 60, rotateX: y * -60, duration: 0.4, ease: "power2.out" });
           }}
           onMouseLeave={() => {
+            if (!slabEl || !glowEl || !cubeEl) return;
             gsap.to(slabEl, { rotateY: 0, rotateX: 0, duration: 0.6, ease: "elastic.out(1, 0.5)" });
             gsap.to(glowEl, { opacity: 0, duration: 0.5 });
             gsap.to(cubeEl, { rotateY: 0, rotateX: 0, duration: 0.6, ease: "elastic.out(1, 0.5)" });
           }}
         >
-          <div ref={glowEl!} class="slab__glow" />
+          <div ref={(el) => { glowEl = el; }} class="slab__glow" />
           <div class="slab__sheen" />
-          <div ref={cubeEl!} class="slab__cube">
+          <div ref={(el) => { cubeEl = el; }} class="slab__cube">
             <For each={["front", "back", "left", "right", "top", "bottom"]}>{(face) =>
               <div class="slab__cube-face" data-face={face}>
                 <div class="slab__marquee">

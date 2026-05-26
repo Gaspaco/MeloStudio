@@ -2,8 +2,9 @@ import { type Component, createEffect, createMemo, createResource, createSignal,
 import gsap from "gsap";
 import { Portal } from "solid-js/web";
 import { useParams } from "@solidjs/router";
-import { authClient, getJWTToken } from "../../lib/auth";
+import { authClient } from "../../lib/auth";
 import { socialAuthClient } from "../../lib/social-auth";
+import { apiFetch, transcribeProjectApi, updateProjectApi } from "~/lib/api";
 import "./share.scss";
 
 interface PublicProject {
@@ -25,10 +26,7 @@ interface PublicProject {
 }
 
 async function fetchPublicProject(id: string): Promise<PublicProject | null> {
-  let token: string | null = null;
-  try { token = await getJWTToken(); } catch { /* unauthenticated */ }
-  const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
-  const res = await fetch(`/api/share/${id}`, { headers });
+  const res = await apiFetch(`/api/share/${id}`);
   if (!res.ok) return null;
   return res.json();
 }
@@ -134,7 +132,7 @@ function useImageColorExt(imageUrl?: string | null) {
         let fallbackR = 0, fallbackG = 0, fallbackB = 0, fallbackCount = 0;
 
         for (let i = 0; i < data.length; i += 4) {
-          const r = data[i]!, g = data[i + 1]!, b = data[i + 2]!;
+          const r = data[i] ?? 0, g = data[i + 1] ?? 0, b = data[i + 2] ?? 0;
           fallbackR += r; fallbackG += g; fallbackB += b; fallbackCount++;
           const [h, s, l] = rgbToHsl(r, g, b);
           // Skip near-white, near-black, and near-gray pixels
@@ -169,18 +167,20 @@ const Waveform: Component<{
   audioUrl?: string | null;
   onReady?: (ws: WsHandle) => void;
 }> = (props) => {
-  let containerRef!: HTMLDivElement;
+  let containerRef: HTMLDivElement | undefined;
 
   onMount(() => {
+    if (!containerRef) return;
     const state = { ws: null as null | ReturnType<(typeof import('wavesurfer.js'))['default']['create']> };
 
     onCleanup(() => state.ws?.destroy());
 
     import("wavesurfer.js").then(({ default: WaveSurfer }) => {
-      const hasAudio = !!props.audioUrl;
+      const audioUrl = props.audioUrl;
+      const hasAudio = !!audioUrl;
       const ws = WaveSurfer.create({
         container:     containerRef,
-        url:           hasAudio ? props.audioUrl! : SILENT_WAV,
+        url:           hasAudio ? audioUrl : SILENT_WAV,
         ...(hasAudio ? {} : {
           peaks:    [buildPeaks(props.id)],
           duration: 180,
@@ -275,12 +275,12 @@ const SharePage: Component = () => {
             <a class="sp__nav-link" href="/dashboard">My Projects</a>
             <div class="sp__nav-divider" />
             <a class="sp__nav-avatar-wrap" href="/dashboard">
-              <Show when={sessionUser()?.image} fallback={
+              <Show when={sessionUser()?.image} keyed fallback={
                 <div class="sp__nav-avatar sp__nav-avatar--initials">
                   {userInitials()}
                 </div>
               }>
-                <img class="sp__nav-avatar" src={sessionUser()!.image!} alt={sessionUser()?.name ?? "User"} referrerpolicy="no-referrer" />
+                {(image) => <img class="sp__nav-avatar" src={image} alt={sessionUser()?.name ?? "User"} referrerpolicy="no-referrer" />}
               </Show>
             </a>
           </Show>
@@ -337,8 +337,10 @@ const SharePage: Component = () => {
               for (const raw of lrc.split("\n")) {
                 const m = raw.match(/^\[(\d+):(\d+\.?\d*)\](.*)/);
                 if (m) {
-                  const timeSec = parseInt(m[1]!) * 60 + parseFloat(m[2]!);
-                  const text = m[3]!.trim();
+                  const [, minutesRaw, secondsRaw, textRaw] = m;
+                  if (!minutesRaw || !secondsRaw || textRaw === undefined) continue;
+                  const timeSec = parseInt(minutesRaw) * 60 + parseFloat(secondsRaw);
+                  const text = textRaw.trim();
                   if (text) lines.push({ timeSec, text });
                 }
               }
@@ -350,12 +352,17 @@ const SharePage: Component = () => {
             const stamps: Array<{ timeSec: number; start: number; end: number }> = [];
             let m: RegExpExecArray | null;
             while ((m = timeRe.exec(lrc)) !== null) {
-              stamps.push({ timeSec: parseInt(m[1]!) * 60 + parseFloat(m[2]!), start: m.index, end: m.index + m[0].length });
+              const [, minutesRaw, secondsRaw] = m;
+              if (!minutesRaw || !secondsRaw) continue;
+              stamps.push({ timeSec: parseInt(minutesRaw) * 60 + parseFloat(secondsRaw), start: m.index, end: m.index + m[0].length });
             }
             for (let i = 0; i < stamps.length; i++) {
-              const textEnd = i + 1 < stamps.length ? stamps[i + 1]!.start : lrc.length;
-              const text = lrc.slice(stamps[i]!.end, textEnd).trim();
-              if (text) lines.push({ timeSec: stamps[i]!.timeSec, text });
+              const stamp = stamps[i];
+              if (!stamp) continue;
+              const nextStamp = stamps[i + 1];
+              const textEnd = nextStamp ? nextStamp.start : lrc.length;
+              const text = lrc.slice(stamp.end, textEnd).trim();
+              if (text) lines.push({ timeSec: stamp.timeSec, text });
             }
 
             return lines;
@@ -383,20 +390,7 @@ const SharePage: Component = () => {
             setLyricsLoading(true);
             setLyricsErr("");
             try {
-              // Attempt to get auth token (optional — public projects work without it)
-              let token: string | null = null;
-              try { token = await getJWTToken(); } catch { /* unauthenticated */ }
-
-              const headers: HeadersInit = { "Content-Type": "application/json" };
-              if (token) headers["Authorization"] = `Bearer ${token}`;
-
-              const res = await fetch("/api/transcribe", {
-                method: "POST",
-                headers,
-                body: JSON.stringify({ projectId: p().id }),
-              });
-              if (!res.ok) { setLyricsErr("no-lyrics"); return; }
-              const { lrc } = (await res.json()) as { lrc: string };
+              const { lrc } = await transcribeProjectApi(p().id);
               if (!lrc?.trim()) { setLyricsErr("no-lyrics"); return; }
 
               // Show lyrics immediately
@@ -407,12 +401,8 @@ const SharePage: Component = () => {
               }
 
               // Cache back to the project if authenticated (non-critical)
-              if (token) {
-                fetch(`/api/projects/${p().id}`, {
-                  method: "PATCH",
-                  headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                  body: JSON.stringify({ lyrics: lrc }),
-                }).catch(() => { /* ignore */ });
+              if (p().isOwnerPreview) {
+                updateProjectApi(p().id, { lyrics: lrc }).catch(() => { /* ignore */ });
               }
             } catch {
               setLyricsErr("no-lyrics");
@@ -430,7 +420,8 @@ const SharePage: Component = () => {
             const t = playheadSec();
             let idx = -1;
             for (let i = 0; i < lines.length; i++) {
-              if (lines[i]!.timeSec <= t) idx = i; else break;
+              const line = lines[i];
+              if (line && line.timeSec <= t) idx = i; else break;
             }
             return idx;
           });
@@ -438,13 +429,14 @@ const SharePage: Component = () => {
           // Auto-scroll active line into centre of the lyrics panel
           createEffect(() => {
             const idx = activeLyricIdx();
-            if (idx >= 0 && lyricLineEls[idx] && lyricsScrollEl) {
-              lyricLineEls[idx]!.scrollIntoView({ block: "center", behavior: "smooth" });
+            const lineEl = idx >= 0 ? lyricLineEls[idx] : undefined;
+            if (lineEl && lyricsScrollEl) {
+              lineEl.scrollIntoView({ block: "center", behavior: "smooth" });
             }
           });
           let wsRef: WsHandle | undefined;
           let rafId = 0;
-          let menuRef!: HTMLDivElement;
+          let menuRef: HTMLDivElement | undefined;
 
           // ── Structured share player: audio clips + saved drum pattern ─────
           let audioCtx: AudioContext | undefined;
@@ -494,10 +486,7 @@ const SharePage: Component = () => {
             setIsPlaying(true);
 
             try {
-              let clipsToken: string | null = null;
-              try { clipsToken = await getJWTToken(); } catch { /* unauthenticated */ }
-              const clipsHeaders: HeadersInit = clipsToken ? { Authorization: `Bearer ${clipsToken}` } : {};
-              const res = await fetch(`/api/share-clips/${p().id}`, { headers: clipsHeaders });
+              const res = await apiFetch(`/api/share-clips/${p().id}`);
               if (!res.ok) { setIsPlaying(false); return; }
 
               const { bpm, tracks, durationSec, pattern } = (await res.json()) as {
@@ -654,7 +643,7 @@ const SharePage: Component = () => {
                       </Show>
                     </div>
                   }>
-                    <div class="sp__lyrics-scroll" ref={lyricsScrollEl!}>
+                    <div class="sp__lyrics-scroll" ref={(el) => { lyricsScrollEl = el; }}>
                       <For each={lyricsLines()}>
                       {(line, i) => (
                         <p
@@ -758,7 +747,7 @@ const SharePage: Component = () => {
                         </span>
                       </Show>
                     </div>
-                    <div class="sp__menu-wrap" ref={menuRef!}>
+                    <div class="sp__menu-wrap" ref={(el) => { menuRef = el; }}>
                       <button
                         class={`sp__menu${menuOpen() ? " sp__menu--open" : ""}`}
                         aria-label="More options"
@@ -787,16 +776,18 @@ const SharePage: Component = () => {
                               </svg>
                               Project Details
                             </button>
-                            <button
-                              class="sp__dropdown-item"
-                              onClick={() => { setMenuOpen(false); setShowSettings(true); }}
-                            >
-                              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="14" height="14">
-                                <circle cx="8" cy="8" r="2"/>
-                                <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/>
-                              </svg>
-                              Settings
-                            </button>
+                            <Show when={p().isOwnerPreview}>
+                              <button
+                                class="sp__dropdown-item"
+                                onClick={() => { setMenuOpen(false); setShowSettings(true); }}
+                              >
+                                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" width="14" height="14">
+                                  <circle cx="8" cy="8" r="2"/>
+                                  <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/>
+                                </svg>
+                                Settings
+                              </button>
+                            </Show>
                           </div>
                         </Portal>
                       </Show>
@@ -1097,19 +1088,17 @@ const SharePage: Component = () => {
                       <button
                         class="sp__modal-save"
                         onClick={async () => {
-                          const res = await fetch(`/api/projects/${p().id}`, {
-                            method: "PATCH",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
+                          try {
+                            await updateProjectApi(p().id, {
                               genre: settingsGenre() === "None" ? null : settingsGenre(),
                               description: settingsDesc() || null,
                               explicit: settingsExplicit(),
-                            })
-                          });
-                          if (res.ok) {
+                            });
                             setShowSettings(false);
                             // Optionally refresh project data here or let reactivity take care of whatever we render
                             window.location.reload();
+                          } catch {
+                            // Keep the modal open so the user can retry.
                           }
                         }}
                       >Save Changes</button>

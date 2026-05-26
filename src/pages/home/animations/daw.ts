@@ -93,7 +93,8 @@ export function animateDaw(refs: {
 
       for (let i = 0; i < barCount; i++) {
         const norm = i / barCount;
-        const state = barState[i]!;
+        const state = barState[i];
+        if (!state) continue;
 
         let dist = Math.abs(norm - swellCenter);
       dist = Math.min(dist, 1 - dist); // wraps so bars at edges connect to the other side
@@ -106,16 +107,17 @@ export function animateDaw(refs: {
             0.25, 0.85
           );
           const contribution = laggedIntensity * moundShape * state.randScale;
-          targets[i] = Math.max(targets[i]!, contribution);
+          targets[i] = Math.max(targets[i] ?? 0, contribution);
         }
       }
     }
 
     for (let i = 0; i < barCount; i++) {
       const norm = i / barCount;
-      const state = barState[i]!;
+      const state = barState[i];
+      if (!state) continue;
 
-      const targetH = FLOOR + targets[i]! * range * scale;
+      const targetH = FLOOR + (targets[i] ?? 0) * range * scale;
       const diff = targetH - state.current;
       state.velocity += diff * 0.12; // spring constant
       state.velocity *= 0.78; // damping
@@ -132,8 +134,8 @@ export function animateDaw(refs: {
       }
 
       h = Math.max(FLOOR, Math.min(CEIL, h));
-      heightSetters[i]!(h);
-      opacitySetters[i]!(opacityBase + ((h - FLOOR) / range) * opacityRange);
+      heightSetters[i]?.(h);
+      opacitySetters[i]?.(opacityBase + ((h - FLOOR) / range) * opacityRange);
     }
 
     for (let idx = 0; idx < volFills.length; idx++) {
@@ -141,8 +143,8 @@ export function animateDaw(refs: {
       const pulse = Math.sin(t * (1.4 + idx * 0.3) + idx * 1.7) * 0.5 + 0.5;
       const jitter = Math.sin(t * (7 + idx * 0.8) + idx * 2.3) * 0.03;
       const w = baseWidth + (pulse + jitter) * (100 - baseWidth) * 0.35 * energyBoost;
-      volWidthSetters[idx]!(Math.min(100, w));
-      volOpacitySetters[idx]!(0.45 + pulse * 0.35 * energyBoost);
+      volWidthSetters[idx]?.(Math.min(100, w));
+      volOpacitySetters[idx]?.(0.45 + pulse * 0.35 * energyBoost);
     }
 
     if (timeEl && isPlaying) {
@@ -156,7 +158,8 @@ export function animateDaw(refs: {
     if (allBlocks.length > 0) {
       const playheadPct = audio.duration ? (audio.currentTime / audio.duration) * 100 : 0;
       for (let b = 0; b < allBlocks.length; b++) {
-        const block = allBlocks[b]!;
+        const block = allBlocks[b];
+        if (!block) continue;
         const blockLeft = parseFloat(block.style.left);
         const blockRight = blockLeft + parseFloat(block.style.width);
         if (playheadPct >= blockLeft && playheadPct <= blockRight) {

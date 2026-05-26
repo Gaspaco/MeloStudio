@@ -5,7 +5,7 @@ import { socialAuthClient } from "../../lib/social-auth";
 import "./login.scss";
 
 const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: () => void; onSuccess?: () => void }> = (props) => {
-  let pageRef!: HTMLDivElement;
+  let pageRef: HTMLDivElement | undefined;
 
   const [email, setEmail] = createSignal("");
   const [password, setPassword] = createSignal("");
@@ -64,6 +64,7 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
   };
 
   onMount(() => {
+    if (!pageRef) return;
     const m = gsap.timeline();
 
     // Page in
@@ -107,7 +108,7 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
   });
 
   return (
-    <div ref={pageRef!} class="login">
+    <div ref={(el) => { pageRef = el; }} class="login">
       {/* Top bar */}
       <button class="login__back" onClick={props.onBack}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">

@@ -5,17 +5,14 @@
 // the complete structural snapshot is shipped to the Neon database via the internal API.
 
 import { createEffect, on, onCleanup } from "solid-js";
+import { apiFetch } from "~/lib/api";
 import { hydrateProject, project } from "./projectStore";
 import type { ProjectDoc } from "~/lib/audio/types";
 
 const SAVE_DEBOUNCE_MS = 1500;
 
 async function api(path: string, init?: RequestInit): Promise<Response> {
-  const res = await fetch(path, {
-    ...init,
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...(init?.headers ?? {}) },
-  });
+  const res = await apiFetch(path, init);
   if (!res.ok) throw new Error(`${path}: ${res.status}`);
   return res;
 }

@@ -1,5 +1,6 @@
 import { type Component, createSignal, Show, For } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
+import { transcribeProjectApi } from "~/lib/api";
 
 interface LrcResult {
   id: number;
@@ -59,20 +60,10 @@ const LyricsPanel: Component<Props> = (props) => {
     setTranscribing(true);
     setTranscribeErr("");
     try {
-      const res = await fetch("/api/transcribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ projectId: props.projectId }),
-      });
-      if (!res.ok) {
-        const msg = await res.text();
-        setTranscribeErr(msg || "Transcription failed.");
-        return;
-      }
-      const { lrc } = (await res.json()) as { lrc: string };
+      const { lrc } = await transcribeProjectApi(props.projectId);
       props.onSetText(lrc);
-    } catch {
-      setTranscribeErr("Transcription failed. Check your connection.");
+    } catch (err) {
+      setTranscribeErr(err instanceof Error ? err.message : "Transcription failed.");
     } finally {
       setTranscribing(false);
     }

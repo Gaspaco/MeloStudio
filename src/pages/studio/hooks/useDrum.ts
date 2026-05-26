@@ -34,7 +34,7 @@ export function useDrum(deps: Deps) {
   const clearPattern = () => {
     const seq = deps.getSeq();
     if (!seq) return;
-    seq.getPattern().rows.forEach((_, i) => seq!.clearRow(i));
+    seq.getPattern().rows.forEach((_, i) => seq.clearRow(i));
     sync();
   };
 

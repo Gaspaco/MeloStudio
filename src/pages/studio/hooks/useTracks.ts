@@ -120,7 +120,9 @@ export function useTracks(deps: Deps) {
       return;
     }
     if (type === "drum" && deps.tracks().some(t => t.type === "drum")) {
-      deps.setSelectedTrack(deps.tracks().find(t => t.type === "drum")!.id);
+      const drumTrack = deps.tracks().find(t => t.type === "drum");
+      if (!drumTrack) return;
+      deps.setSelectedTrack(drumTrack.id);
       deps.setDrumPanelOpen(true);
       if (openModal) deps.setShowNewTrack(false);
       return;

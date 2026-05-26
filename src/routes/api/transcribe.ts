@@ -38,7 +38,8 @@ function firstClipDataUri(doc: TimelineDoc) {
       if (clip.kind === "midi" || !clip.dataUrl) continue;
       const m = clip.dataUrl.match(DATA_URI_RE);
       if (!m) continue;
-      const mime = m[1]!;
+      const mime = m[1];
+      if (!mime) continue;
       return { dataUri: clip.dataUrl, mime, ext: MIME_TO_EXT[mime] ?? "mp3" };
     }
   }
@@ -108,9 +109,11 @@ export async function POST(event: APIEvent) {
     const ME: Record<string, string> = { mp3:"audio/mpeg",wav:"audio/wav",m4a:"audio/mp4",ogg:"audio/ogg",flac:"audio/flac",webm:"audio/webm" };
     audioMime = ME[audioExt] ?? "audio/mpeg";
   } else {
-    const commaIdx = clipFallback!.dataUri.indexOf(",");
+    const fallback = clipFallback;
+    if (!fallback) return textResponse("no audio for this project", 422);
+    const commaIdx = fallback.dataUri.indexOf(",");
     if (commaIdx < 0) return textResponse("invalid audio data", 422);
-    const b64 = clipFallback!.dataUri.slice(commaIdx + 1);
+    const b64 = fallback.dataUri.slice(commaIdx + 1);
     let binary: string;
     try {
       binary = atob(b64);
@@ -120,8 +123,8 @@ export async function POST(event: APIEvent) {
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
     audioBuffer = bytes.buffer;
-    audioMime = clipFallback!.mime;
-    audioExt = clipFallback!.ext;
+    audioMime = fallback.mime;
+    audioExt = fallback.ext;
   }
 
   if (audioBuffer.byteLength > 25 * 1024 * 1024) {

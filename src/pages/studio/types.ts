@@ -63,7 +63,7 @@ export const TRACK_COLORS = [
 
 export const randomTrackColor = (avoid?: string): string => {
   const pool = avoid ? TRACK_COLORS.filter(c => c !== avoid) : TRACK_COLORS;
-  return pool[Math.floor(Math.random() * pool.length)] ?? TRACK_COLORS[0]!;
+  return pool[Math.floor(Math.random() * pool.length)] ?? TRACK_COLORS[0] ?? "#3ee08b";
 };
 
 export const PRESET_ADSR = {

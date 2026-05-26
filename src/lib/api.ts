@@ -11,7 +11,7 @@ async function bearerToken(): Promise<string | null> {
   }
 }
 
-async function call(
+export async function apiFetch(
   path: string,
   init: RequestInit = {},
 ): Promise<Response> {
@@ -21,8 +21,7 @@ async function call(
     headers.set("Content-Type", "application/json");
   }
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  const res = await fetch(path, { ...init, headers, credentials: "include" });
-  return res;
+  return fetch(path, { ...init, headers, credentials: "include" });
 }
 
 export interface ProjectListItem {
@@ -34,13 +33,13 @@ export interface ProjectListItem {
 }
 
 export async function listProjectsApi(): Promise<ProjectListItem[]> {
-  const res = await call("/api/projects");
+  const res = await apiFetch("/api/projects");
   if (!res.ok) throw new Error(`list projects: ${res.status}`);
   return res.json();
 }
 
 export async function createProjectApi(name = "Untitled Project"): Promise<{ id: string }> {
-  const res = await call("/api/projects", {
+  const res = await apiFetch("/api/projects", {
     method: "POST",
     body: JSON.stringify({ name }),
   });
@@ -48,8 +47,18 @@ export async function createProjectApi(name = "Untitled Project"): Promise<{ id:
   return res.json();
 }
 
-export async function updateProjectApi(id: string, updates: { name?: string }): Promise<void> {
-  const res = await call(`/api/projects/${id}`, {
+export interface ProjectPatch {
+  name?: string;
+  genre?: string | null;
+  description?: string | null;
+  explicit?: boolean;
+  lyrics?: string | null;
+  published?: boolean;
+  restore?: boolean;
+}
+
+export async function updateProjectApi(id: string, updates: ProjectPatch): Promise<void> {
+  const res = await apiFetch(`/api/projects/${id}`, {
     method: "PATCH",
     body: JSON.stringify(updates),
   });
@@ -57,17 +66,17 @@ export async function updateProjectApi(id: string, updates: { name?: string }): 
 }
 
 export async function deleteProjectApi(id: string): Promise<void> {
-  const res = await call(`/api/projects/${id}`, { method: "DELETE" });
+  const res = await apiFetch(`/api/projects/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`delete project: ${res.status}`);
 }
 
 export async function permanentlyDeleteProjectApi(id: string): Promise<void> {
-  const res = await call(`/api/projects/${id}?permanent=true`, { method: "DELETE" });
+  const res = await apiFetch(`/api/projects/${id}?permanent=true`, { method: "DELETE" });
   if (!res.ok) throw new Error(`permanently delete project: ${res.status}`);
 }
 
 export async function restoreProjectApi(id: string): Promise<void> {
-  const res = await call(`/api/projects/${id}`, {
+  const res = await apiFetch(`/api/projects/${id}`, {
     method: "PATCH",
     body: JSON.stringify({ restore: true }),
   });
@@ -84,13 +93,13 @@ export interface DeletedProjectListItem {
 }
 
 export async function listDeletedProjectsApi(): Promise<DeletedProjectListItem[]> {
-  const res = await call("/api/projects?deleted=true");
+  const res = await apiFetch("/api/projects?deleted=true");
   if (!res.ok) throw new Error(`list deleted projects: ${res.status}`);
   return res.json();
 }
 
 export async function publishProjectApi(id: string, published: boolean): Promise<void> {
-  const res = await call(`/api/projects/${id}`, {
+  const res = await apiFetch(`/api/projects/${id}`, {
     method: "PATCH",
     body: JSON.stringify({ published }),
   });
@@ -98,7 +107,19 @@ export async function publishProjectApi(id: string, published: boolean): Promise
 }
 
 export async function getProjectStatsApi(): Promise<{ studioHours: number }> {
-  const res = await call("/api/projects/stats");
+  const res = await apiFetch("/api/projects/stats");
   if (!res.ok) return { studioHours: 0 };
+  return res.json();
+}
+
+export async function transcribeProjectApi(projectId: string): Promise<{ lrc: string }> {
+  const res = await apiFetch("/api/transcribe", {
+    method: "POST",
+    body: JSON.stringify({ projectId }),
+  });
+  if (!res.ok) {
+    const msg = await res.text();
+    throw new Error(msg || `transcribe: ${res.status}`);
+  }
   return res.json();
 }

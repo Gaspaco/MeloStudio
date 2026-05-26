@@ -102,8 +102,9 @@ export function useSynth(deps: Deps) {
     const activePreset: SynthPreset = sel.type === "bass" ? "bass"
       : sel.type === "guitar" ? "guitar" : deps.synthPreset();
     ensureSynth(activePreset);
+    if (!synth) return;
     const midi = 12 * (deps.octave() + 1) + keyVal;
-    synth!.noteOn(midi, 0.85);
+    synth.noteOn(midi, 0.85);
     const next = new Set(deps.activeNotes());
     next.add(midi);
     deps.setActiveNotes(next);
@@ -127,7 +128,8 @@ export function useSynth(deps: Deps) {
     const activePreset: SynthPreset = sel?.type === "bass" ? "bass"
       : sel?.type === "guitar" ? "guitar" : deps.synthPreset();
     ensureSynth(activePreset);
-    synth!.noteOn(midi, 0.85);
+    if (!synth) return;
+    synth.noteOn(midi, 0.85);
     const next = new Set(deps.activeNotes());
     next.add(midi);
     deps.setActiveNotes(next);

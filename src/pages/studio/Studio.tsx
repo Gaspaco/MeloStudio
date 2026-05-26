@@ -115,13 +115,15 @@ const Studio: Component = () => {
   const undo = () => {
     if (!canUndo()) return;
     historyIndex--;
-    applySnap(historyStack[historyIndex]!);
+    const snap = historyStack[historyIndex];
+    if (snap) applySnap(snap);
   };
 
   const redo = () => {
     if (!canRedo()) return;
     historyIndex++;
-    applySnap(historyStack[historyIndex]!);
+    const snap = historyStack[historyIndex];
+    if (snap) applySnap(snap);
   };
 
   const sth = useSynth({
@@ -449,6 +451,7 @@ const Studio: Component = () => {
           <div class="bl__save-toast-thumb">
             <Show
               when={userImage()}
+              keyed
               fallback={
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="4"  y1="12" x2="4"  y2="12"/>
@@ -459,7 +462,7 @@ const Studio: Component = () => {
                 </svg>
               }
             >
-              <img src={userImage()!} alt="" />
+              {(image) => <img src={image} alt="" />}
             </Show>
           </div>
           <div class="bl__save-toast-body">
