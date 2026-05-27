@@ -7,6 +7,8 @@ export default createHandler(() => (
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="color-scheme" content="dark" />
+          <meta name="theme-color" content="#030303" />
           <style>{`
             html, body, #app { min-height: 100%; }
             body { margin: 0; background: #030303; color: #f4f1ea; }

@@ -356,12 +356,34 @@
     text-decoration: underline;
     text-underline-offset: 4px;
     text-decoration-color: #333;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
 
     &:hover {
       color: $accent;
       text-decoration-color: $accent;
     }
+  }
+
+  // ── Responsive ──
+  @media (max-width: 640px) {
+    &__back {
+      top: 1.2rem;
+      left: 1.5rem;
+    }
+
+    &__meta {
+      top: 1.2rem;
+      right: 1.5rem;
+    }
+
+    &__hero-text {
+      padding: 15vh 5vw 4rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    &__back { left: 1rem; }
+    &__meta { right: 1rem; }
   }
 }
 

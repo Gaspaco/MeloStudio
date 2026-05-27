@@ -232,7 +232,7 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.35s ease;
+    transition: background 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
 
     &--primary {
       background: $accent;

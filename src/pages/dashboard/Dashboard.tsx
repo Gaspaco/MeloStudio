@@ -1,4 +1,4 @@
-import { type Component, createSignal, onMount, onCleanup, For, Show } from "solid-js";
+import { type Component, createSignal, createEffect, onMount, onCleanup, For, Show } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
 import { socialAuthClient } from "../../lib/social-auth";
@@ -56,6 +56,15 @@ const Dashboard: Component<{
   // Library
   const [libCat, setLibCat] = createSignal<"all" | "mine" | "liked" | "deleted">("all");
   const [libSearch, setLibSearch] = createSignal("");
+  const tabRefs: Partial<Record<string, HTMLButtonElement>> = {};
+  const [tabInd, setTabInd] = createSignal({ left: 0, width: 0, isTrash: false });
+  createEffect(() => {
+    const cat = libCat();
+    requestAnimationFrame(() => {
+      const el = tabRefs[cat];
+      if (el) setTabInd({ left: el.offsetLeft, width: el.offsetWidth, isTrash: cat === "deleted" });
+    });
+  });
 
   const [deleteStep, setDeleteStep] = createSignal<"none" | "confirm" | "password">("none");
   const [deletePassword, setDeletePassword] = createSignal("");
@@ -406,15 +415,14 @@ const Dashboard: Component<{
 
       {/* Bar */}
       <header class="db__bar">
-        <div class="db__bar-left">
-          <button class="db__home-btn" onClick={props.onHome} title="Back to home">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 19l-7-7 7-7" /></svg>
-          </button>
-          <button class="db__logo" onClick={props.onHome}>
-            <span class="db__logo-melo">MELO</span>
-            <span class="db__logo-studio">Studio</span>
-          </button>
-        </div>
+        <button class="db__bar-brand" onClick={props.onHome} title="Back to home">
+          <svg class="db__bar-brand-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 19l-7-7 7-7" /></svg>
+          <span class="db__bar-brand-sep" />
+          <span class="db__bar-brand-word">
+            <span class="db__bar-brand-melo">Melo</span>
+            <span class="db__bar-brand-studio">Studio</span>
+          </span>
+        </button>
         <nav class="db__nav">
           <button class={`db__nav-link${tab() === "overview" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("overview")}>Overview</button>
           <button class={`db__nav-link${tab() === "library" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("library")}>Library</button>
@@ -422,13 +430,14 @@ const Dashboard: Component<{
         </nav>
         <div class="db__bar-right">
           <span class="db__clock">{formatTime()}</span>
-          <button class="db__bar-avatar" onClick={() => switchTab("profile")}>
-            <Show when={user()?.image} keyed fallback={<span class="db__bar-avatar-initials">{initials()}</span>}>
-              {(image) => <img src={image} alt="" />}
-            </Show>
-          </button>
-          <button class="db__bar-logout" onClick={handleLogout}>
-            <span>Log out</span>
+          <Show when={tab() !== "overview"}>
+            <button class="db__bar-avatar" onClick={() => switchTab("profile")}>
+              <Show when={user()?.image} keyed fallback={<span class="db__bar-avatar-initials">{initials()}</span>}>
+                {(image) => <img src={image} alt="" />}
+              </Show>
+            </button>
+          </Show>
+          <button class="db__bar-logout" onClick={handleLogout} title="Log out">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
           </button>
         </div>
@@ -797,53 +806,38 @@ const Dashboard: Component<{
       <Show when={tab() === "library"}>
         <div class="db__content db__content--library">
 
-            {/* ── Sidebar ── */}
-          <aside class="db__lib-sidebar">
-            <nav class="db__lib-sidenav">
-              <button class={`db__lib-sidelink${libCat() === "all" ? " db__lib-sidelink--active" : ""}`} onClick={() => setLibCat("all")}>
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 5h14M3 10h14M3 15h14" /></svg>
-                All Projects
-              </button>
-              <button class={`db__lib-sidelink${libCat() === "mine" ? " db__lib-sidelink--active" : ""}`} onClick={() => setLibCat("mine")}>
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="10" cy="7" r="3.5" /><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" /></svg>
-                My Projects
-              </button>
-              <button class={`db__lib-sidelink${libCat() === "liked" ? " db__lib-sidelink--active" : ""}`} onClick={() => setLibCat("liked")}>
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 16s-7-4.3-7-8.5A4.5 4.5 0 0 1 10 5a4.5 4.5 0 0 1 7 2.5C17 11.7 10 16 10 16z" /></svg>
-                Liked Projects
-              </button>
-              <div class="db__lib-side-divider" />
-              <button class={`db__lib-sidelink${libCat() === "deleted" ? " db__lib-sidelink--active" : ""}`} onClick={() => { setLibCat("deleted"); loadDeletedProjects(); }}>
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 6h12M7 6V4h6v2M8 9v6m4-6v6M5 6l1 10h8l1-10" /></svg>
-                Deleted Projects
-              </button>
-            </nav>
-          </aside>
-
-          {/* ── Main ── */}
-          <div class="db__lib-main">
-            <div class="db__lib-topbar">
-              <div class="db__lib-topbar-left">
-                <h1 class="db__lib-main-title">
-                  {libCat() === "all" ? "All Projects" : libCat() === "mine" ? "My Projects" : libCat() === "liked" ? "Liked Projects" : "Deleted Projects"}
-                </h1>
-                <Show when={libCat() === "all" || libCat() === "mine"}>
-                  <span class="db__lib-main-count">{projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase())).length} projects</span>
-                </Show>
-              </div>
-              <div class="db__lib-topbar-right">
+            {/* ── Library header ── */}
+          <div class="db__lib-header">
+            <div class="db__lib-header-top">
+              <h1 class="db__lib-title">Library</h1>
+              <div class="db__lib-header-actions">
                 <div class="db__lib-search">
                   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 3 3" /></svg>
-                  <input class="db__lib-search-input" type="text" placeholder="Search projects..." value={libSearch()} onInput={(e) => setLibSearch(e.currentTarget.value)} />
+                  <input class="db__lib-search-input" type="text" placeholder="Search projects…" value={libSearch()} onInput={(e) => setLibSearch(e.currentTarget.value)} />
                 </div>
-                <button class="db__lib-upload-btn" onClick={openCreate}>
+                <button class="db__lib-new-btn" onClick={openCreate}>
                   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 4v12M4 10h12" /></svg>
-                  New
+                  New project
                 </button>
               </div>
             </div>
+            <nav class="db__lib-tabs">
+              <button ref={el => { tabRefs["all"] = el; }} class={`db__lib-tab${libCat() === "all" ? " db__lib-tab--active" : ""}`} onClick={() => setLibCat("all")}>All</button>
+              <button ref={el => { tabRefs["mine"] = el; }} class={`db__lib-tab${libCat() === "mine" ? " db__lib-tab--active" : ""}`} onClick={() => setLibCat("mine")}>Mine</button>
+              <button ref={el => { tabRefs["liked"] = el; }} class={`db__lib-tab${libCat() === "liked" ? " db__lib-tab--active" : ""}`} onClick={() => setLibCat("liked")}>Liked</button>
+              <span class="db__lib-tab-spacer">
+                <span class="db__lib-tab-count">{projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase())).length} projects</span>
+              </span>
+              <button ref={el => { tabRefs["deleted"] = el; }} class={`db__lib-tab db__lib-tab--trash${libCat() === "deleted" ? " db__lib-tab--active" : ""}`} onClick={() => { setLibCat("deleted"); loadDeletedProjects(); }}>
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 6h12M7 6V4h6v2M8 9v6m4-6v6M5 6l1 10h8l1-10" /></svg>
+                Trash
+              </button>
+              <div class="db__lib-tab-indicator" style={{ left: `${tabInd().left}px`, width: `${tabInd().width}px`, ...(tabInd().isTrash ? { background: "#ff5454" } : {}) }} />
+            </nav>
+          </div>
 
-            <div class="db__lib-list" onClick={() => menuProjectId() && closeMenu()}>
+          {/* ── Project list ── */}
+          <div class="db__lib-body" onClick={() => menuProjectId() && closeMenu()}>
               <Show when={libCat() === "all" || libCat() === "mine"}>
                 <Show when={projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase())).length === 0}>
                   <div class="db__lib-empty">
@@ -855,7 +849,12 @@ const Dashboard: Component<{
                 <For each={projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase()))}>{(project) =>
                   <div class="db__lib-row" style={{ "--proj-color": project.color || "#e05297" } as any} onClick={() => { if (!menuProjectId()) props.onOpenProject(project.id); }}>
                     <div class="db__lib-row-thumb">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" /></svg>
+                      <span class="db__lib-row-thumb-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" /></svg>
+                      </span>
+                      <span class="db__lib-row-play">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                      </span>
                     </div>
                     <div class="db__lib-row-info">
                       <span class="db__lib-row-name">{project.name}</span>
@@ -929,7 +928,6 @@ const Dashboard: Component<{
                 </Show>
               </Show>
             </div>
-          </div>
 
         </div>
       </Show>
@@ -1071,6 +1069,22 @@ const Dashboard: Component<{
           </div>
         </div>
       </Show>
+
+      {/* Mobile bottom nav — only shown on ≤480px via CSS */}
+      <nav class="db__mobile-nav">
+        <button class={`db__mobile-nav-btn${tab() === "overview" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("overview")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span>Overview</span>
+        </button>
+        <button class={`db__mobile-nav-btn${tab() === "library" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("library")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14M4 19a2 2 0 01-2-2V7h4M4 19h16M8 9h8M8 13h5"/></svg>
+          <span>Library</span>
+        </button>
+        <button class={`db__mobile-nav-btn${tab() === "profile" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("profile")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/></svg>
+          <span>Profile</span>
+        </button>
+      </nav>
 
     </div>
   );

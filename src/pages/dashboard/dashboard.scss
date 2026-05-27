@@ -16,97 +16,142 @@
     height: 4.5rem;
     display: flex;
     align-items: center;
+    gap: 0;
     padding: 0 clamp(1.25rem, 4vw, 3rem);
-    background: rgba($bg-primary, 0.85);
-    backdrop-filter: blur(30px);
+    background: rgba($bg-primary, 0.82);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     border-bottom: 1px solid rgba(#fff, 0.05);
+    will-change: transform;
   }
-  &__bar-left { display: flex; align-items: center; gap: 0.75rem; }
-  &__bar-right { margin-left: auto; display: flex; align-items: center; gap: 1.25rem; }
-  &__home-btn {
+
+  // Combined back-arrow + wordmark
+  &__bar-brand {
+    all: unset;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.4rem 0.9rem 0.4rem 0.65rem;
+    margin-left: -1.5rem; // push even further left into padding
+    border-radius: 0.625rem;
+    border: 1px solid transparent;
+    transition: background 0.2s, border-color 0.2s;
+
+    &:hover {
+      background: rgba(#fff, 0.04);
+      border-color: rgba(#fff, 0.07);
+    }
+  }
+
+  &__bar-brand-arrow {
+    width: 14px;
+    height: 14px;
+    color: rgba(#fff, 0.28);
+    flex-shrink: 0;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s;
+
+    .db__bar-brand:hover & {
+      transform: translateX(-2px);
+      color: rgba(#fff, 0.55);
+    }
+  }
+
+  &__bar-brand-sep {
+    display: block;
+    width: 1px;
+    height: 1.1rem;
+    background: rgba(#fff, 0.1);
+    flex-shrink: 0;
+  }
+
+  &__bar-brand-word {
+    display: flex;
+    align-items: baseline;
+    gap: 0.18em;
+  }
+
+  &__bar-brand-melo {
+    font-family: $font-display;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: $accent;
+    text-transform: uppercase;
+  }
+
+  &__bar-brand-studio {
+    font-family: $font-script;
+    font-size: 1.4rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    color: #fff;
+    text-transform: none;
+  }
+
+  &__bar-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
+
+  // Nav tabs — minimal floating style
+  &__nav {
+    display: flex;
+    gap: 0.15rem;
+    margin-left: 0.5rem;
+  }
+
+  &__nav-link {
+    all: unset;
+    cursor: pointer;
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $text-muted;
+    padding: 0.45rem 1rem;
+    border-radius: 8px;
+    transition: color 0.2s, background 0.2s;
+
+    &:hover {
+      color: $text-secondary;
+      background: rgba(#fff, 0.04);
+    }
+
+    &--active {
+      color: $text-primary;
+      background: rgba(#fff, 0.07);
+    }
+  }
+
+  &__clock {
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    color: $text-secondary;
+    letter-spacing: 0.12em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // Avatar — always visible, accent ring
+  &__bar-avatar {
     all: unset;
     cursor: pointer;
     display: grid;
     place-items: center;
     width: 2rem;
     height: 2rem;
-    border-radius: 0.5rem;
-    border: 1px solid rgba(#fff, 0.08);
-    background: rgba(#fff, 0.03);
-    transition: background 0.2s, border-color 0.2s;
-    svg { width: 1rem; height: 1rem; color: rgba(#fff, 0.5); transition: color 0.2s; }
-    &:hover {
-      background: rgba(#fff, 0.06);
-      border-color: rgba(#fff, 0.15);
-      svg { color: #fff; }
-    }
-  }
-  &__logo {
-    all: unset;
-    cursor: pointer;
-    display: flex;
-    align-items: baseline;
-    gap: 0.18em;
-    transition: opacity 0.3s;
-    &:hover { opacity: 0.6; }
-  }
-  &__logo-melo {
-    font-family: $font-display;
-    font-size: 1.1rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    color: $accent;
-  }
-  &__logo-studio { font-family: $font-script; font-size: 1.35rem; color: $text-primary; }
-  &__nav { display: flex; gap: 0; margin-left: 3rem; }
-  &__nav-link {
-    all: unset;
-    cursor: pointer;
-    font-family: $font-mono;
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: $text-muted;
-    padding: 0.5rem 1.2rem;
-    position: relative;
-    transition: color 0.3s;
-    &::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 1.2rem;
-      right: 1.2rem;
-      height: 1px;
-      background: $accent;
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    &:hover { color: $text-secondary; }
-    &--active {
-      color: $text-primary;
-      &::after { transform: scaleX(1); }
-    }
-  }
-  &__clock {
-    font-family: $font-mono;
-    font-size: 0.6rem;
-    color: $text-muted;
-    letter-spacing: 0.12em;
-    font-variant-numeric: tabular-nums;
-  }
-  &__bar-avatar {
-    all: unset;
-    cursor: pointer;
-    display: none;
-    width: 1.75rem;
-    height: 1.75rem;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
-    background: linear-gradient(145deg, rgba($accent, 0.15), rgba($accent, 0.03));
+    background: linear-gradient(145deg, rgba($accent, 0.2), rgba($accent, 0.05));
+    border: 1.5px solid rgba($accent, 0.28);
+    transition: border-color 0.2s, box-shadow 0.2s;
+
     img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    &:hover {
+      border-color: rgba($accent, 0.6);
+      box-shadow: 0 0 0 3px rgba($accent, 0.1);
+    }
   }
+
   &__bar-avatar-initials {
     display: flex;
     align-items: center;
@@ -118,21 +163,26 @@
     font-weight: 700;
     color: $accent;
   }
+
+  // Logout — icon-only button
   &__bar-logout {
     all: unset;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: $font-mono;
-    font-size: 0.58rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: $text-muted;
-    transition: color 0.25s;
-    svg { width: 14px; height: 14px; transition: transform 0.3s ease; }
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    color: rgba(#fff, 0.28);
+    transition: color 0.2s, background 0.2s, border-color 0.2s;
+
+    svg { width: 15px; height: 15px; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+
     &:hover {
-      color: $text-secondary;
+      color: rgba(#fff, 0.65);
+      background: rgba(#fff, 0.04);
+      border-color: rgba(#fff, 0.08);
       svg { transform: translateX(2px); }
     }
   }
@@ -302,7 +352,7 @@
     padding: 0.5rem 1rem;
     border: 1px solid rgba($accent, 0.25);
     border-radius: $radius-pill;
-    transition: all 0.3s;
+    transition: background 0.3s, border-color 0.3s, transform 0.3s;
     svg { width: 14px; height: 14px; }
     &:hover {
       background: rgba($accent, 0.08);
@@ -387,7 +437,7 @@
     background: $accent;
     border-radius: $radius-pill;
     box-shadow: 0 4px 24px rgba($accent, 0.2);
-    transition: all 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s;
     svg { width: 16px; height: 16px; transition: transform 0.3s; }
     &:hover {
       transform: translateY(-2px);
@@ -500,7 +550,7 @@
     color: $text-muted;
     opacity: 0.25;
     flex-shrink: 0;
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   // ── Brand footer ──────────────────────────────────────────────────
@@ -1095,7 +1145,7 @@
     text-transform: uppercase;
     padding: 0.75rem 2rem;
     border-radius: $radius-pill;
-    transition: all 0.3s;
+    transition: background 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s, opacity 0.3s;
     &--fill {
       color: #fff;
       background: $accent;
@@ -1303,121 +1353,169 @@
       .db__td--key, .db__td--tracks, .db__td--time { display: none; }
     }
     &__clock { display: none; }
+    &__brand { padding: 3rem 0 0.75rem; }
+  }
+
+  // ── Mobile bottom nav (hidden on desktop) ──────────────────────
+  &__mobile-nav {
+    display: none;
   }
 
   @media (max-width: 480px) {
     &__nav { display: none; }
-    &__bar-avatar { display: grid; place-items: center; }
-    &__bar-logout span { display: none; }
     &__hero-avatar { display: none; }
     &__stat-num { font-size: 1.5rem; }
+
+    // Show mobile bottom nav
+    &__mobile-nav {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 120;
+      background: rgba(3, 3, 3, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid $border;
+      padding: 0.4rem 0 max(0.4rem, env(safe-area-inset-bottom));
+    }
+
+    &__mobile-nav-btn {
+      all: unset;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.35rem 0;
+      cursor: pointer;
+      color: $text-muted;
+      transition: color 0.15s;
+
+      svg { width: 1.15rem; height: 1.15rem; }
+      span { font-family: $font-mono; font-size: 0.42rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+      &--active { color: $accent; }
+    }
+
+    // Push scrollable content above the mobile nav
+    &__content {
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    }
+    &__content--profile {
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    }
+
+    // Library tab on mobile
+    &__content--library {
+      height: calc(100dvh - 4.5rem - 3.5rem - env(safe-area-inset-bottom));
+    }
+
+    &__lib-header {
+      padding: 1.25rem 1rem 0;
+    }
+
+    &__lib-header-top {
+      margin-bottom: 1rem;
+      gap: 0.65rem;
+    }
+
+    &__lib-title { font-size: 1.5rem; }
+
+    &__lib-new-btn span { display: none; }
+
+    &__lib-tab {
+      padding: 0.55rem 0.8rem;
+      font-size: 0.75rem;
+    }
+
+    &__lib-search-input { width: 110px; }
+
+    &__lib-body {
+      padding: 0.5rem 0.75rem;
+    }
+
+    &__lib-row {
+      padding: 0.6rem 0.65rem;
+      gap: 0.75rem;
+    }
+
+    &__lib-row-date {
+      display: none;
+    }
+
+    &__lib-row-tag {
+      display: none;
+    }
+    &__brand { padding: 2rem 0 0.75rem; }
+    &__brand-melo { font-size: clamp(3.5rem, 22vw, 7rem); }
+    &__brand-studio { font-size: clamp(2.8rem, 18vw, 5.5rem); }
   }
 
   // ── Library tab ──────────────────────────────────────────────────
   &__content--library {
     padding-top: 4.5rem;
     display: flex;
-    height: calc(100vh - 4.5rem);
+    flex-direction: column;
+    height: calc(100dvh - 4.5rem);
     overflow: hidden;
   }
 
-  // Sidebar
-  &__lib-sidebar {
-    width: 200px;
+  // ── Library header (title + search + tabs) ─────────────────────
+  &__lib-header {
     flex-shrink: 0;
-    border-right: 1px solid $border;
-    padding: 1.25rem 0;
-    overflow-y: auto;
+    padding: 2rem clamp(1.5rem, 4vw, 3rem) 0;
+    border-bottom: 1px solid $border;
+    background: rgba(#fff, 0.005);
   }
 
-  &__lib-sidenav {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    padding: 0 0.75rem;
-  }
-
-  &__lib-sidelink {
-    all: unset;
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    padding: 0.55rem 0.75rem;
-    border-radius: 6px;
-    font-family: $font-sans;
-    font-size: 0.78rem;
-    color: $text-secondary;
-    cursor: pointer;
-    transition: all 0.15s;
-
-    svg { width: 0.95rem; height: 0.95rem; flex-shrink: 0; opacity: 0.55; }
-
-    &:hover {
-      color: $text-primary;
-      background: rgba(255,255,255,0.04);
-      svg { opacity: 0.85; }
-    }
-
-    &--active {
-      color: $text-primary;
-      background: rgba(255,255,255,0.06);
-      font-weight: 600;
-      svg { opacity: 1; }
-    }
-  }
-
-  &__lib-side-divider {
-    height: 1px;
-    background: $border;
-    margin: 0.6rem 0.75rem;
-  }
-
-  // Main content area
-  &__lib-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  &__lib-topbar {
+  &__lib-header-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 2rem 1rem;
-    border-bottom: 1px solid $border;
     gap: 1rem;
-    flex-shrink: 0;
+    margin-bottom: 1.5rem;
   }
 
-  &__lib-topbar-left {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-  }
-
-  &__lib-main-title {
+  &__lib-title {
     font-family: $font-display;
-    font-size: 1.3rem;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
     font-weight: 800;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.04em;
     color: $text-primary;
     margin: 0;
   }
 
-  &__lib-main-count {
-    font-family: $font-mono;
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: $text-secondary;
-  }
-
-  &__lib-topbar-right {
+  &__lib-header-actions {
     display: flex;
     align-items: center;
     gap: 0.65rem;
+  }
+
+  &__lib-new-btn {
+    all: unset;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: $font-sans;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: $accent;
+    background: rgba($accent, 0.1);
+    border: 1px solid rgba($accent, 0.25);
+    border-radius: 8px;
+    padding: 0.42rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+
+    svg { width: 0.8rem; height: 0.8rem; flex-shrink: 0; }
+
+    &:hover {
+      background: rgba($accent, 0.18);
+      border-color: rgba($accent, 0.5);
+      box-shadow: 0 0 14px rgba($accent, 0.12);
+    }
   }
 
   &__lib-search {
@@ -1426,13 +1524,16 @@
     gap: 0.45rem;
     background: rgba(255,255,255,0.03);
     border: 1px solid $border;
-    border-radius: 6px;
-    padding: 0.38rem 0.75rem;
-    transition: border-color 0.15s;
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    transition: border-color 0.15s, background 0.15s;
 
     svg { width: 0.8rem; height: 0.8rem; flex-shrink: 0; color: $text-muted; }
 
-    &:focus-within { border-color: $border-hover; }
+    &:focus-within {
+      border-color: rgba($accent, 0.35);
+      background: rgba($accent, 0.03);
+    }
   }
 
   &__lib-search-input {
@@ -1441,69 +1542,157 @@
     font-size: 0.78rem;
     color: $text-primary;
     width: 170px;
-
     &::placeholder { color: $text-muted; }
   }
 
-  &__lib-upload-btn {
-    all: unset;
+  // ── Library category tabs ────────────────────────────────────────
+  &__lib-tabs {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-family: $font-sans;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: $text-primary;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid $border-hover;
-    border-radius: 6px;
-    padding: 0.38rem 0.9rem;
+    gap: 0;
+    margin-bottom: -1px;
+    position: relative;
+  }
+
+  &__lib-tab {
+    all: unset;
     cursor: pointer;
-    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.65rem 1.1rem;
+    font-family: $font-sans;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: $text-muted;
+    transition: color 0.2s;
 
-    svg { width: 0.8rem; height: 0.8rem; }
+    svg { width: 0.85rem; height: 0.85rem; }
 
-    &:hover {
-      background: rgba(255,255,255,0.09);
-      border-color: rgba($accent, 0.45);
-      color: $accent;
+    &:hover { color: $text-secondary; }
+
+    &--active {
+      color: $text-primary;
+      font-weight: 600;
+    }
+
+    &--trash {
+      margin-left: auto;
+      font-size: 0.75rem;
+      color: rgba(#ff5454, 0.4);
+      &:hover { color: rgba(#ff5454, 0.7); }
+      &.db__lib-tab--active { color: #ff5454; }
     }
   }
 
-  // List rows
-  &__lib-list {
+  &__lib-tab-indicator {
+    position: absolute;
+    bottom: 0;
+    height: 2px;
+    background: $accent;
+    border-radius: 2px 2px 0 0;
+    pointer-events: none;
+    transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+                background 0.2s;
+  }
+
+  &__lib-tab-count {
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    color: $text-secondary;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  &__lib-tab-spacer {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 0.5rem;
+  }
+
+  // ── Library body (scrollable row container) ──────────────────────
+  &__lib-body {
     flex: 1;
     overflow-y: auto;
-    padding: 0.25rem 0;
+    padding: 0.75rem clamp(1.25rem, 4vw, 2.5rem);
+  }
+
+  // List rows
+  // &__lib-body styles are above; this alias kept for safety
+  &__lib-list, &__lib-body-inner {
+    flex: 1;
+    overflow-y: auto;
   }
 
   &__lib-row {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 0.7rem 2rem;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    border-left: 2px solid transparent;
+    padding: 0.7rem 0.75rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
     transition: background 0.15s, border-color 0.15s;
+    cursor: pointer;
+    position: relative;
 
     &:hover:not(&--locked) {
-      background: rgba(255,255,255,0.025);
-      border-left-color: var(--proj-color, #e05297);
+      background: rgba(255,255,255,0.028);
+      border-color: rgba(255,255,255,0.06);
+
+      .db__lib-row-play { opacity: 1; }
+      .db__lib-row-thumb-icon { opacity: 0; }
     }
 
     &--locked { opacity: 0.4; }
   }
 
+  &__lib-row-play {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.38);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.15s;
+    pointer-events: none;
+
+    svg { width: 1.1rem; height: 1.1rem; color: #fff; }
+  }
+
   &__lib-row-thumb {
     width: 2.6rem;
     height: 2.6rem;
-    border-radius: 6px;
+    border-radius: 8px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--proj-color, #e05297);
+    background: linear-gradient(135deg, var(--proj-color, #e05297), color-mix(in srgb, var(--proj-color, #e05297) 60%, #000));
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+    position: relative;
+    overflow: hidden;
 
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent 60%);
+      border-radius: inherit;
+    }
+  }
+
+  &__lib-row-thumb-icon {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    transition: opacity 0.15s;
     svg { width: 1rem; height: 1rem; color: rgba(255,255,255,0.75); }
   }
 
@@ -1567,7 +1756,7 @@
     border-radius: 100px;
     padding: 0.45rem 1.1rem;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: border-color 0.15s, color 0.15s;
     flex-shrink: 0;
 
     &:hover { border-color: $accent; color: $accent; }
@@ -1594,7 +1783,7 @@
     border-radius: 6px;
     color: $text-muted;
     cursor: pointer;
-    transition: background 0.12s, color 0.12s;
+    transition: background 0.12s, color 0.12s, opacity 0.12s;
     opacity: 0;
 
     .db__lib-row:hover &,
@@ -1717,32 +1906,41 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     padding: 5rem 2rem;
-    color: $text-muted;
-    font-family: $font-mono;
-    font-size: 0.58rem;
-    letter-spacing: 0.08em;
+    color: $text-secondary;
+    font-family: $font-sans;
+    font-size: 0.88rem;
     text-align: center;
 
-    svg { width: 2rem; height: 2rem; opacity: 0.25; }
+    svg {
+      width: 2.5rem;
+      height: 2.5rem;
+      opacity: 0.18;
+      color: $accent;
+    }
+
+    span { color: $text-muted; font-family: $font-mono; font-size: 0.65rem; letter-spacing: 0.08em; }
   }
 
   &__lib-empty-cta {
     all: unset;
-    margin-top: 0.5rem;
-    font-family: $font-mono;
-    font-size: 0.46rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    margin-top: 0.25rem;
+    font-family: $font-sans;
+    font-size: 0.78rem;
+    font-weight: 600;
     color: $accent;
+    background: rgba($accent, 0.1);
     border: 1px solid rgba($accent, 0.3);
     border-radius: 100px;
-    padding: 0.42rem 1.1rem;
+    padding: 0.5rem 1.4rem;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background 0.15s, box-shadow 0.15s;
 
-    &:hover { background: rgba($accent, 0.07); }
+    &:hover {
+      background: rgba($accent, 0.18);
+      box-shadow: 0 0 14px rgba($accent, 0.12);
+    }
   }
 }
 
