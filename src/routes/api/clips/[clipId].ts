@@ -49,7 +49,7 @@ export async function PUT(event: APIEvent) {
   const contentLength = parseInt(event.request.headers.get("content-length") ?? "0", 10);
   if (contentLength > MAX_CLIP_BYTES) return textResponse("file too large", 413);
 
-  const contentType = (event.request.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+  const contentType = (event.request.headers.get("content-type") ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
   if (contentType && !ALLOWED_AUDIO_TYPES.has(contentType)) {
     return textResponse("unsupported media type", 415);
   }
