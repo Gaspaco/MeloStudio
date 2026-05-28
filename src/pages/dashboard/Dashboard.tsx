@@ -31,6 +31,16 @@ const Dashboard: Component<{
     image?: string;
     createdAt?: string;
   } | null>(null);
+  // Persist session start across page refreshes (sessionStorage clears when tab closes)
+  const SESSION_START_KEY = "ms_dash_start";
+  let mountedAt: number;
+  try {
+    const stored = sessionStorage.getItem(SESSION_START_KEY);
+    mountedAt = stored ? parseInt(stored, 10) : Date.now();
+    sessionStorage.setItem(SESSION_START_KEY, String(mountedAt));
+  } catch {
+    mountedAt = Date.now();
+  }
   const [projects, setProjects] = createSignal<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = createSignal(true);
   const [time, setTime] = createSignal(new Date());
@@ -137,6 +147,8 @@ const Dashboard: Component<{
   });
 
   const handleLogout = async () => {
+    // Sign out of both auth systems: Neon Auth (email/Google) and Better Auth (Twitter)
+    try { await socialAuthClient.signOut(); } catch {}
     try { await authClient.signOut(); } catch {}
     props.onLogout();
   };
@@ -220,11 +232,13 @@ const Dashboard: Component<{
   const totalTracks = () => projects().reduce((a, p) => a + p.tracks, 0);
 
   const fmtStudioTime = () => {
-    const h = studioHours();
+    // Add live elapsed time since dashboard opened to the stored DB value
+    const elapsedHours = (time().getTime() - mountedAt) / 3_600_000;
+    const h = studioHours() + elapsedHours;
     if (h <= 0) return "0m";
-    if (h < 1) return `${Math.round(h * 60)}m`;
+    if (h < 1) return `${Math.floor(h * 60)}m`;
     const hrs = Math.floor(h);
-    const mins = Math.round((h - hrs) * 60);
+    const mins = Math.floor((h - hrs) * 60);
     return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
   };
 
@@ -430,7 +444,7 @@ const Dashboard: Component<{
         </nav>
         <div class="db__bar-right">
           <span class="db__clock">{formatTime()}</span>
-          <Show when={tab() !== "overview"}>
+          <Show when={tab() === "library"}>
             <button class="db__bar-avatar" onClick={() => switchTab("profile")}>
               <Show when={user()?.image} keyed fallback={<span class="db__bar-avatar-initials">{initials()}</span>}>
                 {(image) => <img src={image} alt="" />}
@@ -621,7 +635,10 @@ const Dashboard: Component<{
             </div>
             <div class="db__ticket-main">
               <div class="db__ticket-toprow">
-                <span class="db__ticket-logo">MELO STUDIO</span>
+                <span class="db__ticket-logo">
+                  <span class="db__ticket-logo-melo">Melo</span>
+                  <span class="db__ticket-logo-studio">Studio</span>
+                </span>
                 <span class="db__ticket-season">Artist Pass · Season 2026</span>
               </div>
               <div class="db__ticket-head">
@@ -817,12 +834,15 @@ const Dashboard: Component<{
                 </div>
                 <button class="db__lib-new-btn" onClick={openCreate}>
                   <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 4v12M4 10h12" /></svg>
-                  New project
+                  <span>New project</span>
                 </button>
               </div>
             </div>
             <nav class="db__lib-tabs">
-              <button ref={el => { tabRefs["all"] = el; }} class={`db__lib-tab${libCat() === "all" ? " db__lib-tab--active" : ""}`} onClick={() => setLibCat("all")}>All</button>
+              <button ref={el => { tabRefs["all"] = el; }} class={`db__lib-tab${libCat() === "all" ? " db__lib-tab--active" : ""}`} onClick={() => setLibCat("all")}>
+                All
+                <span class="db__lib-tab-badge">{projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase())).length}</span>
+              </button>
               <button ref={el => { tabRefs["mine"] = el; }} class={`db__lib-tab${libCat() === "mine" ? " db__lib-tab--active" : ""}`} onClick={() => setLibCat("mine")}>Mine</button>
               <button ref={el => { tabRefs["liked"] = el; }} class={`db__lib-tab${libCat() === "liked" ? " db__lib-tab--active" : ""}`} onClick={() => setLibCat("liked")}>Liked</button>
               <span class="db__lib-tab-spacer">

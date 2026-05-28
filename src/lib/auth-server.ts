@@ -35,7 +35,10 @@ export async function requireUserId(req: Request): Promise<string | null> {
   try {
     const session = await auth.api.getSession({ headers: req.headers });
     if (session?.user?.id) return session.user.id;
-  } catch { /* no session */ }
+  } catch (err) {
+    console.error("[requireUserId] getSession threw:", err);
+    /* no session */
+  }
 
   return null;
 }

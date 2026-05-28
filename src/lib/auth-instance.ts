@@ -2,6 +2,7 @@
 // Self-hosted Better Auth instance with email/password + Google + Facebook + Twitter.
 
 import { betterAuth } from "better-auth";
+import { dash } from "@better-auth/infra";
 import { Pool } from "pg";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -126,4 +127,8 @@ export const auth = betterAuth({
       console.error("[Better Auth] API error:", error);
     },
   },
+
+  plugins: [
+    ...(process.env.BETTER_AUTH_API_KEY ? [dash()] : []),
+  ],
 });
