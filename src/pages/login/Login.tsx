@@ -5,6 +5,14 @@ import { socialAuthClient } from "../../lib/social-auth";
 import { markAuthProvider } from "../../lib/app-auth";
 import "./login.scss";
 
+type NeonSocialAuthClient = typeof authClient & {
+  signIn: typeof authClient.signIn & {
+    social: (input: { provider: "google"; callbackURL: string }) => Promise<unknown>;
+  };
+};
+
+const neonAuthClient = authClient as NeonSocialAuthClient;
+
 const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: () => void; onSuccess?: () => void }> = (props) => {
   let pageRef: HTMLDivElement | undefined;
 
@@ -44,21 +52,30 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
     }
   };
 
+  const signInWithTwitter = async () => {
+    markAuthProvider("better-auth");
+    await socialAuthClient.signIn.social({
+      provider: "twitter",
+      callbackURL: "/dashboard",
+    });
+  };
+
+  const signInWithNeonSocial = async (provider: "google") => {
+    markAuthProvider("neon");
+    await neonAuthClient.signIn.social({
+      provider,
+      callbackURL: "/dashboard",
+    });
+  };
+
   const handleSocialLogin = async (provider: "google" | "twitter") => {
     try {
       if (provider === "twitter") {
-        markAuthProvider("better-auth");
-        await socialAuthClient.signIn.social({
-          provider: "twitter",
-          callbackURL: "/dashboard",
-        });
-      } else {
-        markAuthProvider("neon");
-        await (authClient as any).signIn.social({
-          provider,
-          callbackURL: "/dashboard",
-        });
+        await signInWithTwitter();
+        return;
       }
+
+      await signInWithNeonSocial(provider);
     } catch (err: any) {
       setErrorMsg(err.message || "Social login failed");
     }

@@ -6,7 +6,6 @@ export type AppAuthProvider = "neon" | "better-auth";
 type StoredAuthState = AppAuthProvider | "logged-out";
 
 const AUTH_STATE_KEY = "ms_auth_provider";
-const DASH_START_KEY = "ms_dash_start";
 
 function readAuthState(): StoredAuthState | null {
   if (typeof window === "undefined") return null;
@@ -25,8 +24,6 @@ export function markAuthProvider(provider: AppAuthProvider) {
 
 export function markLoggedOut() {
   writeAuthState("logged-out");
-  if (typeof window === "undefined") return;
-  try { window.sessionStorage.removeItem(DASH_START_KEY); } catch {}
 }
 
 export async function getAppSession(options: { respectLoggedOut?: boolean; persist?: boolean } = {}) {
@@ -96,7 +93,7 @@ export async function signOutApp() {
   const session = stored === "logged-out" ? null : await getAppSession({ respectLoggedOut: false, persist: false });
   const provider = stored === "neon" || stored === "better-auth" ? stored : session?.provider;
 
-  if (provider === "better-auth") await signOutBetterAuth();
+  await signOutBetterAuth();
   if (provider === "neon") await signOutNeon();
 
   markLoggedOut();

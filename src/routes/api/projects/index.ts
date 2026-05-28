@@ -18,9 +18,8 @@ export async function GET(event: APIEvent) {
     const items = await listProjects(userId);
     return Response.json(items);
   } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
     console.error("[GET /api/projects] failed:", err);
-    return textResponse(`server error: ${msg}`, 500);
+    return textResponse("server error", 500);
   }
 }
 

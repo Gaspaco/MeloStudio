@@ -205,6 +205,10 @@ const Studio: Component = () => {
     seq?.stop();
     sth.allNotesOff();
     metronomePart?.dispose();
+    // Safety-net: save any unsaved work when the studio unmounts (e.g. browser back)
+    if (Date.now() - lastSavedAt > 5_000) {
+      project.save().catch(() => {});
+    }
   });
 
   // ── Metronome ─────────────────────────────────────────────────────────────
@@ -254,8 +258,10 @@ const Studio: Component = () => {
 
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
   onCleanup(() => clearTimeout(toastTimer));
+  let lastSavedAt = 0;
   const handleSave = async () => {
     await project.save();
+    lastSavedAt = Date.now();
     setLastSaved(new Date());
     setShowSaveToast(true);
     clearTimeout(toastTimer);
@@ -331,6 +337,11 @@ const Studio: Component = () => {
 
   const drumClipBars = createMemo(() => Array.from({ length: 4 }, (_, i) => i));
 
+  const saveAndNavigate = async (path: string) => {
+    await handleSave();
+    navigate(path);
+  };
+
   const buildNavCats = (): NavCategory[] => {
     const close = () => setNavOpen(false);
     const run = (fn: () => void) => () => { fn(); close(); };
@@ -339,10 +350,10 @@ const Studio: Component = () => {
         id: "project", num: "01", label: "Project",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V4l6-1.2v7"/><circle cx="5" cy="11.5" r="1.4"/><circle cx="11" cy="9.8" r="1.4"/></svg>,
         items: [
-          { label: "New Project",    kbd: "⌘N", action: run(() => navigate("/dashboard?new=1")) },
+          { label: "New Project",    kbd: "⌘N", action: run(() => { void saveAndNavigate("/dashboard?new=1"); }) },
           { label: "Save",           kbd: "⌘S", action: run(() => { void handleSave(); }), disabled: () => saveState() === "saving" },
           { label: "Rename\u2026",   kbd: "",   action: run(() => startEditingTitle()) },
-          { label: "Open Dashboard", kbd: "⌘D", action: run(() => navigate("/dashboard")) },
+          { label: "Open Dashboard", kbd: "⌘D", action: run(() => { void saveAndNavigate("/dashboard"); }) },
         ],
       },
       {
@@ -406,7 +417,7 @@ const Studio: Component = () => {
         playing={playing} elapsed={elapsed} masterVol={masterVol}
         titleInputRef={(el) => (titleInputEl = el)}
         onNavToggle={() => setNavOpen(!navOpen())}
-        onDashboard={() => navigate("/dashboard")}
+        onDashboard={() => { void saveAndNavigate("/dashboard"); }}
         onStartEditTitle={startEditingTitle}
         onCommitTitle={commitTitle}
         onCancelTitle={cancelTitle}
@@ -555,7 +566,7 @@ const Studio: Component = () => {
           navCat={navCat} setNavCat={setNavCat}
           cats={buildNavCats()} name={name}
           onClose={() => setNavOpen(false)}
-          onExit={() => { setNavOpen(false); navigate("/dashboard"); }}
+          onExit={() => { setNavOpen(false); void saveAndNavigate("/dashboard"); }}
         />
       </Show>
 
