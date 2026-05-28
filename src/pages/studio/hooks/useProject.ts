@@ -10,6 +10,7 @@ import type { Accessor, Setter } from "solid-js";
 import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer } from "~/lib/audio/stepSeq";
 import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
 import { loadClip, loadClipBlob, removeClip, storeClip } from "~/lib/clipStore";
+import { uploadRemoteClip } from "~/lib/remoteClips";
 import { type MediaClip, type UITrack, TRACK_DEFS } from "../types";
 
 type Deps = {
@@ -38,6 +39,7 @@ type Deps = {
 export function useProject(deps: Deps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let pendingDoc: any = null;
+  let warnedRemoteStorageUnavailable = false;
   const MAX_SAVE_PAYLOAD_BYTES = 4_500_000;
   const MAX_INLINE_CLIP_BYTES = 2_000_000;
   const MAX_INLINE_CLIP_DATA_URL_CHARS = 2_800_000;
@@ -49,12 +51,38 @@ export function useProject(deps: Deps) {
     reader.readAsDataURL(blob);
   });
 
-  const clipDataUrl = async (clip: MediaClip): Promise<string | undefined> => {
-    if (clip.dataUrl) return clip.dataUrl.length <= MAX_INLINE_CLIP_DATA_URL_CHARS ? clip.dataUrl : undefined;
+  const clipBlob = async (clip: MediaClip): Promise<Blob | null> => {
     let blob = await loadClipBlob(clip.id).catch(() => null);
     if (!blob && clip.url) blob = await fetch(clip.url).then((res) => res.blob()).catch(() => null);
-    if (blob && blob.size > MAX_INLINE_CLIP_BYTES) return undefined;
-    return blob ? blobToDataUrl(blob) : undefined;
+    return blob;
+  };
+
+  const persistedClipFields = async (clip: MediaClip): Promise<Pick<MediaClip, "dataUrl" | "remoteUrl">> => {
+    if (clip.kind === "midi") return { dataUrl: undefined, remoteUrl: undefined };
+    if (clip.dataUrl && clip.dataUrl.length <= MAX_INLINE_CLIP_DATA_URL_CHARS) {
+      return { dataUrl: clip.dataUrl, remoteUrl: clip.remoteUrl };
+    }
+    const blob = await clipBlob(clip);
+
+    if (!blob) return { dataUrl: undefined, remoteUrl: clip.remoteUrl };
+    if (blob.size <= MAX_INLINE_CLIP_BYTES) {
+      return { dataUrl: await blobToDataUrl(blob), remoteUrl: clip.remoteUrl };
+    }
+    if (clip.remoteUrl) return { dataUrl: undefined, remoteUrl: clip.remoteUrl };
+
+    try {
+      const result = await uploadRemoteClip(deps.projectId, clip.id, blob, blob.type || "audio/mpeg");
+      if (result.remoteUrl) return { dataUrl: undefined, remoteUrl: result.remoteUrl };
+      console.warn(`[useProject] server clip upload not stored (${result.status}) for ${clip.id}`);
+      if (!warnedRemoteStorageUnavailable) {
+        warnedRemoteStorageUnavailable = true;
+        deps.setError("Large audio is saved locally only until Netlify Blobs is available.");
+        setTimeout(() => deps.setError(""), 3600);
+      }
+    } catch (err) {
+      console.warn("[useProject] server clip upload error:", err);
+    }
+    return { dataUrl: undefined, remoteUrl: undefined };
   };
 
   const jsonByteLength = (value: unknown) => new TextEncoder().encode(JSON.stringify(value)).length;
@@ -191,7 +219,7 @@ export function useProject(deps: Deps) {
         clips: await Promise.all((t.clips ?? []).map(async c => ({
           ...c,
           url: undefined,
-          dataUrl: c.kind === "midi" ? undefined : await clipDataUrl(c),
+          ...(await persistedClipFields(c)),
         }))),
       })));
       const updated = {

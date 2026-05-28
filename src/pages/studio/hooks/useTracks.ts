@@ -7,7 +7,7 @@
 import { createSignal } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { storeClip, removeClip } from "~/lib/clipStore";
-import { apiFetch } from "~/lib/api";
+import { deleteRemoteClip, uploadRemoteClip } from "~/lib/remoteClips";
 import { type TrackType, type ClipKind, type MediaClip, type UITrack, type StudioTemplate, TRACK_DEFS, randomTrackColor } from "../types";
 import type { PolySynth, SynthPreset } from "~/lib/audio/synth";
 import type { StepSequencer } from "~/lib/audio/stepSeq";
@@ -17,7 +17,7 @@ const volToDb = (v: number) => v <= 0.001 ? -60 : 20 * Math.log10(v);
 const BAR_PX = 80;
 // Files larger than this won't have a dataUrl in the saved project JSON,
 // so they must be uploaded to the server for cross-session / cross-device playback.
-const REMOTE_UPLOAD_THRESHOLD_BYTES = 2 * 1024 * 1024; // 2 MB
+const REMOTE_UPLOAD_THRESHOLD_BYTES = 2_000_000; // Must match useProject's inline clip cap.
 
 type Deps = {
   projectId: Accessor<string>;
@@ -40,6 +40,7 @@ type Deps = {
 export function useTracks(deps: Deps) {
   const [dropTarget, setDropTarget] = createSignal<{ trackId: string; bar: number } | null>(null);
   const [globalDragOver, setGlobalDragOver] = createSignal(false);
+  let warnedRemoteStorageUnavailable = false;
 
   const classifyFile = (file: File): ClipKind | null => {
     const name = file.name.toLowerCase();
@@ -69,6 +70,26 @@ export function useTracks(deps: Deps) {
     });
   };
 
+  const uploadLargeClip = async (clipId: string, file: File): Promise<string | undefined> => {
+    if (file.size <= REMOTE_UPLOAD_THRESHOLD_BYTES) return undefined;
+    const projectId = deps.projectId();
+    if (!projectId) return undefined;
+
+    try {
+      const result = await uploadRemoteClip(projectId, clipId, file, file.type || "audio/mpeg");
+      if (result.remoteUrl) return result.remoteUrl;
+      console.warn(`[useTracks] server clip upload not stored (${result.status}) for ${clipId}`);
+      if (!warnedRemoteStorageUnavailable) {
+        warnedRemoteStorageUnavailable = true;
+        deps.setError("Large audio is saved locally only until Netlify Blobs is available.");
+        setTimeout(() => deps.setError(""), 3600);
+      }
+    } catch (err) {
+      console.warn("[useTracks] server clip upload error:", err);
+    }
+    return undefined;
+  };
+
   const addClip = async (trackId: string, file: File, barStart: number) => {
     const kind = classifyFile(file);
     if (!kind) {
@@ -79,7 +100,6 @@ export function useTracks(deps: Deps) {
     const bars = await estimateBars(file, kind);
     const clipId = crypto.randomUUID();
     let url: string | undefined;
-    let remoteUrl: string | undefined;
     if (kind !== "midi") {
       url = URL.createObjectURL(file);
       // Store in IndexedDB for local session persistence
@@ -87,37 +107,22 @@ export function useTracks(deps: Deps) {
       if (!stored) {
         console.warn(`[useTracks] IDB storeClip failed for clip ${clipId} (${file.name}, ${file.size} bytes)`);
       }
-      // Upload to server for cross-session / cross-device persistence
-      if (file.size > REMOTE_UPLOAD_THRESHOLD_BYTES) {
-        const pid = deps.projectId();
-        if (pid) {
-          void apiFetch(`/api/clips/${clipId}?projectId=${pid}`, {
-            method: "PUT",
-            headers: { "Content-Type": file.type || "audio/mpeg" },
-            body: file,
-          }).then(async (res) => {
-            if (!res.ok) {
-              console.warn(`[useTracks] server clip upload failed (${res.status}) for ${clipId}`);
-              return;
-            }
-            const body = await res.json().catch(() => ({})) as { stored?: boolean };
-            if (!body.stored) return; // local dev — Netlify Blobs not available
-            remoteUrl = `/api/clips/${clipId}?projectId=${pid}`;
-            // Patch the stored clip with remoteUrl so it's saved on next project save
-            deps.setTracks(deps.tracks().map(t => ({
-              ...t,
-              clips: (t.clips ?? []).map(c =>
-                c.id === clipId ? { ...c, remoteUrl } : c
-              ),
-            })));
-          }).catch((err) => {
-            console.warn("[useTracks] server clip upload error:", err);
-          });
-        }
+    }
+    const clip: MediaClip = { id: clipId, kind, name: file.name.replace(/\.[^.]+$/, ""), barStart: Math.max(0, barStart), bars, url };
+    deps.setTracks(deps.tracks().map(t => t.id === trackId ? { ...t, clips: [...(t.clips ?? []), clip] } : t));
+
+    if (kind !== "midi" && file.size > REMOTE_UPLOAD_THRESHOLD_BYTES) {
+      const remoteUrl = await uploadLargeClip(clipId, file);
+      if (remoteUrl) {
+        deps.setTracks(deps.tracks().map(t => ({
+          ...t,
+          clips: (t.clips ?? []).map(c =>
+            c.id === clipId ? { ...c, remoteUrl } : c
+          ),
+        })));
       }
     }
-    const clip: MediaClip = { id: clipId, kind, name: file.name.replace(/\.[^.]+$/, ""), barStart: Math.max(0, barStart), bars, url, remoteUrl };
-    deps.setTracks(deps.tracks().map(t => t.id === trackId ? { ...t, clips: [...(t.clips ?? []), clip] } : t));
+    await deps.save().catch((err) => console.warn("[useTracks] save after clip add failed:", err));
   };
 
   const deleteClip = (trackId: string, clipId: string) => {
@@ -129,7 +134,7 @@ export function useTracks(deps: Deps) {
       // Clean up server-side blob if it was uploaded
       const pid = deps.projectId();
       if (pid && target?.remoteUrl) {
-        void apiFetch(`/api/clips/${clipId}?projectId=${pid}`, { method: "DELETE" }).catch(() => {});
+        void deleteRemoteClip(pid, clipId).catch(() => {});
       }
       return { ...t, clips: (t.clips ?? []).filter(c => c.id !== clipId) };
     }));

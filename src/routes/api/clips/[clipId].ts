@@ -3,11 +3,14 @@
 // DELETE /api/clips/:clipId?projectId=<uuid> — remove audio (authenticated, project owner only)
 import type { APIEvent } from "@solidjs/start/server";
 import { getStore } from "@netlify/blobs";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 import { requireUserId } from "~/lib/auth-server";
 import { sql } from "~/lib/db/client";
 import { isUuid, textResponse } from "../_utils";
 
 const MAX_CLIP_BYTES = 50 * 1024 * 1024; // 50 MB hard cap per clip
+const LOCAL_CLIP_ROOT = join(process.cwd(), ".data", "audio-clips");
 const ALLOWED_AUDIO_TYPES = new Set([
   "audio/mpeg", "audio/mp3", "audio/wav", "audio/wave", "audio/x-wav",
   "audio/ogg", "audio/flac", "audio/x-flac", "audio/aac", "audio/mp4",
@@ -21,6 +24,50 @@ function getClipsStore() {
   } catch {
     return null;
   }
+}
+
+const canUseLocalClipStore = () => process.env.NODE_ENV !== "production";
+
+const localClipPath = (projectId: string, clipId: string) =>
+  join(LOCAL_CLIP_ROOT, projectId, `${clipId}.bin`);
+
+const localMetaPath = (projectId: string, clipId: string) =>
+  join(LOCAL_CLIP_ROOT, projectId, `${clipId}.json`);
+
+async function setLocalClip(
+  projectId: string,
+  clipId: string,
+  body: ArrayBuffer,
+  metadata: Record<string, string>,
+): Promise<boolean> {
+  if (!canUseLocalClipStore()) return false;
+  const dir = join(LOCAL_CLIP_ROOT, projectId);
+  await mkdir(dir, { recursive: true });
+  await writeFile(localClipPath(projectId, clipId), new Uint8Array(body));
+  await writeFile(localMetaPath(projectId, clipId), JSON.stringify(metadata));
+  return true;
+}
+
+async function getLocalClip(projectId: string, clipId: string): Promise<{ data: Uint8Array; mime: string } | null> {
+  if (!canUseLocalClipStore()) return null;
+  try {
+    const [data, metaRaw] = await Promise.all([
+      readFile(localClipPath(projectId, clipId)),
+      readFile(localMetaPath(projectId, clipId), "utf8").catch(() => "{}"),
+    ]);
+    const metadata = JSON.parse(metaRaw) as { mime?: string };
+    return { data, mime: metadata.mime || "audio/mpeg" };
+  } catch {
+    return null;
+  }
+}
+
+async function deleteLocalClip(projectId: string, clipId: string): Promise<void> {
+  if (!canUseLocalClipStore()) return;
+  await Promise.all([
+    rm(localClipPath(projectId, clipId), { force: true }),
+    rm(localMetaPath(projectId, clipId), { force: true }),
+  ]);
 }
 
 async function getProjectOwner(projectId: string): Promise<{ userId: string; published: boolean } | null> {
@@ -54,19 +101,21 @@ export async function PUT(event: APIEvent) {
     return textResponse("unsupported media type", 415);
   }
 
-  const store = getClipsStore();
-  if (!store) {
-    return Response.json({ ok: true, stored: false }, { status: 200 });
-  }
-
   try {
     const body = await event.request.arrayBuffer();
     if (body.byteLength === 0) return textResponse("empty body", 400);
     if (body.byteLength > MAX_CLIP_BYTES) return textResponse("file too large", 413);
 
     const key = `${projectId}/${clipId}`;
+    const metadata = { userId, projectId, mime: contentType || "audio/mpeg" };
+    const store = getClipsStore();
+    if (!store) {
+      const stored = await setLocalClip(projectId, clipId, body, metadata);
+      return Response.json({ ok: true, stored, local: stored }, { status: 200 });
+    }
+
     await store.set(key, body, {
-      metadata: { userId, projectId, mime: contentType || "audio/mpeg" },
+      metadata,
     });
     return Response.json({ ok: true, stored: true }, { status: 200 });
   } catch (err) {
@@ -90,7 +139,19 @@ export async function GET(event: APIEvent) {
   }
 
   const store = getClipsStore();
-  if (!store) return textResponse("storage not available", 503);
+  if (!store) {
+    const local = await getLocalClip(projectId, clipId);
+    if (!local) return textResponse(canUseLocalClipStore() ? "clip not found" : "storage not available", canUseLocalClipStore() ? 404 : 503);
+    const body = new ArrayBuffer(local.data.byteLength);
+    new Uint8Array(body).set(local.data);
+    return new Response(body, {
+      headers: {
+        "Content-Type": local.mime,
+        "Cache-Control": "private, max-age=3600",
+        "Accept-Ranges": "bytes",
+      },
+    });
+  }
 
   try {
     const key = `${projectId}/${clipId}`;
@@ -125,7 +186,10 @@ export async function DELETE(event: APIEvent) {
   if (project.userId !== userId) return textResponse("forbidden", 403);
 
   const store = getClipsStore();
-  if (!store) return Response.json({ ok: true }, { status: 200 });
+  if (!store) {
+    await deleteLocalClip(projectId, clipId);
+    return Response.json({ ok: true }, { status: 200 });
+  }
 
   try {
     await store.delete(`${projectId}/${clipId}`);
