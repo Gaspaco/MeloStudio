@@ -28,6 +28,12 @@ function getClipsStore() {
 
 const canUseLocalClipStore = () => process.env.NODE_ENV !== "production";
 
+const warnStorageFallback = (operation: string, err: unknown) => {
+  if (canUseLocalClipStore()) {
+    console.warn(`[${operation} /api/clips/:clipId] Netlify Blobs unavailable; using local clip store:`, err);
+  }
+};
+
 const localClipPath = (projectId: string, clipId: string) =>
   join(LOCAL_CLIP_ROOT, projectId, `${clipId}.bin`);
 
@@ -60,6 +66,18 @@ async function getLocalClip(projectId: string, clipId: string): Promise<{ data: 
   } catch {
     return null;
   }
+}
+
+function localClipResponse(local: { data: Uint8Array; mime: string }): Response {
+  const body = new ArrayBuffer(local.data.byteLength);
+  new Uint8Array(body).set(local.data);
+  return new Response(body, {
+    headers: {
+      "Content-Type": local.mime,
+      "Cache-Control": "private, max-age=3600",
+      "Accept-Ranges": "bytes",
+    },
+  });
 }
 
 async function deleteLocalClip(projectId: string, clipId: string): Promise<void> {
@@ -114,10 +132,17 @@ export async function PUT(event: APIEvent) {
       return Response.json({ ok: true, stored, local: stored }, { status: 200 });
     }
 
-    await store.set(key, body, {
-      metadata,
-    });
-    return Response.json({ ok: true, stored: true }, { status: 200 });
+    try {
+      await store.set(key, body, {
+        metadata,
+      });
+      return Response.json({ ok: true, stored: true }, { status: 200 });
+    } catch (err) {
+      warnStorageFallback("PUT", err);
+      const stored = await setLocalClip(projectId, clipId, body, metadata);
+      if (stored) return Response.json({ ok: true, stored: true, local: true }, { status: 200 });
+      throw err;
+    }
   } catch (err) {
     console.error("[PUT /api/clips/:clipId] failed:", err);
     return textResponse("storage error", 500);
@@ -142,15 +167,7 @@ export async function GET(event: APIEvent) {
   if (!store) {
     const local = await getLocalClip(projectId, clipId);
     if (!local) return textResponse(canUseLocalClipStore() ? "clip not found" : "storage not available", canUseLocalClipStore() ? 404 : 503);
-    const body = new ArrayBuffer(local.data.byteLength);
-    new Uint8Array(body).set(local.data);
-    return new Response(body, {
-      headers: {
-        "Content-Type": local.mime,
-        "Cache-Control": "private, max-age=3600",
-        "Accept-Ranges": "bytes",
-      },
-    });
+    return localClipResponse(local);
   }
 
   try {
@@ -167,6 +184,10 @@ export async function GET(event: APIEvent) {
       },
     });
   } catch (err) {
+    warnStorageFallback("GET", err);
+    const local = await getLocalClip(projectId, clipId);
+    if (local) return localClipResponse(local);
+    if (canUseLocalClipStore()) return textResponse("clip not found", 404);
     console.error("[GET /api/clips/:clipId] failed:", err);
     return textResponse("storage error", 500);
   }
@@ -195,6 +216,11 @@ export async function DELETE(event: APIEvent) {
     await store.delete(`${projectId}/${clipId}`);
     return Response.json({ ok: true }, { status: 200 });
   } catch (err) {
+    warnStorageFallback("DELETE", err);
+    if (canUseLocalClipStore()) {
+      await deleteLocalClip(projectId, clipId);
+      return Response.json({ ok: true, local: true }, { status: 200 });
+    }
     console.error("[DELETE /api/clips/:clipId] failed:", err);
     return textResponse("storage error", 500);
   }
