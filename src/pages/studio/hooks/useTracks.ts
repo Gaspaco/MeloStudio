@@ -7,6 +7,7 @@
 import { createSignal } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { storeClip, removeClip } from "~/lib/clipStore";
+import { apiFetch } from "~/lib/api";
 import { type TrackType, type ClipKind, type MediaClip, type UITrack, type StudioTemplate, TRACK_DEFS, randomTrackColor } from "../types";
 import type { PolySynth, SynthPreset } from "~/lib/audio/synth";
 import type { StepSequencer } from "~/lib/audio/stepSeq";
@@ -14,8 +15,12 @@ import type { StepSequencer } from "~/lib/audio/stepSeq";
 const volToDb = (v: number) => v <= 0.001 ? -60 : 20 * Math.log10(v);
 
 const BAR_PX = 80;
+// Files larger than this won't have a dataUrl in the saved project JSON,
+// so they must be uploaded to the server for cross-session / cross-device playback.
+const REMOTE_UPLOAD_THRESHOLD_BYTES = 2 * 1024 * 1024; // 2 MB
 
 type Deps = {
+  projectId: Accessor<string>;
   tracks: Accessor<UITrack[]>; setTracks: Setter<UITrack[]>;
   selectedTrack: Accessor<string | null>; setSelectedTrack: Setter<string | null>;
   bpm: Accessor<number>;
@@ -74,11 +79,44 @@ export function useTracks(deps: Deps) {
     const bars = await estimateBars(file, kind);
     const clipId = crypto.randomUUID();
     let url: string | undefined;
+    let remoteUrl: string | undefined;
     if (kind !== "midi") {
       url = URL.createObjectURL(file);
-      await storeClip(clipId, file).catch(() => {});
+      // Store in IndexedDB for local session persistence
+      const stored = await storeClip(clipId, file).then(() => true).catch(() => false);
+      if (!stored) {
+        console.warn(`[useTracks] IDB storeClip failed for clip ${clipId} (${file.name}, ${file.size} bytes)`);
+      }
+      // Upload to server for cross-session / cross-device persistence
+      if (file.size > REMOTE_UPLOAD_THRESHOLD_BYTES) {
+        const pid = deps.projectId();
+        if (pid) {
+          void apiFetch(`/api/clips/${clipId}?projectId=${pid}`, {
+            method: "PUT",
+            headers: { "Content-Type": file.type || "audio/mpeg" },
+            body: file,
+          }).then(async (res) => {
+            if (!res.ok) {
+              console.warn(`[useTracks] server clip upload failed (${res.status}) for ${clipId}`);
+              return;
+            }
+            const body = await res.json().catch(() => ({})) as { stored?: boolean };
+            if (!body.stored) return; // local dev — Netlify Blobs not available
+            remoteUrl = `/api/clips/${clipId}?projectId=${pid}`;
+            // Patch the stored clip with remoteUrl so it's saved on next project save
+            deps.setTracks(deps.tracks().map(t => ({
+              ...t,
+              clips: (t.clips ?? []).map(c =>
+                c.id === clipId ? { ...c, remoteUrl } : c
+              ),
+            })));
+          }).catch((err) => {
+            console.warn("[useTracks] server clip upload error:", err);
+          });
+        }
+      }
     }
-    const clip: MediaClip = { id: clipId, kind, name: file.name.replace(/\.[^.]+$/, ""), barStart: Math.max(0, barStart), bars, url };
+    const clip: MediaClip = { id: clipId, kind, name: file.name.replace(/\.[^.]+$/, ""), barStart: Math.max(0, barStart), bars, url, remoteUrl };
     deps.setTracks(deps.tracks().map(t => t.id === trackId ? { ...t, clips: [...(t.clips ?? []), clip] } : t));
   };
 
@@ -88,6 +126,11 @@ export function useTracks(deps: Deps) {
       const target = (t.clips ?? []).find(c => c.id === clipId);
       if (target?.url) URL.revokeObjectURL(target.url);
       removeClip(clipId).catch(() => {});
+      // Clean up server-side blob if it was uploaded
+      const pid = deps.projectId();
+      if (pid && target?.remoteUrl) {
+        void apiFetch(`/api/clips/${clipId}?projectId=${pid}`, { method: "DELETE" }).catch(() => {});
+      }
       return { ...t, clips: (t.clips ?? []).filter(c => c.id !== clipId) };
     }));
   };

@@ -10,6 +10,7 @@ export interface MediaClip {
   bars: number;
   url?: string;
   dataUrl?: string;
+  remoteUrl?: string;
 }
 
 export interface UITrack {

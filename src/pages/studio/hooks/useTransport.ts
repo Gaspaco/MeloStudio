@@ -93,7 +93,7 @@ export function useTransport(deps: Deps) {
     masterGainNode.connect(getMasterBus().input);
 
     for (const track of deps.tracks()) {
-      const hasAudioClips = (track.clips ?? []).some(c => c.kind !== "midi" && !!c.url);
+      const hasAudioClips = (track.clips ?? []).some(c => c.kind !== "midi" && (!!c.url || !!c.remoteUrl));
       if (!hasAudioClips) continue;
 
       // Per-track gain node so each track's volume slider works independently
@@ -103,13 +103,16 @@ export function useTransport(deps: Deps) {
       trackGainNodes.set(track.id, trackGain);
 
       for (const clip of track.clips ?? []) {
-        if (clip.kind === "midi" || !clip.url) continue;
-        let buffer = audioBufferCache.get(clip.url);
+        if (clip.kind === "midi") continue;
+        // Use local blob URL if available, fall back to server URL for cross-session clips
+        const audioSrc = clip.url || clip.remoteUrl;
+        if (!audioSrc) continue;
+        let buffer = audioBufferCache.get(audioSrc);
         if (!buffer) {
           try {
-            const ab = await fetch(clip.url).then(r => r.arrayBuffer());
+            const ab = await fetch(audioSrc).then(r => r.arrayBuffer());
             buffer = await ctx.decodeAudioData(ab);
-            audioBufferCache.set(clip.url, buffer);
+            audioBufferCache.set(audioSrc, buffer);
           } catch { continue; }
         }
         const clipStartSecs = barsToSecs(clip.barStart);

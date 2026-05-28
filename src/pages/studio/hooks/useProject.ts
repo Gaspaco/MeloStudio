@@ -109,10 +109,23 @@ export function useProject(deps: Deps) {
         const restoredClips = [];
         for (const clip of t.clips ?? []) {
           if (clip.kind !== "midi") {
+            // 1. Try IndexedDB (fast, local)
             let url = await loadClip(clip.id).catch(() => null);
+            // 2. Fall back to inline dataUrl (small clips only)
             if (!url && clip.dataUrl) {
               const blob = await fetch(clip.dataUrl).then((res) => res.blob()).catch(() => null);
               if (blob) {
+                await storeClip(clip.id, blob).catch(() => {});
+                url = URL.createObjectURL(blob);
+              }
+            }
+            // 3. Fall back to server-side storage (large clips, cross-device)
+            if (!url && clip.remoteUrl) {
+              const blob = await apiFetch(clip.remoteUrl)
+                .then(r => r.ok ? r.blob() : null)
+                .catch(() => null);
+              if (blob) {
+                // Cache back to IDB so future sessions load faster
                 await storeClip(clip.id, blob).catch(() => {});
                 url = URL.createObjectURL(blob);
               }

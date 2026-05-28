@@ -161,6 +161,7 @@ const Studio: Component = () => {
   });
 
   const trk = useTracks({
+    projectId: () => params.id,
     tracks, setTracks, selectedTrack, setSelectedTrack,
     bpm, setError, setShowNewTrack,
     ensureSynth: sth.ensureSynth, setSynthPreset,

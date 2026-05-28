@@ -489,7 +489,7 @@ const SharePage: Component = () => {
                 bpm: number;
                 tracks: Array<{
                   id: string; name: string; volume: number; muted: boolean;
-                  clips: Array<{ id: string; startSec: number; durationSec: number; dataUrl?: string }>;
+                  clips: Array<{ id: string; startSec: number; durationSec: number; dataUrl?: string; remoteUrl?: string }>;
                 }>;
                 durationSec?: number;
                 pattern: unknown | null;
@@ -519,7 +519,7 @@ const SharePage: Component = () => {
               for (const track of tracks) {
                 if (track.muted) continue;
                 for (const clip of track.clips) {
-                  const blobUrl = clip.dataUrl ?? await loadClip(clip.id).catch(() => null);
+                  const blobUrl = clip.dataUrl ?? clip.remoteUrl ?? await loadClip(clip.id).catch(() => null);
                   if (!blobUrl) continue;
 
                   const arrayBuf = await fetch(blobUrl).then((r) => r.arrayBuffer()).catch(() => null);

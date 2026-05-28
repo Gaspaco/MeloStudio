@@ -23,6 +23,7 @@
     "@better-auth/infra": "^0.2.10",
     "@neondatabase/neon-js": "0.6.1-beta",
     "@neondatabase/serverless": "^1.1.0",
+    "@netlify/blobs": "^10.7.8",
     "@solidjs/router": "^0.15.3",
     "@solidjs/start": "^1.1.0",
     "@types/three": "^0.183.1",
