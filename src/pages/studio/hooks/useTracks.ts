@@ -7,7 +7,7 @@
 import { createSignal } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { storeClip, removeClip } from "~/lib/clipStore";
-import { deleteRemoteClip, uploadRemoteClip } from "~/lib/remoteClips";
+import { deleteRemoteClip, remoteClipUploadErrorMessage, uploadRemoteClip } from "~/lib/remoteClips";
 import { type TrackType, type ClipKind, type MediaClip, type UITrack, type StudioTemplate, TRACK_DEFS, randomTrackColor } from "../types";
 import type { PolySynth, SynthPreset } from "~/lib/audio/synth";
 import type { StepSequencer } from "~/lib/audio/stepSeq";
@@ -81,11 +81,16 @@ export function useTracks(deps: Deps) {
       console.warn(`[useTracks] server clip upload not stored (${result.status}) for ${clipId}`);
       if (!warnedRemoteStorageUnavailable) {
         warnedRemoteStorageUnavailable = true;
-        deps.setError("Large audio is saved locally only until Netlify Blobs is available.");
+        deps.setError(remoteClipUploadErrorMessage(result));
         setTimeout(() => deps.setError(""), 3600);
       }
     } catch (err) {
       console.warn("[useTracks] server clip upload error:", err);
+      if (!warnedRemoteStorageUnavailable) {
+        warnedRemoteStorageUnavailable = true;
+        deps.setError("Large audio upload failed. It will only play from this browser for now.");
+        setTimeout(() => deps.setError(""), 3600);
+      }
     }
     return undefined;
   };
