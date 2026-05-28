@@ -4,7 +4,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  BETTER_AUTH_URL = "https://melostudio.nl"
+  BETTER_AUTH_URL = "https://melo-studio.netlify.app"
 
 # Hashed JS/CSS/assets — cache indefinitely, never re-validate
 [[headers]]

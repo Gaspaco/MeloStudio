@@ -85,12 +85,9 @@ const Dashboard: Component<{
     // ── 1. Resolve auth session (must finish BEFORE loading projects so the
     //       right Bearer token / cookie is used for API calls) ──────────────
     try {
-      // If a Better Auth (Twitter) session is active, prefer it and clear any
-      // stale Neon Auth JWT so the server uses the Better Auth cookie instead.
+      // If a Better Auth (Twitter) session is active, prefer it over any stale
+      // Neon Auth session that may still be cached in the browser.
       const socialSession = await socialAuthClient.getSession();
-      if (socialSession.data?.user) {
-        try { await (authClient as any).signOut(); } catch {}
-      }
       let userData = socialSession.data?.user;
       if (!userData) userData = (await authClient.getSession()).data?.user;
       if (userData) {
@@ -148,8 +145,16 @@ const Dashboard: Component<{
 
   const handleLogout = async () => {
     // Sign out of both auth systems: Neon Auth (email/Google) and Better Auth (Twitter)
-    try { await socialAuthClient.signOut(); } catch {}
-    try { await authClient.signOut(); } catch {}
+    let hasSocialSession = false;
+    let hasNeonSession = false;
+    try { hasSocialSession = !!(await socialAuthClient.getSession()).data?.user; } catch {}
+    try { hasNeonSession = !!(await authClient.getSession()).data?.user; } catch {}
+    if (hasSocialSession) {
+      try { await socialAuthClient.signOut(); } catch {}
+    }
+    if (hasNeonSession) {
+      try { await authClient.signOut(); } catch {}
+    }
     props.onLogout();
   };
 

@@ -9,10 +9,10 @@ export default function DashboardPage() {
   const navigate = useNavigate();
 
   const [session] = createResource(async () => {
-    const { data } = await authClient.getSession();
-    if (data?.user) return data;
     const { data: baData } = await socialAuthClient.getSession();
     if (baData?.user) return baData;
+    const { data } = await authClient.getSession();
+    if (data?.user) return data;
     navigate("/login", { replace: true });
     return null;
   });
