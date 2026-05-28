@@ -24,7 +24,7 @@ const facebookClientSecret = process.env.FACEBOOK_CLIENT_SECRET;
 const twitterClientId = process.env.TWITTER_CLIENT_ID;
 const twitterClientSecret = process.env.TWITTER_CLIENT_SECRET;
 
-const fallbackBaseUrl = (process.env.BETTER_AUTH_URL ?? "https://melo-studio.netlify.app").replace(/\/$/, "");
+const fallbackBaseUrl = (process.env.BETTER_AUTH_URL ?? "https://melostudio.nl").replace(/\/$/, "");
 const allowedHosts = [
   "melostudio.nl",
   "www.melostudio.nl",
