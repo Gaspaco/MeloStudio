@@ -1,5 +1,5 @@
 // Server-only — never import from client code.
-// Self-hosted Better Auth instance with email/password + Google + Facebook + Twitter.
+// Self-hosted Better Auth instance with email/password + Google + Twitter.
 
 import { betterAuth } from "better-auth";
 import { dash } from "@better-auth/infra";
@@ -19,8 +19,6 @@ function requireEnv(name: string): string {
 const betterAuthSecret = requireEnv("BETTER_AUTH_SECRET");
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const facebookClientId = process.env.FACEBOOK_CLIENT_ID;
-const facebookClientSecret = process.env.FACEBOOK_CLIENT_SECRET;
 const twitterClientId = process.env.TWITTER_CLIENT_ID;
 const twitterClientSecret = process.env.TWITTER_CLIENT_SECRET;
 
@@ -76,16 +74,6 @@ if (googleClientId && googleClientSecret) {
   socialProviders.google = {
     clientId: googleClientId,
     clientSecret: googleClientSecret,
-  };
-}
-
-if (facebookClientId && facebookClientSecret) {
-  socialProviders.facebook = {
-    clientId: facebookClientId,
-    clientSecret: facebookClientSecret,
-    mapProfileToUser: (profile: { email?: string | null; id?: string | number }) => ({
-      email: profile.email ?? `${profile.id}@facebook.placeholder.local`,
-    }),
   };
 }
 

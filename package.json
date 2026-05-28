@@ -12,6 +12,7 @@
     "db:migrate": "bun --env-file=.env run src/lib/db/migrate.ts"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260528.1",
     "@types/bun": "latest",
     "@types/pg": "^8.20.0"
   },

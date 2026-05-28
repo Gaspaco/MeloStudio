@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "types": ["vite/client"],
+    "types": ["vite/client", "bun"],
     "target": "ESNext",
     "module": "ESNext",
     "moduleDetection": "force",
@@ -29,5 +29,5 @@
     }
   },
   "include": ["src", "app.config.ts", "entry-client.tsx", "entry-server.tsx", "test-auth-ts.ts"],
-  "exclude": ["node_modules", ".vinxi", ".output", ".netlify", "dist"]
+  "exclude": ["node_modules", ".vinxi", ".output", ".netlify", "dist", "node_modules/@neondatabase/auth/node_modules"]
 }
