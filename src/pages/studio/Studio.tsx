@@ -4,6 +4,7 @@ import * as Tone from "tone";
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
 import { type SynthPreset } from "~/lib/audio/synth";
 import { getMasterBus } from "~/lib/audio/masterBus";
+import { unlockAudioContext } from "~/lib/audio/context";
 import { updateProjectApi } from "~/lib/api";
 import { getAppSession } from "~/lib/app-auth";
 import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES } from "./types";
@@ -199,6 +200,18 @@ const Studio: Component = () => {
     };
     window.addEventListener("keydown", handleGlobalKey);
     onCleanup(() => window.removeEventListener("keydown", handleGlobalKey));
+
+    // When the user returns to this tab after the browser has suspended or
+    // interrupted the AudioContext (e.g. tab was backgrounded, laptop was closed,
+    // or system audio was taken by another app), proactively attempt to resume
+    // the context so the next user interaction doesn't result in silent audio.
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        void unlockAudioContext().catch(() => {});
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    onCleanup(() => document.removeEventListener("visibilitychange", handleVisibility));
   });
 
   onCleanup(() => {

@@ -16,6 +16,17 @@ export function getAudioContext(): AudioContext {
       latencyHint: "interactive",
       sampleRate: 48000,
     });
+    // When the browser automatically resumes the context after an interruption
+    // (e.g. the tab returns to foreground on iOS/Chrome 136+, or a phone call
+    // ends), re-sync Tone.js so its transport clock stays in step with the
+    // AudioContext clock. Without this, Tone.js can silently stop producing
+    // audio even though ctx.state is "running".
+    ctx.addEventListener("statechange", () => {
+      if (ctx?.state === "running") {
+        bindToneToContext();
+        Tone.start().catch(() => {});
+      }
+    });
   }
   return ctx;
 }
@@ -32,8 +43,15 @@ export function bindToneToContext(): void {
 
 export async function unlockAudioContext(): Promise<void> {
   const c = getAudioContext();
-  if (c.state === "suspended") {
-    await c.resume();
+  // Handle both "suspended" (Chrome/Firefox autoplay-policy suspension) and
+  // "interrupted" (iOS Safari / Chrome 136+ hardware interruptions such as tab
+  // being backgrounded, laptop lid closed, or system audio taken by another app).
+  // TypeScript's lib doesn't yet include "interrupted" in AudioContextState, so
+  // we widen to string for the comparison.
+  if (c.state === "suspended" || (c.state as string) === "interrupted") {
+    try {
+      await c.resume();
+    } catch { /* interrupted contexts may refuse resume in some browsers */ }
   }
   bindToneToContext();
   try { await Tone.start(); } catch { /* */ }

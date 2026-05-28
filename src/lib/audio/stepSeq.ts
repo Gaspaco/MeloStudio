@@ -10,7 +10,7 @@
 //   exactly when the scheduled note hits the speaker, removing visual lag.
 
 import * as Tone from "tone";
-import { bindToneToContext } from "./context";
+import { bindToneToContext, unlockAudioContext } from "./context";
 import { getMasterBus } from "./masterBus";
 import { DrumKit, type DrumName, DRUM_NAMES } from "./synthDrums";
 
@@ -149,7 +149,7 @@ export class StepSequencer {
 
   // trigger a single drum voice immediately — for UI preview on cell click
   async previewDrum(rowIdx: number): Promise<void> {
-    try { await Tone.start(); } catch { /* */ }
+    try { await unlockAudioContext(); } catch { /* */ }
     if (!this.kit) this.kit = new DrumKit(this.masterGain);
     const row = this.pattern.rows[rowIdx];
     if (!row || row.muted) return;
@@ -162,7 +162,7 @@ export class StepSequencer {
   async start(): Promise<void> {
     if (this.playing) return;
     if (!this.kit) this.kit = new DrumKit(this.masterGain);
-    try { await Tone.start(); } catch { /* */ }
+    try { await unlockAudioContext(); } catch { /* */ }
 
     this.rebuildSequence();
     Tone.getTransport().start("+0.05");
