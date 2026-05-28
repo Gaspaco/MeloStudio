@@ -2,17 +2,14 @@ import { useNavigate } from "@solidjs/router";
 import { createResource, Show } from "solid-js";
 import Dashboard from "~/pages/dashboard/Dashboard";
 import { createProjectApi } from "~/lib/api";
-import { authClient } from "~/lib/auth";
-import { socialAuthClient } from "~/lib/social-auth";
+import { getAppSession } from "~/lib/app-auth";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
 
   const [session] = createResource(async () => {
-    const { data: baData } = await socialAuthClient.getSession();
-    if (baData?.user) return baData;
-    const { data } = await authClient.getSession();
-    if (data?.user) return data;
+    const appSession = await getAppSession();
+    if (appSession) return appSession.data;
     navigate("/login", { replace: true });
     return null;
   });
@@ -30,7 +27,7 @@ export default function DashboardPage() {
   return (
     <Show when={session()} fallback={null}>
       <Dashboard
-        onLogout={() => navigate("/login")}
+        onLogout={() => navigate("/login", { replace: true })}
         onNewProject={handleNewProject}
         onOpenProject={(id) => navigate(`/studio/${id}`)}
         onHome={() => navigate("/")}

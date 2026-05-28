@@ -2,8 +2,7 @@ import { type Component, createEffect, createMemo, createResource, createSignal,
 import gsap from "gsap";
 import { Portal } from "solid-js/web";
 import { useParams } from "@solidjs/router";
-import { authClient } from "../../lib/auth";
-import { socialAuthClient } from "../../lib/social-auth";
+import { getAppSession } from "../../lib/app-auth";
 import { apiFetch, transcribeProjectApi, updateProjectApi } from "~/lib/api";
 import "./share.scss";
 
@@ -239,10 +238,7 @@ const SharePage: Component = () => {
   const [project] = createResource(() => params.id, fetchPublicProject);
   const [copied, setCopied] = createSignal(false);
   const [sessionUser] = createResource(async () => {
-    const { data } = await authClient.getSession();
-    if (data?.user) return data.user;
-    const { data: baData } = await socialAuthClient.getSession();
-    return baData?.user ?? null;
+    return (await getAppSession())?.user ?? null;
   });
 
   const userInitials = () => {

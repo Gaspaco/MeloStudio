@@ -2,6 +2,7 @@ import { type Component, createSignal, onMount, For } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
 import { socialAuthClient } from "../../lib/social-auth";
+import { markAuthProvider } from "../../lib/app-auth";
 import "./login.scss";
 
 const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: () => void; onSuccess?: () => void }> = (props) => {
@@ -33,6 +34,7 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
       } else if (!data) {
         setErrorMsg("Sign in failed. Please try again.");
       } else {
+        markAuthProvider("neon");
         props.onSuccess?.();
       }
     } catch (err: any) {
@@ -45,14 +47,13 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
   const handleSocialLogin = async (provider: "google" | "twitter") => {
     try {
       if (provider === "twitter") {
-        // Sign out of any active Neon Auth session first so the Twitter
-        // Better-Auth session takes priority on the dashboard.
-        try { await (authClient as any).signOut(); } catch {}
+        markAuthProvider("better-auth");
         await socialAuthClient.signIn.social({
           provider: "twitter",
           callbackURL: "/dashboard",
         });
       } else {
+        markAuthProvider("neon");
         await (authClient as any).signIn.social({
           provider,
           callbackURL: "/dashboard",

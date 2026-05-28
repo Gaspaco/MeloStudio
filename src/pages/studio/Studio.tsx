@@ -5,8 +5,7 @@ import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/st
 import { type SynthPreset } from "~/lib/audio/synth";
 import { getMasterBus } from "~/lib/audio/masterBus";
 import { updateProjectApi } from "~/lib/api";
-import { authClient } from "~/lib/auth";
-import { socialAuthClient } from "~/lib/social-auth";
+import { getAppSession } from "~/lib/app-auth";
 import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES } from "./types";
 import { useProject }   from "./hooks/useProject";
 import { useTransport } from "./hooks/useTransport";
@@ -180,8 +179,7 @@ const Studio: Component = () => {
 
     // Fetch user avatar for the save toast
     try {
-      let img = (await authClient.getSession()).data?.user?.image;
-      if (!img) img = (await socialAuthClient.getSession()).data?.user?.image ?? undefined;
+      const img = (await getAppSession())?.user?.image ?? undefined;
       if (img) setUserImage(img);
     } catch { /* non-critical */ }
     // Seed initial history snapshot once the project is loaded

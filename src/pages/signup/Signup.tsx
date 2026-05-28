@@ -1,6 +1,7 @@
 import { type Component, createSignal, onMount, onCleanup, For } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
+import { markAuthProvider } from "../../lib/app-auth";
 import "./signup.scss";
 
 const covers = [
@@ -67,7 +68,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
       if (error) {
         setErrorMsg(error.message || "Failed to create account");
       } else {
-        // Automatically redirects or calls onSuccess successfully
+        markAuthProvider("neon");
         props.onSuccess?.();
       }
     } catch (err: any) {

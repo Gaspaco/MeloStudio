@@ -2,7 +2,7 @@ import { type Component, createSignal, onMount, onCleanup, createEffect } from "
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { authClient } from "../../lib/auth";
+import { getAppSession } from "../../lib/app-auth";
 import "./home.scss";
 
 import Loader from "./sections/Loader";
@@ -53,8 +53,7 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
 
   onMount(async () => {
     try {
-      const { data } = await authClient.getSession();
-      if (data?.session) setIsLoggedIn(true);
+      setIsLoggedIn(!!(await getAppSession()));
     } catch {}
     lenisRef = new Lenis({
       duration: 0.9,

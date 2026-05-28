@@ -1,21 +1,13 @@
-// Thin fetch wrapper that attaches the user's JWT as a Bearer header
-// so API routes can verify identity via JWKS without touching cookies.
+// Thin fetch wrapper that attaches a Neon JWT only when Neon is the active auth
+// provider. Better Auth/Twitter sessions authenticate via the included cookie.
 
-import { getJWTToken } from "./auth";
-
-async function bearerToken(): Promise<string | null> {
-  try {
-    return await getJWTToken();
-  } catch {
-    return null;
-  }
-}
+import { getApiBearerToken } from "./app-auth";
 
 export async function apiFetch(
   path: string,
   init: RequestInit = {},
 ): Promise<Response> {
-  const token = await bearerToken();
+  const token = await getApiBearerToken();
   const headers = new Headers(init.headers);
   if (!headers.has("Content-Type") && init.body) {
     headers.set("Content-Type", "application/json");

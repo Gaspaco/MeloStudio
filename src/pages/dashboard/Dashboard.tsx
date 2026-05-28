@@ -1,7 +1,7 @@
 import { type Component, createSignal, createEffect, onMount, onCleanup, For, Show } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
-import { socialAuthClient } from "../../lib/social-auth";
+import { getAppSession, signOutApp } from "../../lib/app-auth";
 import { listProjectsApi, deleteProjectApi, updateProjectApi, getProjectStatsApi, listDeletedProjectsApi, restoreProjectApi, permanentlyDeleteProjectApi, type DeletedProjectListItem } from "../../lib/api";
 import "./dashboard.scss";
 
@@ -85,11 +85,7 @@ const Dashboard: Component<{
     // ── 1. Resolve auth session (must finish BEFORE loading projects so the
     //       right Bearer token / cookie is used for API calls) ──────────────
     try {
-      // If a Better Auth (Twitter) session is active, prefer it over any stale
-      // Neon Auth session that may still be cached in the browser.
-      const socialSession = await socialAuthClient.getSession();
-      let userData = socialSession.data?.user;
-      if (!userData) userData = (await authClient.getSession()).data?.user;
+      const userData = (await getAppSession())?.user;
       if (userData) {
         // Upgrade Twitter _normal (48px) images to _400x400 for display
         const rawImage = userData.image ?? undefined;
@@ -144,17 +140,7 @@ const Dashboard: Component<{
   });
 
   const handleLogout = async () => {
-    // Sign out of both auth systems: Neon Auth (email/Google) and Better Auth (Twitter)
-    let hasSocialSession = false;
-    let hasNeonSession = false;
-    try { hasSocialSession = !!(await socialAuthClient.getSession()).data?.user; } catch {}
-    try { hasNeonSession = !!(await authClient.getSession()).data?.user; } catch {}
-    if (hasSocialSession) {
-      try { await socialAuthClient.signOut(); } catch {}
-    }
-    if (hasNeonSession) {
-      try { await authClient.signOut(); } catch {}
-    }
+    await signOutApp();
     props.onLogout();
   };
 
