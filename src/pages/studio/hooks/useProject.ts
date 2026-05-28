@@ -3,13 +3,13 @@
 // securely, hydrates the UI state from the DB JSON doc, and resolves legacy tracks 
 // into currently supported tracks. It's also fully async via `suspense` in SolidJS,
 // putting up a clean loading state until the studio is absolutely ready to play.
-import { onMount } from "solid-js";
+import { createEffect, onCleanup } from "solid-js";
 import { apiFetch } from "~/lib/api";
 import { unlockAudioContext } from "~/lib/audio/context";
 import type { Accessor, Setter } from "solid-js";
 import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer } from "~/lib/audio/stepSeq";
 import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
-import { loadClip, loadClipBlob, removeClip, storeClip } from "~/lib/clipStore";
+import { loadClip, loadClipBlob, storeClip } from "~/lib/clipStore";
 import { remoteClipUploadErrorMessage, uploadRemoteClip } from "~/lib/remoteClips";
 import { type MediaClip, type UITrack, TRACK_DEFS } from "../types";
 
@@ -39,10 +39,25 @@ type Deps = {
 export function useProject(deps: Deps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let pendingDoc: any = null;
+  let initialized = false;
+  let applyingDoc = false;
+  let baselineJson = "";
+  let draftTimer: ReturnType<typeof setTimeout> | undefined;
   let warnedRemoteStorageUnavailable = false;
+  const DRAFT_VERSION = 1;
+  const DRAFT_DEBOUNCE_MS = 600;
+  const draftKey = `melostudio:studio-draft:${deps.projectId}`;
   const MAX_SAVE_PAYLOAD_BYTES = 4_500_000;
   const MAX_INLINE_CLIP_BYTES = 2_000_000;
   const MAX_INLINE_CLIP_DATA_URL_CHARS = 2_800_000;
+
+  type StudioDraft = {
+    version: typeof DRAFT_VERSION;
+    projectId: string;
+    updatedAt: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    doc: any;
+  };
 
   const blobToDataUrl = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -92,6 +107,83 @@ export function useProject(deps: Deps) {
 
   const jsonByteLength = (value: unknown) => new TextEncoder().encode(JSON.stringify(value)).length;
 
+  const cleanTracksForDraft = (tracks: UITrack[]): UITrack[] => tracks.map((track) => ({
+    ...track,
+    clips: track.clips?.map((clip) => ({ ...clip, url: undefined })),
+  }));
+
+  const currentDraftDoc = () => {
+    const seq = deps.getSeq();
+    return {
+      id: deps.projectId,
+      name: deps.name(),
+      transport: { bpm: deps.bpm(), timeSig: deps.timeSig() },
+      musicalKey: deps.musicalKey(),
+      beat: { pattern: seq?.getPattern() ?? deps.pattern() },
+      uiTracks: cleanTracksForDraft(deps.tracks()),
+      lyrics: deps.lyricsText?.() ?? "",
+    };
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const normalizedProjectJson = (doc: any) => JSON.stringify({
+    name: doc.name ?? "Untitled",
+    transport: {
+      bpm: doc.transport?.bpm ?? 120,
+      timeSig: doc.transport?.timeSig ?? [4, 4],
+    },
+    musicalKey: doc.musicalKey ?? "Auto",
+    beat: { pattern: sanitizePattern(doc.beat?.pattern ?? DEFAULT_PATTERN()) },
+    uiTracks: cleanTracksForDraft((doc.uiTracks ?? []) as UITrack[]),
+    lyrics: doc.lyrics ?? "",
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hasRecoverableContent = (doc: any) => {
+    const tracks = (doc.uiTracks ?? []) as UITrack[];
+    const hasTracks = tracks.length > 0;
+    const hasBeat = (doc.beat?.pattern?.rows as unknown[] | undefined)?.some(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (row: any) => row.velocities?.some((velocity: number) => velocity > 0),
+    );
+    return hasTracks || hasBeat || Boolean(doc.lyrics);
+  };
+
+  const readLocalDraft = (): StudioDraft | null => {
+    if (typeof window === "undefined") return null;
+    try {
+      const raw = window.localStorage.getItem(draftKey);
+      if (!raw) return null;
+      const draft = JSON.parse(raw) as StudioDraft;
+      if (draft.version !== DRAFT_VERSION || draft.projectId !== deps.projectId || !draft.doc) return null;
+      return draft;
+    } catch {
+      return null;
+    }
+  };
+
+  const writeLocalDraft = (doc: ReturnType<typeof currentDraftDoc>) => {
+    if (typeof window === "undefined") return;
+    const draft: StudioDraft = {
+      version: DRAFT_VERSION,
+      projectId: deps.projectId,
+      updatedAt: Date.now(),
+      doc,
+    };
+    try {
+      window.localStorage.setItem(draftKey, JSON.stringify(draft));
+    } catch (err) {
+      console.warn("[useProject] local draft save failed:", err);
+    }
+  };
+
+  const removeLocalDraft = () => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.removeItem(draftKey);
+    } catch { /* ignore */ }
+  };
+
   const fitProjectSavePayload = <T extends { uiTracks?: UITrack[] }>(doc: T): { payload: T; json: string } => {
     let json = JSON.stringify(doc);
     if (new TextEncoder().encode(json).length <= MAX_SAVE_PAYLOAD_BYTES) return { payload: doc, json };
@@ -120,68 +212,73 @@ export function useProject(deps: Deps) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const applyDoc = async (doc: any) => {
-    deps.setName(doc.name ?? "Untitled");
-    if (doc.lyrics != null) deps.setLyricsText?.(doc.lyrics as string);
-    if (doc.transport?.bpm) deps.setBpm(doc.transport.bpm);
-    if (doc.transport?.timeSig) deps.setTimeSig(doc.transport.timeSig as [number, number]);
-    if (doc.musicalKey) deps.setMusicalKey(doc.musicalKey);
+    applyingDoc = true;
+    try {
+      deps.setName(doc.name ?? "Untitled");
+      if (doc.lyrics != null) deps.setLyricsText?.(doc.lyrics as string);
+      if (doc.transport?.bpm) deps.setBpm(doc.transport.bpm);
+      if (doc.transport?.timeSig) deps.setTimeSig(doc.transport.timeSig as [number, number]);
+      if (doc.musicalKey) deps.setMusicalKey(doc.musicalKey);
 
-    const pat: StepPattern | undefined = doc.beat?.pattern;
-    if (pat?.rows?.length) {
-      const cleanPat = sanitizePattern(pat);
-      deps.setPattern(cleanPat);
-      deps.getSeq()?.setPattern(cleanPat);
-      if (cleanPat.bpm) deps.setBpm(cleanPat.bpm);
-    }
+      const pat: StepPattern | undefined = doc.beat?.pattern;
+      if (pat?.rows?.length) {
+        const cleanPat = sanitizePattern(pat);
+        deps.setPattern(cleanPat);
+        deps.getSeq()?.setPattern(cleanPat);
+        if (cleanPat.bpm) deps.setBpm(cleanPat.bpm);
+      }
 
-    const savedTracks: UITrack[] | undefined = doc.uiTracks;
-    if (savedTracks?.length) {
-      const restoredTracks: UITrack[] = [];
-      for (const t of savedTracks) {
-        if (!TRACK_DEFS.find(d => d.type === t.type)) continue;
-        const restoredClips = [];
-        for (const clip of t.clips ?? []) {
-          if (clip.kind !== "midi") {
-            // 1. Try IndexedDB (fast, local)
-            let url = await loadClip(clip.id).catch(() => null);
-            // 2. Fall back to inline dataUrl (small clips only)
-            if (!url && clip.dataUrl) {
-              const blob = await fetch(clip.dataUrl).then((res) => res.blob()).catch(() => null);
-              if (blob) {
-                await storeClip(clip.id, blob).catch(() => {});
-                url = URL.createObjectURL(blob);
+      const savedTracks: UITrack[] | undefined = doc.uiTracks;
+      if (savedTracks?.length) {
+        const restoredTracks: UITrack[] = [];
+        for (const t of savedTracks) {
+          if (!TRACK_DEFS.find(d => d.type === t.type)) continue;
+          const restoredClips = [];
+          for (const clip of t.clips ?? []) {
+            if (clip.kind !== "midi") {
+              // 1. Try IndexedDB (fast, local)
+              let url = await loadClip(clip.id).catch(() => null);
+              // 2. Fall back to inline dataUrl (small clips only)
+              if (!url && clip.dataUrl) {
+                const blob = await fetch(clip.dataUrl).then((res) => res.blob()).catch(() => null);
+                if (blob) {
+                  await storeClip(clip.id, blob).catch(() => {});
+                  url = URL.createObjectURL(blob);
+                }
               }
-            }
-            // 3. Fall back to server-side storage (large clips, cross-device)
-            if (!url && clip.remoteUrl) {
-              const blob = await apiFetch(clip.remoteUrl)
-                .then(r => r.ok ? r.blob() : null)
-                .catch(() => null);
-              if (blob) {
-                // Cache back to IDB so future sessions load faster
-                await storeClip(clip.id, blob).catch(() => {});
-                url = URL.createObjectURL(blob);
+              // 3. Fall back to server-side storage (large clips, cross-device)
+              if (!url && clip.remoteUrl) {
+                const blob = await apiFetch(clip.remoteUrl)
+                  .then(r => r.ok ? r.blob() : null)
+                  .catch(() => null);
+                if (blob) {
+                  // Cache back to IDB so future sessions load faster
+                  await storeClip(clip.id, blob).catch(() => {});
+                  url = URL.createObjectURL(blob);
+                }
               }
+              restoredClips.push({ ...clip, url: url ?? undefined });
+            } else {
+              restoredClips.push(clip);
             }
-            restoredClips.push({ ...clip, url: url ?? undefined });
-          } else {
-            restoredClips.push(clip);
+          }
+          restoredTracks.push({ ...t, clips: restoredClips });
+          if (t.type === "instrument" || t.type === "bass" || t.type === "guitar") {
+            const preset: SynthPreset = t.type === "bass" ? "bass" : t.type === "guitar" ? "guitar" : deps.synthPreset();
+            deps.ensureSynth(preset);
+            if (t.type === "bass") deps.setSynthPreset("bass");
+            else if (t.type === "guitar") deps.setSynthPreset("guitar");
           }
         }
-        restoredTracks.push({ ...t, clips: restoredClips });
-        if (t.type === "instrument" || t.type === "bass" || t.type === "guitar") {
-          const preset: SynthPreset = t.type === "bass" ? "bass" : t.type === "guitar" ? "guitar" : deps.synthPreset();
-          deps.ensureSynth(preset);
-          if (t.type === "bass") deps.setSynthPreset("bass");
-          else if (t.type === "guitar") deps.setSynthPreset("guitar");
-        }
+        deps.setTracks(restoredTracks);
+        deps.setSelectedTrack(restoredTracks[0]?.id ?? null);
+        const hasDrum = restoredTracks.some(t => t.type === "drum");
+        const seq = deps.getSeq();
+        if (hasDrum && pat?.rows?.length && seq) seq.setPattern(sanitizePattern(pat));
+        if (hasDrum) deps.setDrumPanelOpen(true);
       }
-      deps.setTracks(restoredTracks);
-      deps.setSelectedTrack(restoredTracks[0]?.id ?? null);
-      const hasDrum = restoredTracks.some(t => t.type === "drum");
-      const seq = deps.getSeq();
-      if (hasDrum && pat?.rows?.length && seq) seq.setPattern(sanitizePattern(pat));
-      if (hasDrum) deps.setDrumPanelOpen(true);
+    } finally {
+      applyingDoc = false;
     }
   };
 
@@ -196,19 +293,9 @@ export function useProject(deps: Deps) {
 
   const discardSession = async () => {
     deps.setShowRestoreDialog(false);
-    if (!pendingDoc) { pendingDoc = null; return; }
-    for (const t of (pendingDoc.uiTracks ?? []) as UITrack[]) {
-      for (const clip of t.clips ?? []) removeClip(clip.id).catch(() => {});
-    }
+    if (!pendingDoc) return;
     pendingDoc = null;
-    const res = await apiFetch(`/api/projects/${deps.projectId}`);
-    if (!res.ok) return;
-    const doc = await res.json();
-    await apiFetch(`/api/projects/${deps.projectId}`, {
-      method: "PUT",
-      body: JSON.stringify({ ...doc, uiTracks: [], beat: { pattern: DEFAULT_PATTERN() } }),
-    });
-    deps.setShowNewTrack(true);
+    removeLocalDraft();
   };
 
   const save = async () => {
@@ -241,6 +328,18 @@ export function useProject(deps: Deps) {
         body: json,
       });
       if (!put.ok) throw new Error(`save failed: ${put.status}`);
+      const savedClips = new Map(
+        uiTracksForSave.flatMap((track) => (track.clips ?? []).map((clip) => [clip.id, clip] as const)),
+      );
+      deps.setTracks(deps.tracks().map((track) => ({
+        ...track,
+        clips: track.clips?.map((clip) => {
+          const savedClip = savedClips.get(clip.id);
+          return savedClip ? { ...clip, dataUrl: savedClip.dataUrl, remoteUrl: savedClip.remoteUrl } : clip;
+        }),
+      })));
+      baselineJson = normalizedProjectJson(updated);
+      removeLocalDraft();
       deps.setSaveState("saved");
       setTimeout(() => deps.setSaveState("idle"), 1500);
     } catch (err) {
@@ -267,6 +366,24 @@ export function useProject(deps: Deps) {
       );
 
       await applyDoc(doc);
+      baselineJson = normalizedProjectJson(doc);
+
+      const draft = readLocalDraft();
+      const serverUpdatedAt = Date.parse(doc.updatedAt ?? "");
+      const draftIsNewer = draft && (!Number.isFinite(serverUpdatedAt) || draft.updatedAt > serverUpdatedAt);
+      if (
+        draft
+        && draftIsNewer
+        && normalizedProjectJson(draft.doc) !== baselineJson
+        && hasRecoverableContent(draft.doc)
+      ) {
+        pendingDoc = draft.doc;
+        deps.setShowRestoreDialog(true);
+      } else if (draft) {
+        removeLocalDraft();
+      }
+
+      initialized = true;
       if (!hasTracks && !hasBeat) {
         deps.setShowNewTrack(true);
       }
@@ -280,7 +397,20 @@ export function useProject(deps: Deps) {
     }
   };
 
-  onMount(() => { /* seq is set by Studio onMount before calling init() */ });
+  createEffect(() => {
+    if (!initialized || applyingDoc || pendingDoc) return;
+    const doc = currentDraftDoc();
+    const draftJson = normalizedProjectJson(doc);
+    if (draftJson === baselineJson) {
+      removeLocalDraft();
+      return;
+    }
+
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(() => writeLocalDraft(doc), DRAFT_DEBOUNCE_MS);
+  });
+
+  onCleanup(() => clearTimeout(draftTimer));
 
   return { save, restoreSession, discardSession, init };
 }
