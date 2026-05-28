@@ -3,12 +3,12 @@
 // securely, hydrates the UI state from the DB JSON doc, and resolves legacy tracks 
 // into currently supported tracks. It's also fully async via `suspense` in SolidJS,
 // putting up a clean loading state until the studio is absolutely ready to play.
-import { createEffect, onCleanup } from "solid-js";
+import { createEffect, createSignal, onCleanup } from "solid-js";
 import { apiFetch } from "~/lib/api";
 import { unlockAudioContext } from "~/lib/audio/context";
 import type { Accessor, Setter } from "solid-js";
 import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer } from "~/lib/audio/stepSeq";
-import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
+import { type SynthPreset } from "~/lib/audio/synth";
 import { loadClip, loadClipBlob, storeClip } from "~/lib/clipStore";
 import { remoteClipUploadErrorMessage, uploadRemoteClip } from "~/lib/remoteClips";
 import { type MediaClip, type UITrack, TRACK_DEFS } from "../types";
@@ -39,7 +39,7 @@ type Deps = {
 export function useProject(deps: Deps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let pendingDoc: any = null;
-  let initialized = false;
+  const [initialized, setInitialized] = createSignal(false);
   let applyingDoc = false;
   let baselineJson = "";
   let draftTimer: ReturnType<typeof setTimeout> | undefined;
@@ -114,12 +114,13 @@ export function useProject(deps: Deps) {
 
   const currentDraftDoc = () => {
     const seq = deps.getSeq();
+    const pattern = deps.pattern();
     return {
       id: deps.projectId,
       name: deps.name(),
       transport: { bpm: deps.bpm(), timeSig: deps.timeSig() },
       musicalKey: deps.musicalKey(),
-      beat: { pattern: seq?.getPattern() ?? deps.pattern() },
+      beat: { pattern: seq?.getPattern() ?? pattern },
       uiTracks: cleanTracksForDraft(deps.tracks()),
       lyrics: deps.lyricsText?.() ?? "",
     };
@@ -182,6 +183,17 @@ export function useProject(deps: Deps) {
     try {
       window.localStorage.removeItem(draftKey);
     } catch { /* ignore */ }
+  };
+
+  const writeDraftIfChanged = () => {
+    if (!initialized() || applyingDoc || pendingDoc) return;
+    const doc = currentDraftDoc();
+    const draftJson = normalizedProjectJson(doc);
+    if (draftJson === baselineJson) {
+      removeLocalDraft();
+      return;
+    }
+    writeLocalDraft(doc);
   };
 
   const fitProjectSavePayload = <T extends { uiTracks?: UITrack[] }>(doc: T): { payload: T; json: string } => {
@@ -383,7 +395,7 @@ export function useProject(deps: Deps) {
         removeLocalDraft();
       }
 
-      initialized = true;
+      setInitialized(true);
       if (!hasTracks && !hasBeat) {
         deps.setShowNewTrack(true);
       }
@@ -398,7 +410,7 @@ export function useProject(deps: Deps) {
   };
 
   createEffect(() => {
-    if (!initialized || applyingDoc || pendingDoc) return;
+    if (!initialized() || applyingDoc || pendingDoc) return;
     const doc = currentDraftDoc();
     const draftJson = normalizedProjectJson(doc);
     if (draftJson === baselineJson) {
@@ -409,6 +421,19 @@ export function useProject(deps: Deps) {
     clearTimeout(draftTimer);
     draftTimer = setTimeout(() => writeLocalDraft(doc), DRAFT_DEBOUNCE_MS);
   });
+
+  if (typeof window !== "undefined") {
+    const flushDraft = () => {
+      clearTimeout(draftTimer);
+      writeDraftIfChanged();
+    };
+    window.addEventListener("pagehide", flushDraft);
+    window.addEventListener("beforeunload", flushDraft);
+    onCleanup(() => {
+      window.removeEventListener("pagehide", flushDraft);
+      window.removeEventListener("beforeunload", flushDraft);
+    });
+  }
 
   onCleanup(() => clearTimeout(draftTimer));
 
