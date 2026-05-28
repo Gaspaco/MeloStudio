@@ -360,8 +360,8 @@ const Studio: Component = () => {
         id: "edit", num: "02", label: "Edit",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9-3 1 1-3 9-9z"/><path d="M9 4l3 3"/></svg>,
         items: [
-          { label: "Undo",          kbd: "⌘Z",  disabled: () => true },
-          { label: "Redo",          kbd: "⌘⇧Z", disabled: () => true },
+          { label: "Undo",          kbd: "⌘Z",  action: run(() => undo()),  disabled: () => !canUndo() },
+          { label: "Redo",          kbd: "⌘⇧Z", action: run(() => redo()),  disabled: () => !canRedo() },
           { label: "Delete Track",  kbd: "⌫",   action: run(() => { const id = selectedTrack(); if (id) trk.deleteTrack(id); }), disabled: () => !selectedTrack() },
           { label: "Clear Pattern", kbd: "",    action: run(() => drum.clearPattern()) },
         ],

@@ -220,17 +220,14 @@ export function useProject(deps: Deps) {
         (r: any) => r.velocities?.some((v: number) => v > 0),
       );
 
-      if (hasTracks || hasBeat) {
-        pendingDoc = doc;
-        deps.setShowRestoreDialog(true);
-      } else {
-        await applyDoc(doc);
+      await applyDoc(doc);
+      if (!hasTracks && !hasBeat) {
         deps.setShowNewTrack(true);
-        const sp = new URLSearchParams(window.location.search);
-        if (sp.get("new") === "1") {
-          sp.delete("new");
-          window.history.replaceState({}, "", window.location.pathname + (sp.toString() ? `?${sp.toString()}` : ""));
-        }
+      }
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("new") === "1") {
+        sp.delete("new");
+        window.history.replaceState({}, "", window.location.pathname + (sp.toString() ? `?${sp.toString()}` : ""));
       }
     } catch (err) {
       deps.setError(String(err));
