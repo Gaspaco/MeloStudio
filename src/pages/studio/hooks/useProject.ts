@@ -9,7 +9,7 @@ import { unlockAudioContext } from "~/lib/audio/context";
 import type { Accessor, Setter } from "solid-js";
 import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer } from "~/lib/audio/stepSeq";
 import { type SynthPreset } from "~/lib/audio/synth";
-import { loadClip, loadClipBlob, storeClip } from "~/lib/clipStore";
+import { loadClip, loadClipBlob, removeClip, storeClip } from "~/lib/clipStore";
 import { remoteClipUploadErrorMessage, uploadRemoteClip } from "~/lib/remoteClips";
 import { type MediaClip, type UITrack, TRACK_DEFS } from "../types";
 
@@ -39,6 +39,8 @@ type Deps = {
 export function useProject(deps: Deps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let pendingDoc: any = null;
+  let loadedProjectDoc: any = null; // holds the server doc so discard can fall back to it
+  let pendingDocSource: "project" | "draft" | null = null;
   const [initialized, setInitialized] = createSignal(false);
   let applyingDoc = false;
   let baselineJson = "";
@@ -148,6 +150,15 @@ export function useProject(deps: Deps) {
       (row: any) => row.velocities?.some((velocity: number) => velocity > 0),
     );
     return hasTracks || hasBeat || Boolean(doc.lyrics);
+  };
+
+  const clearNewProjectParam = () => {
+    if (typeof window === "undefined") return;
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get("new") === "1") {
+      sp.delete("new");
+      window.history.replaceState({}, "", window.location.pathname + (sp.toString() ? `?${sp.toString()}` : ""));
+    }
   };
 
   const readLocalDraft = (): StudioDraft | null => {
@@ -301,13 +312,51 @@ export function useProject(deps: Deps) {
     await unlockAudioContext().catch(() => {});
     if (pendingDoc) await applyDoc(pendingDoc);
     pendingDoc = null;
+    pendingDocSource = null;
+    setInitialized(true);
   };
 
   const discardSession = async () => {
     deps.setShowRestoreDialog(false);
-    if (!pendingDoc) return;
+    if (!pendingDoc) {
+      pendingDocSource = null;
+      return;
+    }
+
+    if (pendingDocSource === "draft") {
+      pendingDoc = null;
+      pendingDocSource = null;
+      removeLocalDraft();
+      if (loadedProjectDoc) await applyDoc(loadedProjectDoc);
+      setInitialized(true);
+      return;
+    }
+
+    for (const t of (pendingDoc.uiTracks ?? []) as UITrack[]) {
+      for (const clip of t.clips ?? []) removeClip(clip.id).catch(() => {});
+    }
     pendingDoc = null;
+    pendingDocSource = null;
     removeLocalDraft();
+    const res = await apiFetch(`/api/projects/${deps.projectId}`);
+    if (!res.ok) {
+      setInitialized(true);
+      return;
+    }
+    const doc = await res.json();
+    const clearedDoc = { ...doc, uiTracks: [], beat: { pattern: DEFAULT_PATTERN() } };
+    await apiFetch(`/api/projects/${deps.projectId}`, {
+      method: "PUT",
+      body: JSON.stringify(clearedDoc),
+    });
+    const cleanPattern = DEFAULT_PATTERN();
+    deps.setTracks([]);
+    deps.setSelectedTrack(null);
+    deps.setPattern(cleanPattern);
+    deps.getSeq()?.setPattern(cleanPattern);
+    baselineJson = normalizedProjectJson(clearedDoc);
+    deps.setShowNewTrack(true);
+    setInitialized(true);
   };
 
   const save = async () => {
@@ -363,6 +412,7 @@ export function useProject(deps: Deps) {
 
   const init = async () => {
     try {
+      setInitialized(false);
       const res = await apiFetch(`/api/projects/${deps.projectId}`);
       if (!res.ok) { deps.setError(`Couldn't load (${res.status})`); return; }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -370,6 +420,7 @@ export function useProject(deps: Deps) {
       deps.setPublished?.(data._published ?? false);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const doc: any = data;
+      loadedProjectDoc = doc;
 
       const hasTracks = ((doc.uiTracks as UITrack[] | undefined)?.length ?? 0) > 0;
       const hasBeat = (doc.beat?.pattern?.rows as unknown[] | undefined)?.some(
@@ -377,7 +428,6 @@ export function useProject(deps: Deps) {
         (r: any) => r.velocities?.some((v: number) => v > 0),
       );
 
-      await applyDoc(doc);
       baselineJson = normalizedProjectJson(doc);
 
       const draft = readLocalDraft();
@@ -390,20 +440,27 @@ export function useProject(deps: Deps) {
         && hasRecoverableContent(draft.doc)
       ) {
         pendingDoc = draft.doc;
+        pendingDocSource = "draft";
         deps.setShowRestoreDialog(true);
       } else if (draft) {
         removeLocalDraft();
       }
 
-      setInitialized(true);
-      if (!hasTracks && !hasBeat) {
+      if (!pendingDoc && (hasTracks || hasBeat)) {
+        pendingDoc = doc;
+        pendingDocSource = "project";
+        deps.setShowRestoreDialog(true);
+      }
+
+      if (!pendingDoc) {
+        await applyDoc(doc);
+        setInitialized(true);
+      }
+
+      if (!pendingDoc && !hasTracks && !hasBeat) {
         deps.setShowNewTrack(true);
       }
-      const sp = new URLSearchParams(window.location.search);
-      if (sp.get("new") === "1") {
-        sp.delete("new");
-        window.history.replaceState({}, "", window.location.pathname + (sp.toString() ? `?${sp.toString()}` : ""));
-      }
+      clearNewProjectParam();
     } catch (err) {
       deps.setError(String(err));
     }
@@ -435,7 +492,9 @@ export function useProject(deps: Deps) {
     });
   }
 
-  onCleanup(() => clearTimeout(draftTimer));
+  onCleanup(() => {
+    clearTimeout(draftTimer);
+  });
 
   return { save, restoreSession, discardSession, init };
 }
