@@ -74,6 +74,9 @@ export function useProject(deps: Deps) {
     return blob;
   };
 
+  const optionalRemoteClipUrl = (remoteUrl: string) =>
+    `${remoteUrl}${remoteUrl.includes("?") ? "&" : "?"}optional=1`;
+
   const persistedClipFields = async (clip: MediaClip): Promise<Pick<MediaClip, "dataUrl" | "remoteUrl">> => {
     if (clip.kind === "midi") return { dataUrl: undefined, remoteUrl: undefined };
     if (clip.dataUrl && clip.dataUrl.length <= MAX_INLINE_CLIP_DATA_URL_CHARS) {
@@ -259,6 +262,7 @@ export function useProject(deps: Deps) {
           const restoredClips = [];
           for (const clip of t.clips ?? []) {
             if (clip.kind !== "midi") {
+              let remoteUrl = clip.remoteUrl;
               // 1. Try IndexedDB (fast, local)
               let url = await loadClip(clip.id).catch(() => null);
               // 2. Fall back to inline dataUrl (small clips only)
@@ -270,9 +274,15 @@ export function useProject(deps: Deps) {
                 }
               }
               // 3. Fall back to server-side storage (large clips, cross-device)
-              if (!url && clip.remoteUrl) {
-                const blob = await apiFetch(clip.remoteUrl)
-                  .then(r => r.ok ? r.blob() : null)
+              if (!url && remoteUrl) {
+                const blob = await apiFetch(optionalRemoteClipUrl(remoteUrl))
+                  .then((res) => {
+                    if (res.status === 204 || res.status === 404) {
+                      remoteUrl = undefined;
+                      return null;
+                    }
+                    return res.ok ? res.blob() : null;
+                  })
                   .catch(() => null);
                 if (blob) {
                   // Cache back to IDB so future sessions load faster
@@ -280,7 +290,7 @@ export function useProject(deps: Deps) {
                   url = URL.createObjectURL(blob);
                 }
               }
-              restoredClips.push({ ...clip, url: url ?? undefined });
+              restoredClips.push({ ...clip, remoteUrl, url: url ?? undefined });
             } else {
               restoredClips.push(clip);
             }

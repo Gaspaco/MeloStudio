@@ -159,7 +159,9 @@ export async function PUT(event: APIEvent) {
 
 export async function GET(event: APIEvent) {
   const clipId = event.params.clipId;
-  const projectId = new URL(event.request.url).searchParams.get("projectId") ?? "";
+  const searchParams = new URL(event.request.url).searchParams;
+  const projectId = searchParams.get("projectId") ?? "";
+  const optional = searchParams.get("optional") === "1";
 
   if (!isUuid(clipId) || !isUuid(projectId)) return textResponse("invalid id", 400);
 
@@ -180,14 +182,20 @@ export async function GET(event: APIEvent) {
   const store = getClipsStore();
   if (!store) {
     const local = await getLocalClip(projectId, clipId);
-    if (!local) return textResponse(canUseLocalClipStore() ? "clip not found" : "storage not available", canUseLocalClipStore() ? 404 : 503);
+    if (!local) {
+      if (optional && canUseLocalClipStore()) return new Response(null, { status: 204 });
+      return textResponse(canUseLocalClipStore() ? "clip not found" : "storage not available", canUseLocalClipStore() ? 404 : 503);
+    }
     return localClipResponse(local);
   }
 
   try {
     const key = `${projectId}/${clipId}`;
     const result = await store.getWithMetadata(key, { type: "arrayBuffer" });
-    if (!result) return textResponse("clip not found", 404);
+    if (!result) {
+      if (optional) return new Response(null, { status: 204 });
+      return textResponse("clip not found", 404);
+    }
 
     const mime = (result.metadata as Record<string, string> | null)?.mime ?? "audio/mpeg";
     return new Response(result.data as ArrayBuffer, {
@@ -201,6 +209,7 @@ export async function GET(event: APIEvent) {
     warnStorageFallback("GET", err);
     const local = await getLocalClip(projectId, clipId);
     if (local) return localClipResponse(local);
+    if (optional && canUseLocalClipStore()) return new Response(null, { status: 204 });
     if (canUseLocalClipStore()) return textResponse("clip not found", 404);
     console.error("[GET /api/clips/:clipId] storage error:", err);
     return textResponse("storage unavailable", 503);
