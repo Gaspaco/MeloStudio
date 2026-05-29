@@ -6,6 +6,10 @@ import * as Tone from "tone";
 let ctx: AudioContext | null = null;
 let toneBound = false;
 
+export function getExistingAudioContext(): AudioContext | null {
+  return ctx;
+}
+
 export function getAudioContext(): AudioContext {
   if (!ctx) {
     const Ctor =

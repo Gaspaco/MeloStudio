@@ -1,6 +1,6 @@
 import { type Component, createEffect, onCleanup, onMount } from "solid-js";
 import Peaks, { type PeaksInstance } from "peaks.js";
-import { getAudioContext } from "~/lib/audio/context";
+import { getExistingAudioContext, unlockAudioContext } from "~/lib/audio/context";
 
 const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props) => {
   let containerEl: HTMLDivElement | undefined;
@@ -12,18 +12,18 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
   const initPeaks = async (url: string) => {
     if (peaksInstance) { peaksInstance.destroy(); peaksInstance = null; }
     if (!containerEl || !audioEl) return;
-    audioEl.src = url;
 
     // Peaks.js uses decodeAudioData which requires a running AudioContext.
     // Browsers start AudioContext in "suspended" state (autoplay policy) until
     // a user gesture resumes it. If we're not running yet, stash the URL and
     // let the statechange listener below retry after the first user interaction.
-    const ac = getAudioContext();
-    if (ac.state !== "running") {
+    const ac = getExistingAudioContext();
+    if (!ac || ac.state !== "running") {
       pendingUrl = url;
       return;
     }
     pendingUrl = null;
+    audioEl.src = url;
 
     Peaks.init({
       overview: {
@@ -57,14 +57,26 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
   // When the AudioContext transitions to "running" (after the first user gesture),
   // initialize any waveform that was deferred because the context was suspended.
   onMount(() => {
-    const ac = getAudioContext();
+    let ac = getExistingAudioContext();
     const onStateChange = () => {
-      if (ac.state === "running" && pendingUrl) {
+      if (ac?.state === "running" && pendingUrl) {
         void initPeaks(pendingUrl);
       }
     };
-    ac.addEventListener("statechange", onStateChange);
-    onCleanup(() => ac.removeEventListener("statechange", onStateChange));
+    const onFirstGesture = () => {
+      void unlockAudioContext().then(() => {
+        ac = getExistingAudioContext();
+        if (ac && pendingUrl) void initPeaks(pendingUrl);
+      }).catch(() => {});
+    };
+    ac?.addEventListener("statechange", onStateChange);
+    window.addEventListener("pointerdown", onFirstGesture, { once: true });
+    window.addEventListener("keydown", onFirstGesture, { once: true });
+    onCleanup(() => {
+      ac?.removeEventListener("statechange", onStateChange);
+      window.removeEventListener("pointerdown", onFirstGesture);
+      window.removeEventListener("keydown", onFirstGesture);
+    });
   });
 
   createEffect(() => {

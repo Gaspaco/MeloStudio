@@ -498,6 +498,17 @@ const SharePage: Component = () => {
               // Lazy import — browser-only IDB helper
               const { loadClip } = await import("~/lib/clipStore");
 
+              const optionalClipUrl = (url: string) =>
+                url.includes("optional=") ? url : `${url}${url.includes("?") ? "&" : "?"}optional=1`;
+              const fetchClipBuffer = async (url: string): Promise<ArrayBuffer | null> => {
+                const isApiClip = url.startsWith("/api/clips/") || url.startsWith(`${window.location.origin}/api/clips/`);
+                const res = isApiClip
+                  ? await apiFetch(optionalClipUrl(url)).catch(() => null)
+                  : await fetch(url).catch(() => null);
+                if (!res || res.status === 204 || !res.ok) return null;
+                return res.arrayBuffer().catch(() => null);
+              };
+
               audioCtx ??= new AudioContext();
               if (audioCtx.state === "suspended") await audioCtx.resume();
 
@@ -522,7 +533,7 @@ const SharePage: Component = () => {
                   const blobUrl = clip.dataUrl ?? clip.remoteUrl ?? await loadClip(clip.id).catch(() => null);
                   if (!blobUrl) continue;
 
-                  const arrayBuf = await fetch(blobUrl).then((r) => r.arrayBuffer()).catch(() => null);
+                  const arrayBuf = await fetchClipBuffer(blobUrl);
                   if (!arrayBuf) continue;
 
                   const decoded = await audioCtx.decodeAudioData(arrayBuf.slice(0)).catch(() => null);
