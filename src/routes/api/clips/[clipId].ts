@@ -20,7 +20,7 @@ const ALLOWED_AUDIO_TYPES = new Set([
 
 function getClipsStore() {
   try {
-    return getStore({ name: "audio-clips", consistency: "strong" });
+    return getStore({ name: "audio-clips" });
   } catch {
     return null;
   }
@@ -31,6 +31,8 @@ const canUseLocalClipStore = () => process.env.NODE_ENV !== "production";
 const warnStorageFallback = (operation: string, err: unknown) => {
   if (canUseLocalClipStore()) {
     console.warn(`[${operation} /api/clips/:clipId] Netlify Blobs unavailable; using local clip store:`, err);
+  } else {
+    console.error(`[${operation} /api/clips/:clipId] Netlify Blobs error:`, err);
   }
 };
 
