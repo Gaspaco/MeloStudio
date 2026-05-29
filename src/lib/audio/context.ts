@@ -24,7 +24,6 @@ export function getAudioContext(): AudioContext {
     ctx.addEventListener("statechange", () => {
       if (ctx?.state === "running") {
         bindToneToContext();
-        Tone.start().catch(() => {});
       }
     });
   }

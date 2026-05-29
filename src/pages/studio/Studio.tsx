@@ -7,7 +7,7 @@ import { getMasterBus } from "~/lib/audio/masterBus";
 import { unlockAudioContext } from "~/lib/audio/context";
 import { updateProjectApi } from "~/lib/api";
 import { getAppSession } from "~/lib/app-auth";
-import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES } from "./types";
+import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES, hasStudioContent } from "./types";
 import { useProject }   from "./hooks/useProject";
 import { useTransport } from "./hooks/useTransport";
 import { useDrum }      from "./hooks/useDrum";
@@ -172,11 +172,11 @@ const Studio: Component = () => {
     timelineEl: () => timelineElRef,
   });
 
+  const canSaveProject = () => hasStudioContent(tracks(), pattern(), lyricsText());
+
   onMount(async () => {
     seq = new StepSequencer();
     seq.onStep = (i) => setCurrentStep(i);
-    // Initialize master bus in enhanced mode (on by default)
-    getMasterBus().setEnhanced(true);
     await project.init();
 
     // Fetch user avatar for the save toast
@@ -202,17 +202,6 @@ const Studio: Component = () => {
     window.addEventListener("keydown", handleGlobalKey);
     onCleanup(() => window.removeEventListener("keydown", handleGlobalKey));
 
-    // When the user returns to this tab after the browser has suspended or
-    // interrupted the AudioContext (e.g. tab was backgrounded, laptop was closed,
-    // or system audio was taken by another app), proactively attempt to resume
-    // the context so the next user interaction doesn't result in silent audio.
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        void unlockAudioContext().catch(() => {});
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibility);
-    onCleanup(() => document.removeEventListener("visibilitychange", handleVisibility));
   });
 
   onCleanup(() => {
@@ -220,7 +209,7 @@ const Studio: Component = () => {
     sth.allNotesOff();
     metronomePart?.dispose();
     // Safety-net: save any unsaved work when the studio unmounts (e.g. browser back)
-    if (Date.now() - lastSavedAt > 5_000) {
+    if (canSaveProject() && Date.now() - lastSavedAt > 5_000) {
       project.save().catch(() => {});
     }
   });
@@ -263,7 +252,7 @@ const Studio: Component = () => {
     const next = !metronomeOn();
     setMetronomeOn(next);
     if (next && playing()) {
-      await Tone.start();
+      await unlockAudioContext();
       startMetronome();
     } else {
       stopMetronome();
@@ -274,6 +263,7 @@ const Studio: Component = () => {
   onCleanup(() => clearTimeout(toastTimer));
   let lastSavedAt = 0;
   const handleSave = async () => {
+    if (!canSaveProject()) return;
     await project.save();
     lastSavedAt = Date.now();
     setLastSaved(new Date());
@@ -352,7 +342,7 @@ const Studio: Component = () => {
   const drumClipBars = createMemo(() => Array.from({ length: 4 }, (_, i) => i));
 
   const saveAndNavigate = async (path: string) => {
-    await handleSave();
+    if (canSaveProject()) await handleSave();
     navigate(path);
   };
 
@@ -365,7 +355,7 @@ const Studio: Component = () => {
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V4l6-1.2v7"/><circle cx="5" cy="11.5" r="1.4"/><circle cx="11" cy="9.8" r="1.4"/></svg>,
         items: [
           { label: "New Project",    kbd: "⌘N", action: run(() => { void saveAndNavigate("/dashboard?new=1"); }) },
-          { label: "Save",           kbd: "⌘S", action: run(() => { void handleSave(); }), disabled: () => saveState() === "saving" },
+          { label: "Save",           kbd: "⌘S", action: run(() => { void handleSave(); }), disabled: () => saveState() === "saving" || !canSaveProject() },
           { label: "Rename\u2026",   kbd: "",   action: run(() => startEditingTitle()) },
           { label: "Open Dashboard", kbd: "⌘D", action: run(() => { void saveAndNavigate("/dashboard"); }) },
         ],
@@ -436,7 +426,7 @@ const Studio: Component = () => {
         onCommitTitle={commitTitle}
         onCancelTitle={cancelTitle}
         onSave={handleSave}
-        canSave={() => tracks().length > 0 || pattern().rows.some(r => r.velocities.some(v => v > 0))}
+        canSave={canSaveProject}
         canUndo={canUndo} canRedo={canRedo}
         onUndo={undo} onRedo={redo}
         metronomeOn={metronomeOn} onToggleMetronome={toggleMetronome}
@@ -446,7 +436,7 @@ const Studio: Component = () => {
           // Start/stop metronome to stay in sync with playback
           if (metronomeOn()) {
             if (!playing()) stopMetronome();
-            else { await Tone.start(); startMetronome(); }
+            else { await unlockAudioContext(); startMetronome(); }
           }
         }}
         onStopAll={transport.stopAll}

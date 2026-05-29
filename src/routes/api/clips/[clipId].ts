@@ -3,7 +3,7 @@
 // DELETE /api/clips/:clipId?projectId=<uuid> — remove audio (authenticated, project owner only)
 import type { APIEvent } from "@solidjs/start/server";
 import { getStore } from "@netlify/blobs";
-import { appendFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { requireUserId } from "~/lib/auth-server";
 import { sql } from "~/lib/db/client";

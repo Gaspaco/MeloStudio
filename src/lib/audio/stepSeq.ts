@@ -74,8 +74,9 @@ const dbToGain = (db: number) => Math.pow(10, db / 20);
 export class StepSequencer {
   private kit: DrumKit | null = null;
   private pattern: StepPattern;
-  private masterGain: Tone.Gain;
+  private masterGain: Tone.Gain | null = null;
   private sequence: Tone.Sequence<number> | null = null;
+  private masterGainDb = 20 * Math.log10(0.8);
 
   private playing = false;
 
@@ -84,24 +85,31 @@ export class StepSequencer {
 
   constructor(initial?: StepPattern) {
     this.pattern = initial ?? DEFAULT_PATTERN();
+  }
+
+  private ensureAudioGraph(): Tone.Gain {
     bindToneToContext();
-    this.masterGain = new Tone.Gain(0.8);
-    this.masterGain.connect(getMasterBus().input);
+    if (!this.masterGain) {
+      this.masterGain = new Tone.Gain(dbToGain(this.masterGainDb));
+      this.masterGain.connect(getMasterBus().input);
+    }
     Tone.getTransport().bpm.value = this.pattern.bpm;
+    return this.masterGain;
   }
 
   setPattern(p: StepPattern): void {
     this.pattern = p;
-    Tone.getTransport().bpm.value = p.bpm;
+    if (this.masterGain) Tone.getTransport().bpm.value = p.bpm;
     if (this.sequence) this.rebuildSequence();
   }
   getPattern(): StepPattern { return this.pattern; }
   setBpm(bpm: number): void {
     this.pattern.bpm = Math.max(40, Math.min(240, bpm));
-    Tone.getTransport().bpm.rampTo(this.pattern.bpm, 0.05);
+    if (this.masterGain) Tone.getTransport().bpm.rampTo(this.pattern.bpm, 0.05);
   }
   setMasterGainDb(db: number): void {
-    this.masterGain.gain.rampTo(dbToGain(db), 0.01);
+    this.masterGainDb = db;
+    this.masterGain?.gain.rampTo(dbToGain(db), 0.01);
   }
 
   toggleStep(rowIdx: number, stepIdx: number): void {
@@ -150,7 +158,8 @@ export class StepSequencer {
   // trigger a single drum voice immediately — for UI preview on cell click
   async previewDrum(rowIdx: number): Promise<void> {
     try { await unlockAudioContext(); } catch { /* */ }
-    if (!this.kit) this.kit = new DrumKit(this.masterGain);
+    const masterGain = this.ensureAudioGraph();
+    if (!this.kit) this.kit = new DrumKit(masterGain);
     const row = this.pattern.rows[rowIdx];
     if (!row || row.muted) return;
     const voice = this.kit.voices[row.drum as DrumName];
@@ -161,8 +170,9 @@ export class StepSequencer {
 
   async start(): Promise<void> {
     if (this.playing) return;
-    if (!this.kit) this.kit = new DrumKit(this.masterGain);
     try { await unlockAudioContext(); } catch { /* */ }
+    const masterGain = this.ensureAudioGraph();
+    if (!this.kit) this.kit = new DrumKit(masterGain);
 
     this.rebuildSequence();
     Tone.getTransport().start("+0.05");
@@ -217,6 +227,7 @@ export class StepSequencer {
     this.stop();
     this.kit?.dispose();
     this.kit = null;
-    this.masterGain.dispose();
+    this.masterGain?.dispose();
+    this.masterGain = null;
   }
 }

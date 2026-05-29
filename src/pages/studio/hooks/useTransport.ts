@@ -43,6 +43,8 @@ export function useTransport(deps: Deps) {
   const barsToSecs = (bars: number) => bars * 4 * (60 / deps.bpm());
   const pxToSecs   = (px: number)   => (px / 80) * 4 * (60 / deps.bpm());
   const secsToPx   = (secs: number) => secs * (deps.bpm() / 60) * (80 / 4);
+  const optionalRemoteUrl = (src: string) =>
+    src.includes("optional=") ? src : `${src}${src.includes("?") ? "&" : "?"}optional=1`;
 
   const stopAudioPlayback = () => {
     for (const src of audioSources) { try { src.stop(); } catch { /* already ended */ } }
@@ -115,8 +117,9 @@ export function useTransport(deps: Deps) {
         let buffer = audioBufferCache.get(audioSrc);
         if (!buffer) {
           try {
-            const res = audioSrc.startsWith("/api/") ? await apiFetch(audioSrc) : await fetch(audioSrc);
-            if (!res.ok) { failedSrcCache.add(audioSrc); continue; }
+            const requestSrc = audioSrc.startsWith("/api/") ? optionalRemoteUrl(audioSrc) : audioSrc;
+            const res = audioSrc.startsWith("/api/") ? await apiFetch(requestSrc) : await fetch(requestSrc);
+            if (res.status === 204 || !res.ok) { failedSrcCache.add(audioSrc); continue; }
             const ab = await res.arrayBuffer();
             buffer = await ctx.decodeAudioData(ab);
             audioBufferCache.set(audioSrc, buffer);

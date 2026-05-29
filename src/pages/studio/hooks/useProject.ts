@@ -11,7 +11,7 @@ import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer 
 import { type SynthPreset } from "~/lib/audio/synth";
 import { loadClip, loadClipBlob, removeClip, storeClip } from "~/lib/clipStore";
 import { remoteClipUploadErrorMessage, uploadRemoteClip } from "~/lib/remoteClips";
-import { type MediaClip, type UITrack, TRACK_DEFS } from "../types";
+import { type MediaClip, type UITrack, TRACK_DEFS, hasStudioContent } from "../types";
 
 type Deps = {
   projectId: string;
@@ -147,12 +147,7 @@ export function useProject(deps: Deps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const hasRecoverableContent = (doc: any) => {
     const tracks = (doc.uiTracks ?? []) as UITrack[];
-    const hasTracks = tracks.length > 0;
-    const hasBeat = (doc.beat?.pattern?.rows as unknown[] | undefined)?.some(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (row: any) => row.velocities?.some((velocity: number) => velocity > 0),
-    );
-    return hasTracks || hasBeat || Boolean(doc.lyrics);
+    return hasStudioContent(tracks, doc.beat?.pattern, doc.lyrics);
   };
 
   const clearNewProjectParam = () => {
@@ -254,8 +249,8 @@ export function useProject(deps: Deps) {
         if (cleanPat.bpm) deps.setBpm(cleanPat.bpm);
       }
 
-      const savedTracks: UITrack[] | undefined = doc.uiTracks;
-      if (savedTracks?.length) {
+      const savedTracks = ((doc.uiTracks ?? []) as UITrack[]);
+      if (savedTracks.length && hasStudioContent(savedTracks, doc.beat?.pattern, doc.lyrics)) {
         const restoredTracks: UITrack[] = [];
         for (const t of savedTracks) {
           if (!TRACK_DEFS.find(d => d.type === t.type)) continue;
@@ -294,12 +289,8 @@ export function useProject(deps: Deps) {
             }
           }
           restoredTracks.push({ ...t, clips: restoredClips });
-          if (t.type === "instrument" || t.type === "bass" || t.type === "guitar") {
-            const preset: SynthPreset = t.type === "bass" ? "bass" : t.type === "guitar" ? "guitar" : deps.synthPreset();
-            deps.ensureSynth(preset);
-            if (t.type === "bass") deps.setSynthPreset("bass");
-            else if (t.type === "guitar") deps.setSynthPreset("guitar");
-          }
+          if (t.type === "bass") deps.setSynthPreset("bass");
+          else if (t.type === "guitar") deps.setSynthPreset("guitar");
         }
         deps.setTracks(restoredTracks);
         deps.setSelectedTrack(restoredTracks[0]?.id ?? null);
@@ -307,6 +298,9 @@ export function useProject(deps: Deps) {
         const seq = deps.getSeq();
         if (hasDrum && pat?.rows?.length && seq) seq.setPattern(sanitizePattern(pat));
         if (hasDrum) deps.setDrumPanelOpen(true);
+      } else {
+        deps.setTracks([]);
+        deps.setSelectedTrack(null);
       }
     } finally {
       applyingDoc = false;
@@ -370,6 +364,7 @@ export function useProject(deps: Deps) {
   const save = async () => {
     const seq = deps.getSeq();
     if (!seq) return;
+    if (!hasStudioContent(deps.tracks(), seq.getPattern(), deps.lyricsText?.())) return;
     deps.setSaveState("saving");
     try {
       const res = await apiFetch(`/api/projects/${deps.projectId}`);
@@ -430,11 +425,8 @@ export function useProject(deps: Deps) {
       const doc: any = data;
       loadedProjectDoc = doc;
 
-      const hasTracks = ((doc.uiTracks as UITrack[] | undefined)?.length ?? 0) > 0;
-      const hasBeat = (doc.beat?.pattern?.rows as unknown[] | undefined)?.some(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (r: any) => r.velocities?.some((v: number) => v > 0),
-      );
+      const savedTracks = (doc.uiTracks as UITrack[] | undefined) ?? [];
+      const hasContent = hasStudioContent(savedTracks, doc.beat?.pattern, doc.lyrics);
 
       baselineJson = normalizedProjectJson(doc);
 
@@ -454,7 +446,7 @@ export function useProject(deps: Deps) {
         removeLocalDraft();
       }
 
-      if (!pendingDoc && (hasTracks || hasBeat)) {
+      if (!pendingDoc && hasContent) {
         pendingDoc = doc;
         pendingDocSource = "project";
         deps.setShowRestoreDialog(true);
@@ -465,7 +457,7 @@ export function useProject(deps: Deps) {
         setInitialized(true);
       }
 
-      if (!pendingDoc && !hasTracks && !hasBeat) {
+      if (!pendingDoc && !hasContent) {
         deps.setShowNewTrack(true);
       }
       clearNewProjectParam();

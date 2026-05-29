@@ -25,6 +25,18 @@ export interface UITrack {
   clips?: MediaClip[];
 }
 
+export const hasPatternContent = (pattern: { rows?: Array<{ velocities?: number[] }> } | null | undefined): boolean =>
+  Boolean(pattern?.rows?.some(row => row.velocities?.some(velocity => velocity > 0)));
+
+export const hasTrackContent = (tracks: UITrack[] | null | undefined): boolean =>
+  Boolean(tracks?.some(track => (track.clips ?? []).length > 0));
+
+export const hasStudioContent = (
+  tracks: UITrack[] | null | undefined,
+  pattern: { rows?: Array<{ velocities?: number[] }> } | null | undefined,
+  lyrics?: string | null,
+): boolean => hasTrackContent(tracks) || hasPatternContent(pattern) || Boolean(lyrics?.trim());
+
 export const TRACK_DEFS: {
   type: TrackType; label: string; sub?: string;
   tag: string; ready: boolean; icon: string; color: string;
