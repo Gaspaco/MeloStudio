@@ -107,7 +107,13 @@ export async function PUT(event: APIEvent) {
   const userId = await requireUserId(event.request);
   if (!userId) return textResponse("unauthorized", 401);
 
-  const project = await getProjectOwner(projectId);
+  let project: { userId: string; published: boolean } | null = null;
+  try {
+    project = await getProjectOwner(projectId);
+  } catch (err) {
+    console.error("[PUT /api/clips/:clipId] DB error:", err);
+    return textResponse("internal error", 500);
+  }
   if (!project) return textResponse("not found", 404);
   if (project.userId !== userId) return textResponse("forbidden", 403);
 
@@ -155,7 +161,13 @@ export async function GET(event: APIEvent) {
 
   if (!isUuid(clipId) || !isUuid(projectId)) return textResponse("invalid id", 400);
 
-  const project = await getProjectOwner(projectId);
+  let project: { userId: string; published: boolean } | null = null;
+  try {
+    project = await getProjectOwner(projectId);
+  } catch (err) {
+    console.error("[GET /api/clips/:clipId] DB error:", err);
+    return textResponse("internal error", 500);
+  }
   if (!project) return textResponse("not found", 404);
 
   if (!project.published) {
@@ -188,8 +200,8 @@ export async function GET(event: APIEvent) {
     const local = await getLocalClip(projectId, clipId);
     if (local) return localClipResponse(local);
     if (canUseLocalClipStore()) return textResponse("clip not found", 404);
-    console.error("[GET /api/clips/:clipId] failed:", err);
-    return textResponse("storage error", 500);
+    console.error("[GET /api/clips/:clipId] storage error:", err);
+    return textResponse("storage unavailable", 503);
   }
 }
 
@@ -202,7 +214,13 @@ export async function DELETE(event: APIEvent) {
   const userId = await requireUserId(event.request);
   if (!userId) return textResponse("unauthorized", 401);
 
-  const project = await getProjectOwner(projectId);
+  let project: { userId: string; published: boolean } | null = null;
+  try {
+    project = await getProjectOwner(projectId);
+  } catch (err) {
+    console.error("[DELETE /api/clips/:clipId] DB error:", err);
+    return textResponse("internal error", 500);
+  }
   if (!project) return textResponse("not found", 404);
   if (project.userId !== userId) return textResponse("forbidden", 403);
 
