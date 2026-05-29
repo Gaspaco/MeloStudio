@@ -1,62 +1,38 @@
-// PUT /api/clips/:clipId?projectId=<uuid>  — upload audio blob (authenticated, project owner only)
-// GET /api/clips/:clipId?projectId=<uuid>  — serve audio (public if project is published, else owner only)
-// DELETE /api/clips/:clipId?projectId=<uuid> — remove audio (authenticated, project owner only)
-import type { APIEvent } from "@solidjs/start/server";
-import { getStore } from "@netlify/blobs";
-import { appendFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { join } from "node:path";
-import { requireUserId } from "~/lib/auth-server";
-import { sql } from "~/lib/db/client";
-import { isUuid, textResponse } from "../_utils";
+const fs = require('fs');
 
-const MAX_CLIP_BYTES = 4_000_000; // Netlify buffered functions allow ~4.5 MB binary request bodies.
-const LOCAL_CLIP_ROOT = join(process.cwd(), ".data", "audio-clips");
-const ALLOWED_AUDIO_TYPES = new Set([
-  "audio/mpeg", "audio/mp3", "audio/wav", "audio/wave", "audio/x-wav",
-  "audio/ogg", "audio/flac", "audio/x-flac", "audio/aac", "audio/mp4",
-  "audio/webm", "audio/3gpp", "audio/3gpp2",
-  "video/mp4", "video/webm",
-]);
+let clipApi = fs.readFileSync('src/routes/api/clips/[clipId].ts', 'utf8');
 
-function getClipsStore() {
-  try {
-    return getStore({ name: "audio-clips" });
-  } catch {
-    return null;
+clipApi = clipApi.replace(
+  'import { mkdir, readFile, rm, writeFile } from "node:fs/promises";',
+  'import { appendFile, mkdir, readFile, rm, writeFile } from "node:fs/promises";'
+);
+
+const newDeleteLocalClip = `
+async function deleteLocalClip(projectId: string, clipId: string): Promise<void> {
+  if (!canUseLocalClipStore()) return;
+  const metaRaw = await readFile(localMetaPath(projectId, clipId), "utf8").catch(() => null);
+  await Promise.all([
+    rm(localClipPath(projectId, clipId), { force: true }),
+    rm(localMetaPath(projectId, clipId), { force: true }),
+  ]);
+  if (metaRaw) {
+    const meta = JSON.parse(metaRaw) as { chunks?: string };
+    if (meta.chunks) {
+      const chunks = parseInt(meta.chunks, 10);
+      for (let i = 0; i < chunks; i++) {
+        await rm(localClipPath(projectId, \`\${clipId}_\${i}\`), { force: true });
+      }
+    }
   }
 }
+`;
 
-const canUseLocalClipStore = () => process.env.NODE_ENV !== "production";
+clipApi = clipApi.replace(
+  /async function deleteLocalClip[\s\S]*?(?=async function getProjectOwner)/,
+  newDeleteLocalClip + '\n'
+);
 
-const warnStorageFallback = (operation: string, err: unknown) => {
-  if (canUseLocalClipStore()) {
-    console.warn(`[${operation} /api/clips/:clipId] Netlify Blobs unavailable; using local clip store:`, err);
-  } else {
-    console.error(`[${operation} /api/clips/:clipId] Netlify Blobs error:`, err);
-  }
-};
-
-const localClipPath = (projectId: string, clipId: string) =>
-  join(LOCAL_CLIP_ROOT, projectId, `${clipId}.bin`);
-
-const localMetaPath = (projectId: string, clipId: string) =>
-  join(LOCAL_CLIP_ROOT, projectId, `${clipId}.json`);
-
-async function setLocalClip(
-  projectId: string,
-  clipId: string,
-  body: ArrayBuffer,
-  metadata: Record<string, string>,
-): Promise<boolean> {
-  if (!canUseLocalClipStore()) return false;
-  const dir = join(LOCAL_CLIP_ROOT, projectId);
-  await mkdir(dir, { recursive: true });
-  await writeFile(localClipPath(projectId, clipId), new Uint8Array(body));
-  await writeFile(localMetaPath(projectId, clipId), JSON.stringify(metadata));
-  return true;
-}
-
-
+const newGetLocalClip = `
 async function getLocalClip(projectId: string, clipId: string): Promise<{ data: Uint8Array; mime: string } | null> {
   if (!canUseLocalClipStore()) return null;
   try {
@@ -68,7 +44,7 @@ async function getLocalClip(projectId: string, clipId: string): Promise<{ data: 
       const buffers = [];
       let totalSize = 0;
       for (let i = 0; i < chunks; i++) {
-        const b = await readFile(localClipPath(projectId, `${clipId}_${i}`));
+        const b = await readFile(localClipPath(projectId, \`\${clipId}_\${i}\`));
         buffers.push(b);
         totalSize += b.byteLength;
       }
@@ -87,49 +63,14 @@ async function getLocalClip(projectId: string, clipId: string): Promise<{ data: 
     return null;
   }
 }
+`;
 
-function localClipResponse(local: { data: Uint8Array; mime: string }): Response {
-  const body = new ArrayBuffer(local.data.byteLength);
-  new Uint8Array(body).set(local.data);
-  return new Response(body, {
-    headers: {
-      "Content-Type": local.mime,
-      "Cache-Control": "private, max-age=3600",
-      "Accept-Ranges": "bytes",
-    },
-  });
-}
+clipApi = clipApi.replace(
+  /async function getLocalClip[\s\S]*?(?=function localClipResponse)/,
+  newGetLocalClip + '\n'
+);
 
-
-async function deleteLocalClip(projectId: string, clipId: string): Promise<void> {
-  if (!canUseLocalClipStore()) return;
-  const metaRaw = await readFile(localMetaPath(projectId, clipId), "utf8").catch(() => null);
-  await Promise.all([
-    rm(localClipPath(projectId, clipId), { force: true }),
-    rm(localMetaPath(projectId, clipId), { force: true }),
-  ]);
-  if (metaRaw) {
-    const meta = JSON.parse(metaRaw) as { chunks?: string };
-    if (meta.chunks) {
-      const chunks = parseInt(meta.chunks, 10);
-      for (let i = 0; i < chunks; i++) {
-        await rm(localClipPath(projectId, `${clipId}_${i}`), { force: true });
-      }
-    }
-  }
-}
-
-async function getProjectOwner(projectId: string): Promise<{ userId: string; published: boolean } | null> {
-  const rows = await sql`
-    SELECT user_id, published FROM projects
-    WHERE id = ${projectId} AND deleted_at IS NULL
-    LIMIT 1
-  ` as Array<{ user_id: string; published: boolean }>;
-  if (!rows[0]) return null;
-  return { userId: rows[0].user_id, published: rows[0].published };
-}
-
-
+const newPut = `
 export async function PUT(event: APIEvent) {
   const clipId = event.params.clipId;
   const searchParams = new URL(event.request.url).searchParams;
@@ -168,11 +109,11 @@ export async function PUT(event: APIEvent) {
     const store = getClipsStore();
 
     if (chunkStr !== null) {
-      const key = `${projectId}/${clipId}_${chunkStr}`;
+      const key = \`\${projectId}/\${clipId}_\${chunkStr}\`;
       if (!store) {
         const dir = join(LOCAL_CLIP_ROOT, projectId);
         await mkdir(dir, { recursive: true });
-        await writeFile(localClipPath(projectId, `${clipId}_${chunkStr}`), new Uint8Array(body));
+        await writeFile(localClipPath(projectId, \`\${clipId}_\${chunkStr}\`), new Uint8Array(body));
         return Response.json({ ok: true, stored: true, local: true }, { status: 200 });
       }
       try {
@@ -182,11 +123,11 @@ export async function PUT(event: APIEvent) {
         warnStorageFallback("PUT_chunk", err);
         const dir = join(LOCAL_CLIP_ROOT, projectId);
         await mkdir(dir, { recursive: true });
-        await writeFile(localClipPath(projectId, `${clipId}_${chunkStr}`), new Uint8Array(body));
+        await writeFile(localClipPath(projectId, \`\${clipId}_\${chunkStr}\`), new Uint8Array(body));
         return Response.json({ ok: true, stored: true, local: true }, { status: 200 });
       }
     } else if (chunksStr !== null) {
-      const key = `${projectId}/${clipId}`;
+      const key = \`\${projectId}/\${clipId}\`;
       const metadata = { userId, projectId, mime: contentType || "audio/mpeg", chunks: chunksStr };
       if (!store) {
         const dir = join(LOCAL_CLIP_ROOT, projectId);
@@ -205,7 +146,7 @@ export async function PUT(event: APIEvent) {
         return Response.json({ ok: true, stored: true, local: true }, { status: 200 });
       }
     } else {
-      const key = `${projectId}/${clipId}`;
+      const key = \`\${projectId}/\${clipId}\`;
       const metadata = { userId, projectId, mime: contentType || "audio/mpeg" };
       if (!store) {
         const stored = await setLocalClip(projectId, clipId, body, metadata);
@@ -226,8 +167,14 @@ export async function PUT(event: APIEvent) {
     return textResponse("storage unavailable", 503);
   }
 }
+`;
 
+clipApi = clipApi.replace(
+  /export async function PUT[\s\S]*?(?=export async function GET)/,
+  newPut + '\n'
+);
 
+const newGet = `
 export async function GET(event: APIEvent) {
   const clipId = event.params.clipId;
   const searchParams = new URL(event.request.url).searchParams;
@@ -261,7 +208,7 @@ export async function GET(event: APIEvent) {
   }
 
   try {
-    const key = `${projectId}/${clipId}`;
+    const key = \`\${projectId}/\${clipId}\`;
     const result = await store.getWithMetadata(key, { type: "stream" });
     if (!result) {
       if (optional) return new Response(null, { status: 204 });
@@ -279,7 +226,7 @@ export async function GET(event: APIEvent) {
         async start(controller) {
           try {
             for (let i = 0; i < chunks; i++) {
-              const c = await store.get(`${projectId}/${clipId}_${i}`, { type: "arrayBuffer" });
+              const c = await store.get(\`\${projectId}/\${clipId}_\${i}\`, { type: "arrayBuffer" });
               if (c) controller.enqueue(new Uint8Array(c as ArrayBuffer));
             }
             controller.close();
@@ -305,8 +252,14 @@ export async function GET(event: APIEvent) {
     return textResponse("storage unavailable", 503);
   }
 }
+`;
 
+clipApi = clipApi.replace(
+  /export async function GET[\s\S]*?(?=export async function DELETE)/,
+  newGet + '\n'
+);
 
+const newDelete = `
 export async function DELETE(event: APIEvent) {
   const clipId = event.params.clipId;
   const projectId = new URL(event.request.url).searchParams.get("projectId") ?? "";
@@ -333,14 +286,14 @@ export async function DELETE(event: APIEvent) {
   }
 
   try {
-    const metaResult = await store.getMetadata(`${projectId}/${clipId}`);
+    const metaResult = await store.getMetadata(\`\${projectId}/\${clipId}\`);
     if (metaResult?.metadata?.chunks) {
       const chunks = parseInt(metaResult.metadata.chunks as string, 10);
       for (let i = 0; i < chunks; i++) {
-        await store.delete(`${projectId}/${clipId}_${i}`);
+        await store.delete(\`\${projectId}/\${clipId}_\${i}\`);
       }
     }
-    await store.delete(`${projectId}/${clipId}`);
+    await store.delete(\`\${projectId}/\${clipId}\`);
     return Response.json({ ok: true }, { status: 200 });
   } catch (err) {
     warnStorageFallback("DELETE", err);
@@ -352,3 +305,11 @@ export async function DELETE(event: APIEvent) {
     return textResponse("storage error", 500);
   }
 }
+`;
+
+clipApi = clipApi.replace(
+  /export async function DELETE[\s\S]*$/,
+  newDelete
+);
+
+fs.writeFileSync('src/routes/api/clips/[clipId].ts', clipApi);
