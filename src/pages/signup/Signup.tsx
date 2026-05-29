@@ -1,6 +1,6 @@
 import { type Component, createSignal, onMount, onCleanup, For } from "solid-js";
 import { gsap } from "gsap";
-import { authClient } from "../../lib/auth";
+import { socialAuthClient } from "../../lib/social-auth";
 import { markAuthProvider } from "../../lib/app-auth";
 import "./signup.scss";
 
@@ -59,16 +59,16 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await authClient.signUp.email({
+      const { data, error } = await socialAuthClient.signUp.email({
         email: email(),
         password: password(),
-        name: name()
+        name: name(),
       });
 
       if (error) {
         setErrorMsg(error.message || "Failed to create account");
       } else {
-        markAuthProvider("neon");
+        markAuthProvider("better-auth");
         props.onSuccess?.();
       }
     } catch (err: any) {

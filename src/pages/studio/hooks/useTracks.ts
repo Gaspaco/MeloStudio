@@ -119,12 +119,13 @@ export function useTracks(deps: Deps) {
     if (kind !== "midi" && file.size > REMOTE_UPLOAD_THRESHOLD_BYTES) {
       const remoteUrl = await uploadLargeClip(clipId, file);
       if (remoteUrl) {
-        deps.setTracks(deps.tracks().map(t => ({
-          ...t,
-          clips: (t.clips ?? []).map(c =>
-            c.id === clipId ? { ...c, remoteUrl } : c
-          ),
-        })));
+        deps.setTracks(deps.tracks().map(t => {
+          if (!t.clips?.some(c => c.id === clipId)) return t;
+          return {
+            ...t,
+            clips: t.clips.map(c => c.id === clipId ? { ...c, remoteUrl } : c),
+          };
+        }));
       }
     }
     await deps.save().catch((err) => console.warn("[useTracks] save after clip add failed:", err));

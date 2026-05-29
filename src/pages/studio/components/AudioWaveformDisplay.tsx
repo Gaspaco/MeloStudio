@@ -8,8 +8,14 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
   let peaksInstance: PeaksInstance | null = null;
   // URL waiting to be rendered once the AudioContext is running
   let pendingUrl: string | null = null;
+  // Last URL/color pair initialized or currently initializing. This prevents
+  // Peaks.js from tearing down and rebuilding when a parent track gets a new
+  // object reference but the rendered waveform did not actually change.
+  let lastInitKey: string | null = null;
 
   const initPeaks = async (url: string) => {
+    const initKey = `${url}\u0000${props.color}`;
+    if (initKey === lastInitKey) return;
     if (peaksInstance) { peaksInstance.destroy(); peaksInstance = null; }
     if (!containerEl || !audioEl) return;
 
@@ -23,6 +29,7 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
       return;
     }
     pendingUrl = null;
+    lastInitKey = initKey;
     audioEl.src = url;
 
     Peaks.init({
@@ -42,6 +49,7 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
     }, (err, peaks) => {
       if (err || !peaks) {
         console.warn("[AudioWaveformDisplay] peaks.js init failed:", err);
+        lastInitKey = null;
         return;
       }
       peaksInstance = peaks;
@@ -86,6 +94,7 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
 
   onCleanup(() => {
     if (peaksInstance) { peaksInstance.destroy(); peaksInstance = null; }
+    lastInitKey = null;
   });
 
   return (

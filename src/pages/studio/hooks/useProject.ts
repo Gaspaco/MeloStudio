@@ -288,7 +288,7 @@ export function useProject(deps: Deps) {
               if (!url && remoteUrl) {
                 const res = await apiFetch(optionalRemoteClipUrl(remoteUrl)).catch(() => null);
                 if (res && res.status === 204) {
-                  // Blob confirmed absent — clear remoteUrl from in-memory state so
+                  // Blob confirmed absent; clear remoteUrl from in-memory state so
                   // playback doesn't hammer the server with repeated 404 requests.
                   remoteUrl = undefined;
                 } else if (res && res.ok) {
@@ -419,13 +419,23 @@ export function useProject(deps: Deps) {
       const savedClips = new Map(
         uiTracksForSave.flatMap((track) => (track.clips ?? []).map((clip) => [clip.id, clip] as const)),
       );
-      deps.setTracks(deps.tracks().map((track) => ({
-        ...track,
-        clips: track.clips?.map((clip) => {
+      // Preserve object references for clips/tracks that didn't actually change.
+      // Solid.js <For> tracks items by reference equality. Creating new objects for
+      // unchanged clips causes every Peaks.js waveform to be torn down and rebuilt
+      // on every save, producing the visible waveform flash.
+      deps.setTracks(deps.tracks().map((track) => {
+        if (!track.clips?.length) return track;
+        let trackChanged = false;
+        const newClips = track.clips.map((clip) => {
           const savedClip = savedClips.get(clip.id);
-          return savedClip ? { ...clip, dataUrl: savedClip.dataUrl, remoteUrl: savedClip.remoteUrl } : clip;
-        }),
-      })));
+          if (!savedClip) return clip;
+          if (clip.dataUrl === savedClip.dataUrl && clip.remoteUrl === savedClip.remoteUrl) return clip;
+          trackChanged = true;
+          return { ...clip, dataUrl: savedClip.dataUrl, remoteUrl: savedClip.remoteUrl };
+        });
+        if (!trackChanged) return track;
+        return { ...track, clips: newClips };
+      }));
       baselineJson = normalizedProjectJson(updated);
       removeLocalDraft();
       deps.setSaveState("saved");

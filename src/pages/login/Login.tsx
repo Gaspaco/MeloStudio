@@ -5,13 +5,13 @@ import { socialAuthClient } from "../../lib/social-auth";
 import { markAuthProvider } from "../../lib/app-auth";
 import "./login.scss";
 
-type NeonSocialAuthClient = typeof authClient & {
-  signIn: typeof authClient.signIn & {
+type NeonSocialAuthClient = {
+  signIn: {
     social: (input: { provider: "google"; callbackURL: string }) => Promise<unknown>;
   };
 };
 
-const neonAuthClient = authClient as NeonSocialAuthClient;
+const neonAuthClient = authClient as unknown as NeonSocialAuthClient;
 
 const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: () => void; onSuccess?: () => void }> = (props) => {
   let pageRef: HTMLDivElement | undefined;
@@ -32,7 +32,7 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await authClient.signIn.email({
+      const { data, error } = await socialAuthClient.signIn.email({
         email: email(),
         password: password(),
       });
@@ -42,7 +42,7 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
       } else if (!data) {
         setErrorMsg("Sign in failed. Please try again.");
       } else {
-        markAuthProvider("neon");
+        markAuthProvider("better-auth");
         props.onSuccess?.();
       }
     } catch (err: any) {
