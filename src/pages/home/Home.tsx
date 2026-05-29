@@ -51,10 +51,11 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
   const [menuOpen, setMenuOpen] = createSignal(false);
   const [isLoggedIn, setIsLoggedIn] = createSignal(false);
 
-  onMount(async () => {
-    try {
-      setIsLoggedIn(!!(await getAppSession()));
-    } catch {}
+  onMount(() => {
+    void getAppSession()
+      .then((session) => setIsLoggedIn(!!session))
+      .catch(() => {});
+
     lenisRef = new Lenis({
       duration: 0.9,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -93,6 +94,9 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
     animateHeroExit({
       heroRef: hero, heroLine1Ref: heroLine1, heroLine2Ref: heroLine2, scrollIndRef: scrollIndicator,
     });
+
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+    document.fonts?.ready.then(() => ScrollTrigger.refresh()).catch(() => {});
 
     let dawInited = false;
     ScrollTrigger.create({

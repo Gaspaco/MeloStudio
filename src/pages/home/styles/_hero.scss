@@ -3,12 +3,19 @@
 
 .hero {
   position: relative;
-  height: 100vh;
+  min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   padding: 0 3rem 5rem;
   overflow: hidden;
+  overflow: clip;
+  isolation: isolate;
+
+  @supports (height: 100dvh) {
+    min-height: 100dvh;
+  }
 
   // Ambient background orbs
   &::before {
@@ -21,6 +28,7 @@
       radial-gradient(ellipse 45% 45% at 50% 100%, rgba(14, 165, 233, 0.06) 0%, transparent 62%);
     pointer-events: none;
     z-index: -1;
+    transform: translateZ(0);
   }
 
   // Subtle dot-grid texture
@@ -32,6 +40,7 @@
     background-size: 2.5rem 2.5rem;
     pointer-events: none;
     z-index: -1;
+    transform: translateZ(0);
   }
 
   // Eyebrow label
@@ -75,13 +84,20 @@
   &__title {
     position: relative;
     z-index: 2;
+    max-width: 100%;
+    transform: translateZ(0);
   }
 
   &__clip {
     overflow: hidden;
+    padding: 0.075em 0.055em;
+    margin: -0.075em -0.055em;
+    contain: paint;
+    transform: translateZ(0);
   }
 
   &__word {
+    display: block;
     font-family: $font-display;
     font-size: clamp(6rem, 15vw, 18rem);
     font-weight: 800;
@@ -89,7 +105,12 @@
     letter-spacing: -0.045em;
     color: $text-primary;
     text-transform: uppercase;
-    will-change: transform;
+    white-space: nowrap;
+    text-rendering: geometricPrecision;
+    -webkit-font-smoothing: antialiased;
+    backface-visibility: hidden;
+    transform: translate3d(0, 0, 0);
+    will-change: transform, clip-path;
     // Start hidden so there's no flash before GSAP sets the from-state
     clip-path: inset(0 100% 0 0);
   }
@@ -101,6 +122,7 @@
   &__word--stroke {
     color: transparent;
     -webkit-text-stroke: 1.5px $text-primary;
+    paint-order: stroke fill;
   }
 
   &__meta {
@@ -181,6 +203,8 @@
     display: flex;
     gap: 1rem;
     margin-top: 3rem;
+    position: relative;
+    z-index: 2;
   }
 
   // Feature stats row

@@ -12,13 +12,14 @@ export function animateHeroExit(refs: {
       start: "top top",
       end: "bottom top",
       scrub: true,
+      invalidateOnRefresh: true,
     },
   });
 
   heroExit
-    .to(refs.heroLine1Ref, { clipPath: "inset(0 0 0 100%)", x: 60, ease: "none" }, 0)
-    .to(refs.heroLine2Ref, { clipPath: "inset(0 100% 0 0)", x: -60, ease: "none" }, 0)
-    .to(refs.scrollIndRef, { opacity: 0, ease: "none" }, 0);
+    .to(refs.heroLine1Ref, { clipPath: "inset(0 0 0 100%)", x: 60, ease: "none", force3D: true }, 0)
+    .to(refs.heroLine2Ref, { clipPath: "inset(0 100% 0 0)", x: -60, ease: "none", force3D: true }, 0)
+    .to(refs.scrollIndRef, { opacity: 0, ease: "none", force3D: true }, 0);
 
   return heroExit;
 }
