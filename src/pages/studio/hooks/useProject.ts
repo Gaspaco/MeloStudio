@@ -283,6 +283,7 @@ export function useProject(deps: Deps) {
                   }
                 }
               }
+              if (!url && !remoteUrl) continue;
               restoredClips.push({ ...clip, remoteUrl, url: url ?? undefined });
             } else {
               restoredClips.push(clip);
