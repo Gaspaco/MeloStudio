@@ -276,13 +276,7 @@ export function useProject(deps: Deps) {
               // 3. Fall back to server-side storage (large clips, cross-device)
               if (!url && remoteUrl) {
                 const blob = await apiFetch(optionalRemoteClipUrl(remoteUrl))
-                  .then((res) => {
-                    if (res.status === 204 || res.status === 404) {
-                      remoteUrl = undefined;
-                      return null;
-                    }
-                    return res.ok ? res.blob() : null;
-                  })
+                  .then((res) => res.status === 204 ? null : res.ok ? res.blob() : null)
                   .catch(() => null);
                 if (blob) {
                   // Cache back to IDB so future sessions load faster

@@ -6,6 +6,7 @@
 // and starts a visual `requestAnimationFrame` loop to animate the playhead smoothly.
 import { onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
+import { apiFetch } from "~/lib/api";
 import { unlockAudioContext, getAudioContext } from "~/lib/audio/context";
 import { getMasterBus } from "~/lib/audio/masterBus";
 import type { StepPattern, StepSequencer } from "~/lib/audio/stepSeq";
@@ -110,7 +111,9 @@ export function useTransport(deps: Deps) {
         let buffer = audioBufferCache.get(audioSrc);
         if (!buffer) {
           try {
-            const ab = await fetch(audioSrc).then(r => r.arrayBuffer());
+            const res = audioSrc.startsWith("/api/") ? await apiFetch(audioSrc) : await fetch(audioSrc);
+            if (!res.ok) continue;
+            const ab = await res.arrayBuffer();
             buffer = await ctx.decodeAudioData(ab);
             audioBufferCache.set(audioSrc, buffer);
           } catch { continue; }
