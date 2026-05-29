@@ -232,7 +232,6 @@ export async function GET(event: APIEvent) {
   const clipId = event.params.clipId;
   const searchParams = new URL(event.request.url).searchParams;
   const projectId = searchParams.get("projectId") ?? "";
-  const optional = searchParams.get("optional") === "1";
 
   if (!isUuid(clipId) || !isUuid(projectId)) return textResponse("invalid id", 400);
 
@@ -254,8 +253,8 @@ export async function GET(event: APIEvent) {
   if (!store) {
     const local = await getLocalClip(projectId, clipId);
     if (!local) {
-      if (optional && canUseLocalClipStore()) return new Response(null, { status: 204 });
-      return textResponse(canUseLocalClipStore() ? "clip not found" : "storage not available", canUseLocalClipStore() ? 404 : 503);
+      if (canUseLocalClipStore()) return new Response(null, { status: 204 });
+      return textResponse("storage not available", 503);
     }
     return localClipResponse(local);
   }
@@ -264,8 +263,7 @@ export async function GET(event: APIEvent) {
     const key = `${projectId}/${clipId}`;
     const result = await store.getWithMetadata(key, { type: "stream" });
     if (!result) {
-      if (optional) return new Response(null, { status: 204 });
-      return textResponse("clip not found", 404);
+      return new Response(null, { status: 204 });
     }
 
     const metadata = result.metadata as Record<string, string> | null;
@@ -299,10 +297,65 @@ export async function GET(event: APIEvent) {
     warnStorageFallback("GET", err);
     const local = await getLocalClip(projectId, clipId);
     if (local) return localClipResponse(local);
-    if (optional && canUseLocalClipStore()) return new Response(null, { status: 204 });
-    if (canUseLocalClipStore()) return textResponse("clip not found", 404);
+    if (canUseLocalClipStore()) return new Response(null, { status: 204 });
     console.error("[GET /api/clips/:clipId] storage error:", err);
     return textResponse("storage unavailable", 503);
+  }
+}
+
+
+export async function HEAD(event: APIEvent) {
+  const clipId = event.params.clipId;
+  const searchParams = new URL(event.request.url).searchParams;
+  const projectId = searchParams.get("projectId") ?? "";
+
+  if (!isUuid(clipId) || !isUuid(projectId)) return new Response(null, { status: 400 });
+
+  let project: { userId: string; published: boolean } | null = null;
+  try {
+    project = await getProjectOwner(projectId);
+  } catch (err) {
+    console.error("[HEAD /api/clips/:clipId] DB error:", err);
+    return new Response(null, { status: 500 });
+  }
+  if (!project) return new Response(null, { status: 404 });
+
+  if (!project.published) {
+    const userId = await requireUserId(event.request);
+    if (userId !== project.userId) return new Response(null, { status: 404 });
+  }
+
+  const store = getClipsStore();
+  if (!store) {
+    const local = await getLocalClip(projectId, clipId);
+    if (!local) return new Response(null, { status: canUseLocalClipStore() ? 204 : 503 });
+    return new Response(null, {
+      status: 200,
+      headers: {
+        "Content-Type": local.mime,
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
+  }
+
+  try {
+    const metaResult = await store.getMetadata(`${projectId}/${clipId}`);
+    if (!metaResult) return new Response(null, { status: 204 });
+    const metadata = metaResult.metadata as Record<string, string> | null;
+    return new Response(null, {
+      status: 200,
+      headers: {
+        "Content-Type": metadata?.mime ?? "audio/mpeg",
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
+  } catch (err) {
+    warnStorageFallback("HEAD", err);
+    const local = await getLocalClip(projectId, clipId);
+    if (local) return new Response(null, { status: 200, headers: { "Content-Type": local.mime } });
+    if (canUseLocalClipStore()) return new Response(null, { status: 204 });
+    console.error("[HEAD /api/clips/:clipId] storage error:", err);
+    return new Response(null, { status: 503 });
   }
 }
 

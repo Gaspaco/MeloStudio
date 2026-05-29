@@ -77,6 +77,14 @@ export function useProject(deps: Deps) {
   const optionalRemoteClipUrl = (remoteUrl: string) =>
     `${remoteUrl}${remoteUrl.includes("?") ? "&" : "?"}optional=1`;
 
+  const remoteClipExists = async (remoteUrl: string): Promise<boolean | null> => {
+    const res = await apiFetch(optionalRemoteClipUrl(remoteUrl), { method: "HEAD" }).catch(() => null);
+    if (!res) return null;
+    if (res.status === 204) return false;
+    if (res.ok) return true;
+    return null;
+  };
+
   const persistedClipFields = async (clip: MediaClip): Promise<Pick<MediaClip, "dataUrl" | "remoteUrl">> => {
     if (clip.kind === "midi") return { dataUrl: undefined, remoteUrl: undefined };
     if (clip.dataUrl && clip.dataUrl.length <= MAX_INLINE_CLIP_DATA_URL_CHARS) {
@@ -84,11 +92,18 @@ export function useProject(deps: Deps) {
     }
     const blob = await clipBlob(clip);
 
-    if (!blob) return { dataUrl: undefined, remoteUrl: clip.remoteUrl };
+    if (!blob) {
+      if (!clip.remoteUrl) return { dataUrl: undefined, remoteUrl: undefined };
+      const exists = await remoteClipExists(clip.remoteUrl);
+      return { dataUrl: undefined, remoteUrl: exists === false ? undefined : clip.remoteUrl };
+    }
     if (blob.size <= MAX_INLINE_CLIP_BYTES) {
       return { dataUrl: await blobToDataUrl(blob), remoteUrl: clip.remoteUrl };
     }
-    if (clip.remoteUrl) return { dataUrl: undefined, remoteUrl: clip.remoteUrl };
+    if (clip.remoteUrl) {
+      const exists = await remoteClipExists(clip.remoteUrl);
+      if (exists !== false) return { dataUrl: undefined, remoteUrl: clip.remoteUrl };
+    }
 
     try {
       const result = await uploadRemoteClip(deps.projectId, clip.id, blob, blob.type || "audio/mpeg");
@@ -252,6 +267,7 @@ export function useProject(deps: Deps) {
       const savedTracks = ((doc.uiTracks ?? []) as UITrack[]);
       if (savedTracks.length && hasStudioContent(savedTracks, doc.beat?.pattern, doc.lyrics)) {
         const restoredTracks: UITrack[] = [];
+        let missingClipCount = 0;
         for (const t of savedTracks) {
           if (!TRACK_DEFS.find(d => d.type === t.type)) continue;
           const restoredClips = [];
@@ -283,7 +299,10 @@ export function useProject(deps: Deps) {
                   }
                 }
               }
-              if (!url && !remoteUrl) continue;
+              if (!url && !remoteUrl) {
+                missingClipCount++;
+                continue;
+              }
               restoredClips.push({ ...clip, remoteUrl, url: url ?? undefined });
             } else {
               restoredClips.push(clip);
@@ -299,6 +318,10 @@ export function useProject(deps: Deps) {
         const seq = deps.getSeq();
         if (hasDrum && pat?.rows?.length && seq) seq.setPattern(sanitizePattern(pat));
         if (hasDrum) deps.setDrumPanelOpen(true);
+        if (missingClipCount > 0) {
+          deps.setError(`${missingClipCount} audio clip${missingClipCount === 1 ? " is" : "s are"} missing. Re-import the original file to restore it.`);
+          setTimeout(() => deps.setError(""), 6000);
+        }
       } else {
         deps.setTracks([]);
         deps.setSelectedTrack(null);
