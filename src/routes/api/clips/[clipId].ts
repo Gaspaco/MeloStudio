@@ -9,7 +9,7 @@ import { requireUserId } from "~/lib/auth-server";
 import { sql } from "~/lib/db/client";
 import { isUuid, textResponse } from "../_utils";
 
-const MAX_CLIP_BYTES = 50 * 1024 * 1024; // 50 MB hard cap per clip
+const MAX_CLIP_BYTES = 4_000_000; // Netlify buffered functions allow ~4.5 MB binary request bodies.
 const LOCAL_CLIP_ROOT = join(process.cwd(), ".data", "audio-clips");
 const ALLOWED_AUDIO_TYPES = new Set([
   "audio/mpeg", "audio/mp3", "audio/wav", "audio/wave", "audio/x-wav",
@@ -153,7 +153,7 @@ export async function PUT(event: APIEvent) {
     }
   } catch (err) {
     console.error("[PUT /api/clips/:clipId] failed:", err);
-    return textResponse("storage error", 500);
+    return textResponse("storage unavailable", 503);
   }
 }
 
@@ -191,14 +191,14 @@ export async function GET(event: APIEvent) {
 
   try {
     const key = `${projectId}/${clipId}`;
-    const result = await store.getWithMetadata(key, { type: "arrayBuffer" });
+    const result = await store.getWithMetadata(key, { type: "stream" });
     if (!result) {
       if (optional) return new Response(null, { status: 204 });
       return textResponse("clip not found", 404);
     }
 
     const mime = (result.metadata as Record<string, string> | null)?.mime ?? "audio/mpeg";
-    return new Response(result.data as ArrayBuffer, {
+    return new Response(result.data as BodyInit, {
       headers: {
         "Content-Type": mime,
         "Cache-Control": "private, max-age=3600",
