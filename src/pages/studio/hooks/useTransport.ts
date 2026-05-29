@@ -32,6 +32,9 @@ export function useTransport(deps: Deps) {
   let playbackStartCtxTime = 0;
   let playbackStartTimelineSecs = 0;
   const audioBufferCache = new Map<string, AudioBuffer>();
+  // URLs that returned a non-OK response — skip them for the rest of the session
+  // so a missing remote clip doesn't cause repeated 404s on every play press.
+  const failedSrcCache = new Set<string>();
   let masterGainNode: GainNode | null = null;
   const trackGainNodes = new Map<string, GainNode>();
   let elapsedTimer: ReturnType<typeof setInterval> | null = null;
@@ -108,15 +111,16 @@ export function useTransport(deps: Deps) {
         // Use local blob URL if available, fall back to server URL for cross-session clips
         const audioSrc = clip.url || clip.remoteUrl;
         if (!audioSrc) continue;
+        if (failedSrcCache.has(audioSrc)) continue;
         let buffer = audioBufferCache.get(audioSrc);
         if (!buffer) {
           try {
             const res = audioSrc.startsWith("/api/") ? await apiFetch(audioSrc) : await fetch(audioSrc);
-            if (!res.ok) continue;
+            if (!res.ok) { failedSrcCache.add(audioSrc); continue; }
             const ab = await res.arrayBuffer();
             buffer = await ctx.decodeAudioData(ab);
             audioBufferCache.set(audioSrc, buffer);
-          } catch { continue; }
+          } catch { failedSrcCache.add(audioSrc); continue; }
         }
         const clipStartSecs = barsToSecs(clip.barStart);
         const clipEndSecs   = clipStartSecs + barsToSecs(clip.bars);

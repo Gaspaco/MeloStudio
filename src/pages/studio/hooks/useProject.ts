@@ -275,13 +275,17 @@ export function useProject(deps: Deps) {
               }
               // 3. Fall back to server-side storage (large clips, cross-device)
               if (!url && remoteUrl) {
-                const blob = await apiFetch(optionalRemoteClipUrl(remoteUrl))
-                  .then((res) => res.status === 204 ? null : res.ok ? res.blob() : null)
-                  .catch(() => null);
-                if (blob) {
-                  // Cache back to IDB so future sessions load faster
-                  await storeClip(clip.id, blob).catch(() => {});
-                  url = URL.createObjectURL(blob);
+                const res = await apiFetch(optionalRemoteClipUrl(remoteUrl)).catch(() => null);
+                if (res && res.status === 204) {
+                  // Blob confirmed absent — clear remoteUrl from in-memory state so
+                  // playback doesn't hammer the server with repeated 404 requests.
+                  remoteUrl = undefined;
+                } else if (res && res.ok) {
+                  const blob = await res.blob().catch(() => null);
+                  if (blob) {
+                    await storeClip(clip.id, blob).catch(() => {});
+                    url = URL.createObjectURL(blob);
+                  }
                 }
               }
               restoredClips.push({ ...clip, remoteUrl, url: url ?? undefined });
