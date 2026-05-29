@@ -1,5 +1,6 @@
 import { useNavigate } from "@solidjs/router";
 import { createResource, Show } from "solid-js";
+import RouteVeil from "~/components/RouteVeil";
 import Studio from "~/pages/studio/Studio";
 import { getAppSession } from "~/lib/app-auth";
 
@@ -14,7 +15,7 @@ export default function StudioRoute() {
   });
 
   return (
-    <Show when={session()} fallback={null}>
+    <Show when={session()} fallback={<RouteVeil label="Opening studio" />}>
       <Studio />
     </Show>
   );

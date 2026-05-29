@@ -1,5 +1,6 @@
 import { useNavigate } from "@solidjs/router";
 import { createResource, Show } from "solid-js";
+import RouteVeil from "~/components/RouteVeil";
 import Dashboard from "~/pages/dashboard/Dashboard";
 import { createProjectApi } from "~/lib/api";
 import { getAppSession } from "~/lib/app-auth";
@@ -25,7 +26,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <Show when={session()} fallback={null}>
+    <Show when={session()} fallback={<RouteVeil label="Opening dashboard" />}>
       <Dashboard
         onLogout={() => navigate("/login", { replace: true })}
         onNewProject={handleNewProject}

@@ -71,7 +71,12 @@ async function revealWhenStyled() {
 		new Promise<void>((resolve) => setTimeout(resolve, 3000)),
 	]);
 
+	const bootVeil = document.getElementById("boot-veil");
 	document.documentElement.removeAttribute("data-app-booting");
+	if (bootVeil) {
+		bootVeil.setAttribute("data-hiding", "true");
+		window.setTimeout(() => bootVeil.remove(), 260);
+	}
 }
 
 mount(() => <StartClient />, appRoot());
