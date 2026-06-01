@@ -34,7 +34,7 @@ const covers = [
   "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/07/2b/a4/072ba4fa-7f4c-f478-6f22-13f9e62ac1be/21UMGIM53733.rgb.jpg/600x600bb.jpg"
 ];
 
-const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: () => void }> = (props) => {
+const Signup: Component<{ onBack: () => void; onLogin: (email?: string) => void; onSuccess?: () => void }> = (props) => {
   let pageRef: HTMLDivElement | undefined;
   let heroRef: HTMLDivElement | undefined;
   let scriptRef1: HTMLSpanElement | undefined;
@@ -46,6 +46,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
   const [email, setEmail] = createSignal("");
   const [password, setPassword] = createSignal("");
   const [errorMsg, setErrorMsg] = createSignal<string | null>(null);
+  const [emailExists, setEmailExists] = createSignal(false);
   const [isSubmitting, setIsSubmitting] = createSignal(false);
 
   const handleSubmit = async (e: Event) => {
@@ -56,6 +57,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
     }
     
     setErrorMsg(null);
+    setEmailExists(false);
     setIsSubmitting(true);
 
     try {
@@ -66,7 +68,11 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
       });
 
       if (error) {
-        setErrorMsg(error.message || "Failed to create account");
+        if ((error as any).code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
+          setEmailExists(true);
+        } else {
+          setErrorMsg(error.message || "Failed to create account");
+        }
       } else {
         markAuthProvider("better-auth");
         props.onSuccess?.();
@@ -297,6 +303,18 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
             <div class="signup__line" />
           </div>
 
+          {emailExists() && (
+            <div style={{ "margin-top": "1rem", "font-size": "0.875rem", display: "flex", "align-items": "center", gap: "0.5rem", "flex-wrap": "wrap" }}>
+              <span style={{ color: "#ff4d4f" }}>That email is already registered.</span>
+              <button
+                type="button"
+                style={{ background: "none", border: "none", color: "inherit", "text-decoration": "underline", cursor: "pointer", padding: 0, "font-size": "inherit" }}
+                onClick={() => props.onLogin(email())}
+              >
+                Sign in instead →
+              </button>
+            </div>
+          )}
           {errorMsg() && (
             <div style={{ color: "#ff4d4f", "margin-top": "1rem", "font-size": "0.875rem" }}>
               {errorMsg()}
@@ -313,7 +331,7 @@ const Signup: Component<{ onBack: () => void; onLogin: () => void; onSuccess?: (
 
             <p class="signup__signin">
               Already have an account?
-              <button type="button" class="signup__signin-link" onClick={props.onLogin}>Sign In</button>
+              <button type="button" class="signup__signin-link" onClick={() => props.onLogin()}>Sign In</button>
             </p>
           </div>
         </form>

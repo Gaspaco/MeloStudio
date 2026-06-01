@@ -16,7 +16,7 @@ export default function SignupPage() {
     <>
       <Signup
         onBack={() => navigate("/")}
-        onLogin={() => navigate("/login")}
+        onLogin={(email) => navigate(email ? `/login?email=${encodeURIComponent(email)}` : "/login")}
         onSuccess={finishSignup}
       />
       <Show when={leaving()}>

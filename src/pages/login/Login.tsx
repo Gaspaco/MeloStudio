@@ -1,4 +1,5 @@
 import { type Component, createSignal, onMount, For } from "solid-js";
+import { useSearchParams } from "@solidjs/router";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
 import { socialAuthClient } from "../../lib/social-auth";
@@ -16,7 +17,8 @@ const neonAuthClient = authClient as unknown as NeonSocialAuthClient;
 const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: () => void; onSuccess?: () => void }> = (props) => {
   let pageRef: HTMLDivElement | undefined;
 
-  const [email, setEmail] = createSignal("");
+  const [searchParams] = useSearchParams();
+  const [email, setEmail] = createSignal(searchParams.email ? decodeURIComponent(searchParams.email as string) : "");
   const [password, setPassword] = createSignal("");
   const [errorMsg, setErrorMsg] = createSignal<string | null>(null);
   const [isSubmitting, setIsSubmitting] = createSignal(false);

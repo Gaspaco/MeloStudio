@@ -21,56 +21,6 @@
   pointer-events: auto;
 }
 
-.route-veil__mark {
-  display: flex;
-  align-items: baseline;
-  gap: 0.18em;
-  font-family: "Syne", system-ui, sans-serif;
-  font-size: clamp(1.5rem, 5vw, 3.25rem);
-  font-weight: 800;
-  letter-spacing: 0;
-}
-
-.route-veil__mark span {
-  color: #40f3ec;
-  text-transform: uppercase;
-}
-
-.route-veil__mark strong {
-  font-family: "Great Vibes", cursive;
-  font-size: 1.3em;
-  font-weight: 400;
-}
-
-.route-veil__bar {
-  width: min(14rem, 52vw);
-  height: 1px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.route-veil__bar::before {
-  content: "";
-  display: block;
-  width: 45%;
-  height: 100%;
-  background: #40f3ec;
-  animation: route-veil-scan 1.05s ease-in-out infinite;
-}
-
-.route-veil__label {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(244, 241, 234, 0.56);
-}
-
-@keyframes route-veil-scan {
-  0% { transform: translateX(-110%); }
-  100% { transform: translateX(250%); }
-}
-
 // Hide scrollbar
 * {
   scrollbar-width: none;
