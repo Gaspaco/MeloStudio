@@ -31,16 +31,6 @@ const Dashboard: Component<{
     image?: string;
     createdAt?: string;
   } | null>(null);
-  // Persist session start across page refreshes (sessionStorage clears when tab closes)
-  const SESSION_START_KEY = "ms_dash_start";
-  let mountedAt: number;
-  try {
-    const stored = sessionStorage.getItem(SESSION_START_KEY);
-    mountedAt = stored ? parseInt(stored, 10) : Date.now();
-    sessionStorage.setItem(SESSION_START_KEY, String(mountedAt));
-  } catch {
-    mountedAt = Date.now();
-  }
   const [projects, setProjects] = createSignal<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = createSignal(true);
   const [time, setTime] = createSignal(new Date());
@@ -223,9 +213,7 @@ const Dashboard: Component<{
   const totalTracks = () => projects().reduce((a, p) => a + p.tracks, 0);
 
   const fmtStudioTime = () => {
-    // Add live elapsed time since dashboard opened to the stored DB value
-    const elapsedHours = (time().getTime() - mountedAt) / 3_600_000;
-    const h = studioHours() + elapsedHours;
+    const h = studioHours();
     if (h <= 0) return "0m";
     if (h < 1) return `${Math.floor(h * 60)}m`;
     const hrs = Math.floor(h);

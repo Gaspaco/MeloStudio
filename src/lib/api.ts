@@ -104,6 +104,13 @@ export async function getProjectStatsApi(): Promise<{ studioHours: number }> {
   return res.json();
 }
 
+export async function sendHeartbeat(projectId: string): Promise<void> {
+  await apiFetch("/api/projects/heartbeat", {
+    method: "POST",
+    body: JSON.stringify({ projectId }),
+  }).catch(() => {});
+}
+
 export async function transcribeProjectApi(projectId: string): Promise<{ lrc: string }> {
   const res = await apiFetch("/api/transcribe", {
     method: "POST",

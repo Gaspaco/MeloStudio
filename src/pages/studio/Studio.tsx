@@ -11,7 +11,7 @@ import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/st
 import { type SynthPreset } from "~/lib/audio/synth";
 import { getMasterBus } from "~/lib/audio/masterBus";
 import { unlockAudioContext } from "~/lib/audio/context";
-import { updateProjectApi } from "~/lib/api";
+import { updateProjectApi, sendHeartbeat } from "~/lib/api";
 import { getAppSession } from "~/lib/app-auth";
 import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES, hasStudioContent } from "./types";
 import { useProject }   from "./hooks/useProject";
@@ -214,11 +214,32 @@ const Studio: Component = () => {
     seq?.stop();
     sth.allNotesOff();
     metronomePart?.dispose();
-    // Safety-net: save any unsaved work when the studio unmounts (e.g. browser back)
     if (canSaveProject() && Date.now() - lastSavedAt > 5_000) {
       project.save().catch(() => {});
     }
   });
+
+  // ── Studio time heartbeat (60s while tab is visible) ──────────────────────
+  {
+    let hbInterval: ReturnType<typeof setInterval> | undefined;
+    const startHb = () => {
+      if (hbInterval) return;
+      sendHeartbeat(params.id);
+      hbInterval = setInterval(() => sendHeartbeat(params.id), 60_000);
+    };
+    const stopHb = () => {
+      if (hbInterval) { clearInterval(hbInterval); hbInterval = undefined; }
+    };
+    const onVis = () => document.hidden ? stopHb() : startHb();
+    onMount(() => {
+      startHb();
+      document.addEventListener("visibilitychange", onVis);
+    });
+    onCleanup(() => {
+      stopHb();
+      document.removeEventListener("visibilitychange", onVis);
+    });
+  }
 
   // ── Metronome ─────────────────────────────────────────────────────────────
   let metronomePart: ToneNs.Part | null = null;

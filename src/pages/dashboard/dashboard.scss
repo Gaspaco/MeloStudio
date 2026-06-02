@@ -584,7 +584,7 @@
   // ── Profile page layout ───────────────────────────────────────────
   &__content--profile {
     padding-top: 5.5rem;
-    max-width: 1400px;
+    max-width: 1520px;
     margin: 0 auto;
   }
 
@@ -596,7 +596,7 @@
     margin-bottom: 2.5rem;
     position: relative;
     overflow: hidden;
-    min-height: 21rem;
+    min-height: 22rem;
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
 
   }
@@ -743,7 +743,6 @@
     border-radius: 50%;
     background: #4ade80;
     flex-shrink: 0;
-    animation: livePulse 2.2s ease-in-out infinite;
   }
 
   &__ticket-photo-wrap {
@@ -1984,11 +1983,6 @@
 @keyframes ringPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: 0.4; transform: scale(1.04); }
-}
-
-@keyframes livePulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.35; transform: scale(0.8); }
 }
 
 @keyframes fadeIn {

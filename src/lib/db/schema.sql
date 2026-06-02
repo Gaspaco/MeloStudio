@@ -89,3 +89,17 @@ CREATE INDEX IF NOT EXISTS idx_projects_deleted_at ON projects (user_id, deleted
 
 -- Ensure schema_ver exists (may have been missing if table was created before this column was added).
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS schema_ver INTEGER NOT NULL DEFAULT 1;
+
+-- =========================================================================
+-- studio_heartbeats: lightweight pings from the studio page for accurate
+-- session time tracking. One row per ~60s while the studio tab is active.
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS studio_heartbeats (
+  id          BIGSERIAL PRIMARY KEY,
+  user_id     TEXT NOT NULL,
+  project_id  UUID REFERENCES projects(id) ON DELETE CASCADE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_studio_heartbeats_user_created
+  ON studio_heartbeats (user_id, created_at DESC);
