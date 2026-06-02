@@ -1,5 +1,5 @@
 import { type Component, For, createSignal, onCleanup } from "solid-js";
-import Peaks, { type PeaksInstance } from "peaks.js";
+import type { PeaksInstance } from "peaks.js";
 import { getExistingAudioContext, unlockAudioContext } from "~/lib/audio/context";
 import { tracks } from "../data/tracks";
 
@@ -15,10 +15,12 @@ const Reel: Component<{
 
   const [playing, setPlaying] = createSignal(false);
 
-  const initWaveform = () => {
+  const initWaveform = async () => {
     if (peaksInstance || !audioEl || !waveformEl) return;
     const audioContext = getExistingAudioContext();
     if (!audioContext || audioContext.state !== "running") return;
+    const { default: Peaks } = await import("peaks.js");
+    if (peaksInstance) return;
     Peaks.init({
       overview: {
         container: waveformEl,

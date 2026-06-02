@@ -1,6 +1,12 @@
 import { type Component, createSignal, createMemo, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
-import * as Tone from "tone";
+import type * as ToneNs from "tone";
+
+let Tone: typeof ToneNs | undefined;
+const getTone = async () => {
+  if (!Tone) Tone = await import("tone");
+  return Tone;
+};
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
 import { type SynthPreset } from "~/lib/audio/synth";
 import { getMasterBus } from "~/lib/audio/masterBus";
@@ -215,10 +221,11 @@ const Studio: Component = () => {
   });
 
   // ── Metronome ─────────────────────────────────────────────────────────────
-  let metronomePart: Tone.Part | null = null;
+  let metronomePart: ToneNs.Part | null = null;
 
-  const playMetronomeClick = (time: number, isDownbeat: boolean) => {
-    const ac = Tone.getContext().rawContext as AudioContext;
+  const playMetronomeClick = async (time: number, isDownbeat: boolean) => {
+    const T = await getTone();
+    const ac = T.getContext().rawContext as AudioContext;
     const osc = ac.createOscillator();
     const gain = ac.createGain();
     osc.connect(gain);
@@ -230,10 +237,11 @@ const Studio: Component = () => {
     osc.stop(time + 0.05);
   };
 
-  const startMetronome = () => {
+  const startMetronome = async () => {
+    const T = await getTone();
     metronomePart?.dispose();
     const [num] = timeSig();
-    metronomePart = new Tone.Part((time: number, ev: unknown) => {
+    metronomePart = new T.Part((time: number, ev: unknown) => {
       const beat = (ev as { beat: number }).beat;
       playMetronomeClick(time, beat === 0);
     }, Array.from({ length: num }, (_, i) => [`${i}*4n`, { beat: i }]));

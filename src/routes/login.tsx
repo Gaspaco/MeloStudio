@@ -1,7 +1,8 @@
 import { useNavigate } from "@solidjs/router";
-import { createSignal, Show } from "solid-js";
+import { createSignal, lazy, Show, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";
-import Login from "~/pages/login/Login";
+
+const Login = lazy(() => import("~/pages/login/Login"));
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,12 +15,14 @@ export default function LoginPage() {
 
   return (
     <>
-      <Login
-        onBack={() => navigate("/")}
-        onSignup={() => navigate("/signup")}
-        onForgot={() => navigate("/forgot")}
-        onSuccess={finishLogin}
-      />
+      <Suspense fallback={<RouteVeil label="Loading" />}>
+        <Login
+          onBack={() => navigate("/")}
+          onSignup={() => navigate("/signup")}
+          onForgot={() => navigate("/forgot")}
+          onSuccess={finishLogin}
+        />
+      </Suspense>
       <Show when={leaving()}>
         <RouteVeil label="Opening dashboard" />
       </Show>

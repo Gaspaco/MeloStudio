@@ -692,10 +692,9 @@ const Dashboard: Component<{
             </div>
           </div>
 
-          {/* ── Two-column form grid ── */}
+          {/* ── Form sections ── */}
           <div class="db__pgrid">
 
-            {/* Left: Edit Profile */}
             <div class="db__pcard db__pcard--form">
               <div class="db__pcard-header">
                 <span class="db__pcard-idx">01</span>
@@ -762,8 +761,7 @@ const Dashboard: Component<{
               </div>
             </div>
 
-            {/* Right: Password + Danger */}
-            <div class="db__pstack">
+            <div class="db__prow">
 
               <div class="db__pcard db__pcard--form">
                 <div class="db__pcard-header">

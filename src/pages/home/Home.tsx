@@ -1,7 +1,7 @@
 import { type Component, createSignal, onMount, onCleanup, createEffect } from "solid-js";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
+import type Lenis from "lenis";
 import { getAppSession } from "../../lib/app-auth";
 import "./home.scss";
 
@@ -51,12 +51,13 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
   const [menuOpen, setMenuOpen] = createSignal(false);
   const [isLoggedIn, setIsLoggedIn] = createSignal(false);
 
-  onMount(() => {
+  onMount(async () => {
     void getAppSession()
       .then((session) => setIsLoggedIn(!!session))
       .catch(() => {});
 
-    lenisRef = new Lenis({
+    const { default: LenisClass } = await import("lenis");
+    lenisRef = new LenisClass({
       duration: 0.9,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,

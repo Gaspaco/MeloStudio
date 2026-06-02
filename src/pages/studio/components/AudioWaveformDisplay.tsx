@@ -1,5 +1,5 @@
 import { type Component, createEffect, onCleanup, onMount } from "solid-js";
-import Peaks, { type PeaksInstance } from "peaks.js";
+import type { PeaksInstance } from "peaks.js";
 import { getExistingAudioContext, unlockAudioContext } from "~/lib/audio/context";
 
 const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props) => {
@@ -32,6 +32,7 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
     lastInitKey = initKey;
     audioEl.src = url;
 
+    const { default: Peaks } = await import("peaks.js");
     Peaks.init({
       overview: {
         container: containerEl,

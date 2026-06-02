@@ -1,6 +1,6 @@
 // @refresh reload
 import { mount, StartClient } from "@solidjs/start/client";
-import { waitForVisualReady } from "~/lib/client/visualReady";
+import { waitForVisualReady, waitForAllStylesheets } from "~/lib/client/visualReady";
 
 function appRoot(): HTMLElement {
 	const root = document.getElementById("app");
@@ -8,17 +8,27 @@ function appRoot(): HTMLElement {
 	return root;
 }
 
-async function revealWhenStyled() {
-	await waitForVisualReady({ frames: 2, stylesheetsMaxWait: 2800, totalMaxWait: 3000 });
+let revealed = false;
 
-	const bootVeil = document.getElementById("boot-veil");
-	document.documentElement.removeAttribute("data-app-booting");
-	if (bootVeil) {
-		bootVeil.setAttribute("data-hiding", "true");
-		window.setTimeout(() => bootVeil.remove(), 260);
-	}
+function revealApp() {
+	if (revealed) return;
+	revealed = true;
+
+	waitForVisualReady({ frames: 2, stylesheetsMaxWait: 2800, totalMaxWait: 3000 })
+		.then(() => waitForAllStylesheets(1500, 60))
+		.then(() => {
+			const bootVeil = document.getElementById("boot-veil");
+			document.documentElement.removeAttribute("data-app-booting");
+			if (bootVeil) {
+				bootVeil.setAttribute("data-hiding", "true");
+				window.setTimeout(() => bootVeil.remove(), 260);
+			}
+		});
 }
 
 mount(() => <StartClient />, appRoot());
-void revealWhenStyled();
+
+document.addEventListener("app:content-ready", revealApp, { once: true });
+window.setTimeout(revealApp, 5000);
+
 export default function() {}

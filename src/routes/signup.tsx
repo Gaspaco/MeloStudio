@@ -1,7 +1,8 @@
 import { useNavigate } from "@solidjs/router";
-import { createSignal, Show } from "solid-js";
+import { createSignal, lazy, Show, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";
-import Signup from "~/pages/signup/Signup";
+
+const Signup = lazy(() => import("~/pages/signup/Signup"));
 
 export default function SignupPage() {
   const navigate = useNavigate();
@@ -14,11 +15,13 @@ export default function SignupPage() {
 
   return (
     <>
-      <Signup
-        onBack={() => navigate("/")}
-        onLogin={(email) => navigate(email ? `/login?email=${encodeURIComponent(email)}` : "/login")}
-        onSuccess={finishSignup}
-      />
+      <Suspense fallback={<RouteVeil label="Loading" />}>
+        <Signup
+          onBack={() => navigate("/")}
+          onLogin={(email) => navigate(email ? `/login?email=${encodeURIComponent(email)}` : "/login")}
+          onSuccess={finishSignup}
+        />
+      </Suspense>
       <Show when={leaving()}>
         <RouteVeil label="Creating studio" />
       </Show>

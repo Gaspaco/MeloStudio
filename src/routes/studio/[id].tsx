@@ -1,8 +1,9 @@
 import { useNavigate } from "@solidjs/router";
-import { createResource, Show } from "solid-js";
+import { createResource, lazy, Show, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";
-import Studio from "~/pages/studio/Studio";
 import { getAppSession } from "~/lib/app-auth";
+
+const Studio = lazy(() => import("~/pages/studio/Studio"));
 
 export default function StudioRoute() {
   const navigate = useNavigate();
@@ -16,7 +17,9 @@ export default function StudioRoute() {
 
   return (
     <Show when={session()} fallback={<RouteVeil label="Opening studio" />}>
-      <Studio />
+      <Suspense fallback={<RouteVeil label="Opening studio" />}>
+        <Studio />
+      </Suspense>
     </Show>
   );
 }

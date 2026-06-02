@@ -17,31 +17,6 @@
     min-height: 100dvh;
   }
 
-  // Ambient background orbs
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 70% 65% at 80% 10%, rgba(224, 82, 151, 0.13) 0%, transparent 62%),
-      radial-gradient(ellipse 55% 50% at 12% 72%, rgba(124, 58, 237, 0.08) 0%, transparent 62%),
-      radial-gradient(ellipse 45% 45% at 50% 100%, rgba(14, 165, 233, 0.06) 0%, transparent 62%);
-    pointer-events: none;
-    z-index: -1;
-    transform: translateZ(0);
-  }
-
-  // Subtle dot-grid texture
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: radial-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-    background-size: 2.5rem 2.5rem;
-    pointer-events: none;
-    z-index: -1;
-    transform: translateZ(0);
-  }
 
   // Eyebrow label
   &__eyebrow {
@@ -290,6 +265,6 @@
 }
 
 @keyframes dotPulse {
-  0%, 100% { box-shadow: 0 0 0.5rem rgba(224, 82, 151, 0.5); }
-  50% { box-shadow: 0 0 1.25rem rgba(224, 82, 151, 1); }
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }

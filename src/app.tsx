@@ -1,9 +1,19 @@
 import { Router, useLocation } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
-import { createEffect, createSignal, onCleanup, Show, Suspense } from "solid-js";
+import { createEffect, createSignal, onCleanup, onMount, Show, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";
 import { waitForVisualReady } from "~/lib/client/visualReady";
 import "./styles/global.scss";
+
+let bootSignaled = false;
+function BootReady() {
+  onMount(() => {
+    if (bootSignaled || typeof document === "undefined") return;
+    bootSignaled = true;
+    document.dispatchEvent(new Event("app:content-ready"));
+  });
+  return null;
+}
 
 function NavigationVeil() {
   const location = useLocation();
@@ -54,6 +64,7 @@ function AppRoot(props: { children?: any }) {
     <>
       <Suspense fallback={<RouteVeil label="Loading page" />}>
         {props.children}
+        <BootReady />
       </Suspense>
       <NavigationVeil />
     </>
