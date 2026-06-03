@@ -172,7 +172,7 @@ export function useTransport(deps: Deps) {
 
   const updateBpm = (v: number) => {
     const seq = deps.getSeq();
-    const clamped = Math.max(40, Math.min(240, v || 100));
+    const clamped = Math.max(40, Math.min(240, Number.isFinite(v) ? v : 100));
     deps.setBpm(clamped);
     if (seq) {
       seq.setBpm(clamped);

@@ -76,6 +76,59 @@
     height: 82vh;
   }
 
+  &__scroll-arrow {
+    margin-top: 1.5rem;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+
+    &:hover .signup__mouse {
+      border-color: $accent;
+    }
+
+    &:hover .signup__mouse-wheel {
+      background: $accent;
+    }
+  }
+
+  &__mouse {
+    display: block;
+    width: 1.5rem;
+    height: 2.4rem;
+    border: 1.5px solid rgba(255, 255, 255, 0.3);
+    border-radius: 999px;
+    position: relative;
+    transition: border-color 0.25s ease;
+  }
+
+  &__mouse-wheel {
+    display: block;
+    position: absolute;
+    top: 0.35rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 2px;
+    animation: mouseScroll 1.8s ease-in-out infinite;
+    transition: background 0.25s ease;
+  }
+
+  @keyframes mouseScroll {
+    0%   { top: 0.35rem; opacity: 1; }
+    80%  { top: 1.2rem;  opacity: 0; }
+    100% { top: 0.35rem; opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .signup__mouse-wheel { animation: none; opacity: 0.6; }
+  }
+
   // ── Bento mosaic — 4 col freeform grid ──
   &__mosaic {
     position: relative;
@@ -384,6 +437,57 @@
   @media (max-width: 480px) {
     &__back { left: 1rem; }
     &__meta { right: 1rem; }
+  }
+
+  &__divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 3vh 0;
+  }
+
+  &__divider-line {
+    flex: 1;
+    height: 1px;
+    background: #151515;
+  }
+
+  &__divider span {
+    font-family: $font-mono;
+    font-size: 0.56rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: $text-muted;
+  }
+
+  &__socials {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1rem;
+  }
+
+  &__social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: $text-muted;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.3s ease;
+    padding: 0.5rem;
+
+    svg {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    &:hover {
+      color: #fff;
+      transform: translateY(-3px) scale(1.1);
+    }
   }
 }
 

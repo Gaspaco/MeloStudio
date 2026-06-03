@@ -18488,48 +18488,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/KeyboardPanel.tsx:141"
     },
     {
-      "id": "file::topbar",
-      "label": "TopBar.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:1"
-    },
-    {
-      "id": "TopBar::starttick",
-      "label": "startTick",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:9"
-    },
-    {
-      "id": "TopBar::stoptick",
-      "label": "stopTick",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:10"
-    },
-    {
-      "id": "TopBar::commitkey",
-      "label": "commitKey",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:64"
-    },
-    {
-      "id": "TopBar::meterlabel",
-      "label": "meterLabel",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:68"
-    },
-    {
-      "id": "TopBar::keylabel",
-      "label": "keyLabel",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:69"
-    },
-    {
       "id": "file::timelinearea",
       "label": "TimelineArea.tsx",
       "fileType": "code",
@@ -18733,20 +18691,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:40"
     },
     {
-      "id": "file::usetransport",
-      "label": "useTransport.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:1"
-    },
-    {
-      "id": "usetransport::usetransport",
-      "label": "useTransport",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:29"
-    },
-    {
       "id": "file::useproject",
       "label": "useProject.ts",
       "fileType": "code",
@@ -18787,34 +18731,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts:29"
-    },
-    {
-      "id": "file::signup",
-      "label": "signup.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/signup.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/signup.tsx:1"
-    },
-    {
-      "id": "Signup::handlesubmit",
-      "label": "handleSubmit",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:52"
-    },
-    {
-      "id": "Signup::onscroll",
-      "label": "onScroll",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:137"
-    },
-    {
-      "id": "Signup::revealform",
-      "label": "revealForm",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:172"
     },
     {
       "id": "file::dashboard",
@@ -19613,6 +19529,97 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/share/[id].tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/share/[id].tsx:1097"
+    },
+    {
+      "id": "file::signup",
+      "label": "Signup.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:1"
+    },
+    {
+      "id": "Signup::handlesociallogin",
+      "label": "handleSocialLogin",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:61"
+    },
+    {
+      "id": "Signup::handlesubmit",
+      "label": "handleSubmit",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:75"
+    },
+    {
+      "id": "Signup::onscroll",
+      "label": "onScroll",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:161"
+    },
+    {
+      "id": "Signup::revealform",
+      "label": "revealForm",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:196"
+    },
+    {
+      "id": "file::topbar",
+      "label": "TopBar.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:1"
+    },
+    {
+      "id": "TopBar::starttick",
+      "label": "startTick",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:9"
+    },
+    {
+      "id": "TopBar::stoptick",
+      "label": "stopTick",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:10"
+    },
+    {
+      "id": "TopBar::commitkey",
+      "label": "commitKey",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:64"
+    },
+    {
+      "id": "TopBar::meterlabel",
+      "label": "meterLabel",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:68"
+    },
+    {
+      "id": "TopBar::keylabel",
+      "label": "keyLabel",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:69"
+    },
+    {
+      "id": "file::usetransport",
+      "label": "useTransport.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:1"
+    },
+    {
+      "id": "usetransport::usetransport",
+      "label": "useTransport",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:29"
     }
   ],
   "edges": [
@@ -42648,51 +42655,6 @@
       "weight": 1
     },
     {
-      "source": "file::topbar",
-      "target": "TopBar::starttick",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:9",
-      "weight": 1
-    },
-    {
-      "source": "file::topbar",
-      "target": "TopBar::stoptick",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:10",
-      "weight": 1
-    },
-    {
-      "source": "file::topbar",
-      "target": "TopBar::commitkey",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:64",
-      "weight": 1
-    },
-    {
-      "source": "file::topbar",
-      "target": "TopBar::meterlabel",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:68",
-      "weight": 1
-    },
-    {
-      "source": "file::topbar",
-      "target": "TopBar::keylabel",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:69",
-      "weight": 1
-    },
-    {
       "source": "file::timelinearea",
       "target": "TimelineArea::ontimelinemousedown",
       "relation": "contains",
@@ -42855,15 +42817,6 @@
       "weight": 1
     },
     {
-      "source": "file::usetransport",
-      "target": "usetransport::usetransport",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:29",
-      "weight": 1
-    },
-    {
       "source": "file::useproject",
       "target": "useproject::useproject",
       "relation": "contains",
@@ -42888,33 +42841,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts:29",
-      "weight": 1
-    },
-    {
-      "source": "file::signup",
-      "target": "Signup::handlesubmit",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:52",
-      "weight": 1
-    },
-    {
-      "source": "file::signup",
-      "target": "Signup::onscroll",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:137",
-      "weight": 1
-    },
-    {
-      "source": "file::signup",
-      "target": "Signup::revealform",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:172",
       "weight": 1
     },
     {
@@ -43816,12 +43742,102 @@
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/share/[id].tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/share/[id].tsx:1097",
       "weight": 1
+    },
+    {
+      "source": "file::signup",
+      "target": "Signup::handlesociallogin",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:61",
+      "weight": 1
+    },
+    {
+      "source": "file::signup",
+      "target": "Signup::handlesubmit",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:75",
+      "weight": 1
+    },
+    {
+      "source": "file::signup",
+      "target": "Signup::onscroll",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:161",
+      "weight": 1
+    },
+    {
+      "source": "file::signup",
+      "target": "Signup::revealform",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/signup/Signup.tsx:196",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::starttick",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:9",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::stoptick",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:10",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::commitkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:64",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::meterlabel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:68",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::keylabel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:69",
+      "weight": 1
+    },
+    {
+      "source": "file::usetransport",
+      "target": "usetransport::usetransport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:29",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 131,
-    "nodes": 2802,
-    "edges": 2689,
-    "builtAt": "2026-06-01T21:54:30.382Z"
+    "files": 120,
+    "nodes": 2803,
+    "edges": 2690,
+    "builtAt": "2026-06-02T15:01:19.743Z"
   }
 }

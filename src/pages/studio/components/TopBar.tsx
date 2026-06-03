@@ -178,7 +178,7 @@ const TopBar: Component<Props> = (props) => {
                 class="bl__session-input"
                 type="number" min="40" max="240"
                 value={props.bpm()}
-                onInput={(e) => props.onUpdateBpm(parseInt(e.currentTarget.value, 10))}
+                onChange={(e) => props.onUpdateBpm(parseInt(e.currentTarget.value, 10))}
               />
               <span class="bl__session-unit">bpm</span>
             </span>
