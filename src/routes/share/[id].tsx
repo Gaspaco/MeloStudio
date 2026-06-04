@@ -409,7 +409,37 @@ const SharePage: Component = () => {
 
           const [isPlaying, setIsPlaying] = createSignal(false);
           const [playheadSec, setPlayheadSec] = createSignal(0);
-          const [totalSec, setTotalSec] = createSignal(p().durationSec ?? 0);
+          const [totalSec, setTotalSec] = createSignal(0);
+
+          // Cached clips response — pre-fetched on mount so duration shows
+          // before play is pressed, and reused by togglePlayback.
+          type ClipsData = {
+            bpm: number;
+            tracks: Array<{ id: string; name: string; volume: number; muted: boolean;
+              clips: Array<{ id: string; startSec: number; durationSec: number; dataUrl?: string; remoteUrl?: string }>;
+            }>;
+            durationSec?: number;
+            pattern: unknown | null;
+          };
+          let cachedClipsData: ClipsData | null = null;
+
+          onMount(async () => {
+            try {
+              const res = await apiFetch(`/api/share-clips/${p().id}`);
+              if (!res.ok) return;
+              cachedClipsData = (await res.json()) as ClipsData;
+              // Compute real duration from clip metadata
+              let maxEndSec = cachedClipsData.durationSec ?? 0;
+              for (const track of cachedClipsData.tracks) {
+                if (track.muted) continue;
+                for (const clip of track.clips) {
+                  const end = (clip.startSec ?? 0) + (clip.durationSec ?? 0);
+                  if (end > maxEndSec) maxEndSec = end;
+                }
+              }
+              if (maxEndSec > 0) setTotalSec(maxEndSec);
+            } catch { /* ignore — duration stays hidden */ }
+          });
 
           const activeLyricIdx = createMemo(() => {
             const lines = lyricsLines();
@@ -482,18 +512,13 @@ const SharePage: Component = () => {
             setIsPlaying(true);
 
             try {
-              const res = await apiFetch(`/api/share-clips/${p().id}`);
-              if (!res.ok) { setIsPlaying(false); return; }
-
-              const { bpm, tracks, durationSec, pattern } = (await res.json()) as {
-                bpm: number;
-                tracks: Array<{
-                  id: string; name: string; volume: number; muted: boolean;
-                  clips: Array<{ id: string; startSec: number; durationSec: number; dataUrl?: string; remoteUrl?: string }>;
-                }>;
-                durationSec?: number;
-                pattern: unknown | null;
-              };
+              // Use cached clips data from pre-fetch, or fetch now if not ready.
+              if (!cachedClipsData) {
+                const res = await apiFetch(`/api/share-clips/${p().id}`);
+                if (!res.ok) { setIsPlaying(false); return; }
+                cachedClipsData = (await res.json()) as ClipsData;
+              }
+              const { bpm, tracks, durationSec, pattern } = cachedClipsData;
 
               // Lazy import — browser-only IDB helper
               const { loadClip } = await import("~/lib/clipStore");
@@ -892,7 +917,7 @@ const SharePage: Component = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div>{/* ── /sp__layout-right ── */}
 
               {/* ── Project Details modal ── */}
               <Show when={showDetails()}>

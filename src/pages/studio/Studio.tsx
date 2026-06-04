@@ -29,7 +29,7 @@ import DrumPanel        from "./components/DrumPanel";
 import KeyboardPanel    from "./components/KeyboardPanel";
 import NavDrawer, { type NavCategory } from "./components/NavDrawer";
 import NewTrackModal    from "./components/NewTrackModal";
-import PublishModal     from "./components/PublishModal";
+
 import "./studio.scss";
 
 const Studio: Component = () => {
@@ -80,7 +80,7 @@ const Studio: Component = () => {
   const [metronomeOn,        setMetronomeOn]        = createSignal(false);
   const [loopOn,             setLoopOn]             = createSignal(false);
   const [published,          setPublished]          = createSignal(false);
-  const [showPublish,        setShowPublish]        = createSignal(false);
+
   const [userImage,          setUserImage]          = createSignal<string | null>(null);
 
   // ── Undo / Redo history ───────────────────────────────────────────────────
@@ -481,7 +481,7 @@ const Studio: Component = () => {
           getMasterBus().setEnhanced(next);
         }}
         published={published}
-        onPublish={() => setShowPublish(true)}
+        onPublish={() => navigate(`/publish/${params.id}`)}
       />
 
       <Show when={error()}>
@@ -615,14 +615,7 @@ const Studio: Component = () => {
         <NewTrackModal onAddTrack={trk.addTrack} onClose={() => setShowNewTrack(false)} />
       </Show>
 
-      <Show when={showPublish()}>
-        <PublishModal
-          projectId={params.id}
-          published={published}
-          setPublished={setPublished}
-          onClose={() => setShowPublish(false)}
-        />
-      </Show>
+
     </div>
   );
 };
