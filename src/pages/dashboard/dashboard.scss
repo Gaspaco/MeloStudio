@@ -195,9 +195,7 @@
   &__hero {
     padding: 5rem 0 3rem;
     display: flex;
-    align-items: center;
-    gap: clamp(1rem, 3vw, 3rem);
-    flex-wrap: nowrap;
+    flex-direction: column;
   }
   &__hero-left { min-width: 0; flex: 0 1 auto; display: flex; flex-direction: column; }
   &__hero-avatar {
@@ -341,23 +339,21 @@
     all: unset;
     cursor: pointer;
     margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: $font-mono;
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: $accent;
-    padding: 0.5rem 1rem;
-    border: 1px solid rgba($accent, 0.25);
-    border-radius: $radius-pill;
-    transition: background 0.3s, border-color 0.3s, transform 0.3s;
-    svg { width: 14px; height: 14px; }
+    display: grid;
+    place-items: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 50%;
+    color: $text-muted;
+    border: 1px solid rgba(#fff, 0.08);
+    transition: background 0.3s, color 0.3s, border-color 0.3s, transform 0.3s;
+    svg { width: 14px; height: 14px; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
     &:hover {
-      background: rgba($accent, 0.08);
-      border-color: $accent;
-      transform: translateY(-1px);
+      background: rgba($accent, 0.1);
+      color: $accent;
+      border-color: rgba($accent, 0.3);
+      transform: scale(1.1);
+      svg { transform: rotate(90deg); }
     }
   }
 
@@ -446,111 +442,221 @@
     }
   }
 
-  // ── Projects table ────────────────────────────────────────────────
-  &__table-head {
-    display: grid;
-    grid-template-columns: 3rem 1fr 5rem 5rem 5rem 7rem 4rem;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid $border;
+  // ── Projects rows ─────────────────────────────────────────────────
+  &__proj-list {
+    display: flex;
+    flex-direction: column;
   }
-  &__th {
-    font-family: $font-mono;
-    font-size: 0.5rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: $text-muted;
-  }
-  &__table-row {
-    display: grid;
-    grid-template-columns: 3rem 1fr 5rem 5rem 5rem 7rem 4rem;
-    align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid rgba(#fff, 0.03);
-    cursor: pointer;
-    transition: background 0.2s, padding-left 0.3s;
-    .db__act-btn {
-      opacity: 0;
-      transform: scale(0.9);
-      transition: opacity 0.2s, transform 0.2s, background 0.15s, color 0.15s;
-    }
-    &:hover { background: rgba(#fff, 0.015); padding-left: 0.5rem; }
-    &:hover .db__td--name { color: $accent; }
-    &:hover .db__act-btn { opacity: 1; transform: scale(1); }
-  }
-  &__td {
-    font-family: $font-sans;
-    font-size: 0.85rem;
-    color: $text-secondary;
+
+  &__proj {
     display: flex;
     align-items: center;
-    &--num { font-family: $font-mono; font-size: 0.6rem; color: $text-muted; letter-spacing: 0.06em; }
-    &--name { color: $text-primary; font-weight: 500; gap: 0.75rem; transition: color 0.2s; }
-    &--time { font-size: 0.75rem; color: $text-muted; }
-    &--acts { display: flex; gap: 0.5rem; justify-content: flex-end; padding-right: 0.5rem; }
+    gap: 1rem;
+    padding: 0.7rem 0.25rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s, border-color 0.15s, padding-left 0.3s;
+
+    .db__proj-acts {
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    &:hover {
+      background: rgba(#fff, 0.028);
+      border-color: rgba(#fff, 0.06);
+      padding-left: 0.75rem;
+      .db__proj-acts { opacity: 1; }
+      .db__proj-date { opacity: 0; }
+      .db__proj-name { color: $accent; }
+    }
   }
-  &__td-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  &__act-btn {
+
+  &__proj-thumb {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--pc), color-mix(in srgb, var(--pc) 60%, #000));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(#fff, 0.1), transparent 60%);
+      border-radius: inherit;
+    }
+  }
+
+  &__proj-thumb-icon {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    svg { width: 1rem; height: 1rem; color: rgba(#fff, 0.75); }
+  }
+
+  &__proj-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  &__proj-name {
+    font-family: $font-sans;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.2s;
+  }
+
+  &__proj-meta {
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $text-secondary;
+  }
+
+  &__proj-date {
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: $text-secondary;
+    flex-shrink: 0;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+  }
+
+  &__proj-acts {
+    display: flex;
+    gap: 0.35rem;
+    flex-shrink: 0;
+    position: absolute;
+    right: 0.5rem;
+  }
+
+  &__proj-btn {
     all: unset;
     cursor: pointer;
     display: grid;
     place-items: center;
-    width: 1.8rem;
-    height: 1.8rem;
-    border-radius: 4px;
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 5px;
     color: $text-muted;
     background: rgba(#fff, 0.05);
-    svg { width: 0.9rem; height: 0.9rem; display: block; }
+    transition: background 0.15s, color 0.15s;
+    svg { width: 0.8rem; height: 0.8rem; display: block; }
     &:hover { background: rgba(#fff, 0.1); color: $text-primary; }
     &--danger:hover { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
   }
 
+  // ── Wave divider ──────────────────────────────────────────────────
+  &__wave-divider {
+    width: 100%;
+    height: 5rem;
+    display: block;
+    margin: 1rem 0;
+    cursor: default;
+    overflow: visible;
+  }
+
   // ── Quick actions ─────────────────────────────────────────────────
-  &__actions { display: flex; flex-direction: column; }
-  &__act {
+  &__qa {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    @media (max-width: 560px) { grid-template-columns: 1fr; }
+  }
+
+  &__qa-card {
     all: unset;
     cursor: pointer;
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1.5rem 0;
-    border-bottom: 1px solid $border;
-    transition: padding-left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    &:first-child { border-top: 1px solid $border; }
-    &:hover { padding-left: 1.5rem; }
-    &:hover .db__act-arrow { opacity: 1; transform: translate(3px, -3px); color: $accent; }
-    &:hover .db__act-icon svg { color: $accent; }
-    &:hover .db__act-label { color: $text-primary; }
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border-radius: 10px;
+    border: 1px solid rgba(#fff, 0.06);
+    background: rgba(#fff, 0.02);
+    overflow: hidden;
+    transition: border-color 0.25s, background 0.25s, transform 0.25s;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at top left, rgba(var(--qa-c), 0.06), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    &:hover {
+      border-color: rgba(#fff, 0.1);
+      background: rgba(#fff, 0.03);
+      transform: translateY(-2px);
+      &::before { opacity: 1; }
+      .db__qa-arrow { opacity: 1; transform: translate(2px, -2px); color: var(--qa-c); }
+      .db__qa-icon { border-color: color-mix(in srgb, var(--qa-c) 40%, transparent); }
+      .db__qa-icon svg { color: var(--qa-c); }
+      .db__qa-label { color: $text-primary; }
+    }
   }
-  &__act-icon {
-    width: 2.5rem;
-    height: 2.5rem;
+
+  &__qa-icon {
+    width: 2.6rem;
+    height: 2.6rem;
     display: grid;
     place-items: center;
-    border-radius: 0.625rem;
-    background: rgba(#fff, 0.03);
-    border: 1px solid $border;
-    flex-shrink: 0;
-    transition: border-color 0.3s;
-    svg { width: 18px; height: 18px; color: $text-secondary; transition: color 0.3s; }
+    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(#fff, 0.04), rgba(#fff, 0.01));
+    border: 1px solid rgba(#fff, 0.06);
+    transition: border-color 0.25s;
+    svg { width: 1.1rem; height: 1.1rem; color: $text-secondary; transition: color 0.25s; }
   }
-  &__act:hover &__act-icon { border-color: rgba($accent, 0.3); }
-  &__act-body { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
-  &__act-label {
+
+  &__qa-label {
     font-family: $font-sans;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
     color: $text-secondary;
-    transition: color 0.3s;
+    transition: color 0.25s;
   }
-  &__act-desc { font-family: $font-sans; font-size: 0.75rem; color: $text-muted; }
-  &__act-arrow {
-    width: 18px;
-    height: 18px;
+
+  &__qa-desc {
+    font-family: $font-sans;
+    font-size: 0.7rem;
     color: $text-muted;
-    opacity: 0.25;
-    flex-shrink: 0;
-    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    line-height: 1.4;
+  }
+
+  &__qa-arrow {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    width: 16px;
+    height: 16px;
+    color: $text-muted;
+    opacity: 0.4;
+    transition: opacity 0.3s, transform 0.3s, color 0.3s;
   }
 
   // ── Brand footer ──────────────────────────────────────────────────
@@ -581,163 +687,115 @@
     overflow: hidden;
   }
 
-  // ── Profile page layout ───────────────────────────────────────────
+  // ── Profile ──────────────────────────────────────────────────────
   &__content--profile {
     padding-top: 5.5rem;
-    max-width: 1520px;
-    margin: 0 auto;
   }
 
-  &__ticket {
+  &__pro-header {
     display: flex;
-    background: #0b0b0b;
-    border: 1px solid #222;
-    border-radius: 10px;
-    margin-bottom: 2.5rem;
-    position: relative;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 2rem;
+    @media (max-width: 480px) { flex-direction: column; text-align: center; gap: 0.5rem; }
+  }
+
+  &__pro-avatar-wrap { position: relative; flex-shrink: 0; }
+
+  &__pro-avatar {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
     overflow: hidden;
-    min-height: 22rem;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
-
+    background: #161616;
+    border: 2px solid rgba(#fff, 0.06);
+    transition: border-color 0.2s;
+    .db__pro-avatar-wrap:hover & { border-color: rgba($accent, 0.5); }
   }
 
-  &__ticket-stripe {
+  &__pro-avatar-badge {
+    position: absolute;
+    bottom: -0.4rem;
+    right: 0.1rem;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 4px rgba($accent, 0.5));
+    svg { width: 1.1rem; height: 1.1rem; }
+  }
+
+  &__pro-identity { flex: 1; min-width: 0; }
+
+  &__pro-name-row { display: flex; align-items: center; gap: 0.5rem; }
+
+  &__pro-verified {
+    display: inline-flex;
+    align-items: center;
     flex-shrink: 0;
-    width: 3rem;
-    background: $accent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin-bottom: 0.1rem;
+    svg { width: 1.75rem; height: 1.75rem; }
   }
 
-  &__ticket-stripe-text {
+  &__pro-name {
     font-family: $font-display;
-    font-size: 0.5rem;
-    font-weight: 800;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: rgba(0, 0, 0, 0.7);
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    user-select: none;
-  }
-
-  &__ticket-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  &__ticket-toprow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.55rem 1.5rem;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
-    position: relative;
-
-    &::before, &::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      transform: translateY(50%);
-      width: 1.2rem;
-      height: 1.2rem;
-      border-radius: 50%;
-      background: $bg-primary;
-      z-index: 2;
-    }
-    &::before { left: -0.6rem; }
-    &::after  { right: -0.6rem; }
-  }
-
-  &__ticket-logo { display: flex; align-items: baseline; gap: 0.15em; }
-
-  &__ticket-logo-melo {
-    font-family: $font-display;
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: $accent;
-  }
-
-  &__ticket-logo-studio {
-    font-family: $font-script;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.4);
-  }
-
-  &__ticket-season {
-    font-family: $font-sans;
-    font-size: 0.55rem;
-    color: rgba(255, 255, 255, 0.45);
-  }
-
-  &__ticket-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 2rem;
-    padding: 2rem 1.5rem 1.5rem;
-    flex: 1;
-  }
-
-  &__ticket-event {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  &__ticket-name {
-    font-family: $font-display;
-    font-size: clamp(2.2rem, 4.5vw, 3.5rem);
+    font-size: clamp(2.25rem, 5vw, 3.25rem);
     font-weight: 800;
     letter-spacing: -0.03em;
+    line-height: 1.05;
     color: $text-primary;
-    margin: 0 0 0.5rem;
-    line-height: 0.95;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    margin: 0;
   }
 
-  &__ticket-email {
-    font-family: $font-sans;
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.45);
-    margin-bottom: 1rem;
+  &__pro-edit {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    color: $text-muted;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+    svg { width: 0.8rem; height: 0.8rem; }
+    &:hover { color: $accent; background: rgba($accent, 0.08); }
   }
 
-  &__ticket-tags {
+  &__pro-handle {
+    font-family: $font-mono;
+    font-size: 0.85rem;
+    color: $text-muted;
+    letter-spacing: 0.01em;
+    margin-top: 0.15rem;
+    display: block;
+  }
+
+  &__pro-email {
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+    margin-top: 0.5rem;
+    display: block;
+  }
+
+  &__pro-tags {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
     flex-wrap: wrap;
+    @media (max-width: 480px) { justify-content: center; }
   }
 
-  &__ticket-tag {
-    font-family: $font-sans;
-    font-size: 0.58rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.55);
-    background: rgba(255, 255, 255, 0.04);
-    border: none;
-    border-radius: 3px;
-    padding: 0.2rem 0.55rem;
-
-    &--live {
-      color: #4ade80;
-      background: rgba(74, 222, 128, 0.08);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
+  &__pro-tag {
+    font-family: $font-display;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba($accent, 0.7);
+    line-height: 1;
   }
 
-  &__ticket-tag-dot {
+  &__pro-tag-dot {
     width: 0.3rem;
     height: 0.3rem;
     border-radius: 50%;
@@ -745,346 +803,6 @@
     flex-shrink: 0;
   }
 
-  &__ticket-photo-wrap {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    position: relative;
-  }
-
-  &__ticket-photo {
-    width: 6.5rem;
-    height: 6.5rem;
-    border-radius: 6px;
-    overflow: hidden;
-    position: relative;
-    background: #161616;
-    cursor: pointer;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-    transition: box-shadow 0.2s ease;
-    &:hover { box-shadow: inset 0 0 0 2px $accent; }
-  }
-
-  &__ticket-photo-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-    pointer-events: none;
-    svg { width: 1.1rem; height: 1.1rem; color: #fff; }
-  }
-
-  &__ticket-photo-wrap:hover &__ticket-photo-overlay { opacity: 1; }
-
-  &__ticket-photo-label {
-    font-family: $font-sans;
-    font-size: 0.5rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.4);
-  }
-
-  &__ticket-perf {
-    position: relative;
-    height: 0;
-    border-top: 1px dashed rgba(255, 255, 255, 0.07);
-    margin: 0;
-
-    &::before, &::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 1.2rem;
-      height: 1.2rem;
-      border-radius: 50%;
-      background: $bg-primary;
-      z-index: 2;
-    }
-    &::before { left: -0.6rem; }
-    &::after  { right: -0.6rem; }
-  }
-
-  &__ticket-body {
-    display: flex;
-    align-items: center;
-    padding: 1rem 1.5rem 1.1rem;
-    gap: 0;
-  }
-
-  &__ticket-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding-right: 1.5rem;
-  }
-
-  &__ticket-field-label {
-    font-family: $font-sans;
-    font-size: 0.5rem;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.45);
-  }
-
-  &__ticket-field-val {
-    font-family: $font-display;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: $text-primary;
-    letter-spacing: -0.01em;
-    line-height: 1;
-  }
-
-  &__ticket-vdivider {
-    width: 1px;
-    height: 1.5rem;
-    background: rgba(255, 255, 255, 0.06);
-    margin-right: 1.5rem;
-    flex-shrink: 0;
-  }
-
-  &__ticket-barcode {
-    margin-left: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-  }
-
-  &__ticket-bars {
-    width: 4.5rem;
-    height: 2.5rem;
-    opacity: 0.75;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='40'%3E%3Crect x='0' width='3' height='40' fill='white'/%3E%3Crect x='5' width='1' height='40' fill='white'/%3E%3Crect x='8' width='2' height='40' fill='white'/%3E%3Crect x='12' width='3' height='40' fill='white'/%3E%3Crect x='17' width='1' height='40' fill='white'/%3E%3Crect x='20' width='2' height='40' fill='white'/%3E%3Crect x='24' width='1' height='40' fill='white'/%3E%3Crect x='27' width='3' height='40' fill='white'/%3E%3Crect x='32' width='1' height='40' fill='white'/%3E%3Crect x='35' width='2' height='40' fill='white'/%3E%3Crect x='39' width='3' height='40' fill='white'/%3E%3Crect x='44' width='1' height='40' fill='white'/%3E%3Crect x='47' width='2' height='40' fill='white'/%3E%3Crect x='51' width='1' height='40' fill='white'/%3E%3Crect x='54' width='3' height='40' fill='white'/%3E%3Crect x='59' width='1' height='40' fill='white'/%3E%3Crect x='62' width='2' height='40' fill='white'/%3E%3Crect x='66' width='3' height='40' fill='white'/%3E%3Crect x='71' width='1' height='40' fill='white'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-  }
-
-  &__ticket-barcode-num {
-    font-family: $font-sans;
-    font-size: 0.45rem;
-    color: rgba(255, 255, 255, 0.45);
-    letter-spacing: 0.04em;
-  }
-
-  &__pcard {
-    background: rgba(#fff, 0.015);
-    border: 1px solid #1e1e1e;
-    border-radius: 14px;
-    padding: 2rem 2.25rem;
-    transition: border-color 0.25s;
-
-    &--form {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    &--danger {
-      border-color: rgba(#e05050, 0.12);
-      background: rgba(#e05050, 0.015);
-      &:hover { border-color: rgba(#e05050, 0.25); }
-    }
-  }
-
-  &__pgrid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-  &__pstack { display: flex; flex-direction: column; gap: 1.5rem; }
-  &__prow {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    align-items: start;
-
-    @media (max-width: 640px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  &__pcard-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid #1a1a1a;
-    margin-bottom: 1.75rem;
-  }
-
-  &__pcard-idx {
-    font-family: $font-mono;
-    font-size: 0.6rem;
-    letter-spacing: 0.14em;
-    color: $accent;
-    padding: 0.2rem 0.5rem;
-    border: 1px solid rgba($accent, 0.2);
-    border-radius: 2px;
-    background: rgba($accent, 0.05);
-
-    &--danger {
-      color: #e05050;
-      border-color: rgba(#e05050, 0.2);
-      background: rgba(#e05050, 0.05);
-    }
-  }
-
-  &__pcard-title {
-    font-family: $font-mono;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: $text-primary;
-    margin: 0;
-  }
-
-  &__pfields { display: flex; flex-direction: column; gap: 1.25rem; }
-  &__pfield {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-
-    &--locked .db__pfield-input {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  &__pfield-pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
-  }
-
-  &__pfield-label {
-    font-family: $font-mono;
-    font-size: 0.6rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: $text-secondary;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.15rem;
-  }
-
-  &__pfield-lock {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.42rem;
-    color: $text-secondary;
-    opacity: 0.8;
-    svg { width: 0.6rem; height: 0.6rem; }
-  }
-
-  &__pfield-input {
-    all: unset;
-    font-family: $font-mono;
-    font-size: 0.85rem;
-    color: $text-primary;
-    background: rgba(#fff, 0.02);
-    border: 1px solid #1e1e1e;
-    border-radius: 8px;
-    padding: 0.65rem 0.85rem;
-    width: 100%;
-    box-sizing: border-box;
-    transition: border-color 0.2s ease, background 0.2s ease;
-
-    &::placeholder { color: #555; }
-    &:focus {
-      border-color: rgba($accent, 0.4);
-      background: rgba($accent, 0.02);
-    }
-  }
-
-  &__pfield-textarea {
-    all: unset;
-    font-family: $font-mono;
-    font-size: 0.85rem;
-    color: $text-primary;
-    background: rgba(#fff, 0.02);
-    border: 1px solid #1e1e1e;
-    border-radius: 8px;
-    padding: 0.65rem 0.85rem;
-    width: 100%;
-    min-height: 5rem;
-    resize: vertical;
-    display: block;
-    box-sizing: border-box;
-    transition: border-color 0.2s ease, background 0.2s ease;
-
-    &::placeholder { color: #555; }
-    &:focus {
-      border-color: rgba($accent, 0.4);
-      background: rgba($accent, 0.02);
-    }
-  }
-
-  &__pfield-pre {
-    display: flex;
-    align-items: center;
-    background: rgba(#fff, 0.02);
-    border: 1px solid #1e1e1e;
-    border-radius: 8px;
-    padding: 0 0.85rem;
-    transition: border-color 0.2s ease, background 0.2s ease;
-
-    &:focus-within {
-      border-color: rgba($accent, 0.4);
-      background: rgba($accent, 0.02);
-    }
-
-    .db__pfield-input {
-      border: none;
-      background: transparent;
-      border-radius: 0;
-      padding-left: 0.35rem;
-      &:focus { border: none; background: transparent; }
-    }
-  }
-
-  &__pfield-pre-at {
-    font-family: $font-mono;
-    font-size: 0.78rem;
-    color: $text-muted;
-    flex-shrink: 0;
-  }
-
-  &__pfield-pre-icon {
-    display: flex;
-    align-items: center;
-    color: $text-muted;
-    flex-shrink: 0;
-    svg { width: 0.85rem; height: 0.85rem; }
-  }
-
-  &__pcard-actions {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #1a1a1a;
-  }
-
-  &__pcard-danger-sub {
-    font-family: $font-mono;
-    font-size: 0.78rem;
-    color: $text-secondary;
-    line-height: 1.75;
-    margin-top: -0.5rem;
-    strong { color: rgba(#e05050, 0.8); font-weight: 500; }
-  }
 
   &__profile-upload-input {
     position: absolute;
@@ -1094,7 +812,6 @@
     opacity: 0;
     cursor: pointer;
     z-index: 10;
-    border-radius: 0;
   }
 
   &__profile-initials {
@@ -1104,20 +821,12 @@
     width: 100%;
     height: 100%;
     font-family: $font-display;
-    font-size: 1.5rem;
+    font-size: 2.5rem;
     font-weight: 800;
     color: $accent;
   }
 
   &__profile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-  &__form-err {
-    display: block;
-    font-family: $font-mono;
-    font-size: 0.7rem;
-    color: #e05050;
-    margin: 0.75rem 0 0;
-  }
 
   // ── Buttons ───────────────────────────────────────────────────────
   &__btn {
@@ -1320,21 +1029,10 @@
       padding: 1.5rem 1rem;
       &:nth-child(odd) { border-right: 1px solid $border; }
     }
-    &__ticket-head { flex-direction: column; }
-    &__ticket-name { font-size: clamp(1.5rem, 7vw, 2rem); }
-    &__ticket-body { flex-wrap: wrap; gap: 1.25rem; }
-    &__ticket-vdivider { display: none; }
-    &__ticket-field { padding-right: 0; min-width: calc(50% - 1rem); }
-    &__pfield-pair { grid-template-columns: 1fr; gap: 1rem; }
-    &__pcard { padding: 1.75rem 1.5rem; }
     &__frow-pair { grid-template-columns: 1fr; gap: 1.25rem; }
     &__danger { flex-direction: column; align-items: flex-start; }
-    &__table-head,
-    &__table-row {
-      grid-template-columns: 2.5rem 1fr 4rem;
-      .db__th--key, .db__th--tracks, .db__th--time,
-      .db__td--key, .db__td--tracks, .db__td--time { display: none; }
-    }
+    &__proj-date { display: none; }
+    &__proj-thumb { width: 2.2rem; height: 2.2rem; }
     &__clock { display: none; }
     &__brand { padding: 3rem 0 0.75rem; }
   }
@@ -1449,23 +1147,6 @@
     &__brand-melo { font-size: clamp(3.5rem, 22vw, 7rem); }
     &__brand-studio { font-size: clamp(2.8rem, 18vw, 5.5rem); }
 
-    // Ticket card — column layout, centered photo, mobile only
-    &__ticket-head {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.85rem;
-      padding: 0.75rem 1.25rem 0.65rem;
-    }
-    &__ticket-event {
-      width: 100%;
-      align-items: center;
-    }
-    &__ticket-tags { justify-content: center; }
-    &__ticket-photo {
-      width: 5.5rem;
-      height: 5.5rem;
-    }
   }
 
   // ── Library tab ──────────────────────────────────────────────────

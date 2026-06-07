@@ -1,4 +1,12 @@
-import { type Component, createSignal, createEffect, onMount, onCleanup, For, Show } from "solid-js";
+import { type Component, createSignal, createEffect, onMount, onCleanup, For, Show, Index } from "solid-js";
+
+// Deterministic waveform: unique bar heights per project ID
+function waveform(seed: string, count = 30): number[] {
+  return Array.from({ length: count }, (_, i) => {
+    const c = seed.charCodeAt(i % Math.max(seed.length, 1)) || 72;
+    return 3 + ((c * 17 + i * 11 + i * i) % 22);
+  });
+}
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
 import { getAppSession, signOutApp } from "../../lib/app-auth";
@@ -396,11 +404,8 @@ const Dashboard: Component<{
     tl.fromTo(".db__bar", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9 }, 0.1);
     tl.fromTo(".db__hero-char", { y: "140%", opacity: 0, rotateZ: 6 }, { y: "0%", opacity: 1, rotateZ: 0, duration: 1.1, stagger: 0.02 }, 0.15);
     tl.fromTo(".db__hero-script", { opacity: 0, y: 60, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.3 }, 0.3);
-    tl.fromTo(".db__hero-avatar", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1.2, ease: "back.out(1.5)" }, 0.4);
-    tl.fromTo(".db__hero-meta > *", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.05 }, 0.5);
-    tl.fromTo(".db__rule", { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "power3.inOut", stagger: 0.08 }, 0.5);
-    tl.fromTo(".db__stat", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.7, stagger: 0.06 }, 0.7);
-    tl.fromTo(".db__section", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, stagger: 0.15 }, 0.85);
+    tl.fromTo(".db__stat", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.7, stagger: 0.06 }, 0.5);
+    tl.fromTo(".db__section", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, stagger: 0.15 }, 0.7);
   });
 
   return (
@@ -440,31 +445,15 @@ const Dashboard: Component<{
         <div class="db__content">
 
           <section class="db__hero">
-            <div class="db__hero-left">
-              <div class="db__hero-greeting">
-                <span class="db__hero-script">{greeting()},</span>
-              </div>
-              <div class="db__hero-clip">
-                <For each={firstName().split("")}>
-                  {(ch) => <span class="db__hero-char">{ch === " " ? "\u00A0" : ch}</span>}
-                </For>
-              </div>
-              <div class="db__hero-meta">
-                <span class="db__hero-meta-item">{projects().length} Projects</span>
-                <span class="db__hero-meta-sep">/</span>
-                <span class="db__hero-meta-item">{totalTracks()} Tracks</span>
-                <span class="db__hero-meta-sep">/</span>
-                <span class="db__hero-meta-item">Since {memberSince()}</span>
-              </div>
+            <div class="db__hero-greeting">
+              <span class="db__hero-script">{greeting()},</span>
             </div>
-            <button class="db__hero-avatar" onClick={() => switchTab("profile")}>
-              <Show when={user()?.image} keyed fallback={<span class="db__hero-avatar-text">{initials()}</span>}>
-                {(image) => <img class="db__hero-avatar-img" src={image} alt="" />}
-              </Show>
-            </button>
+            <div class="db__hero-clip">
+              <For each={firstName().split("")}>
+                {(ch) => <span class="db__hero-char">{ch === " " ? " " : ch}</span>}
+              </For>
+            </div>
           </section>
-
-          <div class="db__rule" />
 
           <section class="db__stats">
             <div class="db__stat">
@@ -498,9 +487,8 @@ const Dashboard: Component<{
             <div class="db__section-header">
               <span class="db__section-idx">01</span>
               <h2 class="db__section-title">Projects</h2>
-              <button class="db__section-action" onClick={openCreate}>
+              <button class="db__section-action" onClick={openCreate} title="New project">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4v16m8-8H4" /></svg>
-                New project
               </button>
             </div>
             <Show when={!loadingProjects()} fallback={
@@ -520,35 +508,27 @@ const Dashboard: Component<{
                   </button>
                 </div>
               }>
-              <div class="db__table">
-                <div class="db__table-head">
-                  <span class="db__th db__th--num">#</span>
-                  <span class="db__th db__th--name">Name</span>
-                  <span class="db__th db__th--bpm">BPM</span>
-                  <span class="db__th db__th--key">Key</span>
-                  <span class="db__th db__th--tracks">Tracks</span>
-                  <span class="db__th db__th--time">Modified</span>
-                  <span class="db__th db__th--acts" />
-                </div>
-                <For each={projects()}>{(project, i) =>
-                  <div class="db__table-row" onClick={() => props.onOpenProject(project.id)}>
-                    <span class="db__td db__td--num">{String(i() + 1).padStart(2, "0")}</span>
-                    <span class="db__td db__td--name">
-                      <span class="db__td-dot" style={{ background: project.color }} />
-                      {project.name}
-                    </span>
-                    <span class="db__td db__td--bpm">{project.bpm || 100}</span>
-                    <span class="db__td db__td--key">{project.key}</span>
-                    <span class="db__td db__td--tracks">{project.tracks || 1}</span>
-                    <span class="db__td db__td--time">{project.updatedAt}</span>
-                    <span class="db__td db__td--acts">
-                      <button class="db__act-btn" onClick={(e) => openRename(e, project)} title="Rename">
+              <div class="db__proj-list">
+                <For each={projects()}>{(project) =>
+                  <div class="db__proj" style={{ "--pc": project.color } as any} onClick={() => props.onOpenProject(project.id)}>
+                    <div class="db__proj-thumb">
+                      <span class="db__proj-thumb-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" /></svg>
+                      </span>
+                    </div>
+                    <div class="db__proj-info">
+                      <span class="db__proj-name">{project.name}</span>
+                      <span class="db__proj-meta">{project.bpm || 100} BPM · {project.tracks || 1} track{(project.tracks || 1) !== 1 ? "s" : ""}</span>
+                    </div>
+                    <span class="db__proj-date">{project.updatedAt}</span>
+                    <div class="db__proj-acts">
+                      <button class="db__proj-btn" onClick={(e) => { e.stopPropagation(); openRename(e, project); }} title="Rename">
                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2l5 5-9 9H2v-5z" /></svg>
                       </button>
-                      <button class="db__act-btn db__act-btn--danger" onClick={(e) => openDelete(e, project)} title="Delete">
+                      <button class="db__proj-btn db__proj-btn--danger" onClick={(e) => { e.stopPropagation(); openDelete(e, project); }} title="Delete">
                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M5 4V2h6v2M6 8v5M10 8v5M3 4l1 10h8l1-10" /></svg>
                       </button>
-                    </span>
+                    </div>
                   </div>
                 }</For>
               </div>
@@ -556,244 +536,205 @@ const Dashboard: Component<{
             </Show>
           </section>
 
-          <div class="db__rule" />
+          {(() => {
+            let canvasRef: HTMLCanvasElement | undefined;
+            let raf = 0;
+            let running = false;
+            let mouseX = -1;
+            let sized = false;
+            const points: number[] = [];
+            let pointCount = 0;
+
+            const ensureSize = (ctx: CanvasRenderingContext2D, w: number, h: number, dpr: number) => {
+              if (sized) return;
+              canvasRef!.width = w * dpr;
+              canvasRef!.height = h * dpr;
+              ctx.scale(dpr, dpr);
+              pointCount = Math.ceil(w / 3);
+              points.length = 0;
+              for (let i = 0; i < pointCount; i++) points.push(0);
+              sized = true;
+            };
+
+            const draw = () => {
+              if (!canvasRef) return;
+              const ctx = canvasRef.getContext("2d")!;
+              const rect = canvasRef.getBoundingClientRect();
+              const w = rect.width, h = rect.height;
+              ensureSize(ctx, w, h, window.devicePixelRatio || 1);
+
+              const mid = h / 2;
+              const step = w / pointCount;
+
+              if (mouseX >= 0) {
+                const mi = Math.floor(mouseX / step);
+                const radius = 18;
+                for (let j = -radius; j <= radius; j++) {
+                  const idx = mi + j;
+                  if (idx < 0 || idx >= pointCount) continue;
+                  const dist = Math.abs(j) / radius;
+                  const push = (1 - dist * dist) * 12;
+                  const dir = j < 0 ? -1 : j > 0 ? 1 : 0;
+                  points[idx] += push * (dir * 0.5 + (Math.random() - 0.5) * 0.2);
+                }
+              }
+
+              let settled = true;
+              for (let i = 0; i < pointCount; i++) {
+                points[i] *= 0.93;
+                if (i > 0) points[i] += (points[i - 1] - points[i]) * 0.22;
+                if (i < pointCount - 1) points[i] += (points[i + 1] - points[i]) * 0.22;
+                points[i] = Math.max(-30, Math.min(30, points[i]));
+                if (Math.abs(points[i]) > 0.05) settled = false;
+              }
+
+              ctx.clearRect(0, 0, w, h);
+
+              ctx.beginPath();
+              ctx.moveTo(0, mid + points[0]);
+              for (let i = 1; i < pointCount; i++) {
+                const px = (i - 1) * step;
+                const cx = i * step;
+                const mx = (px + cx) / 2;
+                ctx.quadraticCurveTo(px, mid + points[i - 1], mx, mid + (points[i - 1] + points[i]) / 2);
+              }
+              ctx.lineTo(w, mid + points[pointCount - 1]);
+              ctx.strokeStyle = "rgba(224, 82, 151, 0.4)";
+              ctx.lineWidth = 1.5;
+              ctx.stroke();
+
+              ctx.beginPath();
+              ctx.moveTo(0, mid + points[0] * 0.4);
+              for (let i = 1; i < pointCount; i++) {
+                const px = (i - 1) * step;
+                const cx = i * step;
+                const mx = (px + cx) / 2;
+                const py = points[i - 1] * 0.4;
+                const ny = points[i] * 0.4;
+                ctx.quadraticCurveTo(px, mid + py, mx, mid + (py + ny) / 2);
+              }
+              ctx.lineTo(w, mid + points[pointCount - 1] * 0.4);
+              ctx.strokeStyle = "rgba(224, 82, 151, 0.12)";
+              ctx.lineWidth = 1;
+              ctx.stroke();
+
+              if (settled && mouseX < 0) {
+                ctx.clearRect(0, 0, w, h);
+                running = false;
+                return;
+              }
+              raf = requestAnimationFrame(draw);
+            };
+
+            const startLoop = () => {
+              if (running) return;
+              running = true;
+              raf = requestAnimationFrame(draw);
+            };
+
+            onMount(() => {
+              if (!canvasRef) return;
+              const ctx = canvasRef.getContext("2d")!;
+              const rect = canvasRef.getBoundingClientRect();
+              ensureSize(ctx, rect.width, rect.height, window.devicePixelRatio || 1);
+            });
+            onCleanup(() => cancelAnimationFrame(raf));
+
+            return (
+              <canvas
+                ref={(el) => { canvasRef = el; }}
+                class="db__wave-divider"
+                onMouseMove={(e) => {
+                  mouseX = e.clientX - canvasRef!.getBoundingClientRect().left;
+                  startLoop();
+                }}
+                onMouseLeave={() => { mouseX = -1; }}
+              />
+            );
+          })()}
 
           <section class="db__section">
             <div class="db__section-header">
               <span class="db__section-idx">02</span>
               <h2 class="db__section-title">Quick Actions</h2>
             </div>
-            <div class="db__actions">
-              <button class="db__act">
-                <div class="db__act-icon">
+            <div class="db__qa">
+              <button class="db__qa-card" style={{ "--qa-c": "#7c5cff" } as any}>
+                <div class="db__qa-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                 </div>
-                <div class="db__act-body">
-                  <span class="db__act-label">Import Audio</span>
-                  <span class="db__act-desc">Drag in stems, samples, or full tracks</span>
-                </div>
-                <svg class="db__act-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
+                <span class="db__qa-label">Import Audio</span>
+                <span class="db__qa-desc">Stems, samples, or full tracks</span>
+                <svg class="db__qa-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
               </button>
-              <button class="db__act">
-                <div class="db__act-icon">
+              <button class="db__qa-card" style={{ "--qa-c": "#e05297" } as any}>
+                <div class="db__qa-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z" /></svg>
                 </div>
-                <div class="db__act-body">
-                  <span class="db__act-label">Browse Templates</span>
-                  <span class="db__act-desc">Pick a genre template and build on it</span>
-                </div>
-                <svg class="db__act-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
+                <span class="db__qa-label">Browse Templates</span>
+                <span class="db__qa-desc">Pick a genre and build on it</span>
+                <svg class="db__qa-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
               </button>
-              <button class="db__act" onClick={() => switchTab("profile")}>
-                <div class="db__act-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              <button class="db__qa-card" style={{ "--qa-c": "#14f195" } as any}>
+                <div class="db__qa-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 18.5a6.5 6.5 0 100-13 6.5 6.5 0 000 13zM12 18.5V22M8 22h8" /><circle cx="12" cy="12" r="2.5" /></svg>
                 </div>
-                <div class="db__act-body">
-                  <span class="db__act-label">Edit Profile</span>
-                  <span class="db__act-desc">Update your name, socials & bio</span>
+                <span class="db__qa-label">AI Master</span>
+                <span class="db__qa-desc">Auto-master a track in seconds</span>
+                <svg class="db__qa-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
+              </button>
+              <button class="db__qa-card" style={{ "--qa-c": "#00d2ff" } as any}>
+                <div class="db__qa-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
                 </div>
-                <svg class="db__act-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
+                <span class="db__qa-label">Collaborate</span>
+                <span class="db__qa-desc">Invite someone to your session</span>
+                <svg class="db__qa-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
+              </button>
+              <button class="db__qa-card" style={{ "--qa-c": "#ffaa00" } as any}>
+                <div class="db__qa-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4 0l4-4m0 0l-4-4m4 4H7" /></svg>
+                </div>
+                <span class="db__qa-label">Export</span>
+                <span class="db__qa-desc">WAV, MP3, or stems bundle</span>
+                <svg class="db__qa-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
+              </button>
+              <button class="db__qa-card" onClick={() => switchTab("profile")} style={{ "--qa-c": "#ff5454" } as any}>
+                <div class="db__qa-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z" /><circle cx="12" cy="12" r="3" /></svg>
+                </div>
+                <span class="db__qa-label">Settings</span>
+                <span class="db__qa-desc">Account, audio prefs, shortcuts</span>
+                <svg class="db__qa-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
               </button>
             </div>
           </section>
 
-          <footer class="db__brand">
-            <span class="db__brand-melo">Melo</span>
-            <span class="db__brand-studio">Studio</span>
-          </footer>
         </div>
       </Show>
 
       <Show when={tab() === "profile"}>
         <div class="db__content db__content--profile">
 
-          {/* ── Ticket identity card ── */}
-          <div class="db__ticket">
-            <div class="db__ticket-stripe">
-              <span class="db__ticket-stripe-text">ADMIT ONE</span>
-            </div>
-            <div class="db__ticket-main">
-              <div class="db__ticket-toprow">
-                <span class="db__ticket-logo">
-                  <span class="db__ticket-logo-melo">Melo</span>
-                  <span class="db__ticket-logo-studio">Studio</span>
-                </span>
-                <span class="db__ticket-season">Artist Pass · Season 2026</span>
-              </div>
-              <div class="db__ticket-head">
-                <div class="db__ticket-event">
-                  <h1 class="db__ticket-name">{(user()?.name ?? "Artist").toUpperCase()}</h1>
-                  <span class="db__ticket-email">{user()?.email}</span>
-                  <div class="db__ticket-tags">
-                    <span class="db__ticket-tag">Producer</span>
-                    <span class="db__ticket-tag">Free Tier</span>
-                    <span class="db__ticket-tag db__ticket-tag--live">
-                      <span class="db__ticket-tag-dot" />
-                      Active
-                    </span>
-                  </div>
-                </div>
-                <div class="db__ticket-photo-wrap">
-                  <input type="file" accept="image/*" onChange={handleImageUpload} class="db__profile-upload-input" title="Change profile picture" />
-                  <div class="db__ticket-photo">
-                    <Show when={user()?.image} keyed fallback={<span class="db__profile-initials">{initials()}</span>}>
-                      {(image) => <img class="db__profile-img" src={image} alt="" />}
-                    </Show>
-                    <div class="db__ticket-photo-overlay">
-                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H7L5 7H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-3l-2-4z"/><circle cx="10" cy="12" r="3"/></svg>
-                    </div>
-                  </div>
-                  <span class="db__ticket-photo-label">Artist</span>
-                </div>
-              </div>
-              <div class="db__ticket-perf" />
-              <div class="db__ticket-body">
-                <div class="db__ticket-field">
-                  <span class="db__ticket-field-label">Member Since</span>
-                  <span class="db__ticket-field-val">{memberSince()}</span>
-                </div>
-                <div class="db__ticket-vdivider" />
-                <div class="db__ticket-field">
-                  <span class="db__ticket-field-label">Projects</span>
-                  <span class="db__ticket-field-val">{projects().length}</span>
-                </div>
-                <div class="db__ticket-vdivider" />
-                <div class="db__ticket-field">
-                  <span class="db__ticket-field-label">Tracks</span>
-                  <span class="db__ticket-field-val">{totalTracks()}</span>
-                </div>
-                <div class="db__ticket-vdivider" />
-                <div class="db__ticket-field">
-                  <span class="db__ticket-field-label">Studio Time</span>
-                  <span class="db__ticket-field-val">{fmtStudioTime()}</span>
-                </div>
-                <div class="db__ticket-vdivider" />
-                <div class="db__ticket-field">
-                  <span class="db__ticket-field-label">Venue</span>
-                  <span class="db__ticket-field-val">Web</span>
-                </div>
-                <div class="db__ticket-barcode" aria-hidden="true">
-                  <div class="db__ticket-bars" />
-                  <span class="db__ticket-barcode-num">MS · {memberSince()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Form sections ── */}
-          <div class="db__pgrid">
-
-            <div class="db__pcard db__pcard--form">
-              <div class="db__pcard-header">
-                <span class="db__pcard-idx">01</span>
-                <h2 class="db__pcard-title">Edit Profile</h2>
-              </div>
-              <div class="db__pfields">
-
-                <div class="db__pfield">
-                  <label class="db__pfield-label">Display Name</label>
-                  <input class="db__pfield-input" type="text" value={profileName()} onInput={(e) => setProfileName(e.currentTarget.value)} placeholder="Your name" />
-                </div>
-
-                <div class="db__pfield db__pfield--locked">
-                  <label class="db__pfield-label">
-                    Email
-                    <span class="db__pfield-lock">
-                      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5.5" width="8" height="5.5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg>
-                      managed
-                    </span>
-                  </label>
-                  <input class="db__pfield-input" type="email" value={user()?.email ?? ""} disabled />
-                </div>
-
-                <div class="db__pfield">
-                  <label class="db__pfield-label">Bio</label>
-                  <textarea class="db__pfield-textarea" value={profileBio()} onInput={(e) => setProfileBio(e.currentTarget.value)} placeholder="Tell the world about yourself..." rows={3} />
-                </div>
-
-                <div class="db__pfield">
-                  <label class="db__pfield-label">Website</label>
-                  <div class="db__pfield-pre">
-                    <span class="db__pfield-pre-icon">
-                      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.5"/><path d="M1.5 7h11M7 1.5c-1.5 2-2 3.5-2 5.5s.5 3.5 2 5.5M7 1.5c1.5 2 2 3.5 2 5.5s-.5 3.5-2 5.5"/></svg>
-                    </span>
-                    <input class="db__pfield-input" type="url" value={profileWebsite()} onInput={(e) => setProfileWebsite(e.currentTarget.value)} placeholder="https://yoursite.com" />
-                  </div>
-                </div>
-
-                <div class="db__pfield-pair">
-                  <div class="db__pfield">
-                    <label class="db__pfield-label">Instagram</label>
-                    <div class="db__pfield-pre">
-                      <span class="db__pfield-pre-at">@</span>
-                      <input class="db__pfield-input" type="text" value={profileInstagram()} onInput={(e) => setProfileInstagram(e.currentTarget.value)} placeholder="username" />
-                    </div>
-                  </div>
-                  <div class="db__pfield">
-                    <label class="db__pfield-label">Twitter / X</label>
-                    <div class="db__pfield-pre">
-                      <span class="db__pfield-pre-at">@</span>
-                      <input class="db__pfield-input" type="text" value={profileTwitter()} onInput={(e) => setProfileTwitter(e.currentTarget.value)} placeholder="handle" />
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-              <div class="db__pcard-actions">
-                <button class="db__btn db__btn--fill" onClick={handleSaveProfile} disabled={profileSaving()}>
-                  {profileSaving() ? "Saving..." : profileSaved() ? "Saved ✓" : "Save Changes"}
-                </button>
-                <button class="db__btn db__btn--ghost" onClick={() => { setProfileName(user()?.name ?? ""); setProfileBio(""); setProfileInstagram(""); setProfileTwitter(""); setProfileWebsite(""); }}>
-                  Reset
-                </button>
-              </div>
-            </div>
-
-            <div class="db__prow">
-
-              <div class="db__pcard db__pcard--form">
-                <div class="db__pcard-header">
-                  <span class="db__pcard-idx">02</span>
-                  <h2 class="db__pcard-title">Change Password</h2>
-                </div>
-                <div class="db__pfields">
-                  <div class="db__pfield">
-                    <label class="db__pfield-label">Current Password</label>
-                    <input class="db__pfield-input" type="password" value={currentPassword()} onInput={(e) => setCurrentPassword(e.currentTarget.value)} placeholder="••••••••" />
-                  </div>
-                  <div class="db__pfield">
-                    <label class="db__pfield-label">New Password</label>
-                    <input class="db__pfield-input" type="password" value={newPassword()} onInput={(e) => setNewPassword(e.currentTarget.value)} placeholder="Min 8 characters" />
-                  </div>
-                </div>
-                <Show when={passwordError()}>
-                  <span class="db__form-err">{passwordError()}</span>
+          <div class="db__pro-header">
+            <div class="db__pro-avatar-wrap">
+              <input type="file" accept="image/*" onChange={handleImageUpload} class="db__profile-upload-input" title="Change profile picture" />
+              <div class="db__pro-avatar">
+                <Show when={user()?.image} keyed fallback={<span class="db__profile-initials">{initials()}</span>}>
+                  {(image) => <img class="db__profile-img" src={image} alt="" />}
                 </Show>
-                <div class="db__pcard-actions">
-                  <button class="db__btn db__btn--ghost" onClick={handleChangePassword}>
-                    {passwordSaved() ? "Updated ✓" : "Update Password"}
-                  </button>
-                </div>
               </div>
-
-              <div class="db__pcard db__pcard--danger">
-                <div class="db__pcard-header">
-                  <span class="db__pcard-idx db__pcard-idx--danger">03</span>
-                  <h2 class="db__pcard-title">Danger Zone</h2>
-                </div>
-                <p class="db__pcard-danger-sub">Permanently delete your account and all associated data. This action <strong>cannot be undone</strong>.</p>
-                <div class="db__pcard-actions">
-                  <button class="db__btn db__btn--danger" onClick={handleStartDelete}>Delete Account</button>
-                </div>
+            </div>
+            <div class="db__pro-identity">
+              <div class="db__pro-name-row">
+                <h1 class="db__pro-name">{user()?.name ?? "Artist"}</h1>
+<a class="db__pro-edit" href="/settings" title="Edit profile">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z"/></svg>
+                </a>
               </div>
-
+              <span class="db__pro-handle">@gaspaco</span>
             </div>
           </div>
-
-          <footer class="db__brand">
-            <span class="db__brand-melo">Melo</span>
-            <span class="db__brand-studio">Studio</span>
-          </footer>
         </div>
       </Show>
 
