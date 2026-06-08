@@ -23085,6 +23085,20 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:94"
+    },
+    {
+      "id": "file::check_email",
+      "label": "check-email.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/auth/check-email.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/auth/check-email.ts:1"
+    },
+    {
+      "id": "check_email::post",
+      "label": "POST",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/auth/check-email.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/auth/check-email.ts:4"
     }
   ],
   "edges": [
@@ -51608,12 +51622,21 @@
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:94",
       "weight": 1
+    },
+    {
+      "source": "file::check_email",
+      "target": "check_email::post",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/auth/check-email.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/auth/check-email.ts:4",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 138,
-    "nodes": 3298,
-    "edges": 3169,
-    "builtAt": "2026-06-08T12:49:34.935Z"
+    "files": 139,
+    "nodes": 3300,
+    "edges": 3170,
+    "builtAt": "2026-06-08T12:56:52.188Z"
   }
 }

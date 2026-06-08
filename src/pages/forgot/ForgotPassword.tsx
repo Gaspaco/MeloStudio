@@ -58,6 +58,18 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
     setIsSubmitting(true);
 
     try {
+      const check = await fetch("/api/auth/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email() }),
+      });
+      const { exists } = await check.json() as { exists: boolean };
+      if (!exists) {
+        setErrorMsg("No account found with that email address.");
+        setIsSubmitting(false);
+        return;
+      }
+
       const { error } = await socialAuthClient.requestPasswordReset({
         email: email(),
         redirectTo: "/reset-password",
@@ -151,15 +163,21 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
 
         {/* Success state */}
         <div class="forgot__success">
-          <div class="forgot__success-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M9 12l2 2 4-4" />
-              <circle cx="12" cy="12" r="10" />
-            </svg>
+          <div class="forgot__success-hero">
+            <div class="forgot__title-row">
+              <span class="forgot__success-script">Check</span>
+            </div>
+            <div class="forgot__title-row">
+              <div class="forgot__display-clip">
+                <For each={"Inbox".split("")}>{(ch) =>
+                  <span class="forgot__success-char">{ch}</span>
+                }</For>
+              </div>
+            </div>
           </div>
-          <h3 class="forgot__success-title">Check your inbox</h3>
           <p class="forgot__success-text">
-            We've sent a reset link to <strong>{email()}</strong>
+            Link sent to <strong>{email()}</strong><br />
+            Expires in 1 hour — check your spam if it doesn't show up.
           </p>
           <button type="button" class="forgot__submit" onClick={props.onLogin}>
             <span>Back to Sign In</span>
