@@ -1,12 +1,12 @@
 // AudioGraph is responsible for the actual Web Audio signal chain.
-// It sets up the routing: Clips -> Track Input Gain -> Track Panner -> Track Output Gain -> Master Gain -> Destination.
+// It sets up the routing: Clips / Mic Input -> Track Input Gain -> Track Panner -> Track Output Gain -> Master Gain -> Destination.
 // By keeping all the Web Audio logic here, we decouple the audio processing 
 // from SolidJS and UI state, updating it only via manual imperative calls.
 
 import { dbToGain, type Track, type MasterBus, type TrackId } from "./types";
 
 interface TrackNodes {
-  input: GainNode;        // sums all clip outputs for this track
+  input: GainNode;        // sums all clip outputs or physical inputs for this track
   panner: StereoPannerNode;
   output: GainNode;       // post-pan, post-gain
   gainDb: number;
@@ -18,15 +18,20 @@ export class AudioGraph {
   readonly ctx: AudioContext;
   private master: GainNode;
   private tracks = new Map<TrackId, TrackNodes>();
-
-  trackInput(id: TrackId): GainNode | null {
-    return this.tracks.get(id)?.input ?? null;
-  }
+  
+  // Physical hardware streaming nodes
+  private micStream: MediaStream | null = null;
+  private micSourceNode: MediaStreamAudioSourceNode | null = null;
+  private currentConnectedTrackId: TrackId | null = null;
 
   constructor(ctx: AudioContext) {
     this.ctx = ctx;
     this.master = ctx.createGain();
     this.master.connect(ctx.destination);
+  }
+
+  trackInput(id: TrackId): GainNode | null {
+    return this.tracks.get(id)?.input ?? null;
   }
 
   setMaster(m: MasterBus): void {
@@ -72,7 +77,67 @@ export class AudioGraph {
     this.tracks.delete(id);
   }
 
+  // --- Physical Audio Input Routing Methods ---
+
+  /**
+   * Requests physical microphone/interface access and pipes the audio stream 
+   * directly into the input GainNode of the designated track.
+   */
+  async connectMicrophoneToTrack(trackId: TrackId): Promise<boolean> {
+    // If already routed to this track, keep it alive
+    if (this.currentConnectedTrackId === trackId && this.micSourceNode) {
+      return true;
+    }
+
+    // Clean up any old routing before opening a new one
+    this.disconnectMicrophone();
+
+    try {
+      this.micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false, // Turned off for raw musical instrument recording
+          noiseSuppression: false,  // Turned off to maintain original frequency response
+          autoGainControl: false,  // Turned off to preserve recording dynamics
+        },
+      });
+
+      const trackNode = this.trackInput(trackId);
+      if (!trackNode) {
+        this.disconnectMicrophone();
+        return false;
+      }
+
+      // Convert the physical stream into a Web Audio API node and connect it to the track chain
+      this.micSourceNode = this.ctx.createMediaStreamSource(this.micStream);
+      this.micSourceNode.connect(trackNode);
+      this.currentConnectedTrackId = trackId;
+      
+      return true;
+    } catch (error) {
+      console.error("Failed to acquire microphone access:", error);
+      this.disconnectMicrophone();
+      return false;
+    }
+  }
+
+  /**
+   * Safely severs the physical hardware stream and tears down associated input nodes.
+   */
+  disconnectMicrophone(): void {
+    if (this.micSourceNode) {
+      try { this.micSourceNode.disconnect(); } catch {}
+      this.micSourceNode = null;
+    }
+    if (this.micStream) {
+      this.micStream.getTracks().forEach(track => track.stop());
+      this.micStream = null;
+    }
+    this.currentConnectedTrackId = null;
+  }
+
+  // Ensure hardware streams are torn down clean if the entire graph lifecycle ends
   destroy(): void {
+    this.disconnectMicrophone();
     for (const id of [...this.tracks.keys()]) this.removeTrack(id);
     this.master.disconnect();
   }

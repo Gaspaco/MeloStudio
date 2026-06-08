@@ -11,3 +11,14 @@ export const [playheadSec, setPlayheadSec] = createSignal(0);
 export const [isLoading, setIsLoading] = createSignal(false);
 
 export const [loadingMessage, setLoadingMessage] = createSignal<string | null>(null);
+
+// Hardware I/O State
+export interface SimpleMidiDevice {
+  id: string;
+  name: string;
+  manufacturer: string;
+}
+
+export const [connectedMidiDevices, setConnectedMidiDevices] = createSignal<SimpleMidiDevice[]>([]);
+export const [isMicAuthorized, setIsMicAuthorized] = createSignal(false);
+export const [activeInputTrackId, setActiveInputTrackId] = createSignal<string | null>(null);
