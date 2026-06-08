@@ -1,5 +1,6 @@
 import { type Component, createSignal, onMount, For } from "solid-js";
 import { gsap } from "gsap";
+import { socialAuthClient } from "../../lib/social-auth";
 import "./forgot-password.scss";
 
 const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (props) => {
@@ -7,6 +8,8 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
 
   const [email, setEmail] = createSignal("");
   const [sent, setSent] = createSignal(false);
+  const [isSubmitting, setIsSubmitting] = createSignal(false);
+  const [errorMsg, setErrorMsg] = createSignal<string | null>(null);
 
   onMount(() => {
     if (!pageRef) return;
@@ -48,18 +51,36 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
     m.fromTo(".forgot__meta", { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.35);
   });
 
-  const handleSubmit = (e: Event) => {
+  const handleSubmit = async (e: Event) => {
     e.preventDefault();
-    if (!email()) return;
-    setSent(true);
+    if (!email() || isSubmitting()) return;
+    setErrorMsg(null);
+    setIsSubmitting(true);
 
-    gsap.timeline()
-      .to(".forgot__form", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" })
-      .fromTo(".forgot__success",
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "expo.out", display: "flex" },
-        0.3
-      );
+    try {
+      const { error } = await socialAuthClient.requestPasswordReset({
+        email: email(),
+        redirectTo: "/reset-password",
+      });
+
+      if (error) {
+        setErrorMsg(error.message ?? "Something went wrong. Please try again.");
+        return;
+      }
+
+      setSent(true);
+      gsap.timeline()
+        .to(".forgot__form", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" })
+        .fromTo(".forgot__success",
+          { opacity: 0, y: 40 },
+          { opacity: 1, y: 0, duration: 0.8, ease: "expo.out", display: "flex" },
+          0.3
+        );
+    } catch {
+      setErrorMsg("Network error. Check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -109,9 +130,13 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
             <div class="forgot__line" />
           </div>
 
+          {errorMsg() && (
+            <p class="forgot__error">{errorMsg()}</p>
+          )}
+
           <div class="forgot__form-footer">
-            <button type="submit" class="forgot__submit">
-              <span>Send Reset Link</span>
+            <button type="submit" class="forgot__submit" disabled={isSubmitting()}>
+              <span>{isSubmitting() ? "Sending..." : "Send Reset Link"}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M7 17L17 7M17 7H7M17 7V17" />
               </svg>

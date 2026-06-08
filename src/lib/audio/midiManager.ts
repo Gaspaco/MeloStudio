@@ -41,6 +41,7 @@ class MidiHardwareManager {
 
   /**
    * Scans attached physical equipment and keeps the SolidJS state store synchronized.
+   * Re-binds message handlers on every scan so reconnected devices are always live.
    */
   private scanDevices(): void {
     if (!this.midiAccess) return;
@@ -56,9 +57,12 @@ class MidiHardwareManager {
         manufacturer: dev.manufacturer || "Generic",
       });
 
-      // Bind the native audio thread packet consumer
+      // Always re-bind so a unplugged/replugged device is immediately live again
       dev.onmidimessage = (event: MIDIMessageEvent) => this.handleMidiMessage(event);
     }
+
+    // Kill any stuck notes when device list changes (e.g. keyboard unplugged mid-note)
+    this.activeSynth?.allNotesOff();
 
     setConnectedMidiDevices(devices);
   }
@@ -77,32 +81,35 @@ class MidiHardwareManager {
     // Ensure the browser AudioContext has been physically unlocked by a gesture
     const ctx = getAudioContext();
     if (ctx.state === "suspended") {
-      unlockAudioContext();
+      void unlockAudioContext();
     }
 
     switch (command) {
-      case 0x90: // Note On event packet
-        const noteOnMidi = data1;
-        const velocity = data2 / 127; // Convert standard 0-127 MIDI value to a 0.0-1.0 float
-
+      case 0x90: { // Note On
+        const velocity = data2 / 127;
         if (velocity > 0) {
-          this.activeSynth.noteOn(noteOnMidi, velocity);
+          this.activeSynth.noteOn(data1, velocity);
         } else {
-          // A standard MIDI specification quirk: Note On with 0 velocity means Note Off
-          this.activeSynth.noteOff(noteOnMidi);
+          // Note On with velocity 0 is the MIDI spec's way of sending Note Off
+          this.activeSynth.noteOff(data1);
         }
         break;
-
-      case 0x80: // Note Off event packet
-        const noteOffMidi = data1;
-        this.activeSynth.noteOff(noteOffMidi);
+      }
+      case 0x80: { // Note Off
+        this.activeSynth.noteOff(data1);
         break;
-
-      case 0xb0: // Control Change (CC) event packet (knobs/faders/mod wheels)
-        const controllerNumber = data1;
-        const controllerValue = data2;
-        this.handleControlChange(controllerNumber, controllerValue);
+      }
+      case 0xe0: { // Pitch Bend — 14-bit value split across data1 (LSB) and data2 (MSB)
+        const raw = (data2 << 7) | data1;
+        // Map 0–16383 to ±2 semitones (standard pitch bend range)
+        const semitones = ((raw - 8192) / 8192) * 2;
+        this.activeSynth.setPitchBend(semitones);
         break;
+      }
+      case 0xb0: { // Control Change
+        this.handleControlChange(data1, data2);
+        break;
+      }
         
       default:
         break;
@@ -115,11 +122,20 @@ class MidiHardwareManager {
   private handleControlChange(control: number, value: number): void {
     if (!this.activeSynth) return;
 
-    // Standard Mod Wheel mapping
-    if (control === 1) {
-      // Scale standard 0-127 MIDI space into regular frequency values (e.g., 200Hz to 6000Hz)
-      const targetFrequency = 200 + (value / 127) * 5800;
-      this.activeSynth.setFilterFreq(targetFrequency);
+    switch (control) {
+      case 1: { // Mod Wheel → filter cutoff
+        const targetFrequency = 200 + (value / 127) * 5800;
+        this.activeSynth.setFilterFreq(targetFrequency);
+        break;
+      }
+      case 64: { // Sustain pedal — >63 = pressed, ≤63 = released
+        this.activeSynth.setSustain(value > 63);
+        break;
+      }
+      case 123: { // All Notes Off — sent by some devices on disconnect
+        this.activeSynth.allNotesOff();
+        break;
+      }
     }
   }
 }

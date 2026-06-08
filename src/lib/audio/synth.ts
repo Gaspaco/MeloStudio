@@ -173,6 +173,9 @@ export class PolySynth {
   private active = new Set<number>();
   /** Stored so setFilterFreq can preserve Q when only changing frequency. */
   private filterQ = 1.0;
+  /** Sustain pedal state — held notes are queued instead of released immediately. */
+  private sustainActive = false;
+  private sustainedNotes = new Set<number>();
 
   constructor(preset: SynthPreset = "piano") {
     bindToneToContext();
@@ -257,6 +260,14 @@ export class PolySynth {
 
   noteOff(midi: number): void {
     if (!this.active.has(midi)) return;
+    if (this.sustainActive) {
+      this.sustainedNotes.add(midi);
+      return;
+    }
+    this._releaseNote(midi);
+  }
+
+  private _releaseNote(midi: number): void {
     const note = midiToNote(midi);
     const owner = this.noteOwner.get(midi);
     if (owner === "sampler" && this.sampler) {
@@ -268,11 +279,26 @@ export class PolySynth {
     this.noteOwner.delete(midi);
   }
 
+  setSustain(active: boolean): void {
+    this.sustainActive = active;
+    if (!active) {
+      for (const midi of this.sustainedNotes) this._releaseNote(midi);
+      this.sustainedNotes.clear();
+    }
+  }
+
+  setPitchBend(semitones: number): void {
+    // Tone.js Sampler has no global detune — pitch bend only applies to synth presets
+    this.synth.set({ detune: semitones * 100 });
+  }
+
   allNotesOff(): void {
     this.synth.releaseAll();
     this.sampler?.releaseAll();
     this.active.clear();
     this.noteOwner.clear();
+    this.sustainedNotes.clear();
+    this.sustainActive = false;
   }
 
   /** Live-tweak ADSR envelope — only effective for lead/pad presets. */

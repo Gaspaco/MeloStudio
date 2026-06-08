@@ -19671,20 +19671,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-server.tsx:1"
     },
     {
-      "id": "file::auth_instance",
-      "label": "auth-instance.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:1"
-    },
-    {
-      "id": "auth_instance::requireenv",
-      "label": "requireEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:13"
-    },
-    {
       "id": "file::clipstore",
       "label": "clipStore.ts",
       "fileType": "code",
@@ -20469,62 +20455,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/types.ts:105"
     },
     {
-      "id": "file::graph",
-      "label": "graph.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:1"
-    },
-    {
-      "id": "graph::audiograph",
-      "label": "AudioGraph",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:17"
-    },
-    {
-      "id": "graph::audiograph::trackinput",
-      "label": ".trackInput",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:22"
-    },
-    {
-      "id": "graph::audiograph::constructor",
-      "label": ".constructor",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:26"
-    },
-    {
-      "id": "graph::audiograph::setmaster",
-      "label": ".setMaster",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:32"
-    },
-    {
-      "id": "graph::audiograph::upserttrack",
-      "label": ".upsertTrack",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:43"
-    },
-    {
-      "id": "graph::audiograph::removetrack",
-      "label": ".removeTrack",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:66"
-    },
-    {
-      "id": "graph::audiograph::destroy",
-      "label": ".destroy",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:75"
-    },
-    {
       "id": "file::masterbus",
       "label": "masterBus.ts",
       "fileType": "code",
@@ -20712,118 +20642,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:226"
-    },
-    {
-      "id": "file::synth",
-      "label": "synth.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:1"
-    },
-    {
-      "id": "synth::miditonote",
-      "label": "midiToNote",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:131"
-    },
-    {
-      "id": "synth::buildsynthopts",
-      "label": "buildSynthOpts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:134"
-    },
-    {
-      "id": "synth::getsampler",
-      "label": "getSampler",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:147"
-    },
-    {
-      "id": "synth::polysynth",
-      "label": "PolySynth",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:163"
-    },
-    {
-      "id": "synth::polysynth::constructor",
-      "label": ".constructor",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:177"
-    },
-    {
-      "id": "synth::polysynth::applypreset",
-      "label": ".applyPreset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:190"
-    },
-    {
-      "id": "synth::polysynth::detachsampler",
-      "label": ".detachSampler",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:221"
-    },
-    {
-      "id": "synth::polysynth::setpreset",
-      "label": ".setPreset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:229"
-    },
-    {
-      "id": "synth::polysynth::setmastergaindb",
-      "label": ".setMasterGainDb",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:236"
-    },
-    {
-      "id": "synth::polysynth::noteon",
-      "label": ".noteOn",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:241"
-    },
-    {
-      "id": "synth::polysynth::noteoff",
-      "label": ".noteOff",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:258"
-    },
-    {
-      "id": "synth::polysynth::allnotesoff",
-      "label": ".allNotesOff",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:271"
-    },
-    {
-      "id": "synth::polysynth::setenvelope",
-      "label": ".setEnvelope",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:279"
-    },
-    {
-      "id": "synth::polysynth::setfilterfreq",
-      "label": ".setFilterFreq",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:288"
-    },
-    {
-      "id": "synth::polysynth::dispose",
-      "label": ".dispose",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:293"
     },
     {
       "id": "file::projecttimeline",
@@ -22973,6 +22791,307 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/waveform.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/waveform.ts:1"
+    },
+    {
+      "id": "file::graph",
+      "label": "graph.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:1"
+    },
+    {
+      "id": "graph::audiograph",
+      "label": "AudioGraph",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:18"
+    },
+    {
+      "id": "graph::audiograph::constructor",
+      "label": ".constructor",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:28"
+    },
+    {
+      "id": "graph::audiograph::trackinput",
+      "label": ".trackInput",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:34"
+    },
+    {
+      "id": "graph::audiograph::setmaster",
+      "label": ".setMaster",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:38"
+    },
+    {
+      "id": "graph::audiograph::upserttrack",
+      "label": ".upsertTrack",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:49"
+    },
+    {
+      "id": "graph::audiograph::removetrack",
+      "label": ".removeTrack",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:72"
+    },
+    {
+      "id": "graph::audiograph::connectmicrophonetotrack",
+      "label": ".connectMicrophoneToTrack",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:87"
+    },
+    {
+      "id": "graph::audiograph::disconnectmicrophone",
+      "label": ".disconnectMicrophone",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:128"
+    },
+    {
+      "id": "graph::audiograph::destroy",
+      "label": ".destroy",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:143"
+    },
+    {
+      "id": "file::midimanager",
+      "label": "midiManager.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:1"
+    },
+    {
+      "id": "midimanager::midihardwaremanager",
+      "label": "MidiHardwareManager",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:5"
+    },
+    {
+      "id": "midimanager::midihardwaremanager::initialize",
+      "label": ".initialize",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:12"
+    },
+    {
+      "id": "midimanager::midihardwaremanager::bindtargetsynth",
+      "label": ".bindTargetSynth",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:38"
+    },
+    {
+      "id": "midimanager::midihardwaremanager::scandevices",
+      "label": ".scanDevices",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:46"
+    },
+    {
+      "id": "midimanager::midihardwaremanager::handlemidimessage",
+      "label": ".handleMidiMessage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:73"
+    },
+    {
+      "id": "midimanager::midihardwaremanager::handlecontrolchange",
+      "label": ".handleControlChange",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:122"
+    },
+    {
+      "id": "file::synth",
+      "label": "synth.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:1"
+    },
+    {
+      "id": "synth::miditonote",
+      "label": "midiToNote",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:131"
+    },
+    {
+      "id": "synth::buildsynthopts",
+      "label": "buildSynthOpts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:134"
+    },
+    {
+      "id": "synth::getsampler",
+      "label": "getSampler",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:147"
+    },
+    {
+      "id": "synth::polysynth",
+      "label": "PolySynth",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:163"
+    },
+    {
+      "id": "synth::polysynth::constructor",
+      "label": ".constructor",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:180"
+    },
+    {
+      "id": "synth::polysynth::applypreset",
+      "label": ".applyPreset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:193"
+    },
+    {
+      "id": "synth::polysynth::detachsampler",
+      "label": ".detachSampler",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:224"
+    },
+    {
+      "id": "synth::polysynth::setpreset",
+      "label": ".setPreset",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:232"
+    },
+    {
+      "id": "synth::polysynth::setmastergaindb",
+      "label": ".setMasterGainDb",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:239"
+    },
+    {
+      "id": "synth::polysynth::noteon",
+      "label": ".noteOn",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:244"
+    },
+    {
+      "id": "synth::polysynth::noteoff",
+      "label": ".noteOff",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:261"
+    },
+    {
+      "id": "synth::polysynth::_releasenote",
+      "label": "._releaseNote",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:270"
+    },
+    {
+      "id": "synth::polysynth::setsustain",
+      "label": ".setSustain",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:282"
+    },
+    {
+      "id": "synth::polysynth::setpitchbend",
+      "label": ".setPitchBend",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:290"
+    },
+    {
+      "id": "synth::polysynth::allnotesoff",
+      "label": ".allNotesOff",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:295"
+    },
+    {
+      "id": "synth::polysynth::setenvelope",
+      "label": ".setEnvelope",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:305"
+    },
+    {
+      "id": "synth::polysynth::setfilterfreq",
+      "label": ".setFilterFreq",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:314"
+    },
+    {
+      "id": "synth::polysynth::dispose",
+      "label": ".dispose",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:319"
+    },
+    {
+      "id": "file::auth_instance",
+      "label": "auth-instance.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:1"
+    },
+    {
+      "id": "auth_instance::requireenv",
+      "label": "requireEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:13"
+    },
+    {
+      "id": "file::mailer",
+      "label": "mailer.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:1"
+    },
+    {
+      "id": "mailer::requireenv",
+      "label": "requireEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:4"
+    },
+    {
+      "id": "mailer::gettransporter",
+      "label": "getTransporter",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:12"
+    },
+    {
+      "id": "mailer::from",
+      "label": "FROM",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:26"
+    },
+    {
+      "id": "mailer::sendpasswordresetemail",
+      "label": "sendPasswordResetEmail",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:29"
     }
   ],
   "edges": [
@@ -47907,15 +48026,6 @@
       "weight": 1
     },
     {
-      "source": "file::auth_instance",
-      "target": "auth_instance::requireenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:13",
-      "weight": 1
-    },
-    {
       "source": "file::clipstore",
       "target": "clipstore::opendb",
       "relation": "contains",
@@ -48789,69 +48899,6 @@
       "weight": 1
     },
     {
-      "source": "file::graph",
-      "target": "graph::audiograph",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:17",
-      "weight": 1
-    },
-    {
-      "source": "graph::audiograph",
-      "target": "graph::audiograph::trackinput",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:22",
-      "weight": 1
-    },
-    {
-      "source": "graph::audiograph",
-      "target": "graph::audiograph::constructor",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:26",
-      "weight": 1
-    },
-    {
-      "source": "graph::audiograph",
-      "target": "graph::audiograph::setmaster",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:32",
-      "weight": 1
-    },
-    {
-      "source": "graph::audiograph",
-      "target": "graph::audiograph::upserttrack",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:43",
-      "weight": 1
-    },
-    {
-      "source": "graph::audiograph",
-      "target": "graph::audiograph::removetrack",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:66",
-      "weight": 1
-    },
-    {
-      "source": "graph::audiograph",
-      "target": "graph::audiograph::destroy",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:75",
-      "weight": 1
-    },
-    {
       "source": "file::masterbus",
       "target": "masterbus::getmasterbus",
       "relation": "contains",
@@ -49074,141 +49121,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:226",
-      "weight": 1
-    },
-    {
-      "source": "file::synth",
-      "target": "synth::miditonote",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:131",
-      "weight": 1
-    },
-    {
-      "source": "file::synth",
-      "target": "synth::buildsynthopts",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:134",
-      "weight": 1
-    },
-    {
-      "source": "file::synth",
-      "target": "synth::getsampler",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:147",
-      "weight": 1
-    },
-    {
-      "source": "file::synth",
-      "target": "synth::polysynth",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:163",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::constructor",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:177",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::applypreset",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:190",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::detachsampler",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:221",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::setpreset",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:229",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::setmastergaindb",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:236",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::noteon",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:241",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::noteoff",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:258",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::allnotesoff",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:271",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::setenvelope",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:279",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::setfilterfreq",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:288",
-      "weight": 1
-    },
-    {
-      "source": "synth::polysynth",
-      "target": "synth::polysynth::dispose",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:293",
       "weight": 1
     },
     {
@@ -51370,12 +51282,354 @@
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/waveform.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/waveform.ts:1",
       "weight": 1
+    },
+    {
+      "source": "file::graph",
+      "target": "graph::audiograph",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:18",
+      "weight": 1
+    },
+    {
+      "source": "graph::audiograph",
+      "target": "graph::audiograph::constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:28",
+      "weight": 1
+    },
+    {
+      "source": "graph::audiograph",
+      "target": "graph::audiograph::trackinput",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:34",
+      "weight": 1
+    },
+    {
+      "source": "graph::audiograph",
+      "target": "graph::audiograph::setmaster",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:38",
+      "weight": 1
+    },
+    {
+      "source": "graph::audiograph",
+      "target": "graph::audiograph::upserttrack",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:49",
+      "weight": 1
+    },
+    {
+      "source": "graph::audiograph",
+      "target": "graph::audiograph::removetrack",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:72",
+      "weight": 1
+    },
+    {
+      "source": "graph::audiograph",
+      "target": "graph::audiograph::connectmicrophonetotrack",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:87",
+      "weight": 1
+    },
+    {
+      "source": "graph::audiograph",
+      "target": "graph::audiograph::disconnectmicrophone",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:128",
+      "weight": 1
+    },
+    {
+      "source": "graph::audiograph",
+      "target": "graph::audiograph::destroy",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/graph.ts:143",
+      "weight": 1
+    },
+    {
+      "source": "file::midimanager",
+      "target": "midimanager::midihardwaremanager",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:5",
+      "weight": 1
+    },
+    {
+      "source": "midimanager::midihardwaremanager",
+      "target": "midimanager::midihardwaremanager::initialize",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:12",
+      "weight": 1
+    },
+    {
+      "source": "midimanager::midihardwaremanager",
+      "target": "midimanager::midihardwaremanager::bindtargetsynth",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:38",
+      "weight": 1
+    },
+    {
+      "source": "midimanager::midihardwaremanager",
+      "target": "midimanager::midihardwaremanager::scandevices",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:46",
+      "weight": 1
+    },
+    {
+      "source": "midimanager::midihardwaremanager",
+      "target": "midimanager::midihardwaremanager::handlemidimessage",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:73",
+      "weight": 1
+    },
+    {
+      "source": "midimanager::midihardwaremanager",
+      "target": "midimanager::midihardwaremanager::handlecontrolchange",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/midiManager.ts:122",
+      "weight": 1
+    },
+    {
+      "source": "file::synth",
+      "target": "synth::miditonote",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:131",
+      "weight": 1
+    },
+    {
+      "source": "file::synth",
+      "target": "synth::buildsynthopts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:134",
+      "weight": 1
+    },
+    {
+      "source": "file::synth",
+      "target": "synth::getsampler",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:147",
+      "weight": 1
+    },
+    {
+      "source": "file::synth",
+      "target": "synth::polysynth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:163",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:180",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::applypreset",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:193",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::detachsampler",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:224",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::setpreset",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:232",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::setmastergaindb",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:239",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::noteon",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:244",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::noteoff",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:261",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::_releasenote",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:270",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::setsustain",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:282",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::setpitchbend",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:290",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::allnotesoff",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:295",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::setenvelope",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:305",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::setfilterfreq",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:314",
+      "weight": 1
+    },
+    {
+      "source": "synth::polysynth",
+      "target": "synth::polysynth::dispose",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:319",
+      "weight": 1
+    },
+    {
+      "source": "file::auth_instance",
+      "target": "auth_instance::requireenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:13",
+      "weight": 1
+    },
+    {
+      "source": "file::mailer",
+      "target": "mailer::requireenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:4",
+      "weight": 1
+    },
+    {
+      "source": "file::mailer",
+      "target": "mailer::gettransporter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:12",
+      "weight": 1
+    },
+    {
+      "source": "file::mailer",
+      "target": "mailer::from",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:26",
+      "weight": 1
+    },
+    {
+      "source": "file::mailer",
+      "target": "mailer::sendpasswordresetemail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:29",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 136,
-    "nodes": 3282,
-    "edges": 3155,
-    "builtAt": "2026-06-08T11:21:12.034Z"
+    "files": 138,
+    "nodes": 3299,
+    "edges": 3170,
+    "builtAt": "2026-06-08T12:41:16.492Z"
   }
 }
