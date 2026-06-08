@@ -118,8 +118,13 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async ({ user, url }) => {
-      const { sendPasswordResetEmail } = await import("./mailer");
-      await sendPasswordResetEmail(user.email, url);
+      try {
+        const { sendPasswordResetEmail } = await import("./mailer");
+        await sendPasswordResetEmail(user.email, url);
+        console.log("[mailer] Reset email sent to:", user.email);
+      } catch (err) {
+        console.error("[mailer] Failed to send reset email:", err);
+      }
     },
   },
 

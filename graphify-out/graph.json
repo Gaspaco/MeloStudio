@@ -22975,55 +22975,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/synth.ts:319"
     },
     {
-      "id": "file::auth_instance",
-      "label": "auth-instance.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:1"
-    },
-    {
-      "id": "auth_instance::requireenv",
-      "label": "requireEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:13"
-    },
-    {
-      "id": "file::mailer",
-      "label": "mailer.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:1"
-    },
-    {
-      "id": "mailer::requireenv",
-      "label": "requireEnv",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:4"
-    },
-    {
-      "id": "mailer::gettransporter",
-      "label": "getTransporter",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:12"
-    },
-    {
-      "id": "mailer::from",
-      "label": "FROM",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:26"
-    },
-    {
-      "id": "mailer::sendpasswordresetemail",
-      "label": "sendPasswordResetEmail",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:29"
-    },
-    {
       "id": "file::app_auth",
       "label": "app-auth.ts",
       "fileType": "code",
@@ -23099,6 +23050,55 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/auth/check-email.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/auth/check-email.ts:4"
+    },
+    {
+      "id": "file::auth_instance",
+      "label": "auth-instance.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:1"
+    },
+    {
+      "id": "auth_instance::requireenv",
+      "label": "requireEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:13"
+    },
+    {
+      "id": "file::mailer",
+      "label": "mailer.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:1"
+    },
+    {
+      "id": "mailer::requireenv",
+      "label": "requireEnv",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:4"
+    },
+    {
+      "id": "mailer::gettransporter",
+      "label": "getTransporter",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:12"
+    },
+    {
+      "id": "mailer::from",
+      "label": "FROM",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:26"
+    },
+    {
+      "id": "mailer::sendpasswordresetemail",
+      "label": "sendPasswordResetEmail",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:29"
     }
   ],
   "edges": [
@@ -51507,51 +51507,6 @@
       "weight": 1
     },
     {
-      "source": "file::auth_instance",
-      "target": "auth_instance::requireenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:13",
-      "weight": 1
-    },
-    {
-      "source": "file::mailer",
-      "target": "mailer::requireenv",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:4",
-      "weight": 1
-    },
-    {
-      "source": "file::mailer",
-      "target": "mailer::gettransporter",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:12",
-      "weight": 1
-    },
-    {
-      "source": "file::mailer",
-      "target": "mailer::from",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:26",
-      "weight": 1
-    },
-    {
-      "source": "file::mailer",
-      "target": "mailer::sendpasswordresetemail",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:29",
-      "weight": 1
-    },
-    {
       "source": "file::app_auth",
       "target": "app_auth::readauthstate",
       "relation": "contains",
@@ -51631,12 +51586,57 @@
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/auth/check-email.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/auth/check-email.ts:4",
       "weight": 1
+    },
+    {
+      "source": "file::auth_instance",
+      "target": "auth_instance::requireenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:13",
+      "weight": 1
+    },
+    {
+      "source": "file::mailer",
+      "target": "mailer::requireenv",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:4",
+      "weight": 1
+    },
+    {
+      "source": "file::mailer",
+      "target": "mailer::gettransporter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:12",
+      "weight": 1
+    },
+    {
+      "source": "file::mailer",
+      "target": "mailer::from",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:26",
+      "weight": 1
+    },
+    {
+      "source": "file::mailer",
+      "target": "mailer::sendpasswordresetemail",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:29",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 139,
     "nodes": 3300,
     "edges": 3170,
-    "builtAt": "2026-06-08T12:56:52.188Z"
+    "builtAt": "2026-06-08T13:25:38.884Z"
   }
 }

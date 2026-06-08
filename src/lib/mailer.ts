@@ -35,45 +35,58 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
     html: `
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:system-ui,sans-serif;color:#e5e5e5">
-  <table width="100%" cellpadding="0" cellspacing="0" style="padding:48px 24px">
-    <tr><td align="center">
-      <table width="100%" style="max-width:480px;background:#111;border:1px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden">
-        <!-- header -->
-        <tr>
-          <td style="padding:32px 36px 24px;border-bottom:1px solid rgba(255,255,255,0.06)">
-            <span style="font-size:13px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:#b066ff">MELO</span>
-            <span style="font-size:16px;font-weight:400;color:#fff;margin-left:4px">Studio</span>
-          </td>
-        </tr>
-        <!-- body -->
-        <tr>
-          <td style="padding:36px 36px 28px">
-            <h1 style="margin:0 0 12px;font-size:22px;font-weight:700;color:#fff;letter-spacing:-0.02em">Reset your password</h1>
-            <p style="margin:0 0 28px;font-size:14px;line-height:1.65;color:rgba(255,255,255,0.55)">
-              We received a request to reset the password for your account.<br>
-              This link expires in <strong style="color:rgba(255,255,255,0.75)">1 hour</strong>.
-            </p>
-            <a href="${resetUrl}"
-               style="display:inline-block;padding:13px 28px;background:#b066ff;color:#fff;text-decoration:none;border-radius:100px;font-size:13px;font-weight:600;letter-spacing:0.04em">
-              Reset password
-            </a>
-            <p style="margin:24px 0 0;font-size:12px;color:rgba(255,255,255,0.3);line-height:1.6">
-              Or copy this link into your browser:<br>
-              <span style="color:rgba(255,255,255,0.45);word-break:break-all">${resetUrl}</span>
-            </p>
-          </td>
-        </tr>
-        <!-- footer -->
-        <tr>
-          <td style="padding:20px 36px;border-top:1px solid rgba(255,255,255,0.06)">
-            <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.25)">
-              If you didn't request a password reset, you can safely ignore this email.
-            </p>
-          </td>
-        </tr>
-      </table>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&family=Great+Vibes&display=swap" rel="stylesheet">
+</head>
+<body style="margin:0;padding:0;background:#080808;font-family:system-ui,sans-serif;color:#e5e5e5">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:56px 24px">
+    <tr><td align="left" style="max-width:520px;margin:0 auto;display:block">
+
+      <!-- logo -->
+      <div style="margin-bottom:40px">
+        <span style="font-family:'Syne',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.14em;text-transform:uppercase;color:#e05297">MELO</span><span style="font-family:'Great Vibes',cursive;font-size:20px;color:#fff;margin-left:6px;vertical-align:middle">Studio</span>
+      </div>
+
+      <!-- hero -->
+      <div style="margin-bottom:6px">
+        <span style="font-family:'Great Vibes',cursive;font-size:62px;line-height:1;color:#e05297;display:block">Reset</span>
+      </div>
+      <div style="margin-bottom:36px">
+        <span style="font-family:'Syne',sans-serif;font-size:72px;font-weight:800;letter-spacing:-0.04em;text-transform:uppercase;color:#fff;line-height:0.88;display:block">Password</span>
+      </div>
+
+      <!-- divider -->
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:32px"></div>
+
+      <!-- body text -->
+      <p style="margin:0 0 32px;font-size:14px;line-height:1.8;color:rgba(255,255,255,0.45)">
+        We received a request to reset the password for your account.<br>
+        This link expires in <span style="color:#e05297;font-weight:600">1 hour</span>.
+      </p>
+
+      <!-- button -->
+      <div style="margin-bottom:36px">
+        <a href="${resetUrl}" style="display:inline-block;padding:14px 36px;background:#e05297;color:#fff;text-decoration:none;border-radius:100px;font-family:'Syne',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase">
+          Reset Password
+        </a>
+      </div>
+
+      <!-- divider -->
+      <div style="height:1px;background:rgba(255,255,255,0.07);margin-bottom:24px"></div>
+
+      <!-- link fallback -->
+      <p style="margin:0 0 24px;font-size:11px;color:rgba(255,255,255,0.25);line-height:1.7">
+        Or copy this link into your browser:<br>
+        <span style="color:rgba(255,255,255,0.35);word-break:break-all">${resetUrl}</span>
+      </p>
+
+      <!-- footer -->
+      <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.18)">
+        If you didn't request this, you can safely ignore it.
+      </p>
+
     </td></tr>
   </table>
 </body>
