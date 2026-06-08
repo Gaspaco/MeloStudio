@@ -20903,76 +20903,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/remoteClips.ts:103"
     },
     {
-      "id": "file::app_auth",
-      "label": "app-auth.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:1"
-    },
-    {
-      "id": "app_auth::readauthstate",
-      "label": "readAuthState",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:10"
-    },
-    {
-      "id": "app_auth::writeauthstate",
-      "label": "writeAuthState",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:16"
-    },
-    {
-      "id": "app_auth::markauthprovider",
-      "label": "markAuthProvider",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:21"
-    },
-    {
-      "id": "app_auth::markloggedout",
-      "label": "markLoggedOut",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:25"
-    },
-    {
-      "id": "app_auth::getappsession",
-      "label": "getAppSession",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:29"
-    },
-    {
-      "id": "app_auth::signoutbetterauth",
-      "label": "signOutBetterAuth",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:71"
-    },
-    {
-      "id": "app_auth::signoutneon",
-      "label": "signOutNeon",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:87"
-    },
-    {
-      "id": "app_auth::signoutapp",
-      "label": "signOutApp",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:91"
-    },
-    {
-      "id": "app_auth::getapibearertoken",
-      "label": "getApiBearerToken",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:102"
-    },
-    {
       "id": "file::social_auth",
       "label": "social-auth.ts",
       "fileType": "code",
@@ -23092,6 +23022,69 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:29"
+    },
+    {
+      "id": "file::app_auth",
+      "label": "app-auth.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:1"
+    },
+    {
+      "id": "app_auth::readauthstate",
+      "label": "readAuthState",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:10"
+    },
+    {
+      "id": "app_auth::writeauthstate",
+      "label": "writeAuthState",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:16"
+    },
+    {
+      "id": "app_auth::markauthprovider",
+      "label": "markAuthProvider",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:21"
+    },
+    {
+      "id": "app_auth::markloggedout",
+      "label": "markLoggedOut",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:25"
+    },
+    {
+      "id": "app_auth::getappsession",
+      "label": "getAppSession",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:29"
+    },
+    {
+      "id": "app_auth::signoutbetterauth",
+      "label": "signOutBetterAuth",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:71"
+    },
+    {
+      "id": "app_auth::signoutapp",
+      "label": "signOutApp",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:87"
+    },
+    {
+      "id": "app_auth::getapibearertoken",
+      "label": "getApiBearerToken",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:94"
     }
   ],
   "edges": [
@@ -49403,87 +49396,6 @@
       "weight": 1
     },
     {
-      "source": "file::app_auth",
-      "target": "app_auth::readauthstate",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:10",
-      "weight": 1
-    },
-    {
-      "source": "file::app_auth",
-      "target": "app_auth::writeauthstate",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:16",
-      "weight": 1
-    },
-    {
-      "source": "file::app_auth",
-      "target": "app_auth::markauthprovider",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:21",
-      "weight": 1
-    },
-    {
-      "source": "file::app_auth",
-      "target": "app_auth::markloggedout",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:25",
-      "weight": 1
-    },
-    {
-      "source": "file::app_auth",
-      "target": "app_auth::getappsession",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:29",
-      "weight": 1
-    },
-    {
-      "source": "file::app_auth",
-      "target": "app_auth::signoutbetterauth",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:71",
-      "weight": 1
-    },
-    {
-      "source": "file::app_auth",
-      "target": "app_auth::signoutneon",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:87",
-      "weight": 1
-    },
-    {
-      "source": "file::app_auth",
-      "target": "app_auth::signoutapp",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:91",
-      "weight": 1
-    },
-    {
-      "source": "file::app_auth",
-      "target": "app_auth::getapibearertoken",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:102",
-      "weight": 1
-    },
-    {
       "source": "file::visualready",
       "target": "visualready::nextframe",
       "relation": "contains",
@@ -51624,12 +51536,84 @@
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/mailer.ts:29",
       "weight": 1
+    },
+    {
+      "source": "file::app_auth",
+      "target": "app_auth::readauthstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:10",
+      "weight": 1
+    },
+    {
+      "source": "file::app_auth",
+      "target": "app_auth::writeauthstate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:16",
+      "weight": 1
+    },
+    {
+      "source": "file::app_auth",
+      "target": "app_auth::markauthprovider",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:21",
+      "weight": 1
+    },
+    {
+      "source": "file::app_auth",
+      "target": "app_auth::markloggedout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:25",
+      "weight": 1
+    },
+    {
+      "source": "file::app_auth",
+      "target": "app_auth::getappsession",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:29",
+      "weight": 1
+    },
+    {
+      "source": "file::app_auth",
+      "target": "app_auth::signoutbetterauth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:71",
+      "weight": 1
+    },
+    {
+      "source": "file::app_auth",
+      "target": "app_auth::signoutapp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:87",
+      "weight": 1
+    },
+    {
+      "source": "file::app_auth",
+      "target": "app_auth::getapibearertoken",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:94",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 138,
-    "nodes": 3299,
-    "edges": 3170,
-    "builtAt": "2026-06-08T12:41:16.492Z"
+    "nodes": 3298,
+    "edges": 3169,
+    "builtAt": "2026-06-08T12:49:34.935Z"
   }
 }

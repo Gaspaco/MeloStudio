@@ -84,18 +84,10 @@ async function signOutBetterAuth() {
   } catch {}
 }
 
-async function signOutNeon() {
-  try { await authClient.signOut(); } catch {}
-}
-
 export async function signOutApp() {
-  const stored = readAuthState();
-  const session = stored === "logged-out" ? null : await getAppSession({ respectLoggedOut: false, persist: false });
-  const provider = stored === "neon" || stored === "better-auth" ? stored : session?.provider;
-
+  // Neon Auth uses stateless JWTs — no server-side session to invalidate.
+  // Marking logged-out locally is sufficient; the JWT expires on its own.
   await signOutBetterAuth();
-  if (provider === "neon") await signOutNeon();
-
   markLoggedOut();
 }
 
