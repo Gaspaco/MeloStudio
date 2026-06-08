@@ -82,11 +82,12 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
 
       setSent(true);
       gsap.timeline()
-        .to(".forgot__form", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" })
+        .to(".forgot__hero, .forgot__subtitle, .forgot__form", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" })
+        .set(".forgot__hero, .forgot__subtitle, .forgot__form", { display: "none" })
         .fromTo(".forgot__success",
           { opacity: 0, y: 40 },
           { opacity: 1, y: 0, duration: 0.8, ease: "expo.out", display: "flex" },
-          0.3
+          "-=0.1"
         );
     } catch {
       setErrorMsg("Network error. Check your connection and try again.");
