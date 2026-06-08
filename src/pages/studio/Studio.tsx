@@ -1,13 +1,19 @@
 import { type Component, createSignal, createMemo, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
-import * as Tone from "tone";
+import type * as ToneNs from "tone";
+
+let Tone: typeof ToneNs | undefined;
+const getTone = async () => {
+  if (!Tone) Tone = await import("tone");
+  return Tone;
+};
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
 import { type SynthPreset } from "~/lib/audio/synth";
 import { getMasterBus } from "~/lib/audio/masterBus";
-import { updateProjectApi } from "~/lib/api";
-import { authClient } from "~/lib/auth";
-import { socialAuthClient } from "~/lib/social-auth";
-import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES } from "./types";
+import { unlockAudioContext } from "~/lib/audio/context";
+import { updateProjectApi, sendHeartbeat } from "~/lib/api";
+import { getAppSession } from "~/lib/app-auth";
+import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES, hasStudioContent } from "./types";
 import { useProject }   from "./hooks/useProject";
 import { useTransport } from "./hooks/useTransport";
 import { useDrum }      from "./hooks/useDrum";
@@ -23,7 +29,7 @@ import DrumPanel        from "./components/DrumPanel";
 import KeyboardPanel    from "./components/KeyboardPanel";
 import NavDrawer, { type NavCategory } from "./components/NavDrawer";
 import NewTrackModal    from "./components/NewTrackModal";
-import PublishModal     from "./components/PublishModal";
+
 import "./studio.scss";
 
 const Studio: Component = () => {
@@ -74,7 +80,7 @@ const Studio: Component = () => {
   const [metronomeOn,        setMetronomeOn]        = createSignal(false);
   const [loopOn,             setLoopOn]             = createSignal(false);
   const [published,          setPublished]          = createSignal(false);
-  const [showPublish,        setShowPublish]        = createSignal(false);
+
   const [userImage,          setUserImage]          = createSignal<string | null>(null);
 
   // ── Undo / Redo history ───────────────────────────────────────────────────
@@ -161,6 +167,7 @@ const Studio: Component = () => {
   });
 
   const trk = useTracks({
+    projectId: () => params.id,
     tracks, setTracks, selectedTrack, setSelectedTrack,
     bpm, setError, setShowNewTrack,
     ensureSynth: sth.ensureSynth, setSynthPreset,
@@ -171,17 +178,16 @@ const Studio: Component = () => {
     timelineEl: () => timelineElRef,
   });
 
+  const canSaveProject = () => hasStudioContent(tracks(), pattern(), lyricsText());
+
   onMount(async () => {
     seq = new StepSequencer();
     seq.onStep = (i) => setCurrentStep(i);
-    // Initialize master bus in enhanced mode (on by default)
-    getMasterBus().setEnhanced(true);
     await project.init();
 
     // Fetch user avatar for the save toast
     try {
-      let img = (await authClient.getSession()).data?.user?.image;
-      if (!img) img = (await socialAuthClient.getSession()).data?.user?.image ?? undefined;
+      const img = (await getAppSession())?.user?.image ?? undefined;
       if (img) setUserImage(img);
     } catch { /* non-critical */ }
     // Seed initial history snapshot once the project is loaded
@@ -201,19 +207,46 @@ const Studio: Component = () => {
     };
     window.addEventListener("keydown", handleGlobalKey);
     onCleanup(() => window.removeEventListener("keydown", handleGlobalKey));
+
   });
 
   onCleanup(() => {
     seq?.stop();
     sth.allNotesOff();
     metronomePart?.dispose();
+    if (canSaveProject() && Date.now() - lastSavedAt > 5_000) {
+      project.save().catch(() => {});
+    }
   });
 
-  // ── Metronome ─────────────────────────────────────────────────────────────
-  let metronomePart: Tone.Part | null = null;
+  // ── Studio time heartbeat (60s while tab is visible) ──────────────────────
+  {
+    let hbInterval: ReturnType<typeof setInterval> | undefined;
+    const startHb = () => {
+      if (hbInterval) return;
+      sendHeartbeat(params.id);
+      hbInterval = setInterval(() => sendHeartbeat(params.id), 60_000);
+    };
+    const stopHb = () => {
+      if (hbInterval) { clearInterval(hbInterval); hbInterval = undefined; }
+    };
+    const onVis = () => document.hidden ? stopHb() : startHb();
+    onMount(() => {
+      startHb();
+      document.addEventListener("visibilitychange", onVis);
+    });
+    onCleanup(() => {
+      stopHb();
+      document.removeEventListener("visibilitychange", onVis);
+    });
+  }
 
-  const playMetronomeClick = (time: number, isDownbeat: boolean) => {
-    const ac = Tone.getContext().rawContext as AudioContext;
+  // ── Metronome ─────────────────────────────────────────────────────────────
+  let metronomePart: ToneNs.Part | null = null;
+
+  const playMetronomeClick = async (time: number, isDownbeat: boolean) => {
+    const T = await getTone();
+    const ac = T.getContext().rawContext as AudioContext;
     const osc = ac.createOscillator();
     const gain = ac.createGain();
     osc.connect(gain);
@@ -225,10 +258,11 @@ const Studio: Component = () => {
     osc.stop(time + 0.05);
   };
 
-  const startMetronome = () => {
+  const startMetronome = async () => {
+    const T = await getTone();
     metronomePart?.dispose();
     const [num] = timeSig();
-    metronomePart = new Tone.Part((time: number, ev: unknown) => {
+    metronomePart = new T.Part((time: number, ev: unknown) => {
       const beat = (ev as { beat: number }).beat;
       playMetronomeClick(time, beat === 0);
     }, Array.from({ length: num }, (_, i) => [`${i}*4n`, { beat: i }]));
@@ -247,7 +281,7 @@ const Studio: Component = () => {
     const next = !metronomeOn();
     setMetronomeOn(next);
     if (next && playing()) {
-      await Tone.start();
+      await unlockAudioContext();
       startMetronome();
     } else {
       stopMetronome();
@@ -256,8 +290,11 @@ const Studio: Component = () => {
 
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
   onCleanup(() => clearTimeout(toastTimer));
+  let lastSavedAt = 0;
   const handleSave = async () => {
+    if (!canSaveProject()) return;
     await project.save();
+    lastSavedAt = Date.now();
     setLastSaved(new Date());
     setShowSaveToast(true);
     clearTimeout(toastTimer);
@@ -333,6 +370,11 @@ const Studio: Component = () => {
 
   const drumClipBars = createMemo(() => Array.from({ length: 4 }, (_, i) => i));
 
+  const saveAndNavigate = async (path: string) => {
+    if (canSaveProject()) await handleSave();
+    navigate(path);
+  };
+
   const buildNavCats = (): NavCategory[] => {
     const close = () => setNavOpen(false);
     const run = (fn: () => void) => () => { fn(); close(); };
@@ -341,18 +383,18 @@ const Studio: Component = () => {
         id: "project", num: "01", label: "Project",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V4l6-1.2v7"/><circle cx="5" cy="11.5" r="1.4"/><circle cx="11" cy="9.8" r="1.4"/></svg>,
         items: [
-          { label: "New Project",    kbd: "⌘N", action: run(() => navigate("/dashboard?new=1")) },
-          { label: "Save",           kbd: "⌘S", action: run(() => { void handleSave(); }), disabled: () => saveState() === "saving" },
+          { label: "New Project",    kbd: "⌘N", action: run(() => { void saveAndNavigate("/dashboard?new=1"); }) },
+          { label: "Save",           kbd: "⌘S", action: run(() => { void handleSave(); }), disabled: () => saveState() === "saving" || !canSaveProject() },
           { label: "Rename\u2026",   kbd: "",   action: run(() => startEditingTitle()) },
-          { label: "Open Dashboard", kbd: "⌘D", action: run(() => navigate("/dashboard")) },
+          { label: "Open Dashboard", kbd: "⌘D", action: run(() => { void saveAndNavigate("/dashboard"); }) },
         ],
       },
       {
         id: "edit", num: "02", label: "Edit",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9-3 1 1-3 9-9z"/><path d="M9 4l3 3"/></svg>,
         items: [
-          { label: "Undo",          kbd: "⌘Z",  disabled: () => true },
-          { label: "Redo",          kbd: "⌘⇧Z", disabled: () => true },
+          { label: "Undo",          kbd: "⌘Z",  action: run(() => undo()),  disabled: () => !canUndo() },
+          { label: "Redo",          kbd: "⌘⇧Z", action: run(() => redo()),  disabled: () => !canRedo() },
           { label: "Delete Track",  kbd: "⌫",   action: run(() => { const id = selectedTrack(); if (id) trk.deleteTrack(id); }), disabled: () => !selectedTrack() },
           { label: "Clear Pattern", kbd: "",    action: run(() => drum.clearPattern()) },
         ],
@@ -408,12 +450,12 @@ const Studio: Component = () => {
         playing={playing} elapsed={elapsed} masterVol={masterVol}
         titleInputRef={(el) => (titleInputEl = el)}
         onNavToggle={() => setNavOpen(!navOpen())}
-        onDashboard={() => navigate("/dashboard")}
+        onDashboard={() => { void saveAndNavigate("/dashboard"); }}
         onStartEditTitle={startEditingTitle}
         onCommitTitle={commitTitle}
         onCancelTitle={cancelTitle}
         onSave={handleSave}
-        canSave={() => tracks().length > 0 || pattern().rows.some(r => r.velocities.some(v => v > 0))}
+        canSave={canSaveProject}
         canUndo={canUndo} canRedo={canRedo}
         onUndo={undo} onRedo={redo}
         metronomeOn={metronomeOn} onToggleMetronome={toggleMetronome}
@@ -423,7 +465,7 @@ const Studio: Component = () => {
           // Start/stop metronome to stay in sync with playback
           if (metronomeOn()) {
             if (!playing()) stopMetronome();
-            else { await Tone.start(); startMetronome(); }
+            else { await unlockAudioContext(); startMetronome(); }
           }
         }}
         onStopAll={transport.stopAll}
@@ -439,7 +481,7 @@ const Studio: Component = () => {
           getMasterBus().setEnhanced(next);
         }}
         published={published}
-        onPublish={() => setShowPublish(true)}
+        onPublish={() => navigate(`/publish/${params.id}`)}
       />
 
       <Show when={error()}>
@@ -557,7 +599,7 @@ const Studio: Component = () => {
           navCat={navCat} setNavCat={setNavCat}
           cats={buildNavCats()} name={name}
           onClose={() => setNavOpen(false)}
-          onExit={() => { setNavOpen(false); navigate("/dashboard"); }}
+          onExit={() => { setNavOpen(false); void saveAndNavigate("/dashboard"); }}
         />
       </Show>
 
@@ -573,14 +615,7 @@ const Studio: Component = () => {
         <NewTrackModal onAddTrack={trk.addTrack} onClose={() => setShowNewTrack(false)} />
       </Show>
 
-      <Show when={showPublish()}>
-        <PublishModal
-          projectId={params.id}
-          published={published}
-          setPublished={setPublished}
-          onClose={() => setShowPublish(false)}
-        />
-      </Show>
+
     </div>
   );
 };

@@ -1,21 +1,79 @@
-import { Router } from "@solidjs/router";
+import { Router, useLocation } from "@solidjs/router";
 import { FileRoutes } from "@solidjs/start/router";
-import { Suspense } from "solid-js";
+import { createEffect, createSignal, onCleanup, onMount, Show, Suspense } from "solid-js";
+import RouteVeil from "~/components/RouteVeil";
+import { waitForVisualReady } from "~/lib/client/visualReady";
 import "./styles/global.scss";
 
-function PageLoader() {
+let bootSignaled = false;
+function BootReady() {
+  onMount(() => {
+    if (bootSignaled || typeof document === "undefined") return;
+    bootSignaled = true;
+    document.dispatchEvent(new Event("app:content-ready"));
+  });
+  return null;
+}
+
+function NavigationVeil() {
+  const location = useLocation();
+  const [active, setActive] = createSignal(false);
+  let firstRun = true;
+  let routeToken = 0;
+  let hideTimer: number | undefined;
+
+  createEffect(() => {
+    const routeKey = `${location.pathname}${location.search}${location.hash}`;
+    if (typeof window === "undefined") return;
+    routeKey;
+
+    if (firstRun) {
+      firstRun = false;
+      return;
+    }
+
+    const token = ++routeToken;
+    const startedAt = performance.now();
+    setActive(true);
+    if (hideTimer) window.clearTimeout(hideTimer);
+
+    void waitForVisualReady({ frames: 2, stylesheetsMaxWait: 1200, totalMaxWait: 1600 }).then(() => {
+      if (token !== routeToken) return;
+      const elapsed = performance.now() - startedAt;
+      const minVisible = 180;
+      hideTimer = window.setTimeout(() => {
+        if (token === routeToken) setActive(false);
+      }, Math.max(0, minVisible - elapsed));
+    });
+  });
+
+  onCleanup(() => {
+    routeToken += 1;
+    if (hideTimer) window.clearTimeout(hideTimer);
+  });
+
   return (
-    <div style={{
-      position: "fixed", inset: "0",
-      display: "flex", "align-items": "center", "justify-content": "center",
-      background: "var(--bg-primary, #0a0a0a)",
-    }} />
+    <Show when={active()}>
+      <RouteVeil label="Loading page" />
+    </Show>
+  );
+}
+
+function AppRoot(props: { children?: any }) {
+  return (
+    <>
+      <Suspense fallback={<RouteVeil label="Loading page" />}>
+        {props.children}
+        <BootReady />
+      </Suspense>
+      <NavigationVeil />
+    </>
   );
 }
 
 export default function App() {
   return (
-    <Router root={(props) => <Suspense fallback={<PageLoader />}>{props.children}</Suspense>}>
+    <Router root={AppRoot}>
       <FileRoutes />
     </Router>
   );

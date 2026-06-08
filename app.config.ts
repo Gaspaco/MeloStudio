@@ -11,6 +11,18 @@ export default defineConfig({
     },
     build: {
       target: "esnext",
+      rollupOptions: {
+        output: {
+          manualChunks(id: string) {
+            if (!id.includes("node_modules")) return;
+            if (id.includes("/gsap/")) return "vendor-gsap";
+            if (id.includes("/tone/")) return "vendor-tone";
+            if (id.includes("/three/")) return "vendor-three";
+            if (id.includes("/konva/")) return "vendor-konva";
+            if (id.includes("/lenis/")) return "vendor-lenis";
+          },
+        },
+      },
     },
     css: {
       preprocessorOptions: {

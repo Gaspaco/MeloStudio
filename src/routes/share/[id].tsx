@@ -2,8 +2,7 @@ import { type Component, createEffect, createMemo, createResource, createSignal,
 import gsap from "gsap";
 import { Portal } from "solid-js/web";
 import { useParams } from "@solidjs/router";
-import { authClient } from "../../lib/auth";
-import { socialAuthClient } from "../../lib/social-auth";
+import { getAppSession } from "../../lib/app-auth";
 import { apiFetch, transcribeProjectApi, updateProjectApi } from "~/lib/api";
 import "./share.scss";
 
@@ -239,10 +238,7 @@ const SharePage: Component = () => {
   const [project] = createResource(() => params.id, fetchPublicProject);
   const [copied, setCopied] = createSignal(false);
   const [sessionUser] = createResource(async () => {
-    const { data } = await authClient.getSession();
-    if (data?.user) return data.user;
-    const { data: baData } = await socialAuthClient.getSession();
-    return baData?.user ?? null;
+    return (await getAppSession())?.user ?? null;
   });
 
   const userInitials = () => {
@@ -413,7 +409,37 @@ const SharePage: Component = () => {
 
           const [isPlaying, setIsPlaying] = createSignal(false);
           const [playheadSec, setPlayheadSec] = createSignal(0);
-          const [totalSec, setTotalSec] = createSignal(p().durationSec ?? 0);
+          const [totalSec, setTotalSec] = createSignal(0);
+
+          // Cached clips response — pre-fetched on mount so duration shows
+          // before play is pressed, and reused by togglePlayback.
+          type ClipsData = {
+            bpm: number;
+            tracks: Array<{ id: string; name: string; volume: number; muted: boolean;
+              clips: Array<{ id: string; startSec: number; durationSec: number; dataUrl?: string; remoteUrl?: string }>;
+            }>;
+            durationSec?: number;
+            pattern: unknown | null;
+          };
+          let cachedClipsData: ClipsData | null = null;
+
+          onMount(async () => {
+            try {
+              const res = await apiFetch(`/api/share-clips/${p().id}`);
+              if (!res.ok) return;
+              cachedClipsData = (await res.json()) as ClipsData;
+              // Compute real duration from clip metadata
+              let maxEndSec = cachedClipsData.durationSec ?? 0;
+              for (const track of cachedClipsData.tracks) {
+                if (track.muted) continue;
+                for (const clip of track.clips) {
+                  const end = (clip.startSec ?? 0) + (clip.durationSec ?? 0);
+                  if (end > maxEndSec) maxEndSec = end;
+                }
+              }
+              if (maxEndSec > 0) setTotalSec(maxEndSec);
+            } catch { /* ignore — duration stays hidden */ }
+          });
 
           const activeLyricIdx = createMemo(() => {
             const lines = lyricsLines();
@@ -486,21 +512,27 @@ const SharePage: Component = () => {
             setIsPlaying(true);
 
             try {
-              const res = await apiFetch(`/api/share-clips/${p().id}`);
-              if (!res.ok) { setIsPlaying(false); return; }
-
-              const { bpm, tracks, durationSec, pattern } = (await res.json()) as {
-                bpm: number;
-                tracks: Array<{
-                  id: string; name: string; volume: number; muted: boolean;
-                  clips: Array<{ id: string; startSec: number; durationSec: number; dataUrl?: string }>;
-                }>;
-                durationSec?: number;
-                pattern: unknown | null;
-              };
+              // Use cached clips data from pre-fetch, or fetch now if not ready.
+              if (!cachedClipsData) {
+                const res = await apiFetch(`/api/share-clips/${p().id}`);
+                if (!res.ok) { setIsPlaying(false); return; }
+                cachedClipsData = (await res.json()) as ClipsData;
+              }
+              const { bpm, tracks, durationSec, pattern } = cachedClipsData;
 
               // Lazy import — browser-only IDB helper
               const { loadClip } = await import("~/lib/clipStore");
+
+              const optionalClipUrl = (url: string) =>
+                url.includes("optional=") ? url : `${url}${url.includes("?") ? "&" : "?"}optional=1`;
+              const fetchClipBuffer = async (url: string): Promise<ArrayBuffer | null> => {
+                const isApiClip = url.startsWith("/api/clips/") || url.startsWith(`${window.location.origin}/api/clips/`);
+                const res = isApiClip
+                  ? await apiFetch(optionalClipUrl(url)).catch(() => null)
+                  : await fetch(url).catch(() => null);
+                if (!res || res.status === 204 || !res.ok) return null;
+                return res.arrayBuffer().catch(() => null);
+              };
 
               audioCtx ??= new AudioContext();
               if (audioCtx.state === "suspended") await audioCtx.resume();
@@ -523,10 +555,10 @@ const SharePage: Component = () => {
               for (const track of tracks) {
                 if (track.muted) continue;
                 for (const clip of track.clips) {
-                  const blobUrl = clip.dataUrl ?? await loadClip(clip.id).catch(() => null);
+                  const blobUrl = clip.dataUrl ?? clip.remoteUrl ?? await loadClip(clip.id).catch(() => null);
                   if (!blobUrl) continue;
 
-                  const arrayBuf = await fetch(blobUrl).then((r) => r.arrayBuffer()).catch(() => null);
+                  const arrayBuf = await fetchClipBuffer(blobUrl);
                   if (!arrayBuf) continue;
 
                   const decoded = await audioCtx.decodeAudioData(arrayBuf.slice(0)).catch(() => null);
@@ -885,7 +917,7 @@ const SharePage: Component = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div>{/* ── /sp__layout-right ── */}
 
               {/* ── Project Details modal ── */}
               <Show when={showDetails()}>

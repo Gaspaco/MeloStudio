@@ -6,6 +6,7 @@ type TimelineClip = {
   startSec?: number;
   durationSec?: number;
   dataUrl?: string;
+  remoteUrl?: string;
   muted?: boolean;
 };
 
@@ -28,6 +29,7 @@ export type SharePlaybackClip = {
   startSec: number;
   durationSec: number;
   dataUrl?: string;
+  remoteUrl?: string;
 };
 
 export type SharePlaybackTrack = {
@@ -59,7 +61,7 @@ function normalizeClip(clip: TimelineClip, bpm: number): SharePlaybackClip | nul
     ? finiteNumber(clip.durationSec)
     : Math.max(1, finiteNumber(clip.bars, 1)) * secPerBar;
 
-  return { id: clip.id, startSec: Math.max(0, startSec), durationSec: Math.max(0, durationSec), dataUrl: clip.dataUrl };
+  return { id: clip.id, startSec: Math.max(0, startSec), durationSec: Math.max(0, durationSec), dataUrl: clip.dataUrl, remoteUrl: clip.remoteUrl };
 }
 
 export function getSharePlaybackTracks(doc: TimelineDoc, bpm: number): SharePlaybackTrack[] {

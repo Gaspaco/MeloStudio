@@ -1,0 +1,393 @@
+@use "../../styles/variables" as *;
+@use "../share/styles/ticket";
+
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeUp  { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+// ── Root ──────────────────────────────────────────────────────────
+
+.pub {
+  min-height: 100svh;
+  background: $bg-primary;
+  color: $text-primary;
+  font-family: $font-sans;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 clamp(1rem, 5vw, 2rem) 8rem;
+  padding-top: 4.5rem;
+  overflow-x: hidden;
+}
+
+// ── Nav ───────────────────────────────────────────────────────────
+
+.pub__nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.75rem;
+  background: rgba($bg-primary, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  z-index: 100;
+}
+
+.pub__nav-back {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: $text-muted;
+  font-family: $font-mono;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.2s;
+  text-decoration: none;
+
+  svg { width: 13px; height: 13px; transition: transform 0.2s; }
+  &:hover { color: $text-primary; svg { transform: translateX(3px); } }
+}
+
+.pub__nav-logo {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15em;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  &:hover { opacity: 0.7; }
+}
+
+.pub__nav-logo-melo {
+  font-family: $font-display;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: $accent;
+}
+
+.pub__nav-logo-studio {
+  font-family: $font-script;
+  font-size: 1.12rem;
+  font-weight: 400;
+  color: $text-primary;
+}
+
+// ── Layout ────────────────────────────────────────────────────────
+
+.pub__layout {
+  width: 100%;
+  max-width: 70rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  animation: fadeUp 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+// ── Hero header ───────────────────────────────────────────────────
+
+.pub__hero {
+  text-align: center;
+  padding-top: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+
+  h1 {
+    font-family: $font-display;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin: 0;
+    color: $text-primary;
+  }
+
+  .pub__hero-accent {
+    color: $accent;
+  }
+
+  p {
+    font-family: $font-mono;
+    color: $text-muted;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    line-height: 1.7;
+    max-width: 28rem;
+    margin: 0;
+  }
+}
+
+// ── Main card ─────────────────────────────────────────────────────
+
+.pub__card {
+  width: 100%;
+  background: $bg-card;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: $radius-xl;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+// ── Project row ───────────────────────────────────────────────────
+
+.pub__project-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.pub__thumb {
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: $radius-md;
+  background: $bg-elevated;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  font-family: $font-display;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: $text-secondary;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.pub__project-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.pub__project-name {
+  font-family: $font-display;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pub__project-meta {
+  font-family: $font-mono;
+  font-size: 0.6rem;
+  color: $text-muted;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+// ── Divider ───────────────────────────────────────────────────────
+
+.pub__divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 0;
+}
+
+// ── Toggle row ────────────────────────────────────────────────────
+
+.pub__toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 2rem 2.25rem;
+}
+
+.pub__toggle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  h3 {
+    font-family: $font-mono;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $text-primary;
+    margin: 0;
+  }
+  p {
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    color: $text-muted;
+    line-height: 1.6;
+    letter-spacing: 0.04em;
+    margin: 0;
+  }
+}
+
+.pub__toggle {
+  position: relative;
+  width: 2.75rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+
+  &-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  &-thumb {
+    position: absolute;
+    top: 0.22rem;
+    left: 0.22rem;
+    width: 1.06rem;
+    height: 1.06rem;
+    border-radius: 50%;
+    background: $text-muted;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s;
+  }
+
+  &--on &-track {
+    background: rgba($accent, 0.25);
+    border-color: rgba($accent, 0.6);
+  }
+  &--on &-thumb {
+    transform: translateX(1.25rem);
+    background: $accent;
+  }
+
+  &:disabled { opacity: 0.35; cursor: not-allowed; }
+}
+
+// ── URL expand container ──────────────────────────────────────────
+
+.pub__url-expand {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+
+  &--open {
+    grid-template-rows: 1fr;
+  }
+}
+
+.pub__url-expand-inner {
+  overflow: hidden;
+}
+
+// ── URL block ─────────────────────────────────────────────────────
+
+.pub__url-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.75rem 2.25rem;
+}
+
+.pub__url-label {
+  font-family: $font-mono;
+  font-size: 0.58rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: $text-muted;
+}
+
+.pub__url-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.pub__url {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: $radius-md;
+  padding: 0.6rem 0.9rem;
+  font-family: $font-mono;
+  font-size: 0.68rem;
+  color: $text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pub__copy-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: $radius-md;
+  padding: 0.6rem 1.1rem;
+  font-family: $font-mono;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: $text-secondary;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+
+  &:hover { background: rgba(255, 255, 255, 0.09); border-color: rgba(255, 255, 255, 0.16); color: $text-primary; }
+  &--copied { color: $accent-green; border-color: rgba($accent-green, 0.35); }
+}
+
+.pub__open-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: $accent;
+  color: #fff;
+  border: none;
+  border-radius: $radius-md;
+  padding: 0.6rem 1.1rem;
+  font-family: $font-mono;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  white-space: nowrap;
+
+  svg { width: 11px; height: 11px; }
+  &:hover { background: $accent-hover; transform: translateY(-1px); }
+}
+
+// ── Error ─────────────────────────────────────────────────────────
+
+.pub__err {
+  font-family: $font-mono;
+  font-size: 0.7rem;
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.07);
+  border: 1px solid rgba(248, 113, 113, 0.18);
+  border-radius: $radius-md;
+  padding: 0.65rem 1rem;
+  margin: 0 1.75rem 1.35rem;
+}
+
+// ── Ticket section ────────────────────────────────────────────────
+
+.pub__ticket-wrap {
+  display: flex;
+  justify-content: center;
+  animation: fadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+
+// ── Holographic card (re-used from share page) ────────────────────
+// Variables kept identical so this page reuses the same sp__holo-* classes.
+// We import the share page scss directly to avoid duplication.

@@ -225,7 +225,7 @@
       border-radius: 3px;
       background: transparent;
       cursor: pointer;
-      transition: all 0.25s ease;
+      transition: background 0.25s ease, border-color 0.25s ease;
       position: relative;
 
       &:checked {
@@ -319,7 +319,7 @@
     text-decoration: underline;
     text-underline-offset: 4px;
     text-decoration-color: #333;
-    transition: all 0.2s ease;
+    transition: color 0.2s ease, text-decoration-color 0.2s ease;
 
     &:hover {
       color: $accent;
@@ -365,7 +365,7 @@
     border: none;
     color: $text-muted;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: color 0.3s ease, transform 0.3s ease;
     padding: 0.5rem;
 
     svg {

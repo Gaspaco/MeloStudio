@@ -1,8 +1,8 @@
 import { type Component, createSignal, onMount, onCleanup, createEffect } from "solid-js";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import Lenis from "lenis";
-import { authClient } from "../../lib/auth";
+import type Lenis from "lenis";
+import { getAppSession } from "../../lib/app-auth";
 import "./home.scss";
 
 import Loader from "./sections/Loader";
@@ -52,11 +52,12 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
   const [isLoggedIn, setIsLoggedIn] = createSignal(false);
 
   onMount(async () => {
-    try {
-      const { data } = await authClient.getSession();
-      if (data?.session) setIsLoggedIn(true);
-    } catch {}
-    lenisRef = new Lenis({
+    void getAppSession()
+      .then((session) => setIsLoggedIn(!!session))
+      .catch(() => {});
+
+    const { default: LenisClass } = await import("lenis");
+    lenisRef = new LenisClass({
       duration: 0.9,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
@@ -94,6 +95,9 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
     animateHeroExit({
       heroRef: hero, heroLine1Ref: heroLine1, heroLine2Ref: heroLine2, scrollIndRef: scrollIndicator,
     });
+
+    requestAnimationFrame(() => ScrollTrigger.refresh());
+    document.fonts?.ready.then(() => ScrollTrigger.refresh()).catch(() => {});
 
     let dawInited = false;
     ScrollTrigger.create({

@@ -42,7 +42,7 @@ type Props = {
   onShowNewTrack: () => void;
 };
 
-const BARS = Array.from({ length: 450 }, (_, i) => i + 1);
+const BARS = Array.from({ length: 128 }, (_, i) => i + 1);
 
 const TimelineArea: Component<Props> = (props) => {
   let timelineEl: HTMLDivElement | undefined;

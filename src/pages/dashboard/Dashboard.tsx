@@ -1,8 +1,15 @@
-import { type Component, createSignal, onMount, onCleanup, For, Show } from "solid-js";
+import { type Component, createSignal, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
-import { socialAuthClient } from "../../lib/social-auth";
-import { listProjectsApi, deleteProjectApi, updateProjectApi, getProjectStatsApi, listDeletedProjectsApi, restoreProjectApi, permanentlyDeleteProjectApi, type DeletedProjectListItem } from "../../lib/api";
+import { getAppSession, signOutApp } from "../../lib/app-auth";
+import {
+  listProjectsApi, deleteProjectApi, updateProjectApi,
+  getProjectStatsApi, listDeletedProjectsApi, restoreProjectApi,
+  permanentlyDeleteProjectApi, type DeletedProjectListItem,
+} from "../../lib/api";
+import Overview from "./tabs/Overview";
+import Library from "./tabs/Library";
+import Profile from "./tabs/Profile";
 import "./dashboard.scss";
 
 interface Project {
@@ -25,93 +32,100 @@ const Dashboard: Component<{
 }> = (props) => {
   let pageRef: HTMLDivElement | undefined;
 
+  // ── Auth / user ────────────────────────────────────────────────────
   const [user, setUser] = createSignal<{
-    name?: string;
-    email?: string;
-    image?: string;
-    createdAt?: string;
+    name?: string; email?: string; image?: string; createdAt?: string;
   } | null>(null);
+
+  // ── Projects ───────────────────────────────────────────────────────
   const [projects, setProjects] = createSignal<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = createSignal(true);
+  const [studioHours, setStudioHours] = createSignal(0);
+  const [followCounts, setFollowCounts] = createSignal({ followers: 0, following: 0 });
+
+  // ── UI state ───────────────────────────────────────────────────────
   const [time, setTime] = createSignal(new Date());
   const [tab, setTab] = createSignal<Tab>("overview");
-  const [studioHours, setStudioHours] = createSignal(0);
 
-  // Profile form
-  const [profileName, setProfileName] = createSignal("");
-  const [profileBio, setProfileBio] = createSignal("");
-  const [profileInstagram, setProfileInstagram] = createSignal("");
-  const [profileTwitter, setProfileTwitter] = createSignal("");
-  const [profileWebsite, setProfileWebsite] = createSignal("");
-  const [profileSaving, setProfileSaving] = createSignal(false);
-  const [profileSaved, setProfileSaved] = createSignal(false);
-
-  // Password change
-  const [currentPassword, setCurrentPassword] = createSignal("");
-  const [newPassword, setNewPassword] = createSignal("");
-  const [passwordError, setPasswordError] = createSignal("");
-  const [passwordSaved, setPasswordSaved] = createSignal(false);
-
-  // Delete
-  // Library
+  // ── Library state ──────────────────────────────────────────────────
   const [libCat, setLibCat] = createSignal<"all" | "mine" | "liked" | "deleted">("all");
   const [libSearch, setLibSearch] = createSignal("");
+  const tabRefs: Partial<Record<string, HTMLButtonElement>> = {};
+  const [tabInd, setTabInd] = createSignal({ left: 0, width: 0, isTrash: false });
+  createEffect(() => {
+    const cat = libCat();
+    requestAnimationFrame(() => {
+      const el = tabRefs[cat];
+      if (el) setTabInd({ left: el.offsetLeft, width: el.offsetWidth, isTrash: cat === "deleted" });
+    });
+  });
 
+  // ── Account delete ─────────────────────────────────────────────────
   const [deleteStep, setDeleteStep] = createSignal<"none" | "confirm" | "password">("none");
   const [deletePassword, setDeletePassword] = createSignal("");
   const [deleteLoading, setDeleteLoading] = createSignal(false);
   const [deleteError, setDeleteError] = createSignal("");
 
+  // ── Project modals ─────────────────────────────────────────────────
+  const [createOpen, setCreateOpen] = createSignal(false);
+  const [createName, setCreateName] = createSignal("New Project");
+  const [renameTarget, setRenameTarget] = createSignal<Project | null>(null);
+  const [renameValue, setRenameValue] = createSignal("");
+  const [deleteTarget, setDeleteTarget] = createSignal<Project | null>(null);
+  const [projectActionError, setProjectActionError] = createSignal("");
+  const [projectActionLoading, setProjectActionLoading] = createSignal(false);
+
+  // ── Context menu ───────────────────────────────────────────────────
+  const [menuProjectId, setMenuProjectId] = createSignal<string | null>(null);
+  const closeMenu = () => setMenuProjectId(null);
+  const toggleMenu = (e: Event, id: string) => {
+    e.stopPropagation();
+    setMenuProjectId((prev) => (prev === id ? null : id));
+  };
+
+  // ── Trash ──────────────────────────────────────────────────────────
+  const [deletedProjects, setDeletedProjects] = createSignal<DeletedProjectListItem[]>([]);
+  const [deletedLoading, setDeletedLoading] = createSignal(false);
+  const [permDeleteTarget, setPermDeleteTarget] = createSignal<DeletedProjectListItem | null>(null);
+  const [permDeleteLoading, setPermDeleteLoading] = createSignal(false);
+  const [trashActionError, setTrashActionError] = createSignal("");
+
+  // ── Data loading ───────────────────────────────────────────────────
   onMount(async () => {
-    // ── 1. Resolve auth session (must finish BEFORE loading projects so the
-    //       right Bearer token / cookie is used for API calls) ──────────────
     try {
-      // If a Better Auth (Twitter) session is active, prefer it and clear any
-      // stale Neon Auth JWT so the server uses the Better Auth cookie instead.
-      const socialSession = await socialAuthClient.getSession();
-      if (socialSession.data?.user) {
-        try { await (authClient as any).signOut(); } catch {}
-      }
-      let userData = socialSession.data?.user;
-      if (!userData) userData = (await authClient.getSession()).data?.user;
+      const userData = (await getAppSession())?.user;
       if (userData) {
-        // Upgrade Twitter _normal (48px) images to _400x400 for display
         const rawImage = userData.image ?? undefined;
         const image = rawImage?.replace(/_normal(\.[^.]+)$/, "_400x400$1") ?? rawImage;
         setUser({
           name: userData.name,
           email: userData.email,
           image,
-          createdAt: typeof userData.createdAt === "string" ? userData.createdAt : (userData.createdAt as any)?.toISOString?.() ?? undefined,
+          createdAt: typeof userData.createdAt === "string"
+            ? userData.createdAt
+            : (userData.createdAt as any)?.toISOString?.() ?? undefined,
         });
-        setProfileName(userData.name ?? "");
       }
     } catch {}
 
-    // ── 2. Now load projects (JWT cleared above if Twitter user) ─────────
     try {
       const list = await listProjectsApi();
       const PROJECT_COLORS = ["#e05297", "#7c5cff", "#ff5454", "#14f195", "#00d2ff", "#ffaa00", "#ff00ff", "#a3ff00"];
-      setProjects(
-        list.map((p, i) => ({
-          id: p.id,
-          name: p.name,
-          bpm: p.bpm,
-          key: "—",
-          tracks: p.trackCount,
-          updatedAt: new Date(p.updatedAt).toLocaleDateString(),
-          color: PROJECT_COLORS[i % PROJECT_COLORS.length] as string,
-        })),
-      );
+      setProjects(list.map((p, i) => ({
+        id: p.id, name: p.name, bpm: p.bpm, key: "—",
+        tracks: p.trackCount,
+        updatedAt: new Date(p.updatedAt).toLocaleDateString(),
+        color: PROJECT_COLORS[i % PROJECT_COLORS.length] as string,
+      })));
       const stats = await getProjectStatsApi();
       setStudioHours(stats.studioHours);
-    } catch {
-      // silently ignore — user may not be signed in yet
-    } finally {
-      setLoadingProjects(false);
-    }
+      const fc = await fetch("/api/user/follows").then(r => r.json()) as { followers: number; following: number };
+      setFollowCounts(fc);
+    } catch {}
+    finally { setLoadingProjects(false); }
   });
 
+  // ── Clock + ESC handler ────────────────────────────────────────────
   onMount(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
     const onKey = (e: KeyboardEvent) => {
@@ -127,10 +141,20 @@ const Dashboard: Component<{
     onCleanup(() => { clearInterval(interval); window.removeEventListener("keydown", onKey); });
   });
 
-  const handleLogout = async () => {
-    try { await authClient.signOut(); } catch {}
-    props.onLogout();
-  };
+  // ── Entrance animation ─────────────────────────────────────────────
+  onMount(() => {
+    if (!pageRef) return;
+    const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
+    tl.fromTo(pageRef, { opacity: 0 }, { opacity: 1, duration: 0.4 });
+    tl.fromTo(".db__bar", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9 }, 0.1);
+    tl.fromTo(".db__hero-char", { y: "140%", opacity: 0, rotateZ: 6 }, { y: "0%", opacity: 1, rotateZ: 0, duration: 1.1, stagger: 0.02 }, 0.15);
+    tl.fromTo(".db__hero-script", { opacity: 0, y: 60, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.3 }, 0.3);
+    tl.fromTo(".db__stat", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.7, stagger: 0.06 }, 0.5);
+    tl.fromTo(".db__section", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, stagger: 0.15 }, 0.7);
+  });
+
+  // ── Auth ───────────────────────────────────────────────────────────
+  const handleLogout = async () => { await signOutApp(); props.onLogout(); };
 
   const handleImageUpload = (e: Event & { currentTarget: HTMLInputElement }) => {
     const file = e.currentTarget.files?.[0];
@@ -138,50 +162,14 @@ const Dashboard: Component<{
       const reader = new FileReader();
       reader.onload = async (evt) => {
         const result = evt.target?.result as string;
-        try {
-          await authClient.updateUser({ image: result });
-          setUser((u) => (u ? { ...u, image: result } : u));
-        } catch (err) {
-          setUser((u) => (u ? { ...u, image: result } : u));
-        }
+        try { await authClient.updateUser({ image: result }); } catch {}
+        setUser((u) => (u ? { ...u, image: result } : u));
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSaveProfile = async () => {
-    setProfileSaving(true);
-    setProfileSaved(false);
-    try {
-      await authClient.updateUser({ name: profileName() });
-      setUser((u) => u ? { ...u, name: profileName() } : u);
-      setProfileSaved(true);
-      setTimeout(() => setProfileSaved(false), 2500);
-    } catch {}
-    setProfileSaving(false);
-  };
-
-  const handleChangePassword = async () => {
-    setPasswordError("");
-    setPasswordSaved(false);
-    if (newPassword().length < 8) {
-      setPasswordError("Password must be at least 8 characters");
-      return;
-    }
-    try {
-      await authClient.changePassword({
-        currentPassword: currentPassword(),
-        newPassword: newPassword(),
-      });
-      setCurrentPassword("");
-      setNewPassword("");
-      setPasswordSaved(true);
-      setTimeout(() => setPasswordSaved(false), 2500);
-    } catch {
-      setPasswordError("Failed to change password. Check your current password.");
-    }
-  };
-
+  // ── Computed values ────────────────────────────────────────────────
   const formatTime = () =>
     time().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
 
@@ -202,99 +190,19 @@ const Dashboard: Component<{
       : n.slice(0, 2).toUpperCase();
   };
 
-  const memberSince = () => {
-    const d = user()?.createdAt;
-    if (!d) return "—";
-    return new Date(d).toLocaleDateString("en-US", { month: "short", year: "numeric" });
-  };
-
   const totalTracks = () => projects().reduce((a, p) => a + p.tracks, 0);
 
   const fmtStudioTime = () => {
     const h = studioHours();
     if (h <= 0) return "0m";
-    if (h < 1) return `${Math.round(h * 60)}m`;
+    if (h < 1) return `${Math.floor(h * 60)}m`;
     const hrs = Math.floor(h);
-    const mins = Math.round((h - hrs) * 60);
+    const mins = Math.floor((h - hrs) * 60);
     return mins > 0 ? `${hrs}h ${mins}m` : `${hrs}h`;
   };
 
-  // Project modals
-  const [createOpen, setCreateOpen] = createSignal(false);
-  const [createName, setCreateName] = createSignal("New Project");
-  const [renameTarget, setRenameTarget] = createSignal<Project | null>(null);
-  const [renameValue, setRenameValue] = createSignal("");
-  const [deleteTarget, setDeleteTarget] = createSignal<Project | null>(null);
-  const [projectActionError, setProjectActionError] = createSignal("");
-  const [projectActionLoading, setProjectActionLoading] = createSignal(false);
-
-  // Row context menu
-  const [menuProjectId, setMenuProjectId] = createSignal<string | null>(null);
-  const closeMenu = () => setMenuProjectId(null);
-  const toggleMenu = (e: Event, id: string) => {
-    e.stopPropagation();
-    setMenuProjectId((prev) => (prev === id ? null : id));
-  };
-
-  // Deleted / trash tab
-  const [deletedProjects, setDeletedProjects] = createSignal<DeletedProjectListItem[]>([]);
-  const [deletedLoading, setDeletedLoading] = createSignal(false);
-  const [permDeleteTarget, setPermDeleteTarget] = createSignal<DeletedProjectListItem | null>(null);
-  const [permDeleteLoading, setPermDeleteLoading] = createSignal(false);
-  const [trashActionError, setTrashActionError] = createSignal("");
-
-  const loadDeletedProjects = async () => {
-    setDeletedLoading(true);
-    try {
-      setDeletedProjects(await listDeletedProjectsApi());
-    } catch {
-      // silently ignore
-    } finally {
-      setDeletedLoading(false);
-    }
-  };
-
-  const handleRestore = async (item: DeletedProjectListItem) => {
-    setTrashActionError("");
-    try {
-      await restoreProjectApi(item.id);
-      setDeletedProjects((prev) => prev.filter((p) => p.id !== item.id));
-      // Reload active projects so the restored one appears
-      const list = await listProjectsApi();
-      const PROJECT_COLORS = ["#e05297", "#7c5cff", "#ff5454", "#14f195", "#00d2ff", "#ffaa00", "#ff00ff", "#a3ff00"];
-      setProjects(list.map((p, i) => ({ id: p.id, name: p.name, bpm: p.bpm, key: "—", tracks: p.trackCount, updatedAt: new Date(p.updatedAt).toLocaleDateString(), color: PROJECT_COLORS[i % PROJECT_COLORS.length] as string })));
-    } catch {
-      setTrashActionError("Failed to restore project.");
-    }
-  };
-
-  const submitPermDelete = async () => {
-    const target = permDeleteTarget();
-    if (!target) return;
-    setPermDeleteLoading(true);
-    setTrashActionError("");
-    try {
-      await permanentlyDeleteProjectApi(target.id);
-      setDeletedProjects((prev) => prev.filter((p) => p.id !== target.id));
-      setPermDeleteTarget(null);
-    } catch {
-      setTrashActionError("Failed to permanently delete project.");
-    } finally {
-      setPermDeleteLoading(false);
-    }
-  };
-
-  const daysLeft = (expiresAt: string) => {
-    const diff = new Date(expiresAt).getTime() - Date.now();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return Math.max(0, days);
-  };
-
-  const openCreate = () => {
-    setCreateName("New Project");
-    setProjectActionError("");
-    setCreateOpen(true);
-  };
+  // ── Project handlers ───────────────────────────────────────────────
+  const openCreate = () => { setCreateName("New Project"); setProjectActionError(""); setCreateOpen(true); };
 
   const submitCreate = (e: Event) => {
     e.preventDefault();
@@ -324,11 +232,8 @@ const Dashboard: Component<{
       await updateProjectApi(target.id, { name: next });
       setProjects((prev) => prev.map((p) => p.id === target.id ? { ...p, name: next } : p));
       setRenameTarget(null);
-    } catch {
-      setProjectActionError("Failed to rename project.");
-    } finally {
-      setProjectActionLoading(false);
-    }
+    } catch { setProjectActionError("Failed to rename project."); }
+    finally { setProjectActionLoading(false); }
   };
 
   const openDelete = (e: Event, project: Project) => {
@@ -346,13 +251,53 @@ const Dashboard: Component<{
       await deleteProjectApi(target.id);
       setProjects((prev) => prev.filter((p) => p.id !== target.id));
       setDeleteTarget(null);
-    } catch {
-      setProjectActionError("Failed to delete project.");
-    } finally {
-      setProjectActionLoading(false);
-    }
+    } catch { setProjectActionError("Failed to delete project."); }
+    finally { setProjectActionLoading(false); }
   };
 
+  // ── Trash handlers ─────────────────────────────────────────────────
+  const loadDeletedProjects = async () => {
+    setDeletedLoading(true);
+    try { setDeletedProjects(await listDeletedProjectsApi()); }
+    catch {}
+    finally { setDeletedLoading(false); }
+  };
+
+  const handleRestore = async (item: DeletedProjectListItem) => {
+    setTrashActionError("");
+    try {
+      await restoreProjectApi(item.id);
+      setDeletedProjects((prev) => prev.filter((p) => p.id !== item.id));
+      const list = await listProjectsApi();
+      const PROJECT_COLORS = ["#e05297", "#7c5cff", "#ff5454", "#14f195", "#00d2ff", "#ffaa00", "#ff00ff", "#a3ff00"];
+      setProjects(list.map((p, i) => ({
+        id: p.id, name: p.name, bpm: p.bpm, key: "—",
+        tracks: p.trackCount,
+        updatedAt: new Date(p.updatedAt).toLocaleDateString(),
+        color: PROJECT_COLORS[i % PROJECT_COLORS.length] as string,
+      })));
+    } catch { setTrashActionError("Failed to restore project."); }
+  };
+
+  const submitPermDelete = async () => {
+    const target = permDeleteTarget();
+    if (!target) return;
+    setPermDeleteLoading(true);
+    setTrashActionError("");
+    try {
+      await permanentlyDeleteProjectApi(target.id);
+      setDeletedProjects((prev) => prev.filter((p) => p.id !== target.id));
+      setPermDeleteTarget(null);
+    } catch { setTrashActionError("Failed to permanently delete project."); }
+    finally { setPermDeleteLoading(false); }
+  };
+
+  const daysLeft = (expiresAt: string) => {
+    const diff = new Date(expiresAt).getTime() - Date.now();
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  };
+
+  // ── Tab switching ──────────────────────────────────────────────────
   const switchTab = (t: Tab) => {
     setTab(t);
     requestAnimationFrame(() => {
@@ -360,20 +305,14 @@ const Dashboard: Component<{
     });
   };
 
+  // ── Account delete handlers ────────────────────────────────────────
   const handleStartDelete = () => setDeleteStep("confirm");
   const handleConfirmDelete = () => setDeleteStep("password");
-  const handleCancelDelete = () => {
-    setDeleteStep("none");
-    setDeletePassword("");
-    setDeleteError("");
-  };
+  const handleCancelDelete = () => { setDeleteStep("none"); setDeletePassword(""); setDeleteError(""); };
 
   const handleFinalDelete = async (e: Event) => {
     e.preventDefault();
-    if (!deletePassword()) {
-      setDeleteError("Password is required.");
-      return;
-    }
+    if (!deletePassword()) { setDeleteError("Password is required."); return; }
     setDeleteLoading(true);
     setDeleteError("");
     try {
@@ -382,39 +321,22 @@ const Dashboard: Component<{
       props.onLogout();
     } catch (err: any) {
       setDeleteError(err?.message || "Failed to delete account. Check your password.");
-    } finally {
-      setDeleteLoading(false);
-    }
+    } finally { setDeleteLoading(false); }
   };
-
-  onMount(() => {
-    if (!pageRef) return;
-    const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
-    tl.fromTo(pageRef, { opacity: 0 }, { opacity: 1, duration: 0.4 });
-    tl.fromTo(".db__bar", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9 }, 0.1);
-    tl.fromTo(".db__hero-char", { y: "140%", opacity: 0, rotateZ: 6 }, { y: "0%", opacity: 1, rotateZ: 0, duration: 1.1, stagger: 0.02 }, 0.15);
-    tl.fromTo(".db__hero-script", { opacity: 0, y: 60, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.3 }, 0.3);
-    tl.fromTo(".db__hero-avatar", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1.2, ease: "back.out(1.5)" }, 0.4);
-    tl.fromTo(".db__hero-meta > *", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.05 }, 0.5);
-    tl.fromTo(".db__rule", { scaleX: 0 }, { scaleX: 1, duration: 1.4, ease: "power3.inOut", stagger: 0.08 }, 0.5);
-    tl.fromTo(".db__stat", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.7, stagger: 0.06 }, 0.7);
-    tl.fromTo(".db__section", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, stagger: 0.15 }, 0.85);
-  });
 
   return (
     <div ref={(el) => { pageRef = el; }} class="db">
 
-      {/* Bar */}
+      {/* ── Bar ──────────────────────────────────────────────────── */}
       <header class="db__bar">
-        <div class="db__bar-left">
-          <button class="db__home-btn" onClick={props.onHome} title="Back to home">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 19l-7-7 7-7" /></svg>
-          </button>
-          <button class="db__logo" onClick={props.onHome}>
-            <span class="db__logo-melo">MELO</span>
-            <span class="db__logo-studio">Studio</span>
-          </button>
-        </div>
+        <button class="db__bar-brand" onClick={props.onHome} title="Back to home">
+          <svg class="db__bar-brand-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 19l-7-7 7-7" /></svg>
+          <span class="db__bar-brand-sep" />
+          <span class="db__bar-brand-word">
+            <span class="db__bar-brand-melo">Melo</span>
+            <span class="db__bar-brand-studio">Studio</span>
+          </span>
+        </button>
         <nav class="db__nav">
           <button class={`db__nav-link${tab() === "overview" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("overview")}>Overview</button>
           <button class={`db__nav-link${tab() === "library" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("library")}>Library</button>
@@ -422,517 +344,74 @@ const Dashboard: Component<{
         </nav>
         <div class="db__bar-right">
           <span class="db__clock">{formatTime()}</span>
-          <button class="db__bar-avatar" onClick={() => switchTab("profile")}>
-            <Show when={user()?.image} keyed fallback={<span class="db__bar-avatar-initials">{initials()}</span>}>
-              {(image) => <img src={image} alt="" />}
-            </Show>
-          </button>
-          <button class="db__bar-logout" onClick={handleLogout}>
-            <span>Log out</span>
+          <Show when={tab() === "library"}>
+            <button class="db__bar-avatar" onClick={() => switchTab("profile")}>
+              <Show when={user()?.image} keyed fallback={<span class="db__bar-avatar-initials">{initials()}</span>}>
+                {(image) => <img src={image} alt="" />}
+              </Show>
+            </button>
+          </Show>
+          <button class="db__bar-logout" onClick={handleLogout} title="Log out">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
           </button>
         </div>
       </header>
 
+      {/* ── Tab content ───────────────────────────────────────────── */}
       <Show when={tab() === "overview"}>
-        <div class="db__content">
-
-          <section class="db__hero">
-            <div class="db__hero-left">
-              <div class="db__hero-greeting">
-                <span class="db__hero-script">{greeting()},</span>
-              </div>
-              <div class="db__hero-clip">
-                <For each={firstName().split("")}>
-                  {(ch) => <span class="db__hero-char">{ch === " " ? "\u00A0" : ch}</span>}
-                </For>
-              </div>
-              <div class="db__hero-meta">
-                <span class="db__hero-meta-item">{projects().length} Projects</span>
-                <span class="db__hero-meta-sep">/</span>
-                <span class="db__hero-meta-item">{totalTracks()} Tracks</span>
-                <span class="db__hero-meta-sep">/</span>
-                <span class="db__hero-meta-item">Since {memberSince()}</span>
-              </div>
-            </div>
-            <button class="db__hero-avatar" onClick={() => switchTab("profile")}>
-              <Show when={user()?.image} keyed fallback={<span class="db__hero-avatar-text">{initials()}</span>}>
-                {(image) => <img class="db__hero-avatar-img" src={image} alt="" />}
-              </Show>
-            </button>
-          </section>
-
-          <div class="db__rule" />
-
-          <section class="db__stats">
-            <div class="db__stat">
-              <span class="db__stat-num">{projects().length}</span>
-              <span class="db__stat-label">Projects</span>
-              <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `${Math.min(projects().length * 10, 100)}%` }} /></span>
-            </div>
-
-            <div class="db__stat">
-              <span class="db__stat-num">{totalTracks()}</span>
-              <span class="db__stat-label">Tracks</span>
-              <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `${Math.min(totalTracks() * 5, 100)}%` }} /></span>
-            </div>
-
-            <div class="db__stat">
-              <span class="db__stat-num">{fmtStudioTime()}</span>
-              <span class="db__stat-label">Studio Time</span>
-              <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `${Math.min(studioHours() * 10, 100)}%` }} /></span>
-            </div>
-
-            <div class="db__stat">
-              <span class="db__stat-num">0</span>
-              <span class="db__stat-label">Templates</span>
-              <span class="db__stat-bar"><span class="db__stat-fill" style={{ width: `0%` }} /></span>
-            </div>
-          </section>
-
-          <div class="db__rule" />
-
-          <section class="db__section">
-            <div class="db__section-header">
-              <span class="db__section-idx">01</span>
-              <h2 class="db__section-title">Projects</h2>
-              <button class="db__section-action" onClick={openCreate}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4v16m8-8H4" /></svg>
-                New project
-              </button>
-            </div>
-            <Show when={!loadingProjects()} fallback={
-              <div class="db__skeletons">
-                {[1,2,3].map(() => <div class="db__skeleton-row" />)}
-              </div>
-            }>
-              <Show when={projects().length > 0} fallback={
-                <div class="db__empty">
-                  <div class="db__empty-glow" />
-                  <span class="db__empty-note">♪</span>
-                  <h3 class="db__empty-title">Nothing here yet</h3>
-                  <p class="db__empty-sub">Create your first project and start making music.</p>
-                  <button class="db__empty-cta" onClick={openCreate}>
-                    <span>Start creating</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
-                  </button>
-                </div>
-              }>
-              <div class="db__table">
-                <div class="db__table-head">
-                  <span class="db__th db__th--num">#</span>
-                  <span class="db__th db__th--name">Name</span>
-                  <span class="db__th db__th--bpm">BPM</span>
-                  <span class="db__th db__th--key">Key</span>
-                  <span class="db__th db__th--tracks">Tracks</span>
-                  <span class="db__th db__th--time">Modified</span>
-                  <span class="db__th db__th--acts" />
-                </div>
-                <For each={projects()}>{(project, i) =>
-                  <div class="db__table-row" onClick={() => props.onOpenProject(project.id)}>
-                    <span class="db__td db__td--num">{String(i() + 1).padStart(2, "0")}</span>
-                    <span class="db__td db__td--name">
-                      <span class="db__td-dot" style={{ background: project.color }} />
-                      {project.name}
-                    </span>
-                    <span class="db__td db__td--bpm">{project.bpm || 100}</span>
-                    <span class="db__td db__td--key">{project.key}</span>
-                    <span class="db__td db__td--tracks">{project.tracks || 1}</span>
-                    <span class="db__td db__td--time">{project.updatedAt}</span>
-                    <span class="db__td db__td--acts">
-                      <button class="db__act-btn" onClick={(e) => openRename(e, project)} title="Rename">
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2l5 5-9 9H2v-5z" /></svg>
-                      </button>
-                      <button class="db__act-btn db__act-btn--danger" onClick={(e) => openDelete(e, project)} title="Delete">
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M5 4V2h6v2M6 8v5M10 8v5M3 4l1 10h8l1-10" /></svg>
-                      </button>
-                    </span>
-                  </div>
-                }</For>
-              </div>
-            </Show>
-            </Show>
-          </section>
-
-          <div class="db__rule" />
-
-          <section class="db__section">
-            <div class="db__section-header">
-              <span class="db__section-idx">02</span>
-              <h2 class="db__section-title">Quick Actions</h2>
-            </div>
-            <div class="db__actions">
-              <button class="db__act">
-                <div class="db__act-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                </div>
-                <div class="db__act-body">
-                  <span class="db__act-label">Import Audio</span>
-                  <span class="db__act-desc">Drag in stems, samples, or full tracks</span>
-                </div>
-                <svg class="db__act-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
-              </button>
-              <button class="db__act">
-                <div class="db__act-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z" /></svg>
-                </div>
-                <div class="db__act-body">
-                  <span class="db__act-label">Browse Templates</span>
-                  <span class="db__act-desc">Pick a genre template and build on it</span>
-                </div>
-                <svg class="db__act-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
-              </button>
-              <button class="db__act" onClick={() => switchTab("profile")}>
-                <div class="db__act-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                </div>
-                <div class="db__act-body">
-                  <span class="db__act-label">Edit Profile</span>
-                  <span class="db__act-desc">Update your name, socials & bio</span>
-                </div>
-                <svg class="db__act-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 17L17 7M17 7H7M17 7V17" /></svg>
-              </button>
-            </div>
-          </section>
-
-          <footer class="db__brand">
-            <span class="db__brand-melo">Melo</span>
-            <span class="db__brand-studio">Studio</span>
-          </footer>
-        </div>
-      </Show>
-
-      <Show when={tab() === "profile"}>
-        <div class="db__content db__content--profile">
-
-          {/* ── Ticket identity card ── */}
-          <div class="db__ticket">
-            <div class="db__ticket-stripe">
-              <span class="db__ticket-stripe-text">ADMIT ONE</span>
-            </div>
-            <div class="db__ticket-main">
-              <div class="db__ticket-toprow">
-                <span class="db__ticket-logo">MELO STUDIO</span>
-                <span class="db__ticket-season">Artist Pass · Season 2026</span>
-              </div>
-              <div class="db__ticket-head">
-                <div class="db__ticket-event">
-                  <h1 class="db__ticket-name">{(user()?.name ?? "Artist").toUpperCase()}</h1>
-                  <span class="db__ticket-email">{user()?.email}</span>
-                  <div class="db__ticket-tags">
-                    <span class="db__ticket-tag">Producer</span>
-                    <span class="db__ticket-tag">Free Tier</span>
-                    <span class="db__ticket-tag db__ticket-tag--live">
-                      <span class="db__ticket-tag-dot" />
-                      Active
-                    </span>
-                  </div>
-                </div>
-                <div class="db__ticket-photo-wrap">
-                  <input type="file" accept="image/*" onChange={handleImageUpload} class="db__profile-upload-input" title="Change profile picture" />
-                  <div class="db__ticket-photo">
-                    <Show when={user()?.image} keyed fallback={<span class="db__profile-initials">{initials()}</span>}>
-                      {(image) => <img class="db__profile-img" src={image} alt="" />}
-                    </Show>
-                    <div class="db__ticket-photo-overlay">
-                      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H7L5 7H2a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-3l-2-4z"/><circle cx="10" cy="12" r="3"/></svg>
-                    </div>
-                  </div>
-                  <span class="db__ticket-photo-label">Artist</span>
-                </div>
-              </div>
-              <div class="db__ticket-perf" />
-              <div class="db__ticket-body">
-                <div class="db__ticket-field">
-                  <span class="db__ticket-field-label">Member Since</span>
-                  <span class="db__ticket-field-val">{memberSince()}</span>
-                </div>
-                <div class="db__ticket-vdivider" />
-                <div class="db__ticket-field">
-                  <span class="db__ticket-field-label">Projects</span>
-                  <span class="db__ticket-field-val">{projects().length}</span>
-                </div>
-                <div class="db__ticket-vdivider" />
-                <div class="db__ticket-field">
-                  <span class="db__ticket-field-label">Tracks</span>
-                  <span class="db__ticket-field-val">{totalTracks()}</span>
-                </div>
-                <div class="db__ticket-vdivider" />
-                <div class="db__ticket-field">
-                  <span class="db__ticket-field-label">Studio Time</span>
-                  <span class="db__ticket-field-val">{fmtStudioTime()}</span>
-                </div>
-                <div class="db__ticket-vdivider" />
-                <div class="db__ticket-field">
-                  <span class="db__ticket-field-label">Venue</span>
-                  <span class="db__ticket-field-val">Web</span>
-                </div>
-                <div class="db__ticket-barcode" aria-hidden="true">
-                  <div class="db__ticket-bars" />
-                  <span class="db__ticket-barcode-num">MS · {memberSince()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Two-column form grid ── */}
-          <div class="db__pgrid">
-
-            {/* Left: Edit Profile */}
-            <div class="db__pcard db__pcard--form">
-              <div class="db__pcard-header">
-                <span class="db__pcard-idx">01</span>
-                <h2 class="db__pcard-title">Edit Profile</h2>
-              </div>
-              <div class="db__pfields">
-
-                <div class="db__pfield">
-                  <label class="db__pfield-label">Display Name</label>
-                  <input class="db__pfield-input" type="text" value={profileName()} onInput={(e) => setProfileName(e.currentTarget.value)} placeholder="Your name" />
-                </div>
-
-                <div class="db__pfield db__pfield--locked">
-                  <label class="db__pfield-label">
-                    Email
-                    <span class="db__pfield-lock">
-                      <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5.5" width="8" height="5.5" rx="1"/><path d="M4 5.5V4a2 2 0 0 1 4 0v1.5"/></svg>
-                      managed
-                    </span>
-                  </label>
-                  <input class="db__pfield-input" type="email" value={user()?.email ?? ""} disabled />
-                </div>
-
-                <div class="db__pfield">
-                  <label class="db__pfield-label">Bio</label>
-                  <textarea class="db__pfield-textarea" value={profileBio()} onInput={(e) => setProfileBio(e.currentTarget.value)} placeholder="Tell the world about yourself..." rows={3} />
-                </div>
-
-                <div class="db__pfield">
-                  <label class="db__pfield-label">Website</label>
-                  <div class="db__pfield-pre">
-                    <span class="db__pfield-pre-icon">
-                      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="7" cy="7" r="5.5"/><path d="M1.5 7h11M7 1.5c-1.5 2-2 3.5-2 5.5s.5 3.5 2 5.5M7 1.5c1.5 2 2 3.5 2 5.5s-.5 3.5-2 5.5"/></svg>
-                    </span>
-                    <input class="db__pfield-input" type="url" value={profileWebsite()} onInput={(e) => setProfileWebsite(e.currentTarget.value)} placeholder="https://yoursite.com" />
-                  </div>
-                </div>
-
-                <div class="db__pfield-pair">
-                  <div class="db__pfield">
-                    <label class="db__pfield-label">Instagram</label>
-                    <div class="db__pfield-pre">
-                      <span class="db__pfield-pre-at">@</span>
-                      <input class="db__pfield-input" type="text" value={profileInstagram()} onInput={(e) => setProfileInstagram(e.currentTarget.value)} placeholder="username" />
-                    </div>
-                  </div>
-                  <div class="db__pfield">
-                    <label class="db__pfield-label">Twitter / X</label>
-                    <div class="db__pfield-pre">
-                      <span class="db__pfield-pre-at">@</span>
-                      <input class="db__pfield-input" type="text" value={profileTwitter()} onInput={(e) => setProfileTwitter(e.currentTarget.value)} placeholder="handle" />
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-              <div class="db__pcard-actions">
-                <button class="db__btn db__btn--fill" onClick={handleSaveProfile} disabled={profileSaving()}>
-                  {profileSaving() ? "Saving..." : profileSaved() ? "Saved ✓" : "Save Changes"}
-                </button>
-                <button class="db__btn db__btn--ghost" onClick={() => { setProfileName(user()?.name ?? ""); setProfileBio(""); setProfileInstagram(""); setProfileTwitter(""); setProfileWebsite(""); }}>
-                  Reset
-                </button>
-              </div>
-            </div>
-
-            {/* Right: Password + Danger */}
-            <div class="db__pstack">
-
-              <div class="db__pcard db__pcard--form">
-                <div class="db__pcard-header">
-                  <span class="db__pcard-idx">02</span>
-                  <h2 class="db__pcard-title">Change Password</h2>
-                </div>
-                <div class="db__pfields">
-                  <div class="db__pfield">
-                    <label class="db__pfield-label">Current Password</label>
-                    <input class="db__pfield-input" type="password" value={currentPassword()} onInput={(e) => setCurrentPassword(e.currentTarget.value)} placeholder="••••••••" />
-                  </div>
-                  <div class="db__pfield">
-                    <label class="db__pfield-label">New Password</label>
-                    <input class="db__pfield-input" type="password" value={newPassword()} onInput={(e) => setNewPassword(e.currentTarget.value)} placeholder="Min 8 characters" />
-                  </div>
-                </div>
-                <Show when={passwordError()}>
-                  <span class="db__form-err">{passwordError()}</span>
-                </Show>
-                <div class="db__pcard-actions">
-                  <button class="db__btn db__btn--ghost" onClick={handleChangePassword}>
-                    {passwordSaved() ? "Updated ✓" : "Update Password"}
-                  </button>
-                </div>
-              </div>
-
-              <div class="db__pcard db__pcard--danger">
-                <div class="db__pcard-header">
-                  <span class="db__pcard-idx db__pcard-idx--danger">03</span>
-                  <h2 class="db__pcard-title">Danger Zone</h2>
-                </div>
-                <p class="db__pcard-danger-sub">Permanently delete your account and all associated data. This action <strong>cannot be undone</strong>.</p>
-                <div class="db__pcard-actions">
-                  <button class="db__btn db__btn--danger" onClick={handleStartDelete}>Delete Account</button>
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          <footer class="db__brand">
-            <span class="db__brand-melo">Melo</span>
-            <span class="db__brand-studio">Studio</span>
-          </footer>
-        </div>
+        <Overview
+          projects={projects}
+          loadingProjects={loadingProjects}
+          greeting={greeting}
+          firstName={firstName}
+          totalTracks={totalTracks}
+          studioHours={studioHours}
+          fmtStudioTime={fmtStudioTime}
+          openCreate={openCreate}
+          openRename={openRename}
+          openDelete={openDelete}
+          onOpenProject={props.onOpenProject}
+          switchTab={switchTab}
+        />
       </Show>
 
       <Show when={tab() === "library"}>
-        <div class="db__content db__content--library">
-
-            {/* ── Sidebar ── */}
-          <aside class="db__lib-sidebar">
-            <nav class="db__lib-sidenav">
-              <button class={`db__lib-sidelink${libCat() === "all" ? " db__lib-sidelink--active" : ""}`} onClick={() => setLibCat("all")}>
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 5h14M3 10h14M3 15h14" /></svg>
-                All Projects
-              </button>
-              <button class={`db__lib-sidelink${libCat() === "mine" ? " db__lib-sidelink--active" : ""}`} onClick={() => setLibCat("mine")}>
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="10" cy="7" r="3.5" /><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" /></svg>
-                My Projects
-              </button>
-              <button class={`db__lib-sidelink${libCat() === "liked" ? " db__lib-sidelink--active" : ""}`} onClick={() => setLibCat("liked")}>
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 16s-7-4.3-7-8.5A4.5 4.5 0 0 1 10 5a4.5 4.5 0 0 1 7 2.5C17 11.7 10 16 10 16z" /></svg>
-                Liked Projects
-              </button>
-              <div class="db__lib-side-divider" />
-              <button class={`db__lib-sidelink${libCat() === "deleted" ? " db__lib-sidelink--active" : ""}`} onClick={() => { setLibCat("deleted"); loadDeletedProjects(); }}>
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 6h12M7 6V4h6v2M8 9v6m4-6v6M5 6l1 10h8l1-10" /></svg>
-                Deleted Projects
-              </button>
-            </nav>
-          </aside>
-
-          {/* ── Main ── */}
-          <div class="db__lib-main">
-            <div class="db__lib-topbar">
-              <div class="db__lib-topbar-left">
-                <h1 class="db__lib-main-title">
-                  {libCat() === "all" ? "All Projects" : libCat() === "mine" ? "My Projects" : libCat() === "liked" ? "Liked Projects" : "Deleted Projects"}
-                </h1>
-                <Show when={libCat() === "all" || libCat() === "mine"}>
-                  <span class="db__lib-main-count">{projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase())).length} projects</span>
-                </Show>
-              </div>
-              <div class="db__lib-topbar-right">
-                <div class="db__lib-search">
-                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8.5" cy="8.5" r="5.5" /><path d="m13 13 3 3" /></svg>
-                  <input class="db__lib-search-input" type="text" placeholder="Search projects..." value={libSearch()} onInput={(e) => setLibSearch(e.currentTarget.value)} />
-                </div>
-                <button class="db__lib-upload-btn" onClick={openCreate}>
-                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M10 4v12M4 10h12" /></svg>
-                  New
-                </button>
-              </div>
-            </div>
-
-            <div class="db__lib-list" onClick={() => menuProjectId() && closeMenu()}>
-              <Show when={libCat() === "all" || libCat() === "mine"}>
-                <Show when={projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase())).length === 0}>
-                  <div class="db__lib-empty">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" /></svg>
-                    <span>No projects yet</span>
-                    <button class="db__lib-empty-cta" onClick={openCreate}>Create your first project</button>
-                  </div>
-                </Show>
-                <For each={projects().filter(p => p.name.toLowerCase().includes(libSearch().toLowerCase()))}>{(project) =>
-                  <div class="db__lib-row" style={{ "--proj-color": project.color || "#e05297" } as any} onClick={() => { if (!menuProjectId()) props.onOpenProject(project.id); }}>
-                    <div class="db__lib-row-thumb">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" /></svg>
-                    </div>
-                    <div class="db__lib-row-info">
-                      <span class="db__lib-row-name">{project.name}</span>
-                      <span class="db__lib-row-meta">{project.bpm || 100} BPM {project.key && project.key !== "—" ? `• ${project.key} ` : ""}• {project.tracks || 1} track{(project.tracks || 1) !== 1 ? "s" : ""}</span>
-                    </div>
-                    <span class="db__lib-row-date">{project.updatedAt}</span>
-                    <div class="db__lib-row-menu-wrap">
-                      <button class="db__lib-row-dots" onClick={(e) => toggleMenu(e, project.id)} title="More options">
-                        <svg viewBox="0 0 20 20" fill="currentColor"><circle cx="4" cy="10" r="1.5"/><circle cx="10" cy="10" r="1.5"/><circle cx="16" cy="10" r="1.5"/></svg>
-                      </button>
-                      <Show when={menuProjectId() === project.id}>
-                        <div class="db__lib-row-dropdown" onClick={(e) => e.stopPropagation()}>
-                          <button class="db__lib-row-dd-item" onClick={() => { closeMenu(); props.onOpenProject(project.id); }}>
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4a6 6 0 100 12A6 6 0 0010 4zM4 10h12" /></svg>
-                            Open
-                          </button>
-                          <button class="db__lib-row-dd-item" onClick={(e) => { closeMenu(); openRename(e, project); }}>
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 3l4 4-9 9H4v-4z" /></svg>
-                            Rename
-                          </button>
-                          <div class="db__lib-row-dd-sep" />
-                          <button class="db__lib-row-dd-item db__lib-row-dd-item--danger" onClick={(e) => { closeMenu(); openDelete(e, project); }}>
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 6h12M7 6V4h6v2M8 9v6m4-6v6M5 6l.867 10.4A1 1 0 006.86 17.5h6.28a1 1 0 00.993-.9L15 6" /></svg>
-                            Delete
-                          </button>
-                        </div>
-                      </Show>
-                    </div>
-                  </div>
-                }</For>
-              </Show>
-              <Show when={libCat() === "liked"}>
-                <div class="db__lib-empty">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                  <span>No liked projects yet</span>
-                </div>
-              </Show>
-              <Show when={libCat() === "deleted"}>
-                <Show when={deletedLoading()}>
-                  <div class="db__lib-empty"><span>Loading trash...</span></div>
-                </Show>
-                <Show when={!deletedLoading() && deletedProjects().length === 0}>
-                  <div class="db__lib-empty">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
-                    <span>Trash is empty</span>
-                  </div>
-                </Show>
-                <Show when={!deletedLoading() && deletedProjects().length > 0}>
-                  <div class="db__lib-trash-note">
-                    Projects are automatically deleted after <strong>10 days</strong> in trash.
-                  </div>
-                  <For each={deletedProjects()}>{(item) =>
-                    <div class="db__lib-row db__lib-row--deleted" style={{ "--proj-color": "#888" } as any}>
-                      <div class="db__lib-row-thumb db__lib-row-thumb--deleted">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
-                      </div>
-                      <div class="db__lib-row-info">
-                        <span class="db__lib-row-name">{item.name}</span>
-                        <span class="db__lib-row-meta">{item.bpm} BPM • {item.trackCount} track{item.trackCount !== 1 ? "s" : ""}</span>
-                      </div>
-                      <span class="db__lib-row-expiry">{daysLeft(item.expiresAt)}d left</span>
-                      <div class="db__lib-row-trash-acts">
-                        <button class="db__lib-row-btn" onClick={() => handleRestore(item)}>Restore</button>
-                        <button class="db__lib-row-btn db__lib-row-btn--danger" onClick={() => { setPermDeleteTarget(item); setTrashActionError(""); }}>Delete Forever</button>
-                      </div>
-                    </div>
-                  }</For>
-                  <Show when={trashActionError()}>
-                    <span class="db__lib-trash-err">{trashActionError()}</span>
-                  </Show>
-                </Show>
-              </Show>
-            </div>
-          </div>
-
-        </div>
+        <Library
+          projects={projects}
+          libCat={libCat}
+          setLibCat={setLibCat}
+          libSearch={libSearch}
+          setLibSearch={setLibSearch}
+          tabRefs={tabRefs}
+          tabInd={tabInd}
+          menuProjectId={menuProjectId}
+          toggleMenu={toggleMenu}
+          closeMenu={closeMenu}
+          deletedProjects={deletedProjects}
+          deletedLoading={deletedLoading}
+          trashActionError={trashActionError}
+          setTrashActionError={setTrashActionError}
+          loadDeletedProjects={loadDeletedProjects}
+          handleRestore={handleRestore}
+          setPermDeleteTarget={setPermDeleteTarget}
+          daysLeft={daysLeft}
+          openCreate={openCreate}
+          openRename={openRename}
+          openDelete={openDelete}
+          onOpenProject={props.onOpenProject}
+        />
       </Show>
+
+      <Show when={tab() === "profile"}>
+        <Profile
+          user={user}
+          initials={initials}
+          handleImageUpload={handleImageUpload}
+          followCounts={followCounts}
+        />
+      </Show>
+
+      {/* ── Account delete modal ──────────────────────────────────── */}
       <Show when={deleteStep() !== "none"}>
         <div class="db__modal-overlay" onClick={handleCancelDelete}>
           <div class="db__modal" onClick={(e) => e.stopPropagation()}>
@@ -949,14 +428,7 @@ const Dashboard: Component<{
               <p class="db__modal-desc">Enter your password to permanently delete your account.</p>
               <form onSubmit={handleFinalDelete}>
                 <div class="db__frow">
-                  <input
-                    class="db__finput"
-                    type="password"
-                    placeholder="Password"
-                    value={deletePassword()}
-                    onInput={(e) => setDeletePassword(e.currentTarget.value)}
-                    required
-                  />
+                  <input class="db__finput" type="password" placeholder="Password" value={deletePassword()} onInput={(e) => setDeletePassword(e.currentTarget.value)} required />
                   <div class="db__fline" />
                 </div>
                 <Show when={deleteError()}>
@@ -974,7 +446,7 @@ const Dashboard: Component<{
         </div>
       </Show>
 
-      {/* Create project modal */}
+      {/* ── Create project modal ──────────────────────────────────── */}
       <Show when={createOpen()}>
         <div class="db__pm-overlay" onClick={() => setCreateOpen(false)}>
           <form class="db__pm" onClick={(e) => e.stopPropagation()} onSubmit={submitCreate}>
@@ -999,7 +471,7 @@ const Dashboard: Component<{
         </div>
       </Show>
 
-      {/* Rename project modal */}
+      {/* ── Rename project modal ──────────────────────────────────── */}
       <Show when={renameTarget()}>
         <div class="db__pm-overlay" onClick={() => setRenameTarget(null)}>
           <form class="db__pm" onClick={(e) => e.stopPropagation()} onSubmit={submitRename}>
@@ -1024,7 +496,7 @@ const Dashboard: Component<{
         </div>
       </Show>
 
-      {/* Delete project modal */}
+      {/* ── Delete project modal ──────────────────────────────────── */}
       <Show when={deleteTarget()}>
         <div class="db__pm-overlay" onClick={() => setDeleteTarget(null)}>
           <div class="db__pm" onClick={(e) => e.stopPropagation()}>
@@ -1048,7 +520,7 @@ const Dashboard: Component<{
         </div>
       </Show>
 
-      {/* Permanent delete confirmation modal */}
+      {/* ── Permanent delete modal ────────────────────────────────── */}
       <Show when={permDeleteTarget()}>
         <div class="db__pm-overlay" onClick={() => setPermDeleteTarget(null)}>
           <div class="db__pm" onClick={(e) => e.stopPropagation()}>
@@ -1071,6 +543,22 @@ const Dashboard: Component<{
           </div>
         </div>
       </Show>
+
+      {/* ── Mobile bottom nav ─────────────────────────────────────── */}
+      <nav class="db__mobile-nav">
+        <button class={`db__mobile-nav-btn${tab() === "overview" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("overview")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span>Overview</span>
+        </button>
+        <button class={`db__mobile-nav-btn${tab() === "library" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("library")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14M4 19a2 2 0 01-2-2V7h4M4 19h16M8 9h8M8 13h5"/></svg>
+          <span>Library</span>
+        </button>
+        <button class={`db__mobile-nav-btn${tab() === "profile" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("profile")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3.3 3.1-6 7-6s7 2.7 7 6"/></svg>
+          <span>Profile</span>
+        </button>
+      </nav>
 
     </div>
   );

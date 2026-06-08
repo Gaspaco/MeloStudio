@@ -1,24 +1,38 @@
-import { type Component, createEffect, onCleanup } from "solid-js";
-import Peaks, { type PeaksInstance } from "peaks.js";
-import { getAudioContext } from "~/lib/audio/context";
+import { type Component, createEffect, onCleanup, onMount } from "solid-js";
+import type { PeaksInstance } from "peaks.js";
+import { getExistingAudioContext, unlockAudioContext } from "~/lib/audio/context";
 
 const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props) => {
   let containerEl: HTMLDivElement | undefined;
   let audioEl: HTMLAudioElement | undefined;
   let peaksInstance: PeaksInstance | null = null;
+  // URL waiting to be rendered once the AudioContext is running
+  let pendingUrl: string | null = null;
+  // Last URL/color pair initialized or currently initializing. This prevents
+  // Peaks.js from tearing down and rebuilding when a parent track gets a new
+  // object reference but the rendered waveform did not actually change.
+  let lastInitKey: string | null = null;
 
   const initPeaks = async (url: string) => {
+    const initKey = `${url}\u0000${props.color}`;
+    if (initKey === lastInitKey) return;
     if (peaksInstance) { peaksInstance.destroy(); peaksInstance = null; }
     if (!containerEl || !audioEl) return;
+
+    // Peaks.js uses decodeAudioData which requires a running AudioContext.
+    // Browsers start AudioContext in "suspended" state (autoplay policy) until
+    // a user gesture resumes it. If we're not running yet, stash the URL and
+    // let the statechange listener below retry after the first user interaction.
+    const ac = getExistingAudioContext();
+    if (!ac || ac.state !== "running") {
+      pendingUrl = url;
+      return;
+    }
+    pendingUrl = null;
+    lastInitKey = initKey;
     audioEl.src = url;
 
-    // Peaks.js decodes audio via decodeAudioData which requires a running context.
-    // Browsers start AudioContext in "suspended" state; resume before initialising.
-    const ac = getAudioContext();
-    if (ac.state !== "running") {
-      await ac.resume().catch(() => {});
-    }
-
+    const { default: Peaks } = await import("peaks.js");
     Peaks.init({
       overview: {
         container: containerEl,
@@ -36,6 +50,7 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
     }, (err, peaks) => {
       if (err || !peaks) {
         console.warn("[AudioWaveformDisplay] peaks.js init failed:", err);
+        lastInitKey = null;
         return;
       }
       peaksInstance = peaks;
@@ -48,6 +63,31 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
     });
   };
 
+  // When the AudioContext transitions to "running" (after the first user gesture),
+  // initialize any waveform that was deferred because the context was suspended.
+  onMount(() => {
+    let ac = getExistingAudioContext();
+    const onStateChange = () => {
+      if (ac?.state === "running" && pendingUrl) {
+        void initPeaks(pendingUrl);
+      }
+    };
+    const onFirstGesture = () => {
+      void unlockAudioContext().then(() => {
+        ac = getExistingAudioContext();
+        if (ac && pendingUrl) void initPeaks(pendingUrl);
+      }).catch(() => {});
+    };
+    ac?.addEventListener("statechange", onStateChange);
+    window.addEventListener("pointerdown", onFirstGesture, { once: true });
+    window.addEventListener("keydown", onFirstGesture, { once: true });
+    onCleanup(() => {
+      ac?.removeEventListener("statechange", onStateChange);
+      window.removeEventListener("pointerdown", onFirstGesture);
+      window.removeEventListener("keydown", onFirstGesture);
+    });
+  });
+
   createEffect(() => {
     const url = props.url;
     if (url) void initPeaks(url);
@@ -55,6 +95,7 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
 
   onCleanup(() => {
     if (peaksInstance) { peaksInstance.destroy(); peaksInstance = null; }
+    lastInitKey = null;
   });
 
   return (

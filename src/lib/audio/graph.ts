@@ -4,6 +4,7 @@
 // from SolidJS and UI state, updating it only via manual imperative calls.
 
 import { dbToGain, type Track, type MasterBus, type TrackId } from "./types";
+import { setIsMicAuthorized, setActiveInputTrackId } from "../state/transportStore";
 
 interface TrackNodes {
   input: GainNode;        // sums all clip outputs or physical inputs for this track
@@ -111,7 +112,8 @@ export class AudioGraph {
       this.micSourceNode = this.ctx.createMediaStreamSource(this.micStream);
       this.micSourceNode.connect(trackNode);
       this.currentConnectedTrackId = trackId;
-      
+      setIsMicAuthorized(true);
+      setActiveInputTrackId(trackId);
       return true;
     } catch (error) {
       console.error("Failed to acquire microphone access:", error);
@@ -133,6 +135,8 @@ export class AudioGraph {
       this.micStream = null;
     }
     this.currentConnectedTrackId = null;
+    setIsMicAuthorized(false);
+    setActiveInputTrackId(null);
   }
 
   // Ensure hardware streams are torn down clean if the entire graph lifecycle ends

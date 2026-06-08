@@ -456,7 +456,7 @@
     }
     .prog-bar-fill {
       height: 100%;
-      width: calc(7 / 11 * 100%);
+      width: calc(9 / 11 * 100%);
       background: linear-gradient(90deg, rgba(34,197,94,0.6), var(--accent));
       border-radius: 2px;
     }
@@ -525,9 +525,10 @@
       <input id="search" type="text" placeholder="Zoek kaarten…" autocomplete="off" />
     </div>
     <a href="#schema-section" class="hd-schema-link">ERD ↓</a>
+    <a href="#testplan-section" class="hd-schema-link" style="border-color:rgba(0,194,194,0.3);color:var(--cyan);background:rgba(0,194,194,0.06);">Testplan ↓</a>
     <span class="hd-badge">Niko Dima</span>
-    <span class="hd-badge active">Week 7 - Actief</span>
-    <span class="hd-date">3 mei 2026</span>
+    <span class="hd-badge active">Week 9 - Actief</span>
+    <span class="hd-date">27 mei 2026</span>
   </div>
 </header>
 <div class="progress-strip">
@@ -538,13 +539,13 @@
   <span class="prog-week done" data-col="col-w4">W4 ✓</span><div class="prog-sep"></div>
   <span class="prog-week done" data-col="col-w5">W5 ✓</span><div class="prog-sep"></div>
   <span class="prog-week done" data-col="col-w6">W6 ✓</span><div class="prog-sep"></div>
-  <span class="prog-week active" data-col="col-w7">W7 ●</span><div class="prog-sep"></div>
-  <span class="prog-week" data-col="col-backlog">W8</span><div class="prog-sep"></div>
-  <span class="prog-week">W9</span><div class="prog-sep"></div>
+  <span class="prog-week done" data-col="col-w7">W7 ✓</span><div class="prog-sep"></div>
+  <span class="prog-week done" data-col="col-w8">W8 ✓</span><div class="prog-sep"></div>
+  <span class="prog-week active" data-col="col-w9">W9 ●</span><div class="prog-sep"></div>
   <span class="prog-week">W10</span><div class="prog-sep"></div>
   <span class="prog-week">W11</span>
   <div class="prog-right">
-    <span class="prog-counter">7 / 11 <span>weken</span></span>
+    <span class="prog-counter">9 / 11 <span>weken</span></span>
     <span class="prog-stack">SolidJS · TypeScript · Tone.js · Peaks.js · SCSS · Neon PostgreSQL</span>
   </div>
 </div>
@@ -844,15 +845,67 @@
   </div>
 </div>
 
+<!-- WEEK 8 – AUDIO ENGINE + PUBLISHING + NETLIFY -->
+<div class="col" id="col-w8">
+  <div class="col-header" onclick="toggleCol(this)">
+    <div class="col-dot" style="background:#f97316"></div>
+    <span class="col-title">Week 8<span class="col-sub"> · Audio &amp; Deploy</span></span>
+    <span class="col-count">6</span>
+    <span class="col-toggle">▾</span>
+  </div>
+  <div class="col-dates">5 – 13 mei 2026 · Audio engine, Publishing, Netlify</div>
+  <div class="cards">
+    <div class="card" style="border-left:2px solid rgba(249,115,22,0.4);">
+      <div class="card-title" style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--orange);margin-bottom:0.2rem;">Doel</div>
+      <div class="card-desc" style="margin-bottom:0;">De audio engine uitbreiden met een Master Bus en TopBar controls, project sharing toevoegen, en de Netlify deployment definitief stabiel maken.</div>
+    </div>
+    <div class="sep-label">Audio engine</div>
+    <div class="card highlight">
+      <div class="card-title">Master Bus – audio processing</div>
+      <div class="card-desc">Master volume, gain staging en routing via een centrale Master Bus node geïmplementeerd. Volume controls per track aangepast om via de bus te lopen.</div>
+      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-orange">Master Bus</span></div>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">TopBar: metronoom + toonsoort / maatsoort</div>
+      <div class="card-desc">Metronoom-knop toegevoegd met klikgeluid via Web Audio. Dropdown voor toonsoort (C, D, E…) en maatsoort (4/4, 3/4, 6/8) selecteerbaar in de studio.</div>
+      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-purple">Studio</span></div>
+    </div>
+    <div class="sep-label">Dashboard &amp; API</div>
+    <div class="card">
+      <div class="card-title">Project publishing + deel-modal</div>
+      <div class="card-desc">Gebruikers kunnen een project publiek maken via een modal. API endpoint toegevoegd: project wordt gemarkeerd als published en een deelbare link wordt gegenereerd.</div>
+      <div class="tags"><span class="tag tag-green">Neon DB</span><span class="tag tag-pink">UI</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Studio hours stats API + track count</div>
+      <div class="card-desc">Nieuw API endpoint dat studiotijd per gebruiker bijhoudt. Track count toegevoegd aan de projectenlijst in het dashboard voor snelle overviews.</div>
+      <div class="tags"><span class="tag tag-green">Neon DB</span><span class="tag tag-purple">Studio</span></div>
+    </div>
+    <div class="sep-label">Infra &amp; auth</div>
+    <div class="card">
+      <div class="card-title">Netlify deployment finalisering</div>
+      <div class="card-desc">BaseURL gecorrigeerd naar melo-studio.netlify.app, trusted origins bijgewerkt, publish directory en functions config opgelost. App staat live en stabiel.</div>
+      <div class="tags"><span class="tag tag-green">Infra</span><span class="tag tag-gray">DevOps</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Auth fixes – authHeaders + token handling</div>
+      <div class="card-desc"><code style="font-size:0.67rem;color:var(--cyan);">authHeaders</code> aangepast om de Promise correct te awaiten. Error handling verbeterd: geeft lege headers terug i.p.v. null zodat API calls niet crashen.</div>
+      <div class="card-note challenge"><b>De uitdaging</b>API calls faalden stilletjes omdat authHeaders een unresolved Promise teruggaf in plaats van de headers zelf.</div>
+      <div class="card-note lesson"><b>Oplossing</b>await toegevoegd bij de authHeaders aanroep in alle API utility functies.</div>
+      <div class="tags"><span class="tag tag-blue">Auth</span><span class="tag tag-pink">Fix</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- BACKLOG -->
 <div class="col" id="col-backlog">
   <div class="col-header" onclick="toggleCol(this)">
     <div class="col-dot" style="background:#4e4c49"></div>
-    <span class="col-title">Backlog<span class="col-sub"> · W8 → W11</span></span>
+    <span class="col-title">Backlog<span class="col-sub"> · W10 → W11</span></span>
     <span class="col-count">7</span>
     <span class="col-toggle">▾</span>
   </div>
-  <div class="col-dates">Weken 8 – 11 · Gepland</div>
+  <div class="col-dates">Weken 10 – 11 · Gepland</div>
   <div class="cards">
     <div class="sep-label">Audio functies</div>
     <div class="card">
@@ -895,6 +948,80 @@
       <div class="card-title">Audio exporteren (WAV / MP3)</div>
       <div class="card-desc">De uiteindelijke mix exporteren als WAV of MP3 via OfflineAudioContext rendering pipeline.</div>
       <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W11</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 9 – TESTEN EN VERBETEREN -->
+<div class="col" id="col-w9" style="border-color:rgba(0,194,194,0.3);">
+  <div class="col-header" onclick="toggleCol(this)">
+    <div class="col-dot" style="background:#00c2c2"></div>
+    <span class="col-title">Week 9<span class="col-sub"> · Testen</span></span>
+    <span class="col-count">9</span>
+    <span class="col-toggle">▾</span>
+  </div>
+  <div class="col-dates">Blink traject – Testen en verbeteren</div>
+  <div class="cards">
+    <div class="card" style="border-left:2px solid rgba(0,194,194,0.4);">
+      <div class="card-title" style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--cyan);margin-bottom:0.2rem;">Doel</div>
+      <div class="card-desc" style="margin-bottom:0;">MeloStudio grondig testen, bugs opsporen en verbeteringen doorvoeren. Documentatie vastleggen als schoolopdracht deliverable (TESTPLAN.md).</div>
+    </div>
+
+    <div class="sep-label">Testplan – 25 tests</div>
+    <div class="card">
+      <div class="card-title">Authenticatie (T01–T07)</div>
+      <div class="card-desc">Registreren met e-mail / bestaande e-mail / leeg formulier. Login met juiste/onjuiste gegevens en Google OAuth. Uitloggen. Wachtwoord vergeten flow.</div>
+      <div class="tags"><span class="tag tag-blue">Auth</span><span class="tag tag-green">7/7</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Projectbeheer (T08–T14)</div>
+      <div class="card-desc">Project aanmaken, hernoemen, verwijderen, herstellen, permanent verwijderen. Zoeken op naam. Edge case: leeg zoekveld toont alles.</div>
+      <div class="tags"><span class="tag tag-purple">Studio</span><span class="tag tag-green">7/7</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Studio &amp; Navigatie (T15–T21)</div>
+      <div class="card-desc">Studio openen met correct project. Project opslaan (versie in DB). Tabblad navigatie. Studiotijd teller (bug gevonden + opgelost). Profielfoto uploaden.</div>
+      <div class="tags"><span class="tag tag-purple">Studio</span><span class="tag tag-green">Neon DB</span><span class="tag tag-cyan">Audio</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Responsive &amp; Edge cases (T18–T25)</div>
+      <div class="card-desc">Mobiel ≤480px en tablet 768px layout. Gedeeld project via publieke link. Internet wegvallen — app crasht niet maar geen foutmelding (open bug B06).</div>
+      <div class="tags"><span class="tag tag-pink">Design</span><span class="tag tag-pink">UX</span><span class="tag tag-yellow">T25</span></div>
+    </div>
+
+    <div class="sep-label">Gevonden bugs</div>
+    <div class="card highlight">
+      <div class="card-title">B01 – "New project" tekst brak af</div>
+      <div class="card-desc">Knoptekst brak op twee regels op mobiel. Fix: <code style="font-size:0.67rem;color:var(--cyan);">white-space:nowrap</code> + tekst in &lt;span&gt; zodat het verborgen kan worden op mobiel.</div>
+      <div class="tags"><span class="tag tag-pink">UI</span><span class="tag tag-green">Opgelost</span></div>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">B02 – Studiotijd teller resetde bij refresh</div>
+      <div class="card-desc"><code style="font-size:0.67rem;color:var(--cyan);">mountedAt = Date.now()</code> werd elke keer opnieuw gezet. Fix: <code style="font-size:0.67rem;color:var(--cyan);">sessionStorage</code> gebruiken — starttijd blijft behouden over page refreshes.</div>
+      <div class="tags"><span class="tag tag-blue">Logic</span><span class="tag tag-green">Opgelost</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">B03–B05 – UI bugs</div>
+      <div class="card-desc">Avatar op verkeerde tab → alleen Library tab. Teller-badge brak af → nowrap. Library padding te groot op mobiel → 0.25rem.</div>
+      <div class="tags"><span class="tag tag-pink">UI</span><span class="tag tag-green">Opgelost</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">B06 – Geen foutmelding bij offline</div>
+      <div class="card-desc">App crasht niet maar toont geen melding aan de gebruiker. Verbetervoorstel: <code style="font-size:0.67rem;color:var(--cyan);">navigator.onLine</code> event listener + toast notificatie.</div>
+      <div class="tags"><span class="tag tag-yellow">Open</span><span class="tag tag-cyan">UX</span></div>
+    </div>
+
+    <div class="sep-label">Gebruikerstest &amp; reflectie</div>
+    <div class="card">
+      <div class="card-title">Gebruikerstest – externe tester</div>
+      <div class="card-desc">Klasgenoot gebruikte de app zonder uitleg. Trash-knop gaf verwarring, opslaan-feedback in studio ontbreekt.</div>
+      <div class="card-note lesson"><b>Verbetervoorstel</b>Opslaan-bevestiging ("Saved ✓") toevoegen. Tooltip bij Trash: "Verwijderde projecten".</div>
+      <div class="tags"><span class="tag tag-pink">UX</span><span class="tag tag-yellow">Feedback</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Reflectie</div>
+      <div class="card-note lesson"><b>Wat leerde ik?</b>Testen onthult details die je als bouwer vanzelfsprekend vindt. De timer-bug was pas zichtbaar na écht testen (pagina vernieuwen).</div>
+      <div class="card-note challenge"><b>Wat was moeilijk?</b>Edge cases zoals offline gebruik zijn lastig te simuleren en worden snel vergeten in het testplan.</div>
     </div>
   </div>
 </div>
@@ -980,6 +1107,291 @@
     </div> <!-- /.erd-inner -->
   </div>
 </section>
+
+<!-- ══════════════════════════════════════════════════════════════ -->
+<!-- TESTPLAN SECTION                                               -->
+<!-- ══════════════════════════════════════════════════════════════ -->
+<section id="testplan-section">
+  <div class="schema-divider">
+    <div class="schema-divider-line"></div>
+    <span class="schema-divider-label"><span style="color:var(--cyan)">◈</span> Testplan – Week 9</span>
+    <div class="schema-divider-line"></div>
+  </div>
+
+  <div class="tp-wrap">
+
+    <!-- TABLE 1: Tests -->
+    <div class="tp-block">
+      <div class="tp-block-header">
+        <span class="tp-block-title">Uitgevoerde tests</span>
+        <span class="tp-block-meta">25 tests · 24 geslaagd · 1 gedeeltelijk</span>
+        <a href="#board" class="schema-back" style="margin-left:auto;">↑ Terug naar bord</a>
+      </div>
+      <div class="tp-table-wrap">
+        <table class="tp-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Categorie</th>
+              <th>Wat getest</th>
+              <th>Verwacht resultaat</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="tp-id">T01</td><td><span class="tp-cat tp-cat-blue">Auth</span></td><td>Registreren met e-mail + wachtwoord</td><td>Account aangemaakt, doorgestuurd naar dashboard</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T02</td><td><span class="tp-cat tp-cat-blue">Auth</span></td><td>Registreren met bestaande e-mail</td><td>Foutmelding: e-mail al in gebruik</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T03</td><td><span class="tp-cat tp-cat-blue">Auth</span></td><td>Leeg registratieformulier verzenden</td><td>Browserfoutmelding, velden gemarkeerd</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T04</td><td><span class="tp-cat tp-cat-blue">Auth</span></td><td>Login met juiste gegevens</td><td>Gebruiker op dashboard</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T05</td><td><span class="tp-cat tp-cat-blue">Auth</span></td><td>Login met verkeerd wachtwoord</td><td>Foutmelding zichtbaar</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T06</td><td><span class="tp-cat tp-cat-blue">Auth</span></td><td>Login met Google OAuth</td><td>Doorgestuurd, op dashboard</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T07</td><td><span class="tp-cat tp-cat-blue">Auth</span></td><td>Uitloggen</td><td>Sessie beëindigd, terug naar homepagina</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr class="tp-row-sep"><td class="tp-id">T08</td><td><span class="tp-cat tp-cat-purple">Project</span></td><td>Nieuw project aanmaken</td><td>Project verschijnt direct in bibliotheek</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T09</td><td><span class="tp-cat tp-cat-purple">Project</span></td><td>Project aanmaken zonder naam</td><td>Standaard naam "New Project" gebruikt</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T10</td><td><span class="tp-cat tp-cat-purple">Project</span></td><td>Project hernoemen</td><td>Naam bijgewerkt in de lijst</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T11</td><td><span class="tp-cat tp-cat-purple">Project</span></td><td>Project naar prullenbak</td><td>Verdwijnt uit actieve lijst, staat in Trash</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T12</td><td><span class="tp-cat tp-cat-purple">Project</span></td><td>Project herstellen vanuit Trash</td><td>Terug in actieve bibliotheek</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T13</td><td><span class="tp-cat tp-cat-purple">Project</span></td><td>Project permanent verwijderen</td><td>Volledig weg uit database</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T14</td><td><span class="tp-cat tp-cat-purple">Project</span></td><td>Zoeken op projectnaam</td><td>Lijst filtert live mee</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr class="tp-row-sep"><td class="tp-id">T15</td><td><span class="tp-cat tp-cat-cyan">Studio</span></td><td>Studio openen via bibliotheek</td><td>Correct project geladen</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T16</td><td><span class="tp-cat tp-cat-cyan">Studio</span></td><td>Project opslaan in studio</td><td>Versie opgeslagen in project_versions</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T17</td><td><span class="tp-cat tp-cat-cyan">Studio</span></td><td>Navigatie tussen tabbladen</td><td>Overview / Library / Profile wisselen correct</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T18</td><td><span class="tp-cat tp-cat-pink">Responsive</span></td><td>Mobiel ≤480px layout</td><td>Bottombar zichtbaar, layout bruikbaar</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T19</td><td><span class="tp-cat tp-cat-pink">Responsive</span></td><td>Tablet 768px layout</td><td>Layout past zich correct aan</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T20</td><td><span class="tp-cat tp-cat-cyan">Studio</span></td><td>Profielfoto uploaden</td><td>Foto bijgewerkt in kaart en topbalk</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T21</td><td><span class="tp-cat tp-cat-cyan">Studio</span></td><td>Studiotijd teller</td><td>Loopt live op, reset niet bij vernieuwen</td><td><span class="tp-status tp-pass">Geslaagd na fix</span></td></tr>
+            <tr class="tp-row-sep"><td class="tp-id">T22</td><td><span class="tp-cat tp-cat-blue">Auth</span></td><td>Wachtwoord vergeten flow</td><td>Bevestigingsmelding zichtbaar</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T23</td><td><span class="tp-cat tp-cat-green">Share</span></td><td>Gedeeld project via publieke link</td><td>Zichtbaar zonder inlog</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T24</td><td><span class="tp-cat tp-cat-purple">Project</span></td><td>Leeg zoekveld</td><td>Alle projecten getoond</td><td><span class="tp-status tp-pass">Geslaagd</span></td></tr>
+            <tr><td class="tp-id">T25</td><td><span class="tp-cat tp-cat-yellow">Edge</span></td><td>Internet wegvallen tijdens gebruik</td><td>App crasht niet, foutmelding zichtbaar</td><td><span class="tp-status tp-partial">Gedeeltelijk</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TABLE 2: Bugs -->
+    <div class="tp-block">
+      <div class="tp-block-header">
+        <span class="tp-block-title">Gevonden bugs</span>
+        <span class="tp-block-meta">6 bugs · 5 opgelost · 1 open</span>
+      </div>
+      <div class="tp-table-wrap">
+        <table class="tp-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Omschrijving</th>
+              <th>Oorzaak</th>
+              <th>Oplossing</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="tp-id">B01</td>
+              <td>"New project" tekst brak af op mobiel</td>
+              <td>Geen <code>white-space</code> beperking op de knoptekst</td>
+              <td><code>white-space:nowrap</code> + tekst in <code>&lt;span&gt;</code> verborgen op mobiel</td>
+              <td><span class="tp-status tp-pass">Opgelost</span></td>
+            </tr>
+            <tr>
+              <td class="tp-id">B02</td>
+              <td>Studiotijd teller resetde bij elke page refresh</td>
+              <td><code>mountedAt = Date.now()</code> werd elke keer opnieuw gezet</td>
+              <td><code>sessionStorage</code> gebruikt om starttijd over page refreshes te bewaren</td>
+              <td><span class="tp-status tp-pass">Opgelost</span></td>
+            </tr>
+            <tr>
+              <td class="tp-id">B03</td>
+              <td>Avatar zichtbaar op verkeerde tabbladen</td>
+              <td>Conditie was <code>tab() !== "overview"</code> i.p.v. specifiek Library</td>
+              <td>Gewijzigd naar <code>tab() === "library"</code></td>
+              <td><span class="tp-status tp-pass">Opgelost</span></td>
+            </tr>
+            <tr>
+              <td class="tp-id">B04</td>
+              <td>Teller-badge kon afbreken op kleine schermen</td>
+              <td>Geen <code>white-space</code> beperking op count element</td>
+              <td><code>white-space:nowrap</code> toegevoegd</td>
+              <td><span class="tp-status tp-pass">Opgelost</span></td>
+            </tr>
+            <tr>
+              <td class="tp-id">B05</td>
+              <td>Library had te veel linkse padding op mobiel</td>
+              <td>Padding was <code>clamp(1.5rem, 4vw, 3rem)</code> op alle schermen</td>
+              <td>Padding teruggebracht naar <code>0.25rem</code> voor mobiel</td>
+              <td><span class="tp-status tp-pass">Opgelost</span></td>
+            </tr>
+            <tr>
+              <td class="tp-id">B06</td>
+              <td>Geen foutmelding bij offline gebruik</td>
+              <td>Geen <code>navigator.onLine</code> detectie geïmplementeerd</td>
+              <td>Verbetervoorstel: event listener + toast notificatie toevoegen</td>
+              <td><span class="tp-status tp-open">Open</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TABLE 3: Gebruikerstest -->
+    <div class="tp-block">
+      <div class="tp-block-header">
+        <span class="tp-block-title">Gebruikerstest &amp; verbetervoorstellen</span>
+        <span class="tp-block-meta">Externe tester · Klasgenoot · Zonder uitleg</span>
+      </div>
+      <div class="tp-table-wrap">
+        <table class="tp-table">
+          <thead>
+            <tr>
+              <th>Observatie</th>
+              <th>Verbetervoorstel</th>
+              <th>Prioriteit</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Tester begreep direct hoe in te loggen</td>
+              <td>—</td>
+              <td><span class="tp-status tp-pass">Geen actie</span></td>
+            </tr>
+            <tr>
+              <td>Trash-knop gaf verwarring ("wat doet dit?")</td>
+              <td>Tooltip toevoegen: "Verwijderde projecten"</td>
+              <td><span class="tp-status tp-partial">Middel</span></td>
+            </tr>
+            <tr>
+              <td>Geen feedback na opslaan in studio</td>
+              <td>Opslaan-bevestiging toevoegen: "Saved ✓"</td>
+              <td><span class="tp-status tp-partial">Middel</span></td>
+            </tr>
+            <tr>
+              <td>Geen zichtbare foutmelding bij offline (B06)</td>
+              <td><code>navigator.onLine</code> + toast notificatie</td>
+              <td><span class="tp-status tp-open">Hoog</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /.tp-wrap -->
+</section>
+
+<style>
+  /* ── TESTPLAN SECTION ──────────────────────── */
+  #testplan-section {
+    padding-bottom: 6rem;
+  }
+  .tp-wrap {
+    margin: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  .tp-block {
+    border: 1px solid var(--col-border);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--col-bg);
+  }
+  .tp-block-header {
+    padding: 0.72rem 1.2rem;
+    border-bottom: 1px solid var(--col-border);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    background: rgba(255,255,255,0.01);
+  }
+  .tp-block-title {
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-2);
+  }
+  .tp-block-meta {
+    font-size: 0.63rem;
+    color: var(--text-3);
+  }
+  .tp-table-wrap {
+    overflow-x: auto;
+  }
+  .tp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.72rem;
+    font-family: var(--font-sans);
+  }
+  .tp-table thead tr {
+    background: rgba(255,255,255,0.02);
+  }
+  .tp-table th {
+    text-align: left;
+    padding: 0.5rem 1rem;
+    font-size: 0.6rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--text-3);
+    border-bottom: 1px solid var(--col-border);
+    white-space: nowrap;
+  }
+  .tp-table td {
+    padding: 0.48rem 1rem;
+    color: var(--text-2);
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    vertical-align: middle;
+    line-height: 1.5;
+  }
+  .tp-table tbody tr:last-child td { border-bottom: none; }
+  .tp-table tbody tr:hover td { background: rgba(255,255,255,0.015); }
+  .tp-table tr.tp-row-sep td { border-top: 1px solid var(--col-border); }
+  .tp-table code {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.65rem;
+    color: var(--cyan);
+    background: rgba(0,194,194,0.08);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+  }
+  .tp-id {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+    font-size: 0.65rem !important;
+    color: var(--text-3) !important;
+    white-space: nowrap;
+    width: 2.5rem;
+  }
+  /* Category pills */
+  .tp-cat {
+    font-size: 0.58rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  .tp-cat-blue   { background: rgba(59,130,246,0.1);  color: var(--blue); }
+  .tp-cat-purple { background: rgba(155,93,229,0.1);  color: var(--purple); }
+  .tp-cat-cyan   { background: rgba(0,194,194,0.1);   color: var(--cyan); }
+  .tp-cat-pink   { background: rgba(224,82,151,0.1);  color: var(--accent); }
+  .tp-cat-green  { background: rgba(34,197,94,0.1);   color: var(--green); }
+  .tp-cat-yellow { background: rgba(245,158,11,0.1);  color: var(--yellow); }
+  /* Status pills */
+  .tp-status {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+  .tp-pass    { background: rgba(34,197,94,0.1);   color: var(--green); }
+  .tp-partial { background: rgba(245,158,11,0.1);  color: var(--yellow); }
+  .tp-open    { background: rgba(224,82,151,0.1);  color: var(--accent); }
+</style>
 
 <style>
   .erd-svg {

@@ -1,6 +1,6 @@
-import { type Component, For, createSignal, onMount, onCleanup } from "solid-js";
-import Peaks, { type PeaksInstance } from "peaks.js";
-import { getAudioContext } from "~/lib/audio/context";
+import { type Component, For, createSignal, onCleanup } from "solid-js";
+import type { PeaksInstance } from "peaks.js";
+import { getExistingAudioContext, unlockAudioContext } from "~/lib/audio/context";
 import { tracks } from "../data/tracks";
 
 const Reel: Component<{
@@ -15,6 +15,39 @@ const Reel: Component<{
 
   const [playing, setPlaying] = createSignal(false);
 
+  const initWaveform = async () => {
+    if (peaksInstance || !audioEl || !waveformEl) return;
+    const audioContext = getExistingAudioContext();
+    if (!audioContext || audioContext.state !== "running") return;
+    const { default: Peaks } = await import("peaks.js");
+    if (peaksInstance) return;
+    Peaks.init({
+      overview: {
+        container: waveformEl,
+        waveformColor: "#ff69b4",
+        playedWaveformColor: "#ff69b4",
+        showAxisLabels: false,
+        playheadColor: "transparent",
+        playheadTextColor: "transparent",
+        axisGridlineColor: "transparent",
+        highlightColor: "transparent",
+        highlightOpacity: 0,
+      },
+      mediaElement: audioEl,
+      webAudio: { audioContext },
+      keyboard: false,
+    }, (err, peaks) => {
+      if (err || !peaks) return;
+      peaksInstance = peaks;
+      const view = peaks.views.getView("overview");
+      if (view) {
+        view.enableSeek(false);
+        view.showAxisLabels(false, { topMarkerHeight: 0, bottomMarkerHeight: 0 });
+        view.setAmplitudeScale(1.2);
+      }
+    });
+  };
+
   const updatePlayhead = () => {
     if (!audioEl || !playheadEl) return;
     const pct = audioEl.duration ? (audioEl.currentTime / audioEl.duration) * 100 : 0;
@@ -22,9 +55,11 @@ const Reel: Component<{
     rafHandle = requestAnimationFrame(updatePlayhead);
   };
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (!audioEl) return;
     if (audioEl.paused) {
+      await unlockAudioContext().catch(() => {});
+      initWaveform();
       audioEl.play().catch(() => {});
       setPlaying(true);
       rafHandle = requestAnimationFrame(updatePlayhead);
@@ -43,35 +78,6 @@ const Reel: Component<{
     if (playheadEl) playheadEl.style.left = "0%";
     if (rafHandle) { cancelAnimationFrame(rafHandle); rafHandle = null; }
   };
-
-  onMount(() => {
-    if (!audioEl || !waveformEl) return;
-    Peaks.init({
-      overview: {
-        container: waveformEl,
-        waveformColor: "#ff69b4",
-        playedWaveformColor: "#ff69b4",
-        showAxisLabels: false,
-        playheadColor: "transparent",
-        playheadTextColor: "transparent",
-        axisGridlineColor: "transparent",
-        highlightColor: "transparent",
-        highlightOpacity: 0,
-      },
-      mediaElement: audioEl,
-      webAudio: { audioContext: getAudioContext() },
-      keyboard: false,
-    }, (err, peaks) => {
-      if (err || !peaks) return;
-      peaksInstance = peaks;
-      const view = peaks.views.getView("overview");
-      if (view) {
-        view.enableSeek(false);
-        view.showAxisLabels(false, { topMarkerHeight: 0, bottomMarkerHeight: 0 });
-        view.setAmplitudeScale(1.2);
-      }
-    });
-  });
 
   onCleanup(() => {
     if (peaksInstance) { peaksInstance.destroy(); peaksInstance = null; }

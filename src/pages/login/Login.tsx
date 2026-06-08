@@ -1,13 +1,24 @@
 import { type Component, createSignal, onMount, For } from "solid-js";
+import { useSearchParams } from "@solidjs/router";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";
 import { socialAuthClient } from "../../lib/social-auth";
+import { markAuthProvider } from "../../lib/app-auth";
 import "./login.scss";
+
+type NeonSocialAuthClient = {
+  signIn: {
+    social: (input: { provider: "google"; callbackURL: string }) => Promise<unknown>;
+  };
+};
+
+const neonAuthClient = authClient as unknown as NeonSocialAuthClient;
 
 const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: () => void; onSuccess?: () => void }> = (props) => {
   let pageRef: HTMLDivElement | undefined;
 
-  const [email, setEmail] = createSignal("");
+  const [searchParams] = useSearchParams();
+  const [email, setEmail] = createSignal(searchParams.email ? decodeURIComponent(searchParams.email as string) : "");
   const [password, setPassword] = createSignal("");
   const [errorMsg, setErrorMsg] = createSignal<string | null>(null);
   const [isSubmitting, setIsSubmitting] = createSignal(false);
@@ -23,7 +34,7 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await authClient.signIn.email({
+      const { data, error } = await socialAuthClient.signIn.email({
         email: email(),
         password: password(),
       });
@@ -33,6 +44,7 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
       } else if (!data) {
         setErrorMsg("Sign in failed. Please try again.");
       } else {
+        markAuthProvider("better-auth");
         props.onSuccess?.();
       }
     } catch (err: any) {
@@ -42,22 +54,30 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
     }
   };
 
+  const signInWithTwitter = async () => {
+    markAuthProvider("better-auth");
+    await socialAuthClient.signIn.social({
+      provider: "twitter",
+      callbackURL: "/dashboard",
+    });
+  };
+
+  const signInWithNeonSocial = async (provider: "google") => {
+    markAuthProvider("neon");
+    await neonAuthClient.signIn.social({
+      provider,
+      callbackURL: "/dashboard",
+    });
+  };
+
   const handleSocialLogin = async (provider: "google" | "twitter") => {
     try {
       if (provider === "twitter") {
-        // Sign out of any active Neon Auth session first so the Twitter
-        // Better-Auth session takes priority on the dashboard.
-        try { await (authClient as any).signOut(); } catch {}
-        await socialAuthClient.signIn.social({
-          provider: "twitter",
-          callbackURL: "/dashboard",
-        });
-      } else {
-        await (authClient as any).signIn.social({
-          provider,
-          callbackURL: "/dashboard",
-        });
+        await signInWithTwitter();
+        return;
       }
+
+      await signInWithNeonSocial(provider);
     } catch (err: any) {
       setErrorMsg(err.message || "Social login failed");
     }

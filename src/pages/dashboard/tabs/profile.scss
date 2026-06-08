@@ -1,0 +1,206 @@
+@use "../../../styles/variables" as *;
+
+.db {
+  // ── Profile tab layout ───────────────────────────────────────────
+  &__content--profile {
+    padding-top: 5.5rem;
+  }
+
+  &__pro-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 2rem;
+    @media (max-width: 480px) { flex-direction: column; text-align: center; gap: 0.5rem; }
+  }
+
+  &__pro-avatar-wrap { position: relative; flex-shrink: 0; }
+
+  &__pro-avatar {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #161616;
+    border: 2px solid rgba(#fff, 0.06);
+    transition: border-color 0.2s;
+    .db__pro-avatar-wrap:hover & { border-color: rgba($accent, 0.5); }
+  }
+
+  &__pro-avatar-badge {
+    position: absolute;
+    bottom: -0.4rem;
+    right: 0.1rem;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 4px rgba($accent, 0.5));
+    svg { width: 1.1rem; height: 1.1rem; }
+  }
+
+  &__pro-identity { flex: 1; min-width: 0; }
+
+  &__pro-follow-panel {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem 2rem;
+    border: 1px solid rgba(#fff, 0.06);
+    border-radius: 1rem;
+    background: rgba(#fff, 0.02);
+    flex-shrink: 0;
+    @media (max-width: 480px) { width: 100%; justify-content: center; }
+  }
+
+  &__pro-follow-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  &__pro-follow-count {
+    font-family: $font-display;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: $text-primary;
+    line-height: 1;
+  }
+
+  &__pro-follow-label {
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $text-muted;
+  }
+
+  &__pro-follow-divider {
+    width: 1px;
+    height: 2.5rem;
+    background: rgba(#fff, 0.08);
+    flex-shrink: 0;
+  }
+
+  &__pro-name-row { display: flex; align-items: center; gap: 0.5rem; }
+
+  &__pro-verified {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-bottom: 0.1rem;
+    svg { width: 1.75rem; height: 1.75rem; }
+  }
+
+  &__pro-name {
+    font-family: $font-display;
+    font-size: clamp(2.25rem, 5vw, 3.25rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: $text-primary;
+    margin: 0;
+  }
+
+  &__pro-edit {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    color: $text-muted;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+    svg { width: 0.8rem; height: 0.8rem; }
+    &:hover { color: $accent; background: rgba($accent, 0.08); }
+  }
+
+  &__pro-handle {
+    font-family: $font-mono;
+    font-size: 0.85rem;
+    color: $text-muted;
+    letter-spacing: 0.01em;
+    margin-top: 0.15rem;
+    display: block;
+  }
+
+  &__pro-email {
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+    margin-top: 0.5rem;
+    display: block;
+  }
+
+  &__finput-prefix {
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+    padding-right: 0.25rem;
+  }
+
+  &__pro-tags {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+    @media (max-width: 480px) { justify-content: center; }
+  }
+
+  &__pro-tag {
+    font-family: $font-display;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba($accent, 0.7);
+    line-height: 1;
+  }
+
+  &__pro-tag-dot {
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 50%;
+    background: #4ade80;
+    flex-shrink: 0;
+  }
+
+  &__profile-upload-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  &__profile-initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-family: $font-display;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: $accent;
+  }
+
+  &__profile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  // ── Profile responsive ────────────────────────────────────────────
+  @media (max-width: 768px) {
+    &__content--profile { padding-top: 5rem; }
+  }
+
+  @media (max-width: 480px) {
+    &__content--profile {
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    }
+  }
+}

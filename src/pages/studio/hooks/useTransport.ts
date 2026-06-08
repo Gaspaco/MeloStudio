@@ -6,6 +6,7 @@
 // and starts a visual `requestAnimationFrame` loop to animate the playhead smoothly.
 import { onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
+import { apiFetch } from "~/lib/api";
 import { unlockAudioContext, getAudioContext } from "~/lib/audio/context";
 import { getMasterBus } from "~/lib/audio/masterBus";
 import type { StepPattern, StepSequencer } from "~/lib/audio/stepSeq";
@@ -31,6 +32,9 @@ export function useTransport(deps: Deps) {
   let playbackStartCtxTime = 0;
   let playbackStartTimelineSecs = 0;
   const audioBufferCache = new Map<string, AudioBuffer>();
+  // URLs that returned a non-OK response — skip them for the rest of the session
+  // so a missing remote clip doesn't cause repeated 404s on every play press.
+  const failedSrcCache = new Set<string>();
   let masterGainNode: GainNode | null = null;
   const trackGainNodes = new Map<string, GainNode>();
   let elapsedTimer: ReturnType<typeof setInterval> | null = null;
@@ -39,6 +43,8 @@ export function useTransport(deps: Deps) {
   const barsToSecs = (bars: number) => bars * 4 * (60 / deps.bpm());
   const pxToSecs   = (px: number)   => (px / 80) * 4 * (60 / deps.bpm());
   const secsToPx   = (secs: number) => secs * (deps.bpm() / 60) * (80 / 4);
+  const optionalRemoteUrl = (src: string) =>
+    src.includes("optional=") ? src : `${src}${src.includes("?") ? "&" : "?"}optional=1`;
 
   const stopAudioPlayback = () => {
     for (const src of audioSources) { try { src.stop(); } catch { /* already ended */ } }
@@ -93,7 +99,7 @@ export function useTransport(deps: Deps) {
     masterGainNode.connect(getMasterBus().input);
 
     for (const track of deps.tracks()) {
-      const hasAudioClips = (track.clips ?? []).some(c => c.kind !== "midi" && !!c.url);
+      const hasAudioClips = (track.clips ?? []).some(c => c.kind !== "midi" && (!!c.url || !!c.remoteUrl));
       if (!hasAudioClips) continue;
 
       // Per-track gain node so each track's volume slider works independently
@@ -103,14 +109,21 @@ export function useTransport(deps: Deps) {
       trackGainNodes.set(track.id, trackGain);
 
       for (const clip of track.clips ?? []) {
-        if (clip.kind === "midi" || !clip.url) continue;
-        let buffer = audioBufferCache.get(clip.url);
+        if (clip.kind === "midi") continue;
+        // Use local blob URL if available, fall back to server URL for cross-session clips
+        const audioSrc = clip.url || clip.remoteUrl;
+        if (!audioSrc) continue;
+        if (failedSrcCache.has(audioSrc)) continue;
+        let buffer = audioBufferCache.get(audioSrc);
         if (!buffer) {
           try {
-            const ab = await fetch(clip.url).then(r => r.arrayBuffer());
+            const requestSrc = audioSrc.startsWith("/api/") ? optionalRemoteUrl(audioSrc) : audioSrc;
+            const res = audioSrc.startsWith("/api/") ? await apiFetch(requestSrc) : await fetch(requestSrc);
+            if (res.status === 204 || !res.ok) { failedSrcCache.add(audioSrc); continue; }
+            const ab = await res.arrayBuffer();
             buffer = await ctx.decodeAudioData(ab);
-            audioBufferCache.set(clip.url, buffer);
-          } catch { continue; }
+            audioBufferCache.set(audioSrc, buffer);
+          } catch { failedSrcCache.add(audioSrc); continue; }
         }
         const clipStartSecs = barsToSecs(clip.barStart);
         const clipEndSecs   = clipStartSecs + barsToSecs(clip.bars);
@@ -159,7 +172,7 @@ export function useTransport(deps: Deps) {
 
   const updateBpm = (v: number) => {
     const seq = deps.getSeq();
-    const clamped = Math.max(40, Math.min(240, v || 100));
+    const clamped = Math.max(40, Math.min(240, Number.isFinite(v) ? v : 100));
     deps.setBpm(clamped);
     if (seq) {
       seq.setBpm(clamped);

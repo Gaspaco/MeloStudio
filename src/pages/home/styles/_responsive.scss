@@ -302,12 +302,45 @@
 
     &__info {
       flex-wrap: wrap;
-      gap: 1.25rem;
+      gap: 1.25rem 2rem;
       margin-bottom: 2.5rem;
+    }
+
+    &__back-top {
+      flex-basis: 100%;
     }
 
     &__right {
       align-items: flex-start;
+      flex-basis: 100%;
+    }
+  }
+}
+
+// ── Very small phones ─────────────────────────────────────────────
+@media (max-width: 30rem) {
+  .footer {
+    padding: 1.75rem 1.25rem 0;
+
+    &__info {
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    &__back-top {
+      flex-basis: auto;
+    }
+
+    &__right {
+      flex-basis: auto;
+    }
+
+    &__brand-line {
+      font-size: clamp(4.5rem, 24vw, 7rem);
+
+      &:nth-child(2) {
+        font-size: clamp(3.5rem, 19vw, 5.5rem);
+      }
     }
   }
 }

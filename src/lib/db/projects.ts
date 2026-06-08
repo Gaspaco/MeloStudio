@@ -67,17 +67,27 @@ export async function listProjects(userId: string): Promise<ProjectListItem[]> {
   }));
 }
 
+export async function recordHeartbeat(userId: string, projectId: string | null): Promise<void> {
+  await sql`
+    INSERT INTO studio_heartbeats (user_id, project_id)
+    VALUES (${userId}, ${projectId})
+  `;
+}
+
 export async function getProjectStats(userId: string): Promise<{ studioHours: number }> {
-  // Group save events (project_versions rows) into sessions.
-  // A new session starts when there is a gap of more than 30 minutes since the last save.
-  // Each session is credited (last_save - first_save) + 5 minutes minimum.
-  // This avoids the old bug where (updated_at - created_at) counted calendar days as studio time.
+  // Merge save events and heartbeat pings into a single timeline,
+  // then group into sessions (30min gap = new session).
+  // Each session duration = (last_event - first_event) + 60s (one heartbeat interval).
   const rows = await sql`
-    WITH saves AS (
+    WITH events AS (
       SELECT pv.created_at
       FROM project_versions pv
       JOIN projects p ON pv.project_id = p.id
       WHERE p.user_id = ${userId}
+      UNION ALL
+      SELECT created_at
+      FROM studio_heartbeats
+      WHERE user_id = ${userId}
     ),
     gaps AS (
       SELECT
@@ -87,7 +97,7 @@ export async function getProjectStats(userId: string): Promise<{ studioHours: nu
             OR LAG(created_at) OVER (ORDER BY created_at) IS NULL
           THEN 1 ELSE 0
         END AS new_session
-      FROM saves
+      FROM events
     ),
     sessions AS (
       SELECT
@@ -97,7 +107,7 @@ export async function getProjectStats(userId: string): Promise<{ studioHours: nu
     ),
     session_times AS (
       SELECT
-        EXTRACT(EPOCH FROM (MAX(created_at) - MIN(created_at))) + 300 AS duration_secs
+        EXTRACT(EPOCH FROM (MAX(created_at) - MIN(created_at))) + 60 AS duration_secs
       FROM sessions
       GROUP BY session_id
     )

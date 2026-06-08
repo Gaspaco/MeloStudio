@@ -7,16 +7,22 @@ export default createHandler(() => (
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="color-scheme" content="dark" />
+          <meta name="theme-color" content="#030303" />
           <style>{`
             html, body, #app { min-height: 100%; }
             body { margin: 0; background: #030303; color: #f4f1ea; }
-            html[data-app-booting] #app { visibility: hidden; }
-            html[data-app-booting] body::before {
-              content: "";
+            html[data-app-booting] #app { visibility: hidden; opacity: 0; }
+            #boot-veil {
               position: fixed;
               inset: 0;
               z-index: 2147483647;
               background: #030303;
+              transition: opacity 220ms ease;
+            }
+            #boot-veil[data-hiding="true"] {
+              opacity: 0;
+              pointer-events: none;
             }
           `}</style>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,6 +36,7 @@ export default createHandler(() => (
           {assets}
         </head>
         <body>
+          <div id="boot-veil" aria-hidden="true"></div>
           <div id="app">{children}</div>
           {scripts}
         </body>

@@ -1,18 +1,17 @@
 import { useNavigate } from "@solidjs/router";
-import { createResource, Show } from "solid-js";
-import Dashboard from "~/pages/dashboard/Dashboard";
+import { createResource, lazy, Show, Suspense } from "solid-js";
+import RouteVeil from "~/components/RouteVeil";
 import { createProjectApi } from "~/lib/api";
-import { authClient } from "~/lib/auth";
-import { socialAuthClient } from "~/lib/social-auth";
+import { getAppSession } from "~/lib/app-auth";
+
+const Dashboard = lazy(() => import("~/pages/dashboard/Dashboard"));
 
 export default function DashboardPage() {
   const navigate = useNavigate();
 
   const [session] = createResource(async () => {
-    const { data } = await authClient.getSession();
-    if (data?.user) return data;
-    const { data: baData } = await socialAuthClient.getSession();
-    if (baData?.user) return baData;
+    const appSession = await getAppSession();
+    if (appSession) return appSession.data;
     navigate("/login", { replace: true });
     return null;
   });
@@ -28,13 +27,15 @@ export default function DashboardPage() {
   };
 
   return (
-    <Show when={session()} fallback={null}>
-      <Dashboard
-        onLogout={() => navigate("/login")}
-        onNewProject={handleNewProject}
-        onOpenProject={(id) => navigate(`/studio/${id}`)}
-        onHome={() => navigate("/")}
-      />
+    <Show when={session()} fallback={<RouteVeil label="Opening dashboard" />}>
+      <Suspense fallback={<RouteVeil label="Opening dashboard" />}>
+        <Dashboard
+          onLogout={() => navigate("/login", { replace: true })}
+          onNewProject={handleNewProject}
+          onOpenProject={(id) => navigate(`/studio/${id}`)}
+          onHome={() => navigate("/")}
+        />
+      </Suspense>
     </Show>
   );
 }
