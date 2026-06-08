@@ -38,6 +38,49 @@
 
   &__pro-identity { flex: 1; min-width: 0; }
 
+  &__pro-follow-panel {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.5rem 2rem;
+    border: 1px solid rgba(#fff, 0.06);
+    border-radius: 1rem;
+    background: rgba(#fff, 0.02);
+    flex-shrink: 0;
+    @media (max-width: 480px) { width: 100%; justify-content: center; }
+  }
+
+  &__pro-follow-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  &__pro-follow-count {
+    font-family: $font-display;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: $text-primary;
+    line-height: 1;
+  }
+
+  &__pro-follow-label {
+    font-family: $font-mono;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: $text-muted;
+  }
+
+  &__pro-follow-divider {
+    width: 1px;
+    height: 2.5rem;
+    background: rgba(#fff, 0.08);
+    flex-shrink: 0;
+  }
+
   &__pro-name-row { display: flex; align-items: center; gap: 0.5rem; }
 
   &__pro-verified {

@@ -19,6 +19,15 @@
   "peerDependencies": {
     "typescript": "^5"
   },
+  "overrides": {
+    "brace-expansion": "^5.0.6",
+    "h3": "~1.15.11",
+    "nitropack": "~2.13.4",
+    "postcss": "^8.5.10",
+    "@neondatabase/neon-js": {
+      "better-auth": "^1.6.11"
+    }
+  },
   "dependencies": {
     "@better-auth/infra": "^0.2.10",
     "@neondatabase/neon-js": "0.6.1-beta",

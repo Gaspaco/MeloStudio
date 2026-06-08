@@ -81,14 +81,12 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
       }
 
       setSent(true);
+      gsap.set(".forgot__success", { display: "flex", autoAlpha: 0, y: 50 });
       gsap.timeline()
-        .to(".forgot__hero, .forgot__subtitle, .forgot__form", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" })
-        .set(".forgot__hero, .forgot__subtitle, .forgot__form", { display: "none" })
-        .fromTo(".forgot__success",
-          { opacity: 0, y: 40 },
-          { opacity: 1, y: 0, duration: 0.8, ease: "expo.out", display: "flex" },
-          "-=0.1"
-        );
+        .to(".forgot__hero", { autoAlpha: 0, y: -30, duration: 0.5, ease: "power3.in" })
+        .to(".forgot__subtitle", { autoAlpha: 0, y: -20, duration: 0.35, ease: "power2.in" }, "<0.05")
+        .to(".forgot__form", { autoAlpha: 0, y: -20, duration: 0.35, ease: "power2.in" }, "<0.05")
+        .to(".forgot__success", { autoAlpha: 1, y: 0, duration: 0.9, ease: "expo.out" }, "-=0.1");
     } catch {
       setErrorMsg("Network error. Check your connection and try again.");
     } finally {

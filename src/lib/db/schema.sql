@@ -103,3 +103,13 @@ CREATE TABLE IF NOT EXISTS studio_heartbeats (
 
 CREATE INDEX IF NOT EXISTS idx_studio_heartbeats_user_created
   ON studio_heartbeats (user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS follows (
+  follower_id   TEXT NOT NULL,
+  following_id  TEXT NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (follower_id, following_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_follows_following ON follows (following_id);
+CREATE INDEX IF NOT EXISTS idx_follows_follower  ON follows (follower_id);

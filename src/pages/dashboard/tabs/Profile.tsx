@@ -5,6 +5,7 @@ export interface ProfileProps {
   user: () => { name?: string; email?: string; image?: string; createdAt?: string } | null;
   initials: () => string;
   handleImageUpload: (e: Event & { currentTarget: HTMLInputElement }) => void;
+  followCounts: () => { followers: number; following: number };
 }
 
 const Profile: Component<ProfileProps> = (props) => {
@@ -33,6 +34,18 @@ const Profile: Component<ProfileProps> = (props) => {
             </a>
           </div>
           <span class="db__pro-handle">@gaspaco</span>
+        </div>
+
+        <div class="db__pro-follow-panel">
+          <div class="db__pro-follow-stat">
+            <span class="db__pro-follow-count">{props.followCounts().followers.toLocaleString()}</span>
+            <span class="db__pro-follow-label">Followers</span>
+          </div>
+          <div class="db__pro-follow-divider" />
+          <div class="db__pro-follow-stat">
+            <span class="db__pro-follow-count">{props.followCounts().following.toLocaleString()}</span>
+            <span class="db__pro-follow-label">Following</span>
+          </div>
         </div>
       </div>
     </div>

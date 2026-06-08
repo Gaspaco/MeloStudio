@@ -41,6 +41,7 @@ const Dashboard: Component<{
   const [projects, setProjects] = createSignal<Project[]>([]);
   const [loadingProjects, setLoadingProjects] = createSignal(true);
   const [studioHours, setStudioHours] = createSignal(0);
+  const [followCounts, setFollowCounts] = createSignal({ followers: 0, following: 0 });
 
   // ── UI state ───────────────────────────────────────────────────────
   const [time, setTime] = createSignal(new Date());
@@ -118,6 +119,8 @@ const Dashboard: Component<{
       })));
       const stats = await getProjectStatsApi();
       setStudioHours(stats.studioHours);
+      const fc = await fetch("/api/user/follows").then(r => r.json()) as { followers: number; following: number };
+      setFollowCounts(fc);
     } catch {}
     finally { setLoadingProjects(false); }
   });
@@ -404,6 +407,7 @@ const Dashboard: Component<{
           user={user}
           initials={initials}
           handleImageUpload={handleImageUpload}
+          followCounts={followCounts}
         />
       </Show>
 
