@@ -11,6 +11,43 @@ import { deleteRemoteClip, remoteClipUploadErrorMessage, uploadRemoteClip } from
 import { type TrackType, type ClipKind, type MediaClip, type UITrack, type StudioTemplate, TRACK_DEFS, randomTrackColor } from "../types";
 import type { PolySynth, SynthPreset } from "~/lib/audio/synth";
 import type { StepSequencer } from "~/lib/audio/stepSeq";
+import { getAudioContext } from "~/lib/audio/context";
+
+// Per-track mic state — NOT routed to output to prevent feedback
+export interface MicEntry {
+  stream: MediaStream;
+  analyser: AnalyserNode;
+}
+const micEntries = new Map<string, MicEntry>();
+
+export function getMicEntry(trackId: string): MicEntry | undefined {
+  return micEntries.get(trackId);
+}
+
+async function connectMicToTrack(trackId: string, onError: (msg: string) => void): Promise<void> {
+  disconnectMicFromTrack(trackId);
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    });
+    const ctx = getAudioContext();
+    const source = ctx.createMediaStreamSource(stream);
+    // Analyser only — never connect to destination to avoid feedback loop
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 512;
+    source.connect(analyser);
+    micEntries.set(trackId, { stream, analyser });
+  } catch {
+    onError("Microphone access denied — check browser permissions");
+  }
+}
+
+function disconnectMicFromTrack(trackId: string): void {
+  const entry = micEntries.get(trackId);
+  if (!entry) return;
+  entry.stream.getTracks().forEach(t => t.stop());
+  micEntries.delete(trackId);
+}
 
 const volToDb = (v: number) => v <= 0.001 ? -60 : 20 * Math.log10(v);
 
@@ -24,11 +61,12 @@ type Deps = {
   tracks: Accessor<UITrack[]>; setTracks: Setter<UITrack[]>;
   selectedTrack: Accessor<string | null>; setSelectedTrack: Setter<string | null>;
   bpm: Accessor<number>;
+  playheadPx: Accessor<number>;
   setError: Setter<string>;
   setShowNewTrack: Setter<boolean>;
   ensureSynth: (preset: SynthPreset) => void;
   setSynthPreset: Setter<SynthPreset>;
-  setActivePanel: Setter<"drum" | "keys" | null>;
+  setActivePanel: Setter<"drum" | "keys" | "voice" | null>;
   setDrumPanelOpen: Setter<boolean>;
   getSeq: () => StepSequencer | null;
   getSynth: () => PolySynth | null;
@@ -40,7 +78,70 @@ type Deps = {
 export function useTracks(deps: Deps) {
   const [dropTarget, setDropTarget] = createSignal<{ trackId: string; bar: number } | null>(null);
   const [globalDragOver, setGlobalDragOver] = createSignal(false);
+  const [recordingTrackId, setRecordingTrackId] = createSignal<string | null>(null);
+  const [recordingStartPx, setRecordingStartPx] = createSignal(0);
+  const [recordingStartTime, setRecordingStartTime] = createSignal(0);
+  let mediaRecorder: MediaRecorder | null = null;
+  let recordChunks: BlobPart[] = [];
+  let recEndPx = 0;
   let warnedRemoteStorageUnavailable = false;
+
+  const startRecording = (trackId: string) => {
+    const entry = getMicEntry(trackId);
+    // Stream tracks can end after MediaRecorder.stop() in Chrome — reconnect silently
+    if (!entry || entry.stream.getTracks().some(t => t.readyState === "ended")) {
+      void connectMicToTrack(trackId, deps.setError).then(() => startRecording(trackId));
+      return;
+    }
+    if (mediaRecorder) stopRecording();
+    recordChunks = [];
+    const startPx = deps.playheadPx();
+    const recStartTime = performance.now();
+    const mr = new MediaRecorder(entry.stream);
+    mr.ondataavailable = (e) => { if (e.data.size > 0) recordChunks.push(e.data); };
+    mr.onstop = async () => {
+      const widthPx = Math.max(1, recEndPx - startPx);
+      const endPx = startPx + widthPx;
+      // Adjust existing clips that overlap the recorded range
+      deps.setTracks(deps.tracks().map(t => {
+        if (t.id !== trackId) return t;
+        const clips = (t.clips ?? []).map(c => {
+          const cLeft = c.leftPx ?? c.barStart * BAR_PX;
+          const cRight = cLeft + (c.widthPx ?? c.bars * BAR_PX);
+          if (cRight <= startPx || cLeft >= endPx) return c; // no overlap
+          if (cLeft < startPx) {
+            // Clip starts before recording — trim right edge to recording start
+            const newW = startPx - cLeft;
+            return { ...c, widthPx: newW, bars: newW / BAR_PX };
+          }
+          // Clip starts inside recording — push it to right after recording ends, keep width
+          const w = c.widthPx ?? c.bars * BAR_PX;
+          return { ...c, leftPx: endPx, barStart: endPx / BAR_PX, widthPx: w, bars: w / BAR_PX };
+        });
+        return { ...t, clips };
+      }));
+      const bars = widthPx / BAR_PX;
+      const blob = new Blob(recordChunks, { type: mr.mimeType });
+      const ext = mr.mimeType.includes("ogg") ? "ogg" : mr.mimeType.includes("mp4") ? "mp4" : "webm";
+      const file = new File([blob], `Take ${Date.now()}.${ext}`, { type: mr.mimeType });
+      setRecordingTrackId(null);
+      void connectMicToTrack(trackId, deps.setError);
+      await addClip(trackId, file, startPx / BAR_PX, bars, { leftPx: startPx, widthPx });
+    };
+    mr.start(100);
+    mediaRecorder = mr;
+    setRecordingStartPx(startPx);
+    setRecordingStartTime(recStartTime);
+    setRecordingTrackId(trackId);
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder?.state === "recording") {
+      recEndPx = deps.playheadPx();
+      mediaRecorder.stop();
+    }
+    mediaRecorder = null;
+  };
 
   const classifyFile = (file: File): ClipKind | null => {
     const name = file.name.toLowerCase();
@@ -95,14 +196,14 @@ export function useTracks(deps: Deps) {
     return undefined;
   };
 
-  const addClip = async (trackId: string, file: File, barStart: number) => {
+  const addClip = async (trackId: string, file: File, barStart: number, barsOverride?: number, pixelOverride?: { leftPx: number; widthPx: number }) => {
     const kind = classifyFile(file);
     if (!kind) {
       deps.setError("Unsupported file — drop audio, MIDI, or video");
       setTimeout(() => deps.setError(""), 2200);
       return;
     }
-    const bars = await estimateBars(file, kind);
+    const bars = barsOverride ?? await estimateBars(file, kind);
     const clipId = crypto.randomUUID();
     let url: string | undefined;
     if (kind !== "midi") {
@@ -113,7 +214,11 @@ export function useTracks(deps: Deps) {
         console.warn(`[useTracks] IDB storeClip failed for clip ${clipId} (${file.name}, ${file.size} bytes)`);
       }
     }
-    const clip: MediaClip = { id: clipId, kind, name: file.name.replace(/\.[^.]+$/, ""), barStart: Math.max(0, barStart), bars, url };
+    const clip: MediaClip = {
+      id: clipId, kind, name: file.name.replace(/\.[^.]+$/, ""),
+      barStart: Math.max(0, barStart), bars, url,
+      ...(pixelOverride ?? {}),
+    };
     deps.setTracks(deps.tracks().map(t => t.id === trackId ? { ...t, clips: [...(t.clips ?? []), clip] } : t));
 
     if (kind !== "midi" && file.size > REMOTE_UPLOAD_THRESHOLD_BYTES) {
@@ -196,11 +301,13 @@ export function useTracks(deps: Deps) {
     deps.setSelectedTrack(t.id);
     if (type === "drum") { deps.setDrumPanelOpen(true); deps.setActivePanel("drum"); }
     else if (type === "instrument" || type === "bass" || type === "guitar") deps.setActivePanel("keys");
+    else if (type === "voice") void connectMicToTrack(t.id, deps.setError);
     if (openModal) deps.setShowNewTrack(false);
     void deps.save();
   };
 
   const deleteTrack = (id: string) => {
+    disconnectMicFromTrack(id);
     deps.setTracks(deps.tracks().filter(t => t.id !== id));
     if (deps.selectedTrack() === id) deps.setSelectedTrack(null);
     void deps.save();
@@ -276,6 +383,7 @@ export function useTracks(deps: Deps) {
 
   return {
     dropTarget, globalDragOver,
+    recordingTrackId, recordingStartPx, recordingStartTime, startRecording, stopRecording,
     addTrack, deleteTrack, patchTrack, addClip, deleteClip, importFiles,
     onLaneDragOver, onLaneDragLeave, onLaneDrop,
     onLanesDragOver, onLanesDragLeave, onLanesDrop,

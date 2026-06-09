@@ -2,12 +2,17 @@
 
 /* ─────────────── MAIN ─────────────── */
 .bl__main {
-  display: grid;
-  grid-template-columns: 17rem 1fr;
-  grid-template-rows: 1fr auto;
+  display: flex;
+  flex-direction: row;
   flex: 1;
   min-height: 0;
   overflow: hidden;
+}
+
+.bl__tracks-side {
+  width: 17rem;
+  min-width: 17rem;
+  flex-shrink: 0;
 }
 
 .bl__tracks-side {
@@ -452,6 +457,24 @@
     border-color: rgba($accent-green, 0.5);
     box-shadow: 0 0 6px rgba($accent-green, 0.2);
   }
+  &--rec {
+    color: #ff4444;
+    border-color: rgba(#ff4444, 0.35);
+    font-size: 0.65rem;
+    &:hover { background: rgba(#ff4444, 0.12); border-color: rgba(#ff4444, 0.6); color: #ff6666; }
+    &.is-recording {
+      background: rgba(#ff4444, 0.2);
+      color: #ff4444;
+      border-color: rgba(#ff4444, 0.6);
+      box-shadow: 0 0 8px rgba(#ff4444, 0.35);
+      animation: rec-pulse 1s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes rec-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(#ff4444, 0.3); }
+  50%       { box-shadow: 0 0 14px rgba(#ff4444, 0.7); }
 }
 
 .bl__slider {
@@ -491,6 +514,33 @@
       0 1px 8px rgba(#000, 0.55),
       0 0 0 3px color-mix(in srgb, var(--tc) 65%, transparent);
   }
+}
+
+.bl__mic-meter {
+  flex: 1;
+  height: 0.35rem;
+  border-radius: 1rem;
+  background: rgba(#fff, 0.07);
+  overflow: hidden;
+}
+
+.bl__mic-meter-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 1rem;
+  background: linear-gradient(90deg, #4ade80 0%, #e05297 100%);
+  transition: width 0.05s linear;
+}
+
+.bl__slider-val--mic {
+  color: #e05297;
+  animation: mic-blink 1.4s ease-in-out infinite;
+  &.is-recording { color: #ff4444; animation: mic-blink 0.6s ease-in-out infinite; }
+}
+
+@keyframes mic-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
 }
 
 .bl__slider-val {

@@ -125,10 +125,10 @@
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(#fff, 0.5);
+  color: rgba(#fff, 0.75);
   transition: color 0.15s, background 0.15s;
   svg { width: 1rem; height: 1rem; color: inherit; flex-shrink: 0; }
-  &:hover { color: rgba(#fff, 0.8); background: rgba(#fff, 0.07); }
+  &:hover { color: #fff; background: rgba(#fff, 0.07); }
   &.is-active {
     color: $accent;
     background: rgba($accent, 0.1);

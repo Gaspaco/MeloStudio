@@ -20434,13 +20434,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/tempo.ts:15"
     },
     {
-      "id": "file::types",
-      "label": "types.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:1"
-    },
-    {
       "id": "types::dbtogain",
       "label": "dbToGain",
       "fileType": "code",
@@ -21190,244 +21183,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/home/animations/typewriter.ts:4"
     },
     {
-      "id": "file::studio",
-      "label": "Studio.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:1"
-    },
-    {
-      "id": "Studio::gettone",
-      "label": "getTone",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:6"
-    },
-    {
-      "id": "Studio::snaphistory",
-      "label": "snapHistory",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:92"
-    },
-    {
-      "id": "Studio::applysnap",
-      "label": "applySnap",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:108"
-    },
-    {
-      "id": "Studio::canundo",
-      "label": "canUndo",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:118"
-    },
-    {
-      "id": "Studio::canredo",
-      "label": "canRedo",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:119"
-    },
-    {
-      "id": "Studio::undo",
-      "label": "undo",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:121"
-    },
-    {
-      "id": "Studio::redo",
-      "label": "redo",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:128"
-    },
-    {
-      "id": "Studio::cansaveproject",
-      "label": "canSaveProject",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:181"
-    },
-    {
-      "id": "Studio::handleglobalkey",
-      "label": "handleGlobalKey",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:196"
-    },
-    {
-      "id": "Studio::starthb",
-      "label": "startHb",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:225"
-    },
-    {
-      "id": "Studio::stophb",
-      "label": "stopHb",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:230"
-    },
-    {
-      "id": "Studio::onvis",
-      "label": "onVis",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:233"
-    },
-    {
-      "id": "Studio::playmetronomeclick",
-      "label": "playMetronomeClick",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:247"
-    },
-    {
-      "id": "Studio::startmetronome",
-      "label": "startMetronome",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:261"
-    },
-    {
-      "id": "Studio::stopmetronome",
-      "label": "stopMetronome",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:274"
-    },
-    {
-      "id": "Studio::togglemetronome",
-      "label": "toggleMetronome",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:280"
-    },
-    {
-      "id": "Studio::handlesave",
-      "label": "handleSave",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:294"
-    },
-    {
-      "id": "Studio::schedulesnap",
-      "label": "scheduleSnap",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:308"
-    },
-    {
-      "id": "Studio::starteditingtitle",
-      "label": "startEditingTitle",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:322"
-    },
-    {
-      "id": "Studio::committitle",
-      "label": "commitTitle",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:326"
-    },
-    {
-      "id": "Studio::canceltitle",
-      "label": "cancelTitle",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:334"
-    },
-    {
-      "id": "Studio::applytemplate",
-      "label": "applyTemplate",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:339"
-    },
-    {
-      "id": "Studio::saveandnavigate",
-      "label": "saveAndNavigate",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:373"
-    },
-    {
-      "id": "Studio::close",
-      "label": "close",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:379"
-    },
-    {
-      "id": "Studio::run",
-      "label": "run",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:380"
-    },
-    {
-      "id": "studio::async",
-      "label": "async",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:463"
-    },
-    {
-      "id": "types::haspatterncontent",
-      "label": "hasPatternContent",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:28"
-    },
-    {
-      "id": "types::hastrackcontent",
-      "label": "hasTrackContent",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:31"
-    },
-    {
-      "id": "types::hasstudiocontent",
-      "label": "hasStudioContent",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:34"
-    },
-    {
-      "id": "types::fmttime",
-      "label": "fmtTime",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:57"
-    },
-    {
-      "id": "types::randomtrackcolor",
-      "label": "randomTrackColor",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:77"
-    },
-    {
-      "id": "types::_v",
-      "label": "_v",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:97"
-    },
-    {
-      "id": "types::_s",
-      "label": "_s",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:99"
-    },
-    {
       "id": "file::keyboardpanel",
       "label": "KeyboardPanel.tsx",
       "fileType": "code",
@@ -21470,90 +21225,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/KeyboardPanel.tsx:141"
     },
     {
-      "id": "file::topbar",
-      "label": "TopBar.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:1"
-    },
-    {
-      "id": "TopBar::starttick",
-      "label": "startTick",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:9"
-    },
-    {
-      "id": "TopBar::stoptick",
-      "label": "stopTick",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:10"
-    },
-    {
-      "id": "TopBar::commitkey",
-      "label": "commitKey",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:64"
-    },
-    {
-      "id": "TopBar::meterlabel",
-      "label": "meterLabel",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:68"
-    },
-    {
-      "id": "TopBar::keylabel",
-      "label": "keyLabel",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:69"
-    },
-    {
-      "id": "file::timelinearea",
-      "label": "TimelineArea.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:1"
-    },
-    {
-      "id": "TimelineArea::ontimelinemousedown",
-      "label": "onTimelineMouseDown",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:70"
-    },
-    {
-      "id": "TimelineArea::onrulermousedown",
-      "label": "onRulerMouseDown",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:77"
-    },
-    {
-      "id": "TimelineArea::onwinmousemove",
-      "label": "onWinMouseMove",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:88"
-    },
-    {
-      "id": "TimelineArea::onwinmouseup",
-      "label": "onWinMouseUp",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:98"
-    },
-    {
-      "id": "TimelineArea::onlanedblclick",
-      "label": "onLaneDblClick",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:110"
-    },
-    {
       "id": "file::navdrawer",
       "label": "NavDrawer.tsx",
       "fileType": "code",
@@ -21575,46 +21246,11 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx:80"
     },
     {
-      "id": "file::audiowaveformdisplay",
-      "label": "AudioWaveformDisplay.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:1"
-    },
-    {
-      "id": "AudioWaveformDisplay::initpeaks",
-      "label": "initPeaks",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:16"
-    },
-    {
-      "id": "AudioWaveformDisplay::onstatechange",
-      "label": "onStateChange",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:70"
-    },
-    {
-      "id": "AudioWaveformDisplay::onfirstgesture",
-      "label": "onFirstGesture",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:75"
-    },
-    {
       "id": "file::restoredialog",
       "label": "RestoreDialog.tsx",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/RestoreDialog.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/RestoreDialog.tsx:1"
-    },
-    {
-      "id": "file::bottombar",
-      "label": "BottomBar.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/BottomBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/BottomBar.tsx:1"
     },
     {
       "id": "file::publishmodal",
@@ -21652,13 +21288,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/DrumPanel.tsx:1"
     },
     {
-      "id": "file::trackssidebar",
-      "label": "TracksSidebar.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TracksSidebar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TracksSidebar.tsx:1"
-    },
-    {
       "id": "file::newtrackmodal",
       "label": "NewTrackModal.tsx",
       "fileType": "code",
@@ -21692,27 +21321,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/LyricsPanel.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/LyricsPanel.tsx:58"
-    },
-    {
-      "id": "file::usetracks",
-      "label": "useTracks.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:1"
-    },
-    {
-      "id": "useTracks::voltodb",
-      "label": "volToDb",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:15"
-    },
-    {
-      "id": "usetracks::usetracks",
-      "label": "useTracks",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:40"
     },
     {
       "id": "file::usetransport",
@@ -21755,20 +21363,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useDrum.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useDrum.ts:16"
-    },
-    {
-      "id": "file::usesynth",
-      "label": "useSynth.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts:1"
-    },
-    {
-      "id": "usesynth::usesynth",
-      "label": "useSynth",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts:29"
     },
     {
       "id": "file::signup",
@@ -23094,13 +22688,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:313"
     },
     {
-      "id": "file::profile",
-      "label": "Profile.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Profile.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Profile.tsx:1"
-    },
-    {
       "id": "file::follows",
       "label": "follows.ts",
       "fileType": "code",
@@ -23141,6 +22728,524 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/user/follows.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/user/follows.ts:5"
+    },
+    {
+      "id": "file::profile",
+      "label": "Profile.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Profile.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Profile.tsx:1"
+    },
+    {
+      "id": "Profile::handlebannerupload",
+      "label": "handleBannerUpload",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Profile.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Profile.tsx:20"
+    },
+    {
+      "id": "file::studio",
+      "label": "Studio.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:1"
+    },
+    {
+      "id": "Studio::gettone",
+      "label": "getTone",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:6"
+    },
+    {
+      "id": "Studio::snaphistory",
+      "label": "snapHistory",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:94"
+    },
+    {
+      "id": "Studio::applysnap",
+      "label": "applySnap",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:110"
+    },
+    {
+      "id": "Studio::canundo",
+      "label": "canUndo",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:120"
+    },
+    {
+      "id": "Studio::canredo",
+      "label": "canRedo",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:121"
+    },
+    {
+      "id": "Studio::undo",
+      "label": "undo",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:123"
+    },
+    {
+      "id": "Studio::redo",
+      "label": "redo",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:130"
+    },
+    {
+      "id": "Studio::cansaveproject",
+      "label": "canSaveProject",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:183"
+    },
+    {
+      "id": "Studio::handleglobalkey",
+      "label": "handleGlobalKey",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:198"
+    },
+    {
+      "id": "Studio::starthb",
+      "label": "startHb",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:227"
+    },
+    {
+      "id": "Studio::stophb",
+      "label": "stopHb",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:232"
+    },
+    {
+      "id": "Studio::onvis",
+      "label": "onVis",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:235"
+    },
+    {
+      "id": "Studio::playmetronomeclick",
+      "label": "playMetronomeClick",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:249"
+    },
+    {
+      "id": "Studio::startmetronome",
+      "label": "startMetronome",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:263"
+    },
+    {
+      "id": "Studio::stopmetronome",
+      "label": "stopMetronome",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:276"
+    },
+    {
+      "id": "Studio::togglemetronome",
+      "label": "toggleMetronome",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:282"
+    },
+    {
+      "id": "Studio::handlesave",
+      "label": "handleSave",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:296"
+    },
+    {
+      "id": "Studio::schedulesnap",
+      "label": "scheduleSnap",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:310"
+    },
+    {
+      "id": "Studio::starteditingtitle",
+      "label": "startEditingTitle",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:324"
+    },
+    {
+      "id": "Studio::committitle",
+      "label": "commitTitle",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:328"
+    },
+    {
+      "id": "Studio::canceltitle",
+      "label": "cancelTitle",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:336"
+    },
+    {
+      "id": "Studio::applytemplate",
+      "label": "applyTemplate",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:341"
+    },
+    {
+      "id": "Studio::saveandnavigate",
+      "label": "saveAndNavigate",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:375"
+    },
+    {
+      "id": "Studio::close",
+      "label": "close",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:381"
+    },
+    {
+      "id": "Studio::run",
+      "label": "run",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:382"
+    },
+    {
+      "id": "studio::async",
+      "label": "async",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:465"
+    },
+    {
+      "id": "file::audiowaveformdisplay",
+      "label": "AudioWaveformDisplay.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:1"
+    },
+    {
+      "id": "AudioWaveformDisplay::initpeaks",
+      "label": "initPeaks",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:16"
+    },
+    {
+      "id": "AudioWaveformDisplay::onstatechange",
+      "label": "onStateChange",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:71"
+    },
+    {
+      "id": "AudioWaveformDisplay::onfirstgesture",
+      "label": "onFirstGesture",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:76"
+    },
+    {
+      "id": "file::bottombar",
+      "label": "BottomBar.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/BottomBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/BottomBar.tsx:1"
+    },
+    {
+      "id": "file::timelinearea",
+      "label": "TimelineArea.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:1"
+    },
+    {
+      "id": "TimelineArea::ontimelinemousedown",
+      "label": "onTimelineMouseDown",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:74"
+    },
+    {
+      "id": "TimelineArea::onrulermousedown",
+      "label": "onRulerMouseDown",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:81"
+    },
+    {
+      "id": "TimelineArea::onwinmousemove",
+      "label": "onWinMouseMove",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:92"
+    },
+    {
+      "id": "TimelineArea::onwinmouseup",
+      "label": "onWinMouseUp",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:102"
+    },
+    {
+      "id": "TimelineArea::onlanedblclick",
+      "label": "onLaneDblClick",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:114"
+    },
+    {
+      "id": "file::topbar",
+      "label": "TopBar.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:1"
+    },
+    {
+      "id": "TopBar::starttick",
+      "label": "startTick",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:9"
+    },
+    {
+      "id": "TopBar::stoptick",
+      "label": "stopTick",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:10"
+    },
+    {
+      "id": "TopBar::rectimer",
+      "label": "RecTimer",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:12"
+    },
+    {
+      "id": "TopBar::commitkey",
+      "label": "commitKey",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:88"
+    },
+    {
+      "id": "TopBar::meterlabel",
+      "label": "meterLabel",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:92"
+    },
+    {
+      "id": "TopBar::keylabel",
+      "label": "keyLabel",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:93"
+    },
+    {
+      "id": "file::trackssidebar",
+      "label": "TracksSidebar.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TracksSidebar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TracksSidebar.tsx:1"
+    },
+    {
+      "id": "TracksSidebar::miclevelmeter",
+      "label": "MicLevelMeter",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TracksSidebar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TracksSidebar.tsx:7"
+    },
+    {
+      "id": "file::usesynth",
+      "label": "useSynth.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts:1"
+    },
+    {
+      "id": "usesynth::usesynth",
+      "label": "useSynth",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts:29"
+    },
+    {
+      "id": "file::usetracks",
+      "label": "useTracks.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:1"
+    },
+    {
+      "id": "usetracks::getmicentry",
+      "label": "getMicEntry",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:23"
+    },
+    {
+      "id": "usetracks::connectmictotrack",
+      "label": "connectMicToTrack",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:27"
+    },
+    {
+      "id": "usetracks::disconnectmicfromtrack",
+      "label": "disconnectMicFromTrack",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:45"
+    },
+    {
+      "id": "useTracks::voltodb",
+      "label": "volToDb",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:52"
+    },
+    {
+      "id": "usetracks::usetracks",
+      "label": "useTracks",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:78"
+    },
+    {
+      "id": "file::types",
+      "label": "types.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:1"
+    },
+    {
+      "id": "types::haspatterncontent",
+      "label": "hasPatternContent",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:34"
+    },
+    {
+      "id": "types::hastrackcontent",
+      "label": "hasTrackContent",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:37"
+    },
+    {
+      "id": "types::hasstudiocontent",
+      "label": "hasStudioContent",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:40"
+    },
+    {
+      "id": "types::fmttime",
+      "label": "fmtTime",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:63"
+    },
+    {
+      "id": "types::randomtrackcolor",
+      "label": "randomTrackColor",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:83"
+    },
+    {
+      "id": "types::_v",
+      "label": "_v",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:103"
+    },
+    {
+      "id": "types::_s",
+      "label": "_s",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:105"
+    },
+    {
+      "id": "file::audioclipeditor",
+      "label": "AudioClipEditor.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx:1"
+    },
+    {
+      "id": "AudioClipEditor::pitch",
+      "label": "pitch",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx:13"
+    },
+    {
+      "id": "AudioClipEditor::rate",
+      "label": "rate",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx:14"
+    },
+    {
+      "id": "AudioClipEditor::gain",
+      "label": "gain",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx:15"
+    },
+    {
+      "id": "AudioClipEditor::reversed",
+      "label": "reversed",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx:16"
+    },
+    {
+      "id": "file::liverecordingclip",
+      "label": "LiveRecordingClip.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/LiveRecordingClip.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/LiveRecordingClip.tsx:1"
+    },
+    {
+      "id": "LiveRecordingClip::liverecordingclip",
+      "label": "LiveRecordingClip",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/LiveRecordingClip.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/LiveRecordingClip.tsx:10"
+    },
+    {
+      "id": "file::micsetupmodal",
+      "label": "MicSetupModal.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/MicSetupModal.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/MicSetupModal.tsx:1"
+    },
+    {
+      "id": "MicSetupModal::requestaccess",
+      "label": "requestAccess",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/MicSetupModal.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/MicSetupModal.tsx:13"
     }
   ],
   "edges": [
@@ -49632,303 +49737,6 @@
       "weight": 1
     },
     {
-      "source": "file::studio",
-      "target": "Studio::gettone",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:6",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::snaphistory",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:92",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::applysnap",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:108",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::canundo",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:118",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::canredo",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:119",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::undo",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:121",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::redo",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:128",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::cansaveproject",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:181",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::handleglobalkey",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:196",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::starthb",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:225",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::stophb",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:230",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::onvis",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:233",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::playmetronomeclick",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:247",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::startmetronome",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:261",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::stopmetronome",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:274",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::togglemetronome",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:280",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::handlesave",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:294",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::schedulesnap",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:308",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::starteditingtitle",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:322",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::committitle",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:326",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::canceltitle",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:334",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::applytemplate",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:339",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::saveandnavigate",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:373",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::close",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:379",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "Studio::run",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:380",
-      "weight": 1
-    },
-    {
-      "source": "file::studio",
-      "target": "studio::async",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:463",
-      "weight": 1
-    },
-    {
-      "source": "file::types",
-      "target": "types::haspatterncontent",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:28",
-      "weight": 1
-    },
-    {
-      "source": "file::types",
-      "target": "types::hastrackcontent",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:31",
-      "weight": 1
-    },
-    {
-      "source": "file::types",
-      "target": "types::hasstudiocontent",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:34",
-      "weight": 1
-    },
-    {
-      "source": "file::types",
-      "target": "types::fmttime",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:57",
-      "weight": 1
-    },
-    {
-      "source": "file::types",
-      "target": "types::randomtrackcolor",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:77",
-      "weight": 1
-    },
-    {
-      "source": "file::types",
-      "target": "types::_v",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:97",
-      "weight": 1
-    },
-    {
-      "source": "file::types",
-      "target": "types::_s",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:99",
-      "weight": 1
-    },
-    {
       "source": "file::keyboardpanel",
       "target": "KeyboardPanel::selectedtrackdata",
       "relation": "contains",
@@ -49974,96 +49782,6 @@
       "weight": 1
     },
     {
-      "source": "file::topbar",
-      "target": "TopBar::starttick",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:9",
-      "weight": 1
-    },
-    {
-      "source": "file::topbar",
-      "target": "TopBar::stoptick",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:10",
-      "weight": 1
-    },
-    {
-      "source": "file::topbar",
-      "target": "TopBar::commitkey",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:64",
-      "weight": 1
-    },
-    {
-      "source": "file::topbar",
-      "target": "TopBar::meterlabel",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:68",
-      "weight": 1
-    },
-    {
-      "source": "file::topbar",
-      "target": "TopBar::keylabel",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:69",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::ontimelinemousedown",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:70",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::onrulermousedown",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:77",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::onwinmousemove",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:88",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::onwinmouseup",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:98",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::onlanedblclick",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:110",
-      "weight": 1
-    },
-    {
       "source": "file::navdrawer",
       "target": "NavDrawer::isdisabled",
       "relation": "contains",
@@ -50079,33 +49797,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx:80",
-      "weight": 1
-    },
-    {
-      "source": "file::audiowaveformdisplay",
-      "target": "AudioWaveformDisplay::initpeaks",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:16",
-      "weight": 1
-    },
-    {
-      "source": "file::audiowaveformdisplay",
-      "target": "AudioWaveformDisplay::onstatechange",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:70",
-      "weight": 1
-    },
-    {
-      "source": "file::audiowaveformdisplay",
-      "target": "AudioWaveformDisplay::onfirstgesture",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:75",
       "weight": 1
     },
     {
@@ -50163,24 +49854,6 @@
       "weight": 1
     },
     {
-      "source": "file::usetracks",
-      "target": "useTracks::voltodb",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:15",
-      "weight": 1
-    },
-    {
-      "source": "file::usetracks",
-      "target": "usetracks::usetracks",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:40",
-      "weight": 1
-    },
-    {
       "source": "file::usetransport",
       "target": "usetransport::usetransport",
       "relation": "contains",
@@ -50205,15 +49878,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useDrum.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useDrum.ts:16",
-      "weight": 1
-    },
-    {
-      "source": "file::usesynth",
-      "target": "usesynth::usesynth",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts:29",
       "weight": 1
     },
     {
@@ -51718,12 +51382,561 @@
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/user/follows.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/user/follows.ts:5",
       "weight": 1
+    },
+    {
+      "source": "file::profile",
+      "target": "Profile::handlebannerupload",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Profile.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Profile.tsx:20",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::gettone",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:6",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::snaphistory",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:94",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::applysnap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:110",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::canundo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:120",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::canredo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:121",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::undo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:123",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::redo",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:130",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::cansaveproject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:183",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::handleglobalkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:198",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::starthb",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:227",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::stophb",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:232",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::onvis",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:235",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::playmetronomeclick",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:249",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::startmetronome",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:263",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::stopmetronome",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:276",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::togglemetronome",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:282",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::handlesave",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:296",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::schedulesnap",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:310",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::starteditingtitle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:324",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::committitle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:328",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::canceltitle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:336",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::applytemplate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:341",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::saveandnavigate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:375",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::close",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:381",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::run",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:382",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "studio::async",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:465",
+      "weight": 1
+    },
+    {
+      "source": "file::audiowaveformdisplay",
+      "target": "AudioWaveformDisplay::initpeaks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:16",
+      "weight": 1
+    },
+    {
+      "source": "file::audiowaveformdisplay",
+      "target": "AudioWaveformDisplay::onstatechange",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:71",
+      "weight": 1
+    },
+    {
+      "source": "file::audiowaveformdisplay",
+      "target": "AudioWaveformDisplay::onfirstgesture",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioWaveformDisplay.tsx:76",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::ontimelinemousedown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:74",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::onrulermousedown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:81",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::onwinmousemove",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:92",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::onwinmouseup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:102",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::onlanedblclick",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:114",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::starttick",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:9",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::stoptick",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:10",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::rectimer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:12",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::commitkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:88",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::meterlabel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:92",
+      "weight": 1
+    },
+    {
+      "source": "file::topbar",
+      "target": "TopBar::keylabel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TopBar.tsx:93",
+      "weight": 1
+    },
+    {
+      "source": "file::trackssidebar",
+      "target": "TracksSidebar::miclevelmeter",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TracksSidebar.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TracksSidebar.tsx:7",
+      "weight": 1
+    },
+    {
+      "source": "file::usesynth",
+      "target": "usesynth::usesynth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useSynth.ts:29",
+      "weight": 1
+    },
+    {
+      "source": "file::usetracks",
+      "target": "usetracks::getmicentry",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:23",
+      "weight": 1
+    },
+    {
+      "source": "file::usetracks",
+      "target": "usetracks::connectmictotrack",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:27",
+      "weight": 1
+    },
+    {
+      "source": "file::usetracks",
+      "target": "usetracks::disconnectmicfromtrack",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:45",
+      "weight": 1
+    },
+    {
+      "source": "file::usetracks",
+      "target": "useTracks::voltodb",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:52",
+      "weight": 1
+    },
+    {
+      "source": "file::usetracks",
+      "target": "usetracks::usetracks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:78",
+      "weight": 1
+    },
+    {
+      "source": "file::types",
+      "target": "types::haspatterncontent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:34",
+      "weight": 1
+    },
+    {
+      "source": "file::types",
+      "target": "types::hastrackcontent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:37",
+      "weight": 1
+    },
+    {
+      "source": "file::types",
+      "target": "types::hasstudiocontent",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:40",
+      "weight": 1
+    },
+    {
+      "source": "file::types",
+      "target": "types::fmttime",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:63",
+      "weight": 1
+    },
+    {
+      "source": "file::types",
+      "target": "types::randomtrackcolor",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:83",
+      "weight": 1
+    },
+    {
+      "source": "file::types",
+      "target": "types::_v",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:103",
+      "weight": 1
+    },
+    {
+      "source": "file::types",
+      "target": "types::_s",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/types.ts:105",
+      "weight": 1
+    },
+    {
+      "source": "file::audioclipeditor",
+      "target": "AudioClipEditor::pitch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx:13",
+      "weight": 1
+    },
+    {
+      "source": "file::audioclipeditor",
+      "target": "AudioClipEditor::rate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx:14",
+      "weight": 1
+    },
+    {
+      "source": "file::audioclipeditor",
+      "target": "AudioClipEditor::gain",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx:15",
+      "weight": 1
+    },
+    {
+      "source": "file::audioclipeditor",
+      "target": "AudioClipEditor::reversed",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/AudioClipEditor.tsx:16",
+      "weight": 1
+    },
+    {
+      "source": "file::liverecordingclip",
+      "target": "LiveRecordingClip::liverecordingclip",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/LiveRecordingClip.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/LiveRecordingClip.tsx:10",
+      "weight": 1
+    },
+    {
+      "source": "file::micsetupmodal",
+      "target": "MicSetupModal::requestaccess",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/MicSetupModal.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/MicSetupModal.tsx:13",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 141,
-    "nodes": 3306,
-    "edges": 3175,
-    "builtAt": "2026-06-08T13:47:45.082Z"
+    "files": 144,
+    "nodes": 3321,
+    "edges": 3187,
+    "builtAt": "2026-06-09T14:30:43.522Z"
   }
 }

@@ -1,5 +1,145 @@
 @use "../../../styles/variables" as *;
 
+/* ─────────────── AUDIO CLIP EDITOR PANEL ─────────────── */
+.bl__ace {
+  width: 17rem;
+  min-width: 17rem;
+  flex-shrink: 0;
+  background: #161616;
+  border-right: 1px solid rgba(#fff, 0.07);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bl__ace-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid rgba(#fff, 0.07);
+  flex-shrink: 0;
+}
+.bl__ace-head-icon { display: flex; align-items: center; flex-shrink: 0; }
+.bl__ace-head-name {
+  flex: 1;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bl__ace-head-close {
+  all: unset;
+  cursor: pointer;
+  width: 1.5rem; height: 1.5rem;
+  display: grid; place-items: center;
+  border-radius: 4px;
+  color: $text-secondary;
+  flex-shrink: 0;
+  &:hover { color: $text-primary; background: rgba(#fff, 0.07); }
+  svg { width: 0.65rem; height: 0.65rem; }
+}
+
+.bl__ace-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0;
+  overflow-y: auto;
+}
+
+.bl__ace-field {
+  padding: 0.5rem 1rem;
+}
+.bl__ace-field-label {
+  display: block;
+  font-size: 0.72rem;
+  color: $text-secondary;
+  margin-bottom: 0.5rem;
+}
+.bl__ace-stepper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: rgba(#fff, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(#fff, 0.08);
+  button {
+    all: unset;
+    cursor: pointer;
+    width: 2.4rem;
+    height: 2.2rem;
+    display: grid;
+    place-items: center;
+    color: $text-secondary;
+    flex-shrink: 0;
+    svg { width: 0.75rem; height: 0.75rem; }
+    &:hover { background: rgba(#fff, 0.08); color: $text-primary; }
+  }
+  span {
+    flex: 1;
+    text-align: center;
+    font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
+    color: $text-primary;
+    border-left: 1px solid rgba(#fff, 0.08);
+    border-right: 1px solid rgba(#fff, 0.08);
+  }
+}
+
+.bl__ace-field--gain {
+  .bl__ace-field-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.45rem;
+  }
+}
+.bl__ace-gain-val {
+  font-size: 0.72rem;
+  color: $text-primary;
+  font-variant-numeric: tabular-nums;
+}
+.bl__ace-gain-slider {
+  width: 100%;
+  accent-color: $accent;
+  cursor: pointer;
+  height: 3px;
+}
+
+.bl__ace-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  margin-top: 0.25rem;
+}
+.bl__ace-action-btn {
+  all: unset;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: rgba(#fff, 0.08);
+  color: $text-primary;
+  border: 1px solid rgba(#fff, 0.1);
+  transition: background 0.15s;
+  svg { width: 0.9rem; height: 0.9rem; }
+  &:hover { background: rgba(#fff, 0.14); }
+  &.is-on { background: rgba($accent, 0.2); color: $accent; border-color: rgba($accent, 0.35); }
+  &--retune { background: rgba(#fff, 0.05); color: $text-secondary; }
+}
+
 /* ─────────────── LYRICS / NOTES RIGHT PANEL ─────────────── */
 .bl__lyrics-overlay {
   position: fixed;

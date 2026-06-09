@@ -123,6 +123,36 @@
 }
 
 /* Imported media clip (audio / midi / video) */
+.bl__live-clip {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  min-width: 8px;
+  border-radius: $radius-sm;
+  pointer-events: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: #fff;
+    z-index: 1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2px;
+    height: 100%;
+    background: #fff;
+  }
+}
+
 .bl__mclip {
   --tc: #888;
   position: absolute;
@@ -205,6 +235,10 @@
   pointer-events: none;
   overflow: hidden;
   svg { display: block; width: 100%; height: 100%; }
+
+  // Peaks.js injects a canvas — force it transparent
+  canvas { background: transparent !important; display: block; }
+  div { background: transparent !important; }
 }
 
 /* Drop position marker — vertical line where clip will land */
@@ -508,7 +542,6 @@
   background: $accent;
   pointer-events: none;
   z-index: 6;
-  box-shadow: 0 0 10px rgba($accent, 0.6), 0 0 3px $accent;
   // Diamond "ball" at top — this is the drag handle
   &::before {
     content: "";
@@ -519,7 +552,6 @@
     height: 12px;
     background: $accent;
     transform: rotate(45deg);
-    box-shadow: 0 0 10px rgba($accent, 0.7);
     pointer-events: auto;
     cursor: col-resize;
     border-radius: 2px;

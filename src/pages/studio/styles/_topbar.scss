@@ -360,7 +360,24 @@
 }
 .bl__t-rec {
   color: #ff5454;
-  &:hover { color: #ff7070; background: rgba(255, 80, 80, 0.1); }
+  svg { width: 1.7rem; height: 1.7rem; }
+  &:hover { color: #ff7070; background: none; }
+  &.is-recording {
+    color: #ff4444;
+    background: none;
+    animation: rec-blink 1s step-start infinite;
+  }
+}
+@keyframes rec-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+.bl__rec-timer {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: #ff5454;
+  letter-spacing: 0.04em;
+  min-width: 4rem;
 }
 .bl__t-play {
   all: unset;

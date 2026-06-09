@@ -37,6 +37,7 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
       overview: {
         container: containerEl,
         waveformColor: props.color,
+        backgroundColor: "transparent",
         showAxisLabels: false,
         playheadColor: "transparent",
         playheadTextColor: "transparent",
@@ -99,9 +100,9 @@ const AudioWaveformDisplay: Component<{ url?: string; color: string }> = (props)
   });
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+    <div style={{ width: "100%", height: "100%", position: "relative", background: "transparent" }}>
       <audio ref={(el) => { audioEl = el; }} style={{ display: "none" }} preload="metadata" />
-      <div ref={(el) => { containerEl = el; }} style={{ width: "100%", height: "100%" }} />
+      <div ref={(el) => { containerEl = el; }} style={{ width: "100%", height: "100%", background: "transparent" }} />
     </div>
   );
 };

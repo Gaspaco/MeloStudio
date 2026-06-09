@@ -23,7 +23,7 @@ type Deps = {
   setSynthSustain: Setter<number>;
   setSynthRelease: Setter<number>;
   setSynthFilterFreq: Setter<number>;
-  setActivePanel: Setter<"drum" | "keys" | null>;
+  setActivePanel: Setter<"drum" | "keys" | "voice" | null>;
 };
 
 export function useSynth(deps: Deps) {

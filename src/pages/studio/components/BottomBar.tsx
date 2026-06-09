@@ -5,8 +5,8 @@ import type { UITrack } from "../types";
 type Props = {
   tracks: Accessor<UITrack[]>;
   selectedTrack: Accessor<string | null>;
-  activePanel: Accessor<"drum" | "keys" | null>;
-  onSetActivePanel: Setter<"drum" | "keys" | null>;
+  activePanel: Accessor<"drum" | "keys" | "voice" | null>;
+  onSetActivePanel: Setter<"drum" | "keys" | "voice" | null>;
   onLyricsToggle: () => void;
   onSelectTrack: Setter<string | null>;
 };
@@ -49,6 +49,17 @@ const BottomBar: Component<Props> = (props) => (
               return "Instrument";
             })()}
           </span>
+        </button>
+      </Show>
+
+      <Show when={props.tracks().some(t => t.type === "voice")}>
+        <span class="bl__util-sep">·</span>
+        <button
+          class={`bl__util-tab ${props.activePanel() === "voice" ? "is-active" : ""}`}
+          onClick={() => props.onSetActivePanel(props.activePanel() === "voice" ? null : "voice")}
+        >
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2a2 2 0 0 0-2 2v4a2 2 0 0 0 4 0V4a2 2 0 0 0-2-2z"/><path d="M4 8v.5a4 4 0 0 0 8 0V8M8 13v2M6 15h4"/></svg>
+          <span>Voice</span>
         </button>
       </Show>
 

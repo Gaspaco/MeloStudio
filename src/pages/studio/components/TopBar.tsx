@@ -9,6 +9,27 @@ let _tickRefs = 0;
 const startTick = () => { if (!_tickInterval) _tickInterval = setInterval(() => setTick(t => t + 1), 10_000); _tickRefs++; };
 const stopTick = () => { _tickRefs--; if (_tickRefs <= 0 && _tickInterval) { clearInterval(_tickInterval); _tickInterval = null; } };
 
+const RecTimer: Component<{ startTime: Accessor<number> }> = (props) => {
+  const [elapsed, setElapsed] = createSignal(0);
+  let raf: number;
+  onMount(() => {
+    const tick = () => {
+      setElapsed((performance.now() - props.startTime()) / 1000);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  });
+  onCleanup(() => cancelAnimationFrame(raf));
+  const fmt = () => {
+    const s = elapsed();
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    const ms = Math.floor((s % 1) * 10);
+    return `${m}:${String(sec).padStart(2, "0")}.${ms}`;
+  };
+  return <span class="bl__rec-timer">{fmt()}</span>;
+};
+
 const METER_OPTIONS: [number, number][] = [[2, 4], [3, 4], [4, 4], [5, 4], [6, 8], [7, 8], [12, 8]];
 const KEY_ROOTS = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
 const KEY_MODES = ["Major", "Minor"];
@@ -42,6 +63,9 @@ type Props = {
   onToggleLoop: () => void;
   onTogglePlay: () => void;
   onStopAll: () => void;
+  recording: Accessor<boolean>;
+  recordingStartTime: Accessor<number>;
+  onToggleRecord: () => void;
   onUpdateBpm: (v: number) => void;
   onUpdateMeter: (v: [number, number]) => void;
   onUpdateKey: (v: string) => void;
@@ -267,9 +291,12 @@ const TopBar: Component<Props> = (props) => {
             ? <svg viewBox="0 0 16 16" fill="currentColor"><rect x="4" y="3" width="3" height="10" rx="0.5"/><rect x="9" y="3" width="3" height="10" rx="0.5"/></svg>
             : <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.5v9l8-4.5z"/></svg>}
         </button>
-        <button class="bl__t-btn bl__t-rec" title="Record" onClick={props.onStopAll}>
-          <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="4"/></svg>
+        <button class={`bl__t-btn bl__t-rec${props.recording() ? " is-recording" : ""}`} title={props.recording() ? "Stop recording" : "Record"} onClick={props.onToggleRecord}>
+          <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6"/></svg>
         </button>
+        <Show when={props.recording()}>
+          <RecTimer startTime={props.recordingStartTime} />
+        </Show>
         <button
           class={`bl__t-btn${props.loopOn() ? " is-on" : ""}`}
           title={props.loopOn() ? "Loop: ON" : "Loop: OFF"}
