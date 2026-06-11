@@ -288,6 +288,441 @@
 
   &__profile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
+  // ── Feature grid below the card ──────────────────────────────────
+  &__pp-grid {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr) 280px;
+    gap: 1.25rem;
+    align-items: start;
+    margin-top: 1.25rem;
+
+    @media (max-width: 1180px) {
+      grid-template-columns: 260px minmax(0, 1fr);
+      .db__pp-rail { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  &__pp-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  &__pp-card {
+    background: $bg-card;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
+    padding: 1.25rem;
+  }
+
+  // ── Status ───────────────────────────────────────────────────────
+  &__pp-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: $radius-pill;
+    background: $bg-tertiary;
+    border: 1px solid $border;
+    color: $text-secondary;
+    font-family: $font-sans;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    &:hover { border-color: $border-hover; color: $text-primary; }
+  }
+
+  &__pp-status-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: $accent-green;
+    flex-shrink: 0;
+  }
+
+  &__pp-status-empty { color: $text-muted; }
+
+  &__pp-status-input {
+    width: 100%;
+    padding: 0.4rem 0.8rem;
+    border-radius: $radius-pill;
+    background: $bg-tertiary;
+    border: 1px solid $border-hover;
+    color: $text-primary;
+    font-family: $font-sans;
+    font-size: 0.78rem;
+    outline: none;
+    &:focus { border-color: $accent; }
+    &::placeholder { color: $text-muted; }
+  }
+
+  // ── Chip groups (talents / genres / inspired by) ─────────────────
+  &__pp-group {
+    & + & { margin-top: 1.25rem; }
+  }
+
+  &__pp-group-title {
+    font-family: $font-sans;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0 0 0.65rem;
+  }
+
+  &__pp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  &__pp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.4rem 0.3rem 0.7rem;
+    border-radius: $radius-pill;
+    background: $bg-tertiary;
+    border: 1px solid $border;
+    color: $text-secondary;
+    font-family: $font-sans;
+    font-size: 0.75rem;
+
+    &:hover .db__pp-chip-x { opacity: 1; }
+  }
+
+  &__pp-chip-x {
+    display: grid;
+    place-items: center;
+    width: 1rem;
+    height: 1rem;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: $text-muted;
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+    &:hover { color: $accent; }
+  }
+
+  &__pp-chip-add {
+    padding: 0.3rem 0.7rem;
+    border-radius: $radius-pill;
+    background: transparent;
+    border: 1px dashed $border-hover;
+    color: $text-muted;
+    font-family: $font-sans;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    &:hover { color: $text-primary; border-color: $accent; }
+  }
+
+  &__pp-chip-input {
+    width: 9rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: $radius-pill;
+    background: $bg-tertiary;
+    border: 1px solid $accent;
+    color: $text-primary;
+    font-family: $font-sans;
+    font-size: 0.75rem;
+    outline: none;
+    &::placeholder { color: $text-muted; }
+  }
+
+  // ── Center: tabs + feed ──────────────────────────────────────────
+  &__pp-tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid $border;
+    margin-bottom: 1rem;
+  }
+
+  &__pp-tab {
+    padding: 0.65rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: $text-muted;
+    font-family: $font-sans;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.15s;
+    &:hover { color: $text-secondary; }
+
+    &--active {
+      color: $text-primary;
+      border-bottom-color: $accent;
+    }
+  }
+
+  &__pp-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__pp-track {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: $bg-card;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: $border-hover;
+      .db__pp-track-tile { background: var(--c); color: $bg-primary; }
+      .db__pp-track-wave span { background: var(--c); opacity: 0.65; }
+    }
+  }
+
+  &__pp-track-tile {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: $radius-md;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--c) 16%, transparent);
+    color: var(--c);
+    flex-shrink: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+    svg { width: 1.2rem; height: 1.2rem; }
+  }
+
+  &__pp-track-tile-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__pp-track-tile-play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba($bg-primary, 0.55);
+    color: $text-primary;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    svg { width: 1.1rem; height: 1.1rem; }
+
+    .db__pp-track:hover & { opacity: 1; }
+  }
+
+  &__pp-track-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+    flex-shrink: 0;
+    width: 13rem;
+    @media (max-width: 640px) { width: auto; flex: 1; }
+  }
+
+  &__pp-track-name {
+    font-family: $font-display;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__pp-track-meta {
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    color: $text-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__pp-track-wave {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 2.25rem;
+    min-width: 0;
+    mask-image: linear-gradient(to right, #000 70%, transparent);
+
+    span {
+      flex: 1;
+      min-height: 2px;
+      background: $text-muted;
+      opacity: 0.3;
+      border-radius: 1px;
+      transition: background 0.2s ease, opacity 0.2s ease;
+    }
+
+    @media (max-width: 640px) { display: none; }
+  }
+
+  &__pp-empty {
+    padding: 3rem 1.5rem;
+    border-radius: $radius-lg;
+    border: 1px dashed $border-hover;
+    font-family: $font-sans;
+    font-size: 0.85rem;
+    color: $text-muted;
+    text-align: center;
+  }
+
+  // ── About tab ────────────────────────────────────────────────────
+  &__pp-about {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__pp-bio {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border-radius: $radius-lg;
+    background: $bg-card;
+    border: 1px solid $border;
+    color: $text-primary;
+    font-family: $font-sans;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    &:focus { border-color: $border-hover; }
+    &::placeholder { color: $text-muted; }
+  }
+
+  &__pp-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+
+  &__pp-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1rem 1.25rem;
+    border-radius: $radius-lg;
+    background: $bg-card;
+    border: 1px solid $border;
+  }
+
+  &__pp-fact-label {
+    font-family: $font-mono;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $text-muted;
+  }
+
+  &__pp-fact-value {
+    font-family: $font-display;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: $text-primary;
+  }
+
+  // ── Right rail: links ────────────────────────────────────────────
+  &__pp-rail-hint {
+    font-family: $font-sans;
+    font-size: 0.78rem;
+    color: $text-muted;
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+  }
+
+  &__pp-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__pp-link-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    &:hover .db__pp-link-x { opacity: 1; }
+  }
+
+  &__pp-link {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: $radius-md;
+    background: $bg-tertiary;
+    border: 1px solid $border;
+    text-decoration: none;
+    transition: border-color 0.15s;
+    &:hover { border-color: $border-hover; }
+  }
+
+  &__pp-link-host {
+    display: block;
+    font-family: $font-mono;
+    font-size: 0.75rem;
+    color: $text-secondary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__pp-link-x {
+    display: grid;
+    place-items: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: $text-muted;
+    font-size: 0.9rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    flex-shrink: 0;
+    transition: opacity 0.15s, color 0.15s;
+    &:hover { color: $accent; }
+  }
+
+  &__pp-link-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: $radius-md;
+    background: transparent;
+    border: 1px dashed $border-hover;
+    color: $text-primary;
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    outline: none;
+    transition: border-color 0.15s;
+    &:focus { border-color: $accent; border-style: solid; }
+    &::placeholder { color: $text-muted; }
+  }
+
   // ── Profile responsive ────────────────────────────────────────────
   @media (max-width: 768px) {
     &__content--profile { padding-top: 5rem; }

@@ -13,6 +13,7 @@ interface Project {
 
 export interface OverviewProps {
   projects: () => Project[];
+  userImage: () => string | undefined;
   loadingProjects: () => boolean;
   greeting: () => string;
   firstName: () => string;
@@ -72,6 +73,7 @@ const Overview: Component<OverviewProps> = (props) => {
           <h2 class="db__section-title">Projects</h2>
           <button class="db__section-action" onClick={props.openCreate} title="New project">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4v16m8-8H4" /></svg>
+            <span>New project</span>
           </button>
         </div>
         <Show when={!props.loadingProjects()} fallback={
@@ -95,9 +97,13 @@ const Overview: Component<OverviewProps> = (props) => {
               <For each={props.projects()}>{(project) =>
                 <div class="db__proj" style={{ "--pc": project.color } as any} onClick={() => props.onOpenProject(project.id)}>
                   <div class="db__proj-thumb">
-                    <span class="db__proj-thumb-icon">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" /></svg>
-                    </span>
+                    <Show when={props.userImage()} keyed fallback={
+                      <span class="db__proj-thumb-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" /></svg>
+                      </span>
+                    }>
+                      {(src) => <img class="db__proj-thumb-img" src={src} alt="" />}
+                    </Show>
                   </div>
                   <div class="db__proj-info">
                     <span class="db__proj-name">{project.name}</span>

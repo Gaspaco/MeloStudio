@@ -327,7 +327,7 @@ const TopBar: Component<Props> = (props) => {
           <span class={`bl__enhance-led${props.enhance() ? " is-on" : ""}`} />
         </button>
         <span class="bl__field-sep" />
-        <div class="bl__master-vol" title="Master volume" style={{ "--vol": `${Math.round(props.masterVol() * 100)}%` }}>
+        <div class={`bl__master-vol${props.enhance() ? " bl__master-vol--enhanced" : ""}`} title="Master volume" style={{ "--vol": `${Math.round(props.masterVol() * 100)}%` }}>
           <span class="bl__master-vol-head">
             <span class="bl__master-vol-label">Master</span>
             <span class="bl__db">{props.masterVol() <= 0.001 ? "-∞" : (20 * Math.log10(props.masterVol())).toFixed(1)}<span class="bl__db-unit"> dB</span></span>

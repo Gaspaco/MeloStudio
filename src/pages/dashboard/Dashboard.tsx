@@ -344,13 +344,6 @@ const Dashboard: Component<{
         </nav>
         <div class="db__bar-right">
           <span class="db__clock">{formatTime()}</span>
-          <Show when={tab() === "library"}>
-            <button class="db__bar-avatar" onClick={() => switchTab("profile")}>
-              <Show when={user()?.image} keyed fallback={<span class="db__bar-avatar-initials">{initials()}</span>}>
-                {(image) => <img src={image} alt="" />}
-              </Show>
-            </button>
-          </Show>
           <button class="db__bar-logout" onClick={handleLogout} title="Log out">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
           </button>
@@ -361,6 +354,7 @@ const Dashboard: Component<{
       <Show when={tab() === "overview"}>
         <Overview
           projects={projects}
+          userImage={() => user()?.image}
           loadingProjects={loadingProjects}
           greeting={greeting}
           firstName={firstName}
@@ -378,6 +372,7 @@ const Dashboard: Component<{
       <Show when={tab() === "library"}>
         <Library
           projects={projects}
+          userImage={() => user()?.image}
           libCat={libCat}
           setLibCat={setLibCat}
           libSearch={libSearch}
@@ -408,6 +403,10 @@ const Dashboard: Component<{
           initials={initials}
           handleImageUpload={handleImageUpload}
           followCounts={followCounts}
+          projects={projects}
+          totalTracks={totalTracks}
+          fmtStudioTime={fmtStudioTime}
+          onOpenProject={props.onOpenProject}
         />
       </Show>
 

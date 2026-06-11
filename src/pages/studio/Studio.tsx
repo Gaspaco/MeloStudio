@@ -539,25 +539,6 @@ const Studio: Component = () => {
       </Show>
 
       <div class="bl__main">
-        <Show when={activePanel() === "voice"}>
-          {(() => {
-            const voiceTrack = tracks().find(t => t.type === "voice");
-            const clip = voiceTrack?.clips?.find(c => c.id === selectedClipId()) ?? null;
-            return (
-              <AudioClipEditor
-                clip={() => clip}
-                track={() => voiceTrack ?? null}
-                onPatch={(patch) => {
-                  if (!voiceTrack || !selectedClipId()) return;
-                  trk.patchTrack(voiceTrack.id, {
-                    clips: voiceTrack.clips?.map(c => c.id === selectedClipId() ? { ...c, ...patch } : c),
-                  });
-                }}
-                onCollapse={() => setActivePanel(null)}
-              />
-            );
-          })()}
-        </Show>
         <TracksSidebar
           tracks={tracks} selectedTrack={selectedTrack} showAddMenu={showAddMenu}
           onSelectTrack={setSelectedTrack}
@@ -638,6 +619,27 @@ const Studio: Component = () => {
       </Show>
 
 
+
+      <Show when={activePanel() === "voice" && tracks().some(t => t.type === "voice")}>
+        <AudioClipEditor
+          clip={() => {
+            const vt = tracks().find(t => t.type === "voice");
+            return vt?.clips?.find(c => c.id === selectedClipId()) ?? vt?.clips?.[0] ?? null;
+          }}
+          track={() => tracks().find(t => t.type === "voice") ?? null}
+          tracks={tracks}
+          playheadPx={playheadPx}
+          onPatch={(patch) => {
+            const vt = tracks().find(t => t.type === "voice");
+            const cid = selectedClipId() ?? vt?.clips?.[0]?.id;
+            if (!vt || !cid) return;
+            trk.patchTrack(vt.id, {
+              clips: vt.clips?.map(c => c.id === cid ? { ...c, ...patch } : c),
+            });
+          }}
+          onCollapse={() => setActivePanel(null)}
+        />
+      </Show>
 
       <BottomBar
         tracks={tracks} selectedTrack={selectedTrack}

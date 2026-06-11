@@ -2,19 +2,19 @@
 
 /* ─────────────── RESPONSIVE ─────────────── */
 @media (max-width: 1100px) {
-  .bl__main { grid-template-columns: 14rem 1fr; }
+  .bl__tracks-side { width: 15rem; min-width: 15rem; }
   .bl__top { gap: 0.75rem; }
   .bl__mastering, .bl__save-status { display: none; }
 }
 @media (max-width: 800px) {
   .bl__top {
-    grid-template-columns: auto 1fr auto;
+    gap: 0;
     padding: 0 0.85rem;
   }
   .bl__transport-tools, .bl__chips,
   .bl__top-l .bl__brand .bl__logo-text::after { display: none; }
   .bl__title { display: none; }
-  .bl__main { grid-template-columns: 12rem 1fr; }
+  .bl__tracks-side { width: 13rem; min-width: 13rem; }
 }
 
 /* hide legacy classes from the old version */
@@ -31,7 +31,7 @@
   background: rgba($bg-primary, 0.94);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(#fff, 0.08);
+  border-top: 1px solid rgba(#fff, 0.05);
   z-index: 8;
   pointer-events: none; /* let drum panel scroll above; buttons re-enable */
   > * { pointer-events: auto; }
@@ -223,7 +223,7 @@
   .bl__transport-tools, .bl__chips, .bl__mastering, .bl__save-status { display: none !important; }
 
   /* Main grid — narrow sidebar so timeline gets max space */
-  .bl__main { grid-template-columns: 8.5rem 1fr; }
+  .bl__tracks-side { width: 9rem; min-width: 9rem; }
 
   /* Track sidebar — compact track headers */
   .bl__tracks-side { font-size: 0.78rem; }
@@ -242,7 +242,7 @@
 
   /* Drop zone — fit narrower viewport (account for 8.5rem sidebar) */
   .bl__import-drop {
-    --drop-zone-w: calc(100vw - 8.5rem - 1rem);
+    --drop-zone-w: calc(100vw - 9rem - 1rem);
     height: 3.6rem;
     margin: 0.4rem 0;
     span { font-size: 0.7rem; padding: 0 0.5rem; text-align: center; }
@@ -292,7 +292,7 @@
 
 /* very small phones */
 @media (max-width: 380px) {
-  .bl__main { grid-template-columns: 7rem 1fr; }
+  .bl__tracks-side { width: 7rem; min-width: 7rem; }
   .bl__title { font-size: 1rem; max-width: 50vw; }
   .bl__import-drop { --drop-zone-w: calc(100vw - 7rem - 1rem); }
   .bl__track .bl__track-name { max-width: 4rem; font-size: 0.65rem; }
