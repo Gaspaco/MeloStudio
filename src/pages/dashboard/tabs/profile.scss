@@ -563,21 +563,31 @@
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 2px;
-    height: 2.25rem;
+    gap: 1.5px;
     min-width: 0;
-    mask-image: linear-gradient(to right, #000 70%, transparent);
+    height: 4.5rem;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, #000 80%, transparent);
+
+    // canvas stretches to fill the full container when real audio is loaded
+    canvas {
+      display: block;
+      flex: 1;
+      align-self: stretch;
+      min-width: 0;
+    }
 
     span {
       flex: 1;
+      max-width: 8px;
       min-height: 2px;
       background: $text-muted;
-      opacity: 0.45;
+      opacity: 0.5;
       border-radius: 1px;
       transition: background 0.2s ease, opacity 0.2s ease;
     }
 
-    .db__pp-track-wave-ghost { opacity: 0.15; }
+    .db__pp-track-wave-ghost { opacity: 0.18; }
 
     @media (max-width: 640px) { display: none; }
   }

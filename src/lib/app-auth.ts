@@ -49,6 +49,7 @@ export async function getAppSession(options: { respectLoggedOut?: boolean; persi
     return null;
   }
 
+  // No stored hint — probe both providers in preference order and cache the winner to skip the probe on subsequent calls
   try {
     const { data } = await socialAuthClient.getSession();
     if (data?.user) {

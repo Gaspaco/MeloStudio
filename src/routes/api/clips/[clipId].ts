@@ -262,6 +262,7 @@ export async function GET(event: APIEvent) {
   try {
     const key = `${projectId}/${clipId}`;
     const result = await store.getWithMetadata(key, { type: "stream" });
+    // 204 (not 404) signals "clip not found" — the client treats this as a gracefully-skipped optional clip
     if (!result) {
       return new Response(null, { status: 204 });
     }

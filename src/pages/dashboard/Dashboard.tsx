@@ -54,6 +54,7 @@ const Dashboard: Component<{
   const [tabInd, setTabInd] = createSignal({ left: 0, width: 0, isTrash: false });
   createEffect(() => {
     const cat = libCat();
+    // rAF defers the offsetLeft read until SolidJS has re-rendered the active tab, avoiding stale geometry
     requestAnimationFrame(() => {
       const el = tabRefs[cat];
       if (el) setTabInd({ left: el.offsetLeft, width: el.offsetWidth, isTrash: cat === "deleted" });
@@ -96,6 +97,7 @@ const Dashboard: Component<{
       const userData = (await getAppSession())?.user;
       if (userData) {
         const rawImage = userData.image ?? undefined;
+        // Twitter/X profile images default to `_normal` (48px) — replace with `_400x400` for higher-res display
         const image = rawImage?.replace(/_normal(\.[^.]+)$/, "_400x400$1") ?? rawImage;
         setUser({
           name: userData.name,
@@ -321,6 +323,7 @@ const Dashboard: Component<{
   // ── Tab switching ──────────────────────────────────────────────────
   const switchTab = (t: Tab) => {
     setTab(t);
+    // rAF defers GSAP until SolidJS has committed the new tab's DOM so the selector finds real elements
     requestAnimationFrame(() => {
       gsap.fromTo(".db__content", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" });
     });

@@ -5,12 +5,14 @@
   inset: 0;
   z-index: 999;
   pointer-events: none;
+  // `contain: paint` confines the grain repaint to this element's bounds so it can't trigger a global repaint
   contain: paint;
   transform: translateZ(0);
 
   &::before {
     content: "";
     position: absolute;
+    // 300% width/height + -100% inset: oversized so the translate3d drift never reveals an edge
     inset: -100%;
     width: 300%;
     height: 300%;

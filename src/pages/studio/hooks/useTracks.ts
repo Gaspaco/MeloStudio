@@ -452,6 +452,7 @@ export function useTracks(deps: Deps) {
       if (!track) return;
       const clip = (track.clips ?? []).find(c => c.id === clipId);
       if (!clip) return;
+      // `url: undefined` — Blob URLs are single-use per page load; the scheduler re-fetches via remoteUrl or IDB for the duplicate
       const newClip: MediaClip = { ...clip, id: crypto.randomUUID(), barStart: clip.barStart + clip.bars, url: undefined };
       deps.setTracks(deps.tracks().map(t =>
         t.id !== trackId ? t : { ...t, clips: [...(t.clips ?? []), newClip] }

@@ -103,6 +103,7 @@ export function useSynth(deps: Deps) {
       : sel.type === "guitar" ? "guitar" : deps.synthPreset();
     ensureSynth(activePreset);
     if (!synth) return;
+    // MIDI note formula: (octave+1)*12 + semitone; the +1 is because MIDI octave 0 starts at note 12, not 0
     const midi = 12 * (deps.octave() + 1) + keyVal;
     synth.noteOn(midi, 0.85);
     const next = new Set(deps.activeNotes());

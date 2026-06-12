@@ -13,11 +13,12 @@ export interface DrumVoice {
   dispose(): void;
 }
 
+// Math.random() is [0,1]; * 2 - 1 shifts it to [-1,1] so the jitter is centered on zero
 const rnd = (range: number) => (Math.random() * 2 - 1) * range;
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-// humanized velocity: adds ±velRange variation then clamps to 0.05-1
+// humanized velocity: adds ±velRange variation then clamps to 0.05-1 (floor prevents silent ghost hits)
 const hVel = (v: number, velRange = 0.06) => clamp(v + rnd(velRange), 0.05, 1);
-// tiny timing nudge — only for softer hits so the beat stays tight
+// shifts a hit forward in time by 0–maxJitterMs; intentionally one-sided (never early) to stay in tempo
 const hTime = (t: number, maxJitterMs = 6) => t + Math.random() * (maxJitterMs / 1000);
 
 export class DrumKit {
@@ -27,6 +28,8 @@ export class DrumKit {
     bindToneToContext();
 
     // kick
+    // pitchDecay = how fast the pitch falls after the initial hit; octaves = how many octaves it drops
+    // together they create the characteristic low "thud" — high start frequency diving down fast
     const kick = new Tone.MembraneSynth({
       pitchDecay: 0.05,
       octaves: 6,
@@ -51,6 +54,7 @@ export class DrumKit {
 
     // hi-hats
     // NoiseSynth + highpass; MetalSynth was less reliable across browsers
+    // closed hat cuts at 7 kHz (tighter/more metallic); open hat cuts at 5 kHz to let more body through
     const hatHp = new Tone.Filter(7000, "highpass").connect(destination);
     const hatClosed = new Tone.NoiseSynth({
       noise: { type: "white" },
@@ -65,7 +69,8 @@ export class DrumKit {
       volume: 0,
     }).connect(hatOpenHp);
 
-    // clap (two noise layers for crack + body)
+    // clap: white noise = sharp crack on the attack; pink noise (softer roll-off) = the airy tail
+    // two separate synths let each layer have its own envelope and slight timing offset
     const clapHp = new Tone.Filter(800, "highpass").connect(destination);
     const clap = new Tone.NoiseSynth({
       noise: { type: "white" },
@@ -120,6 +125,8 @@ export class DrumKit {
       snare: {
         trigger(time, vel) {
           const v = hVel(vel, 0.07);
+          // noise fires first (louder crack); body fires a hair later at 60% volume
+          // the independent jitter on each layer mimics the slight desync of wire vs membrane
           snareNoise.triggerAttackRelease("16n", hTime(time, 2), v);
           snareBody.triggerAttackRelease("G2", "16n", hTime(time, 1), v * 0.6);
         },
@@ -140,6 +147,7 @@ export class DrumKit {
       clap: {
         trigger(time, vel) {
           const v = hVel(vel, 0.08);
+          // tail fires 0–4 ms late at 60% volume; simulates multiple hands slightly out of sync
           clap.triggerAttackRelease("16n", time, v);
           clapTail.triggerAttackRelease("16n", hTime(time, 4), v * 0.6);
         },
@@ -160,6 +168,8 @@ export class DrumKit {
       rimshot: {
         trigger(time, vel) {
           const v = hVel(vel, 0.08);
+          // noise = high crack of the rim; MembraneSynth at A3 = the resonant body thud
+          // each fires at a slightly different random offset so they don't fuse into one flat hit
           rimshot.triggerAttackRelease("32n", hTime(time, 5), v);
           rimshotBody.triggerAttackRelease("A3", "32n", hTime(time, 3), v * 0.5);
         },

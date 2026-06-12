@@ -12,6 +12,7 @@
   align-items: flex-start;
   justify-content: space-between;
   padding: 0.75rem 3rem;
+  // `difference` blend: nav text/elements invert against any underlying color, keeping contrast across all backgrounds without JS
   mix-blend-mode: difference;
   transition: opacity 0.4s ease, transform 0.4s ease, pointer-events 0.4s ease;
 

@@ -17,6 +17,7 @@ const Reel: Component<{
 
   const initWaveform = async () => {
     if (peaksInstance || !audioEl || !waveformEl) return;
+    // Use the existing context only — creating a new AudioContext here without a user gesture would be blocked by autoplay policy
     const audioContext = getExistingAudioContext();
     if (!audioContext || audioContext.state !== "running") return;
     const { default: Peaks } = await import("peaks.js");

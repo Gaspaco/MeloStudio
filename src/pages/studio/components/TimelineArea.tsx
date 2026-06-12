@@ -65,6 +65,7 @@ const TimelineArea: Component<Props> = (props) => {
 
   const onTimelineWheel = (e: WheelEvent) => {
     if (!timelineEl) return;
+    // Shift+wheel (Mac convention) OR dominant vertical scroll: redirect to horizontal so the timeline scrolls left/right
     if (e.shiftKey || Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
       e.preventDefault();
       timelineEl.scrollLeft += e.deltaY;

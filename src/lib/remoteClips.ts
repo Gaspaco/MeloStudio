@@ -29,6 +29,7 @@ export async function uploadRemoteClip(
 
   const remoteUrl = remoteClipUrl(projectId, clipId);
 
+  // Single PUT for small clips; chunked PUT + commit for larger ones to stay under serverless function body limits
   if (blob.size <= CHUNK_SIZE) {
     const res = await apiFetch(remoteUrl, {
       method: "PUT",

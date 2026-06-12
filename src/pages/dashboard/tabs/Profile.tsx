@@ -1,6 +1,5 @@
-import { type Component, For, Show, createEffect, createSignal, onMount } from "solid-js";
+import { type Component, For, Show, createEffect, createSignal, onCleanup, onMount } from "solid-js";
 import { apiFetch } from "../../../lib/api";
-import { loadClipBlob } from "../../../lib/clipStore";
 import { getAudioContext } from "../../../lib/audio/context";
 import { waveform } from "./waveform";
 import "./profile.scss";
@@ -113,73 +112,117 @@ const hostOf = (url: string) => {
   }
 };
 
-// ── Real waveform peaks ──────────────────────────────────────────────
-const PEAKS_CACHE_KEY = "ms_profile_peaks_v1";
-const PEAK_BUCKETS = 36;
-
-const readPeaksCache = (): Record<string, number[]> => {
-  try {
-    const v = JSON.parse(localStorage.getItem(PEAKS_CACHE_KEY) ?? "{}");
-    return v && typeof v === "object" ? v : {};
-  } catch {
-    return {};
-  }
-};
-
-interface ClipCandidate { id?: string; dataUrl?: string; remoteUrl?: string }
-
-/** All audio clips in a project doc, in track order. */
-const clipCandidates = (doc: any): ClipCandidate[] => {
-  const out: ClipCandidate[] = [];
-  for (const track of doc?.uiTracks ?? []) {
-    for (const clip of track?.clips ?? []) {
-      if (!clip || clip.kind === "midi") continue;
-      out.push({ id: clip.id, dataUrl: clip.dataUrl, remoteUrl: clip.remoteUrl });
+// Builds fetch URLs for every audio clip in a project doc using the real ProjectDoc schema
+const getClipUrls = (doc: any, projectId: string): string[] => {
+  const tracks = (doc?.tracks ?? doc?.uiTracks ?? []) as any[];
+  const urls: string[] = [];
+  for (const track of tracks) {
+    for (const clip of (track?.clips ?? []) as any[]) {
+      if (clip?.id) urls.push(`/api/clips/${clip.id}?projectId=${projectId}`);
     }
   }
-  return out;
+  return urls;
 };
 
-/** Resolve a clip's audio bytes: inline data, server storage, or local IndexedDB. */
-const clipArrayBuffer = async (c: ClipCandidate): Promise<ArrayBuffer | null> => {
-  try {
-    if (c.dataUrl) return await (await fetch(c.dataUrl)).arrayBuffer();
-    if (c.remoteUrl) {
-      const res = await apiFetch(c.remoteUrl).catch(() => null);
-      if (res?.ok) return await res.arrayBuffer();
-    }
-    if (c.id) {
-      const blob = await loadClipBlob(c.id).catch(() => null);
-      if (blob) return await blob.arrayBuffer();
-    }
-  } catch {}
-  return null;
-};
+// ── Custom canvas waveform ────────────────────────────────────────────
+const WaveformCanvas: Component<{ url: string; color: string }> = (props) => {
+  let canvasRef: HTMLCanvasElement | undefined;
+  let disposed = false;
 
-const computePeaks = async (buf: ArrayBuffer): Promise<number[] | null> => {
-  try {
-    const audio = await getAudioContext().decodeAudioData(buf);
-    const data = audio.getChannelData(0);
-    const step = Math.floor(data.length / PEAK_BUCKETS) || 1;
-    const stride = Math.max(1, Math.floor(step / 200));
-    const peaks: number[] = [];
-    let max = 0;
-    for (let b = 0; b < PEAK_BUCKETS; b++) {
-      let peak = 0;
-      const start = b * step;
-      const end = Math.min(start + step, data.length);
-      for (let i = start; i < end; i += stride) {
-        const v = Math.abs(data[i] ?? 0);
-        if (v > peak) peak = v;
+  const drawPeaks = (peaks: number[]) => {
+    const canvas = canvasRef;
+    if (!canvas || disposed) return;
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.offsetWidth;
+    const H = canvas.offsetHeight;
+    if (!W || !H) return;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.scale(dpr, dpr);
+
+    const n = peaks.length;
+    const BAR_W = 8;
+    const GAP = 3;
+    const totalW = n * BAR_W + (n - 1) * GAP;
+    // If bars overflow the canvas, shrink bar width proportionally
+    const scale = totalW > W ? W / totalW : 1;
+    const bw = BAR_W * scale;
+    const gp = GAP * scale;
+    const startX = Math.max(0, (W - (n * bw + (n - 1) * gp)) / 2);
+
+    ctx.fillStyle = props.color;
+    for (let i = 0; i < n; i++) {
+      const barH = Math.max(3, peaks[i] * H * 0.88);
+      const x = startX + i * (bw + gp);
+      const y = (H - barH) / 2;
+      const r = Math.min(bw / 2, 3);
+      // manual rounded rect — avoids browser/TS compatibility issues with ctx.roundRect
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + bw - r, y);
+      ctx.arcTo(x + bw, y, x + bw, y + r, r);
+      ctx.lineTo(x + bw, y + barH - r);
+      ctx.arcTo(x + bw, y + barH, x + bw - r, y + barH, r);
+      ctx.lineTo(x + r, y + barH);
+      ctx.arcTo(x, y + barH, x, y + barH - r, r);
+      ctx.lineTo(x, y + r);
+      ctx.arcTo(x, y, x + r, y, r);
+      ctx.closePath();
+      ctx.fill();
+    }
+  };
+
+  onMount(async () => {
+    if (!canvasRef) return;
+    // Wait a frame so the canvas has measured dimensions before drawing
+    await new Promise<void>((r) => requestAnimationFrame(() => r()));
+    if (disposed) return;
+
+    try {
+      const res = await fetch(props.url, { credentials: "include" });
+      if (!res.ok || disposed) return;
+      const buf = await res.arrayBuffer();
+      if (disposed) return;
+
+      const audio = await getAudioContext().decodeAudioData(buf);
+      if (disposed) return;
+
+      const data = audio.getChannelData(0);
+      const W = canvasRef.offsetWidth;
+      const BAR_W = 8;
+      const GAP = 3;
+      const n = Math.max(8, Math.floor(W / (BAR_W + GAP)));
+      const step = Math.floor(data.length / n) || 1;
+      const stride = Math.max(1, Math.floor(step / 200));
+      const peaks: number[] = [];
+      let max = 0;
+
+      for (let i = 0; i < n; i++) {
+        let peak = 0;
+        const start = i * step;
+        const end = Math.min(start + step, data.length);
+        for (let j = start; j < end; j += stride) {
+          const v = Math.abs(data[j] ?? 0);
+          if (v > peak) peak = v;
+        }
+        peaks.push(peak);
+        if (peak > max) max = peak;
       }
-      peaks.push(peak);
-      if (peak > max) max = peak;
-    }
-    if (max <= 0) return null;
-    return peaks.map((p) => Math.round((p / max) * 100) / 100);
-  } catch {
-    return null;
-  }
+
+      if (max > 0 && !disposed) drawPeaks(peaks.map((p) => p / max));
+    } catch {}
+  });
+
+  onCleanup(() => { disposed = true; });
+
+  return (
+    <canvas
+      ref={(el) => { canvasRef = el; }}
+      style={{ width: "100%", height: "100%", display: "block" }}
+    />
+  );
 };
 
 const Profile: Component<ProfileProps> = (props) => {
@@ -248,53 +291,26 @@ const Profile: Component<ProfileProps> = (props) => {
     return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   };
 
-  // ── Real waveforms from project audio ────────────────────────────
-  const [peaks, setPeaks] = createSignal<Record<string, number[]>>({});
-  let peaksStarted = false;
+  // ── Load first clip URL per project for peaks.js ────────────────
+  const [clipUrls, setClipUrls] = createSignal<Record<string, string>>({});
+  let urlsStarted = false;
 
-  const loadAllPeaks = async (list: ProfileProject[]) => {
-    const cache = readPeaksCache();
-    const fresh: Record<string, number[]> = {};
-
+  const loadClipUrls = async (list: ProfileProject[]) => {
     for (const p of list) {
-      const key = `${p.id}:${p.updatedAt}`;
-      let pk = cache[key] ?? null;
-      if (!pk) {
-        try {
-          const res = await apiFetch(`/api/projects/${p.id}`);
-          if (!res.ok) continue;
-          const candidates = clipCandidates(await res.json());
-          if (!candidates.length) {
-            console.info(`[profile] "${p.name}": no audio clips, keeping placeholder`);
-            continue;
-          }
-          for (const c of candidates) {
-            const buf = await clipArrayBuffer(c);
-            if (!buf) continue;
-            pk = await computePeaks(buf);
-            if (pk) break;
-          }
-          if (!pk) console.warn(`[profile] "${p.name}": audio clips found but none decodable`);
-        } catch {
-          pk = null;
-        }
-      }
-      if (pk) {
-        fresh[key] = pk;
-        setPeaks((prev) => ({ ...prev, [p.id]: pk }));
-      }
+      try {
+        const res = await apiFetch(`/api/projects/${p.id}`);
+        if (!res.ok) continue;
+        const urls = getClipUrls(await res.json(), p.id);
+        if (urls[0]) setClipUrls((prev) => ({ ...prev, [p.id]: urls[0]! }));
+      } catch {}
     }
-
-    try {
-      localStorage.setItem(PEAKS_CACHE_KEY, JSON.stringify(fresh));
-    } catch {}
   };
 
   createEffect(() => {
     const list = props.projects();
-    if (!list.length || peaksStarted) return;
-    peaksStarted = true;
-    void loadAllPeaks(list);
+    if (!list.length || urlsStarted) return;
+    urlsStarted = true;
+    void loadClipUrls(list);
   });
 
   return (
@@ -457,19 +473,15 @@ const Profile: Component<ProfileProps> = (props) => {
                       </span>
                       <span class="db__pp-track-wave" aria-hidden="true">
                         <Show
-                          when={peaks()[p.id]}
+                          when={clipUrls()[p.id]}
                           keyed
                           fallback={
-                            <For each={waveform(p.id, 36)}>
+                            <For each={waveform(p.id, 64)}>
                               {(h) => <span class="db__pp-track-wave-ghost" style={{ height: `${Math.round((h / 25) * 100)}%` }} />}
                             </For>
                           }
                         >
-                          {(pk) => (
-                            <For each={pk}>
-                              {(v) => <span style={{ height: `${Math.max(6, Math.round(v * 100))}%` }} />}
-                            </For>
-                          )}
+                          {(url) => <WaveformCanvas url={url} color={p.color} />}
                         </Show>
                       </span>
                     </button>

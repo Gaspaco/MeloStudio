@@ -4,6 +4,7 @@
   min-height: 100vh;
   background: $bg-primary;
   color: $text-primary;
+  // `clip` instead of `hidden` so this element doesn't become a scroll container (which breaks position:sticky children)
   overflow-x: clip;
 
   // ── Nav bar ──────────────────────────────────────────────────────
@@ -367,6 +368,7 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-top: 1px solid $border;
+      // env(safe-area-inset-bottom) pads above the iPhone home-indicator notch
       padding: 0.4rem 0 max(0.4rem, env(safe-area-inset-bottom));
     }
 

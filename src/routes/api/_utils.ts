@@ -71,6 +71,7 @@ export function isSafeRemoteUrl(value: unknown): value is string {
 
   if (url.username || url.password) return false;
   if (url.protocol !== "https:" && url.protocol !== "http:") return false;
+  // Block plaintext HTTP in production to prevent mixed-content SSRF; dev allows it for local testing
   if (url.protocol === "http:" && process.env.NODE_ENV === "production") return false;
 
   const host = url.hostname.toLowerCase();
@@ -78,6 +79,7 @@ export function isSafeRemoteUrl(value: unknown): value is string {
     return process.env.NODE_ENV !== "production";
   }
   if (PRIVATE_IPV4_RANGES.some((range) => range.test(host))) return false;
+  // Block IPv6 literals (`[::1]`, `[fc00::]`) which PRIVATE_IPV4_RANGES won't catch
   if (host.startsWith("[") || host.includes(":")) return false;
 
   return true;

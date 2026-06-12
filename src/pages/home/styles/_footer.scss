@@ -3,6 +3,7 @@
 .footer {
   padding: 3rem 3rem 0;
   overflow: visible;
+  // Skip paint+layout while off-screen; placeholder size prevents a scroll-length jump when the section is first painted
   content-visibility: auto;
   contain-intrinsic-size: auto 60vh;
 
