@@ -125,6 +125,27 @@ const Dashboard: Component<{
     finally { setLoadingProjects(false); }
   });
 
+  // ── Smooth scroll ──────────────────────────────────────────────────
+  onMount(() => {
+    let lenis: { raf: (t: number) => void; destroy: () => void } | undefined;
+    let lenisTick: ((time: number) => void) | undefined;
+    void (async () => {
+      const { default: LenisClass } = await import("lenis");
+      lenis = new LenisClass({
+        duration: 0.35,
+        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+        wheelMultiplier: 1.6,
+      });
+      lenisTick = (time: number) => lenis?.raf(time * 1000);
+      gsap.ticker.add(lenisTick);
+    })();
+    onCleanup(() => {
+      if (lenisTick) gsap.ticker.remove(lenisTick);
+      lenis?.destroy();
+    });
+  });
+
   // ── Clock + ESC handler ────────────────────────────────────────────
   onMount(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);

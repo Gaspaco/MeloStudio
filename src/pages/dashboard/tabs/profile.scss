@@ -2,8 +2,8 @@
 
 .db {
   // ── Profile tab layout ───────────────────────────────────────────
-  &__content--profile {
-    padding-top: 1.5rem;
+  &__content--profile.db__content {
+    padding-top: 0.9rem;
   }
 
   // ── Profile card ─────────────────────────────────────────────────
@@ -562,7 +562,7 @@
   &__pp-track-wave {
     flex: 1;
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 2px;
     height: 2.25rem;
     min-width: 0;
@@ -572,10 +572,12 @@
       flex: 1;
       min-height: 2px;
       background: $text-muted;
-      opacity: 0.3;
+      opacity: 0.45;
       border-radius: 1px;
       transition: background 0.2s ease, opacity 0.2s ease;
     }
+
+    .db__pp-track-wave-ghost { opacity: 0.15; }
 
     @media (max-width: 640px) { display: none; }
   }
@@ -725,11 +727,11 @@
 
   // ── Profile responsive ────────────────────────────────────────────
   @media (max-width: 768px) {
-    &__content--profile { padding-top: 5rem; }
+    &__content--profile.db__content { padding-top: 1rem; }
   }
 
   @media (max-width: 480px) {
-    &__content--profile {
+    &__content--profile.db__content {
       padding-bottom: calc(4rem + env(safe-area-inset-bottom));
     }
   }

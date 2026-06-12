@@ -1,4 +1,7 @@
-import { type Component, For, Show, createSignal, onMount } from "solid-js";
+import { type Component, For, Show, createEffect, createSignal, onMount } from "solid-js";
+import { apiFetch } from "../../../lib/api";
+import { loadClipBlob } from "../../../lib/clipStore";
+import { getAudioContext } from "../../../lib/audio/context";
 import { waveform } from "./waveform";
 import "./profile.scss";
 
@@ -110,6 +113,75 @@ const hostOf = (url: string) => {
   }
 };
 
+// ── Real waveform peaks ──────────────────────────────────────────────
+const PEAKS_CACHE_KEY = "ms_profile_peaks_v1";
+const PEAK_BUCKETS = 36;
+
+const readPeaksCache = (): Record<string, number[]> => {
+  try {
+    const v = JSON.parse(localStorage.getItem(PEAKS_CACHE_KEY) ?? "{}");
+    return v && typeof v === "object" ? v : {};
+  } catch {
+    return {};
+  }
+};
+
+interface ClipCandidate { id?: string; dataUrl?: string; remoteUrl?: string }
+
+/** All audio clips in a project doc, in track order. */
+const clipCandidates = (doc: any): ClipCandidate[] => {
+  const out: ClipCandidate[] = [];
+  for (const track of doc?.uiTracks ?? []) {
+    for (const clip of track?.clips ?? []) {
+      if (!clip || clip.kind === "midi") continue;
+      out.push({ id: clip.id, dataUrl: clip.dataUrl, remoteUrl: clip.remoteUrl });
+    }
+  }
+  return out;
+};
+
+/** Resolve a clip's audio bytes: inline data, server storage, or local IndexedDB. */
+const clipArrayBuffer = async (c: ClipCandidate): Promise<ArrayBuffer | null> => {
+  try {
+    if (c.dataUrl) return await (await fetch(c.dataUrl)).arrayBuffer();
+    if (c.remoteUrl) {
+      const res = await apiFetch(c.remoteUrl).catch(() => null);
+      if (res?.ok) return await res.arrayBuffer();
+    }
+    if (c.id) {
+      const blob = await loadClipBlob(c.id).catch(() => null);
+      if (blob) return await blob.arrayBuffer();
+    }
+  } catch {}
+  return null;
+};
+
+const computePeaks = async (buf: ArrayBuffer): Promise<number[] | null> => {
+  try {
+    const audio = await getAudioContext().decodeAudioData(buf);
+    const data = audio.getChannelData(0);
+    const step = Math.floor(data.length / PEAK_BUCKETS) || 1;
+    const stride = Math.max(1, Math.floor(step / 200));
+    const peaks: number[] = [];
+    let max = 0;
+    for (let b = 0; b < PEAK_BUCKETS; b++) {
+      let peak = 0;
+      const start = b * step;
+      const end = Math.min(start + step, data.length);
+      for (let i = start; i < end; i += stride) {
+        const v = Math.abs(data[i] ?? 0);
+        if (v > peak) peak = v;
+      }
+      peaks.push(peak);
+      if (peak > max) max = peak;
+    }
+    if (max <= 0) return null;
+    return peaks.map((p) => Math.round((p / max) * 100) / 100);
+  } catch {
+    return null;
+  }
+};
+
 const Profile: Component<ProfileProps> = (props) => {
   const [banner, setBanner] = createSignal<string | null>(null);
   const [status, setStatus] = createSignal("");
@@ -175,6 +247,55 @@ const Profile: Component<ProfileProps> = (props) => {
     if (isNaN(d.getTime())) return "—";
     return d.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   };
+
+  // ── Real waveforms from project audio ────────────────────────────
+  const [peaks, setPeaks] = createSignal<Record<string, number[]>>({});
+  let peaksStarted = false;
+
+  const loadAllPeaks = async (list: ProfileProject[]) => {
+    const cache = readPeaksCache();
+    const fresh: Record<string, number[]> = {};
+
+    for (const p of list) {
+      const key = `${p.id}:${p.updatedAt}`;
+      let pk = cache[key] ?? null;
+      if (!pk) {
+        try {
+          const res = await apiFetch(`/api/projects/${p.id}`);
+          if (!res.ok) continue;
+          const candidates = clipCandidates(await res.json());
+          if (!candidates.length) {
+            console.info(`[profile] "${p.name}": no audio clips, keeping placeholder`);
+            continue;
+          }
+          for (const c of candidates) {
+            const buf = await clipArrayBuffer(c);
+            if (!buf) continue;
+            pk = await computePeaks(buf);
+            if (pk) break;
+          }
+          if (!pk) console.warn(`[profile] "${p.name}": audio clips found but none decodable`);
+        } catch {
+          pk = null;
+        }
+      }
+      if (pk) {
+        fresh[key] = pk;
+        setPeaks((prev) => ({ ...prev, [p.id]: pk }));
+      }
+    }
+
+    try {
+      localStorage.setItem(PEAKS_CACHE_KEY, JSON.stringify(fresh));
+    } catch {}
+  };
+
+  createEffect(() => {
+    const list = props.projects();
+    if (!list.length || peaksStarted) return;
+    peaksStarted = true;
+    void loadAllPeaks(list);
+  });
 
   return (
     <div class="db__content db__content--profile">
@@ -335,9 +456,21 @@ const Profile: Component<ProfileProps> = (props) => {
                         <span class="db__pp-track-meta">{p.bpm} BPM · {p.tracks} {p.tracks === 1 ? "track" : "tracks"} · {p.updatedAt}</span>
                       </span>
                       <span class="db__pp-track-wave" aria-hidden="true">
-                        <For each={waveform(p.id, 36)}>
-                          {(h) => <span style={{ height: `${Math.round((h / 25) * 100)}%` }} />}
-                        </For>
+                        <Show
+                          when={peaks()[p.id]}
+                          keyed
+                          fallback={
+                            <For each={waveform(p.id, 36)}>
+                              {(h) => <span class="db__pp-track-wave-ghost" style={{ height: `${Math.round((h / 25) * 100)}%` }} />}
+                            </For>
+                          }
+                        >
+                          {(pk) => (
+                            <For each={pk}>
+                              {(v) => <span style={{ height: `${Math.max(6, Math.round(v * 100))}%` }} />}
+                            </For>
+                          )}
+                        </Show>
                       </span>
                     </button>
                   )}
