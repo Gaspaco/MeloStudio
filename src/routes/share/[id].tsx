@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { Portal } from "solid-js/web";
 import { useParams } from "@solidjs/router";
 import { getAppSession } from "../../lib/app-auth";
-import { apiFetch, transcribeProjectApi, updateProjectApi } from "~/lib/api";
+import { apiFetch, transcribeProjectApi, updateProjectApi, getShareProjectApi, pfpUrl as buildPfpUrl, isApiClipUrl } from "~/lib/api";
 import "./share.scss";
 
 interface PublicProject {
@@ -25,9 +25,7 @@ interface PublicProject {
 }
 
 async function fetchPublicProject(id: string): Promise<PublicProject | null> {
-  const res = await apiFetch(`/api/share/${id}`);
-  if (!res.ok) return null;
-  return res.json();
+  return getShareProjectApi(id) as Promise<PublicProject | null>;
 }
 
 /** Flat, desaturated color per project — no gradient. */
@@ -305,7 +303,7 @@ const SharePage: Component = () => {
           const discColor  = nameToDiscColor(p().name);
           const accentColor = nameToAccent(p().name);
           const initials   = nameInitials(p().name);
-          const pfpUrl = p().ownerId ? `/api/user/${p().ownerId}/pfp` : null;
+          const pfpUrl = p().ownerId ? buildPfpUrl(p().ownerId!) : null;
           const extractedColor = useImageColorExt(pfpUrl);
 
           const [menuOpen, setMenuOpen] = createSignal(false);
@@ -425,7 +423,7 @@ const SharePage: Component = () => {
 
           onMount(async () => {
             try {
-              const res = await apiFetch(`/api/share-clips/${p().id}`);
+              const res = await apiFetch(`/api/share-clips/${encodeURIComponent(p().id)}`);
               if (!res.ok) return;
               cachedClipsData = (await res.json()) as ClipsData;
               // Compute real duration from clip metadata
@@ -514,7 +512,7 @@ const SharePage: Component = () => {
             try {
               // Use cached clips data from pre-fetch, or fetch now if not ready.
               if (!cachedClipsData) {
-                const res = await apiFetch(`/api/share-clips/${p().id}`);
+                const res = await apiFetch(`/api/share-clips/${encodeURIComponent(p().id)}`);
                 if (!res.ok) { setIsPlaying(false); return; }
                 cachedClipsData = (await res.json()) as ClipsData;
               }
@@ -526,8 +524,7 @@ const SharePage: Component = () => {
               const optionalClipUrl = (url: string) =>
                 url.includes("optional=") ? url : `${url}${url.includes("?") ? "&" : "?"}optional=1`;
               const fetchClipBuffer = async (url: string): Promise<ArrayBuffer | null> => {
-                const isApiClip = url.startsWith("/api/clips/") || url.startsWith(`${window.location.origin}/api/clips/`);
-                const res = isApiClip
+                const res = isApiClipUrl(url)
                   ? await apiFetch(optionalClipUrl(url)).catch(() => null)
                   : await fetch(url).catch(() => null);
                 if (!res || res.status === 204 || !res.ok) return null;

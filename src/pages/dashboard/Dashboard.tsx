@@ -5,7 +5,7 @@ import { getAppSession, signOutApp } from "../../lib/app-auth";
 import {
   listProjectsApi, deleteProjectApi, updateProjectApi,
   getProjectStatsApi, listDeletedProjectsApi, restoreProjectApi,
-  permanentlyDeleteProjectApi, type DeletedProjectListItem,
+  permanentlyDeleteProjectApi, getFollowCountsApi, type DeletedProjectListItem,
 } from "../../lib/api";
 import Overview from "./tabs/Overview";
 import Library from "./tabs/Library";
@@ -121,7 +121,7 @@ const Dashboard: Component<{
       })));
       const stats = await getProjectStatsApi();
       setStudioHours(stats.studioHours);
-      const fc = await fetch("/api/user/follows").then(r => r.json()) as { followers: number; following: number };
+      const fc = await getFollowCountsApi();
       setFollowCounts(fc);
     } catch {}
     finally { setLoadingProjects(false); }

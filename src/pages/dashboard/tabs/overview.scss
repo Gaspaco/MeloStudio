@@ -101,6 +101,7 @@
     font-weight: 800;
     letter-spacing: -0.03em;
     color: $text-primary;
+    white-space: nowrap;
   }
   &__stat-label {
     font-family: $font-mono;

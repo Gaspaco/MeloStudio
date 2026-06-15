@@ -1,5 +1,5 @@
 import { type Component, For, Show, createEffect, createSignal, onCleanup, onMount } from "solid-js";
-import { apiFetch } from "../../../lib/api";
+import { apiFetch, clipUrl } from "../../../lib/api";
 import { getAudioContext } from "../../../lib/audio/context";
 import { waveform } from "./waveform";
 import "./profile.scss";
@@ -118,7 +118,7 @@ const getClipUrls = (doc: any, projectId: string): string[] => {
   const urls: string[] = [];
   for (const track of tracks) {
     for (const clip of (track?.clips ?? []) as any[]) {
-      if (clip?.id) urls.push(`/api/clips/${clip.id}?projectId=${projectId}`);
+      if (clip?.id) urls.push(clipUrl(projectId, clip.id));
     }
   }
   return urls;

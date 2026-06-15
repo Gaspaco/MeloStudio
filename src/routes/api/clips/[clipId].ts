@@ -5,8 +5,7 @@ import type { APIEvent } from "@solidjs/start/server";
 import { getStore } from "@netlify/blobs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { requireUserId } from "~/lib/auth-server";
-import { sql } from "~/lib/db/client";
+import { getReadAccess, getOwnerAccess } from "~/lib/server/projectAccess";
 import { isUuid, textResponse } from "../_utils";
 
 const MAX_CLIP_BYTES = 4_000_000; // Netlify buffered functions allow ~4.5 MB binary request bodies.
@@ -119,17 +118,6 @@ async function deleteLocalClip(projectId: string, clipId: string): Promise<void>
   }
 }
 
-async function getProjectOwner(projectId: string): Promise<{ userId: string; published: boolean } | null> {
-  const rows = await sql`
-    SELECT user_id, published FROM projects
-    WHERE id = ${projectId} AND deleted_at IS NULL
-    LIMIT 1
-  ` as Array<{ user_id: string; published: boolean }>;
-  if (!rows[0]) return null;
-  return { userId: rows[0].user_id, published: rows[0].published };
-}
-
-
 export async function PUT(event: APIEvent) {
   const clipId = event.params.clipId;
   const searchParams = new URL(event.request.url).searchParams;
@@ -139,18 +127,19 @@ export async function PUT(event: APIEvent) {
 
   if (!isUuid(clipId) || !isUuid(projectId)) return textResponse("invalid id", 400);
 
-  const userId = await requireUserId(event.request);
-  if (!userId) return textResponse("unauthorized", 401);
-
-  let project: { userId: string; published: boolean } | null = null;
+  let access: Awaited<ReturnType<typeof getOwnerAccess>>;
   try {
-    project = await getProjectOwner(projectId);
+    access = await getOwnerAccess(event.request, projectId);
   } catch (err) {
     console.error("[PUT /api/clips/:clipId] DB error:", err);
     return textResponse("internal error", 500);
   }
-  if (!project) return textResponse("not found", 404);
-  if (project.userId !== userId) return textResponse("forbidden", 403);
+  if (!access.ok) {
+    if (access.reason === "unauthorized") return textResponse("unauthorized", 401);
+    if (access.reason === "not-found") return textResponse("not found", 404);
+    return textResponse("forbidden", 403);
+  }
+  const userId = access.userId;
 
   const contentLength = parseInt(event.request.headers.get("content-length") ?? "0", 10);
   if (contentLength > MAX_CLIP_BYTES) return textResponse("file too large", 413);
@@ -235,19 +224,14 @@ export async function GET(event: APIEvent) {
 
   if (!isUuid(clipId) || !isUuid(projectId)) return textResponse("invalid id", 400);
 
-  let project: { userId: string; published: boolean } | null = null;
+  let access: Awaited<ReturnType<typeof getReadAccess>>;
   try {
-    project = await getProjectOwner(projectId);
+    access = await getReadAccess(event.request, projectId);
   } catch (err) {
     console.error("[GET /api/clips/:clipId] DB error:", err);
     return textResponse("internal error", 500);
   }
-  if (!project) return textResponse("not found", 404);
-
-  if (!project.published) {
-    const userId = await requireUserId(event.request);
-    if (userId !== project.userId) return textResponse("not found", 404);
-  }
+  if (!access.ok) return textResponse("not found", 404);
 
   const store = getClipsStore();
   if (!store) {
@@ -312,19 +296,14 @@ export async function HEAD(event: APIEvent) {
 
   if (!isUuid(clipId) || !isUuid(projectId)) return new Response(null, { status: 400 });
 
-  let project: { userId: string; published: boolean } | null = null;
+  let access: Awaited<ReturnType<typeof getReadAccess>>;
   try {
-    project = await getProjectOwner(projectId);
+    access = await getReadAccess(event.request, projectId);
   } catch (err) {
     console.error("[HEAD /api/clips/:clipId] DB error:", err);
     return new Response(null, { status: 500 });
   }
-  if (!project) return new Response(null, { status: 404 });
-
-  if (!project.published) {
-    const userId = await requireUserId(event.request);
-    if (userId !== project.userId) return new Response(null, { status: 404 });
-  }
+  if (!access.ok) return new Response(null, { status: 404 });
 
   const store = getClipsStore();
   if (!store) {
@@ -367,18 +346,18 @@ export async function DELETE(event: APIEvent) {
 
   if (!isUuid(clipId) || !isUuid(projectId)) return textResponse("invalid id", 400);
 
-  const userId = await requireUserId(event.request);
-  if (!userId) return textResponse("unauthorized", 401);
-
-  let project: { userId: string; published: boolean } | null = null;
+  let access: Awaited<ReturnType<typeof getOwnerAccess>>;
   try {
-    project = await getProjectOwner(projectId);
+    access = await getOwnerAccess(event.request, projectId);
   } catch (err) {
     console.error("[DELETE /api/clips/:clipId] DB error:", err);
     return textResponse("internal error", 500);
   }
-  if (!project) return textResponse("not found", 404);
-  if (project.userId !== userId) return textResponse("forbidden", 403);
+  if (!access.ok) {
+    if (access.reason === "unauthorized") return textResponse("unauthorized", 401);
+    if (access.reason === "not-found") return textResponse("not found", 404);
+    return textResponse("forbidden", 403);
+  }
 
   const store = getClipsStore();
   if (!store) {
