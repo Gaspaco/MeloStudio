@@ -47,7 +47,7 @@ export const TRACK_DEFS: {
   type: TrackType; label: string; sub?: string;
   tag: string; ready: boolean; icon: string; color: string;
 }[] = [
-  { type: "instrument", label: "Instrument",    sub: "Piano, lead, pad, plucks — playable from your keyboard", tag: "MIDI",   ready: true,  icon: "instrument", color: "#3ee08b" },
+  { type: "instrument", label: "Instrument",    sub: "Piano, lead, pad, bell, plucks — playable from your keyboard", tag: "MIDI",   ready: true,  icon: "instrument", color: "#3ee08b" },
   { type: "drum",       label: "Drum Machine",  sub: "Step-sequenced kit · ready in seconds",                  tag: "RHYTHM", ready: true,  icon: "drum",       color: "#f5b53e" },
   { type: "bass",       label: "Bass Synth",    sub: "Deep monophonic bass — keyboard playable",               tag: "MIDI",   ready: true,  icon: "bass",       color: "#1d87f5" },
   { type: "voice",      label: "Voice / Audio", sub: "Capture vocals or any external sound source",            tag: "AUDIO",  ready: true,  icon: "voice",      color: "#f53e3e" },

@@ -13,7 +13,7 @@ import * as Tone from "tone";
 import { bindToneToContext } from "./context";
 import { getMasterBus } from "./masterBus";
 
-export type SynthPreset = "piano" | "lead" | "pad" | "bass" | "guitar";
+export type SynthPreset = "piano" | "lead" | "pad" | "bass" | "guitar" | "fm-bell" | "physical-pluck";
 
 interface SynthPresetOptions {
   oscillator: Partial<Tone.OmniOscillatorOptions>;
@@ -144,17 +144,20 @@ function buildSynthOpts(cfg: SynthPresetOptions) {
 // Tiny module-level cache so swapping presets doesn't re-download samples.
 const samplerCache = new Map<string, Tone.Sampler>();
 
-function getSampler(preset: "piano" | "bass" | "guitar"): Tone.Sampler {
+function getSampler(preset: "piano" | "bass" | "guitar" | "fm-bell" | "physical-pluck"): Tone.Sampler {
   const cached = samplerCache.get(preset);
   if (cached) return cached;
-  const cfg = SAMPLER_PRESETS[preset];
-  const baseUrl = `${SAMPLE_BASE}/${cfg.folder}/`;
+  const samplerCfg = SAMPLER_PRESETS[preset as keyof typeof SAMPLER_PRESETS];
+  // If it's a new preset without sampler configs like "fm-bell", fallback to piano configs for now if not defined or throw an error.
+  if(!samplerCfg) throw new Error(`Missing sampler preset for ${preset}`);
+  
+  const baseUrl = `${SAMPLE_BASE}/${samplerCfg.folder}/`;
   const sampler = new Tone.Sampler({
-    urls: cfg.urls,
+    urls: samplerCfg.urls,
     baseUrl,
-    release: cfg.release,
-    attack: cfg.attack ?? 0,
-    volume: cfg.volume,
+    release: samplerCfg.release,
+    attack: samplerCfg.attack ?? 0,
+    volume: samplerCfg.volume,
   });
   samplerCache.set(preset, sampler);
   return sampler;
@@ -191,11 +194,13 @@ export class PolySynth {
   }
 
   private applyPreset(p: SynthPreset): void {
-    if (p === "lead" || p === "pad") {
+    if (p === "lead" || p === "pad" || p === "fm-bell" || p === "physical-pluck") {
       // Pure synth — detach any sampler.
       this.detachSampler();
-      this.filterQ = SYNTH_PRESETS[p].filter.Q;
-      this.synth.set(buildSynthOpts(SYNTH_PRESETS[p]));
+      // For fm-bell and physical-pluck, fall back to "pad" and "lead" respectively until they have their own config
+      const presetKey = p === "fm-bell" ? "pad" : (p === "physical-pluck" ? "lead" : p);
+      this.filterQ = SYNTH_PRESETS[presetKey].filter.Q;
+      this.synth.set(buildSynthOpts(SYNTH_PRESETS[presetKey]));
       return;
     }
 
