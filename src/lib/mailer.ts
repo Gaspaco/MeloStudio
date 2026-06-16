@@ -14,6 +14,7 @@ function getTransporter() {
   _transporter = nodemailer.createTransport({
     host: requireEnv("SMTP_HOST"),
     port: Number(process.env.SMTP_PORT ?? "587"),
+    // Port 465 = implicit TLS (secure:true); 587 = STARTTLS (secure:false) — auto-detected from port
     secure: (process.env.SMTP_PORT ?? "587") === "465",
     auth: {
       user: requireEnv("SMTP_USER"),

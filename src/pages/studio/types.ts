@@ -8,6 +8,12 @@ export interface MediaClip {
   name: string;
   barStart: number;
   bars: number;
+  widthPx?: number;
+  leftPx?: number;
+  pitch?: number;       // semitones, default 0
+  playbackRate?: number; // speed multiplier, default 1
+  gain?: number;        // dB, default 0
+  reversed?: boolean;
   url?: string;
   dataUrl?: string;
   remoteUrl?: string;
@@ -44,7 +50,7 @@ export const TRACK_DEFS: {
   { type: "instrument", label: "Instrument",    sub: "Piano, lead, pad, plucks — playable from your keyboard", tag: "MIDI",   ready: true,  icon: "instrument", color: "#3ee08b" },
   { type: "drum",       label: "Drum Machine",  sub: "Step-sequenced kit · ready in seconds",                  tag: "RHYTHM", ready: true,  icon: "drum",       color: "#f5b53e" },
   { type: "bass",       label: "Bass Synth",    sub: "Deep monophonic bass — keyboard playable",               tag: "MIDI",   ready: true,  icon: "bass",       color: "#1d87f5" },
-  { type: "voice",      label: "Voice / Audio", sub: "Capture vocals or any external sound source",            tag: "AUDIO",  ready: false, icon: "voice",      color: "#f53e3e" },
+  { type: "voice",      label: "Voice / Audio", sub: "Capture vocals or any external sound source",            tag: "AUDIO",  ready: true,  icon: "voice",      color: "#f53e3e" },
   { type: "sampler",    label: "Sampler",       sub: "Turn any audio clip into a playable instrument",         tag: "MIDI",   ready: false, icon: "sampler",    color: "#a93ef5" },
   { type: "guitar",     label: "Guitar",        sub: "Acoustic & Electric Guitars — keyboard playable",        tag: "MIDI",   ready: true,  icon: "guitar",     color: "#f53ee0" },
 ];

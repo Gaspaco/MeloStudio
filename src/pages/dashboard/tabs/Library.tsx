@@ -15,6 +15,7 @@ interface Project {
 
 export interface LibraryProps {
   projects: () => Project[];
+  userImage: () => string | undefined;
   libCat: () => "all" | "mine" | "liked" | "deleted";
   setLibCat: (v: "all" | "mine" | "liked" | "deleted") => void;
   libSearch: () => string;
@@ -129,11 +130,15 @@ const Library: Component<LibraryProps> = (props) => {
                 onClick={() => { if (!props.menuProjectId()) props.onOpenProject(project.id); }}
               >
                 <div class="db__album-cover">
-                  <svg class="db__album-wave" viewBox="0 0 100 100" preserveAspectRatio="none">
-                    <For each={waveform(project.id, 24)}>{(h, i) =>
-                      <rect x={i() * 4.2} y={50 - h} width="2.5" height={h * 2} rx="1.25" fill="rgba(255,255,255,0.15)" />
-                    }</For>
-                  </svg>
+                  <Show when={props.userImage()} keyed fallback={
+                    <svg class="db__album-wave" viewBox="0 0 100 100" preserveAspectRatio="none">
+                      <For each={waveform(project.id, 24)}>{(h, i) =>
+                        <rect x={i() * 4.2} y={50 - h} width="2.5" height={h * 2} rx="1.25" fill="rgba(255,255,255,0.15)" />
+                      }</For>
+                    </svg>
+                  }>
+                    {(src) => <img class="db__album-cover-img" src={src} alt="" />}
+                  </Show>
                   <span class="db__album-play">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
                   </span>

@@ -1,5 +1,7 @@
 # MeloStudio
 
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for ecosystem map, URL builder rules, and recipes for adding pages, endpoints, and project fields.
+
 ## Context & Memory Strategy
 
 - Do NOT proactively read files unless they are explicitly required for the current task.

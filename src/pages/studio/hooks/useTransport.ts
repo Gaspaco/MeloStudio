@@ -40,9 +40,11 @@ export function useTransport(deps: Deps) {
   let elapsedTimer: ReturnType<typeof setInterval> | null = null;
   let startTime = 0;
 
+  // 80px = 1 bar; 1 bar = 4 beats; 1 beat = 60/bpm seconds
   const barsToSecs = (bars: number) => bars * 4 * (60 / deps.bpm());
   const pxToSecs   = (px: number)   => (px / 80) * 4 * (60 / deps.bpm());
   const secsToPx   = (secs: number) => secs * (deps.bpm() / 60) * (80 / 4);
+  // `optional=1` tells the server to return 204 instead of 404 for a missing clip, so the scheduler can silently skip it
   const optionalRemoteUrl = (src: string) =>
     src.includes("optional=") ? src : `${src}${src.includes("?") ? "&" : "?"}optional=1`;
 

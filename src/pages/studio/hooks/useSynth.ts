@@ -23,7 +23,7 @@ type Deps = {
   setSynthSustain: Setter<number>;
   setSynthRelease: Setter<number>;
   setSynthFilterFreq: Setter<number>;
-  setActivePanel: Setter<"drum" | "keys" | null>;
+  setActivePanel: Setter<"drum" | "keys" | "voice" | null>;
 };
 
 export function useSynth(deps: Deps) {
@@ -103,6 +103,7 @@ export function useSynth(deps: Deps) {
       : sel.type === "guitar" ? "guitar" : deps.synthPreset();
     ensureSynth(activePreset);
     if (!synth) return;
+    // MIDI note formula: (octave+1)*12 + semitone; the +1 is because MIDI octave 0 starts at note 12, not 0
     const midi = 12 * (deps.octave() + 1) + keyVal;
     synth.noteOn(midi, 0.85);
     const next = new Set(deps.activeNotes());

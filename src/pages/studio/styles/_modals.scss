@@ -415,3 +415,81 @@
     a.bl__btn-accent { text-decoration: none; display: inline-flex; align-items: center; }
   }
 }
+
+/* ─────────────── MIC SETUP MODAL ─────────────── */
+.bl__modal--mic {
+  max-width: 26rem;
+  text-align: center;
+  align-items: center;
+}
+
+.bl__mic-icon {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: rgba(#fff, 0.05);
+  border: 1px solid rgba(#fff, 0.08);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 1.5rem;
+  svg { width: 2.2rem; height: 2.2rem; color: rgba(#fff, 0.7); }
+
+  &--pulse {
+    animation: mic-pulse 1.4s ease-in-out infinite;
+    border-color: rgba($accent, 0.4);
+    background: rgba($accent, 0.08);
+    svg { color: $accent; }
+  }
+
+  &--granted {
+    background: rgba(#4ade80, 0.1);
+    border-color: rgba(#4ade80, 0.4);
+    svg { color: #4ade80; stroke-width: 2; }
+  }
+
+  &--denied {
+    background: rgba(#ff5454, 0.1);
+    border-color: rgba(#ff5454, 0.3);
+    svg { color: #ff5454; }
+  }
+}
+
+@keyframes mic-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba($accent, 0.3); }
+  50%       { box-shadow: 0 0 0 0.75rem rgba($accent, 0); }
+}
+
+.bl__mic-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.bl__mic-btn {
+  all: unset;
+  cursor: pointer;
+  width: 100%;
+  padding: 0.85rem 1.5rem;
+  border-radius: 0.65rem;
+  font-family: $font-display;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-align: center;
+  transition: background 0.15s, opacity 0.15s;
+
+  &--allow {
+    background: $accent;
+    color: #fff;
+    &:hover { opacity: 0.88; }
+  }
+
+  &--cancel {
+    background: rgba(#fff, 0.05);
+    color: rgba(#fff, 0.5);
+    &:hover { background: rgba(#fff, 0.08); color: rgba(#fff, 0.7); }
+  }
+}
+

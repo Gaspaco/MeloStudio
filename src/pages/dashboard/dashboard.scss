@@ -4,12 +4,13 @@
   min-height: 100vh;
   background: $bg-primary;
   color: $text-primary;
-  overflow-x: hidden;
+  // `clip` instead of `hidden` so this element doesn't become a scroll container (which breaks position:sticky children)
+  overflow-x: clip;
 
   // ── Nav bar ──────────────────────────────────────────────────────
   &__bar {
-    position: fixed;
-    top: 0; left: 0; right: 0;
+    position: sticky;
+    top: 0;
     z-index: 100;
     height: 4.5rem;
     display: flex;
@@ -20,7 +21,6 @@
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     border-bottom: 1px solid rgba(#fff, 0.05);
-    will-change: transform;
   }
 
   &__bar-brand {
@@ -144,7 +144,7 @@
   }
 
   // ── Content shell ────────────────────────────────────────────────
-  &__content { padding: 4.5rem clamp(1.25rem, 4vw, 3rem) 0; }
+  &__content { padding: 0 clamp(1.25rem, 4vw, 3rem) 0; }
 
   // ── Shared buttons ────────────────────────────────────────────────
   &__btn {
@@ -351,7 +351,7 @@
   @media (max-width: 768px) {
     &__bar { padding: 0 1.25rem; }
     &__nav { margin-left: 1.5rem; }
-    &__content { padding: 4.5rem 1.25rem 0; overflow-x: hidden; }
+    &__content { padding: 0 1.25rem 0; overflow-x: hidden; }
     &__danger { flex-direction: column; align-items: flex-start; }
     &__clock { display: none; }
   }
@@ -368,6 +368,7 @@
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-top: 1px solid $border;
+      // env(safe-area-inset-bottom) pads above the iPhone home-indicator notch
       padding: 0.4rem 0 max(0.4rem, env(safe-area-inset-bottom));
     }
 

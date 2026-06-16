@@ -8,6 +8,7 @@
   justify-content: center;
   border-top: 1px solid $border;
   border-bottom: 1px solid $border;
+  // Skip paint+layout while off-screen; placeholder size prevents a scroll-length jump when the section is first painted
   content-visibility: auto;
   contain-intrinsic-size: auto 50vh;
 

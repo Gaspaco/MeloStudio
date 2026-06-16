@@ -27,6 +27,7 @@ import LyricsPanel      from "./components/LyricsPanel";
 import RestoreDialog    from "./components/RestoreDialog";
 import DrumPanel        from "./components/DrumPanel";
 import KeyboardPanel    from "./components/KeyboardPanel";
+import AudioClipEditor  from "./components/AudioClipEditor";
 import NavDrawer, { type NavCategory } from "./components/NavDrawer";
 import NewTrackModal    from "./components/NewTrackModal";
 
@@ -64,7 +65,8 @@ const Studio: Component = () => {
   const [lyricsText,         setLyricsText]         = createSignal("");
   const [titleEditing,       setTitleEditing]       = createSignal(false);
   const [drumPanelOpen,      setDrumPanelOpen]      = createSignal(true);
-  const [activePanel,        setActivePanel]        = createSignal<"drum" | "keys" | null>(null);
+  const [activePanel,        setActivePanel]        = createSignal<"drum" | "keys" | "voice" | null>(null);
+  const [selectedClipId,     setSelectedClipId]     = createSignal<string | null>(null);
   const [drumSwing,          setDrumSwing]          = createSignal(0);
   const [drumSteps,          setDrumSteps]          = createSignal(16);
   const [synthPreset,        setSynthPreset]        = createSignal<SynthPreset>("piano");
@@ -169,7 +171,7 @@ const Studio: Component = () => {
   const trk = useTracks({
     projectId: () => params.id,
     tracks, setTracks, selectedTrack, setSelectedTrack,
-    bpm, setError, setShowNewTrack,
+    bpm, playheadPx, setError, setShowNewTrack,
     ensureSynth: sth.ensureSynth, setSynthPreset,
     setActivePanel, setDrumPanelOpen,
     getSeq: () => seq, getSynth: sth.getSynth,
@@ -462,13 +464,32 @@ const Studio: Component = () => {
         loopOn={loopOn} onToggleLoop={() => setLoopOn(v => !v)}
         onTogglePlay={async () => {
           await transport.togglePlay();
+          // Stop recording when pausing
+          if (!playing() && trk.recordingTrackId()) trk.stopRecording();
           // Start/stop metronome to stay in sync with playback
           if (metronomeOn()) {
             if (!playing()) stopMetronome();
             else { await unlockAudioContext(); startMetronome(); }
           }
         }}
-        onStopAll={transport.stopAll}
+        onStopAll={() => {
+          if (trk.recordingTrackId()) trk.stopRecording();
+          transport.stopAll();
+        }}
+        recording={() => trk.recordingTrackId() !== null}
+        recordingStartTime={trk.recordingStartTime}
+        onToggleRecord={async () => {
+          const rid = trk.recordingTrackId();
+          if (rid) { trk.stopRecording(); return; }
+          // Prefer the currently selected voice track, fall back to first voice track
+          const voiceTrack = tracks().find(t => t.type === "voice" && t.id === selectedTrack())
+            ?? tracks().find(t => t.type === "voice");
+          if (voiceTrack) {
+            trk.startRecording(voiceTrack.id);
+            // Auto-start playback so the live clip moves with the playhead
+            if (!playing()) await transport.togglePlay();
+          } else { trk.addTrack("voice"); }
+        }}
         onUpdateBpm={transport.updateBpm}
         onUpdateMeter={setTimeSig}
         onUpdateKey={setMusicalKey}
@@ -526,6 +547,9 @@ const Studio: Component = () => {
           onAddTrack={trk.addTrack}
           onSetShowAddMenu={setShowAddMenu}
           onShowNewTrack={() => setShowNewTrack(true)}
+          recordingTrackId={trk.recordingTrackId}
+          onStartRecording={trk.startRecording}
+          onStopRecording={trk.stopRecording}
         />
         <TimelineArea
           tracks={tracks} selectedTrack={selectedTrack}
@@ -542,6 +566,13 @@ const Studio: Component = () => {
           onApplyTemplate={applyTemplate}
           onImportFiles={trk.importFiles}
           onAddTrack={trk.addTrack} onShowNewTrack={() => setShowNewTrack(true)}
+          recordingTrackId={trk.recordingTrackId}
+          recordingStartPx={trk.recordingStartPx}
+          onSelectClip={(trackId, clipId) => {
+            const t = tracks().find(t => t.id === trackId);
+            if (t?.type === "voice") { setSelectedClipId(clipId); setActivePanel("voice"); }
+            else setSelectedClipId(clipId);
+          }}
         />
       </div>
 
@@ -587,6 +618,29 @@ const Studio: Component = () => {
         />
       </Show>
 
+
+
+      <Show when={activePanel() === "voice" && tracks().some(t => t.type === "voice")}>
+        <AudioClipEditor
+          clip={() => {
+            const vt = tracks().find(t => t.type === "voice");
+            return vt?.clips?.find(c => c.id === selectedClipId()) ?? vt?.clips?.[0] ?? null;
+          }}
+          track={() => tracks().find(t => t.type === "voice") ?? null}
+          tracks={tracks}
+          playheadPx={playheadPx}
+          onPatch={(patch) => {
+            const vt = tracks().find(t => t.type === "voice");
+            const cid = selectedClipId() ?? vt?.clips?.[0]?.id;
+            if (!vt || !cid) return;
+            trk.patchTrack(vt.id, {
+              clips: vt.clips?.map(c => c.id === cid ? { ...c, ...patch } : c),
+            });
+          }}
+          onCollapse={() => setActivePanel(null)}
+        />
+      </Show>
+
       <BottomBar
         tracks={tracks} selectedTrack={selectedTrack}
         activePanel={activePanel} onSetActivePanel={setActivePanel}
@@ -612,8 +666,15 @@ const Studio: Component = () => {
       </Show>
 
       <Show when={showNewTrack()}>
-        <NewTrackModal onAddTrack={trk.addTrack} onClose={() => setShowNewTrack(false)} />
+        <NewTrackModal
+          onAddTrack={(type) => {
+            if (type === "voice") { setShowNewTrack(false); trk.addTrack("voice"); }
+            else trk.addTrack(type);
+          }}
+          onClose={() => setShowNewTrack(false)}
+        />
       </Show>
+
 
 
     </div>

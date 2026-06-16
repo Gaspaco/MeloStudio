@@ -1,7 +1,35 @@
-import { type Component, Index, Show, For } from "solid-js";
+import { type Component, Index, Show, For, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { KeyboardMusic, Drum, AudioWaveform, MicVocal, Disc2, Guitar } from "lucide-solid";
 import { type TrackType, type UITrack, TRACK_DEFS } from "../types";
+import { getMicEntry } from "../hooks/useTracks";
+
+const MicLevelMeter: Component<{ trackId: string }> = (props) => {
+  let bar!: HTMLDivElement;
+  let raf: number;
+  const buf = new Uint8Array(32);
+
+  onMount(() => {
+    const tick = () => {
+      const entry = getMicEntry(props.trackId);
+      if (entry) {
+        entry.analyser.getByteFrequencyData(buf);
+        const avg = buf.reduce((s, v) => s + v, 0) / buf.length;
+        bar.style.width = `${Math.min(100, (avg / 128) * 100)}%`;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+  });
+
+  onCleanup(() => cancelAnimationFrame(raf));
+
+  return (
+    <div class="bl__mic-meter">
+      <div class="bl__mic-meter-bar" ref={bar} />
+    </div>
+  );
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TRACK_ICON_MAP: Record<string, Component<any>> = {
@@ -23,6 +51,9 @@ type Props = {
   onAddTrack: (type: TrackType, openModal?: boolean) => void;
   onSetShowAddMenu: (v: boolean | ((prev: boolean) => boolean)) => void;
   onShowNewTrack: () => void;
+  recordingTrackId: Accessor<string | null>;
+  onStartRecording: (trackId: string) => void;
+  onStopRecording: () => void;
 };
 
 const TracksSidebar: Component<Props> = (props) => (
@@ -123,12 +154,14 @@ const TracksSidebar: Component<Props> = (props) => (
                   onClick={() => props.onPatchTrack(t().id, { muted: !t().muted })}>M</button>
                 <button class={`bl__chip-btn ${t().solo ? "is-on-solo" : ""}`} title="Solo"
                   onClick={() => props.onPatchTrack(t().id, { solo: !t().solo })}>S</button>
-                <input class="bl__slider" type="range" min="0" max="1" step="0.01"
-                  value={t().volume}
-                  onInput={(e) => props.onPatchTrack(t().id, { volume: parseFloat(e.currentTarget.value) })}
-                  title={`Volume: ${Math.round(t().volume * 100)}%`}
-                />
-                <span class="bl__slider-val">{Math.round(t().volume * 100)}%</span>
+                <Show when={t().type !== "voice"}>
+                  <input class="bl__slider" type="range" min="0" max="1" step="0.01"
+                    value={t().volume}
+                    onInput={(e) => props.onPatchTrack(t().id, { volume: parseFloat(e.currentTarget.value) })}
+                    title={`Volume: ${Math.round(t().volume * 100)}%`}
+                  />
+                  <span class="bl__slider-val">{Math.round(t().volume * 100)}%</span>
+                </Show>
               </div>
             </div>
           </div>

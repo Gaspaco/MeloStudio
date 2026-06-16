@@ -25,6 +25,7 @@ function NavigationVeil() {
   createEffect(() => {
     const routeKey = `${location.pathname}${location.search}${location.hash}`;
     if (typeof window === "undefined") return;
+    // Bare expression read — required to register `routeKey` as a reactive dependency so SolidJS re-runs this effect on URL changes
     routeKey;
 
     if (firstRun) {

@@ -65,6 +65,7 @@ function normalizeClip(clip: TimelineClip, bpm: number): SharePlaybackClip | nul
 }
 
 export function getSharePlaybackTracks(doc: TimelineDoc, bpm: number): SharePlaybackTrack[] {
+  // Prefer `uiTracks` (current schema); fall back to `tracks` for projects saved before the field was renamed
   const sourceTracks = (doc.uiTracks?.length ? doc.uiTracks : doc.tracks) ?? [];
 
   return sourceTracks

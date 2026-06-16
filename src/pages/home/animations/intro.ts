@@ -8,6 +8,7 @@ export function animateIntro(refs: {
   heroLine2Ref: HTMLDivElement;
   scrollIndRef: HTMLDivElement;
 }) {
+  // Skip the splash loader on tab re-focus within the same session — only plays on true first load
   const hasLoaded = (() => {
     try { return sessionStorage.getItem("melostudio_loaded"); }
     catch { return null; }

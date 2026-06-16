@@ -5,7 +5,7 @@ import { getAppSession, signOutApp } from "../../lib/app-auth";
 import {
   listProjectsApi, deleteProjectApi, updateProjectApi,
   getProjectStatsApi, listDeletedProjectsApi, restoreProjectApi,
-  permanentlyDeleteProjectApi, type DeletedProjectListItem,
+  permanentlyDeleteProjectApi, getFollowCountsApi, type DeletedProjectListItem,
 } from "../../lib/api";
 import Overview from "./tabs/Overview";
 import Library from "./tabs/Library";
@@ -54,6 +54,7 @@ const Dashboard: Component<{
   const [tabInd, setTabInd] = createSignal({ left: 0, width: 0, isTrash: false });
   createEffect(() => {
     const cat = libCat();
+    // rAF defers the offsetLeft read until SolidJS has re-rendered the active tab, avoiding stale geometry
     requestAnimationFrame(() => {
       const el = tabRefs[cat];
       if (el) setTabInd({ left: el.offsetLeft, width: el.offsetWidth, isTrash: cat === "deleted" });
@@ -96,6 +97,7 @@ const Dashboard: Component<{
       const userData = (await getAppSession())?.user;
       if (userData) {
         const rawImage = userData.image ?? undefined;
+        // Twitter/X profile images default to `_normal` (48px) — replace with `_400x400` for higher-res display
         const image = rawImage?.replace(/_normal(\.[^.]+)$/, "_400x400$1") ?? rawImage;
         setUser({
           name: userData.name,
@@ -119,10 +121,31 @@ const Dashboard: Component<{
       })));
       const stats = await getProjectStatsApi();
       setStudioHours(stats.studioHours);
-      const fc = await fetch("/api/user/follows").then(r => r.json()) as { followers: number; following: number };
+      const fc = await getFollowCountsApi();
       setFollowCounts(fc);
     } catch {}
     finally { setLoadingProjects(false); }
+  });
+
+  // ── Smooth scroll ──────────────────────────────────────────────────
+  onMount(() => {
+    let lenis: { raf: (t: number) => void; destroy: () => void } | undefined;
+    let lenisTick: ((time: number) => void) | undefined;
+    void (async () => {
+      const { default: LenisClass } = await import("lenis");
+      lenis = new LenisClass({
+        duration: 0.35,
+        easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+        wheelMultiplier: 1.6,
+      });
+      lenisTick = (time: number) => lenis?.raf(time * 1000);
+      gsap.ticker.add(lenisTick);
+    })();
+    onCleanup(() => {
+      if (lenisTick) gsap.ticker.remove(lenisTick);
+      lenis?.destroy();
+    });
   });
 
   // ── Clock + ESC handler ────────────────────────────────────────────
@@ -300,6 +323,7 @@ const Dashboard: Component<{
   // ── Tab switching ──────────────────────────────────────────────────
   const switchTab = (t: Tab) => {
     setTab(t);
+    // rAF defers GSAP until SolidJS has committed the new tab's DOM so the selector finds real elements
     requestAnimationFrame(() => {
       gsap.fromTo(".db__content", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: "expo.out" });
     });
@@ -344,13 +368,6 @@ const Dashboard: Component<{
         </nav>
         <div class="db__bar-right">
           <span class="db__clock">{formatTime()}</span>
-          <Show when={tab() === "library"}>
-            <button class="db__bar-avatar" onClick={() => switchTab("profile")}>
-              <Show when={user()?.image} keyed fallback={<span class="db__bar-avatar-initials">{initials()}</span>}>
-                {(image) => <img src={image} alt="" />}
-              </Show>
-            </button>
-          </Show>
           <button class="db__bar-logout" onClick={handleLogout} title="Log out">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
           </button>
@@ -361,6 +378,7 @@ const Dashboard: Component<{
       <Show when={tab() === "overview"}>
         <Overview
           projects={projects}
+          userImage={() => user()?.image}
           loadingProjects={loadingProjects}
           greeting={greeting}
           firstName={firstName}
@@ -378,6 +396,7 @@ const Dashboard: Component<{
       <Show when={tab() === "library"}>
         <Library
           projects={projects}
+          userImage={() => user()?.image}
           libCat={libCat}
           setLibCat={setLibCat}
           libSearch={libSearch}
@@ -408,6 +427,10 @@ const Dashboard: Component<{
           initials={initials}
           handleImageUpload={handleImageUpload}
           followCounts={followCounts}
+          projects={projects}
+          totalTracks={totalTracks}
+          fmtStudioTime={fmtStudioTime}
+          onOpenProject={props.onOpenProject}
         />
       </Show>
 

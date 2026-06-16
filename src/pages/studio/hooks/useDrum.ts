@@ -44,6 +44,7 @@ export function useDrum(deps: Deps) {
     const row = seq.getPattern().rows[rowIdx];
     if (!row) return;
     const cur = row.velocities[stepIdx] ?? 0;
+    // Velocity cycle: off → full (1.0) → medium (0.6) → ghost (0.3) → off — mirrors typical hardware drum pad right-click behavior
     const next = cur <= 0 ? 1.0 : cur >= 0.9 ? 0.6 : cur >= 0.5 ? 0.3 : 0;
     seq.setStepVelocity(rowIdx, stepIdx, next);
     sync();

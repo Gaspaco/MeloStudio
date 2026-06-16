@@ -96,6 +96,7 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
       heroRef: hero, heroLine1Ref: heroLine1, heroLine2Ref: heroLine2, scrollIndRef: scrollIndicator,
     });
 
+    // Initial rAF refresh after GSAP init; fonts.ready re-refreshes because web fonts shift layout and change ScrollTrigger positions
     requestAnimationFrame(() => ScrollTrigger.refresh());
     document.fonts?.ready.then(() => ScrollTrigger.refresh()).catch(() => {});
 

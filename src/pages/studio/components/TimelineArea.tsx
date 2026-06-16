@@ -4,6 +4,7 @@ import { MicVocal, FileMusic } from "lucide-solid";
 import { type TrackType, type UITrack, TEMPLATES } from "../types";
 import type { StepPattern } from "~/lib/audio/stepSeq";
 import AudioWaveformDisplay from "./AudioWaveformDisplay";
+import LiveRecordingClip from "./LiveRecordingClip";
 
 type ClipCtxMenu = { x: number; y: number; trackId: string; clipId: string; clipName: string; renaming?: boolean };
 
@@ -40,6 +41,9 @@ type Props = {
   onImportFiles: (files: File[]) => Promise<void>;
   onAddTrack: (type: TrackType, openModal?: boolean) => void;
   onShowNewTrack: () => void;
+  recordingTrackId: Accessor<string | null>;
+  recordingStartPx: Accessor<number>;
+  onSelectClip: (trackId: string, clipId: string) => void;
 };
 
 const BARS = Array.from({ length: 128 }, (_, i) => i + 1);
@@ -61,6 +65,7 @@ const TimelineArea: Component<Props> = (props) => {
 
   const onTimelineWheel = (e: WheelEvent) => {
     if (!timelineEl) return;
+    // Shift+wheel (Mac convention) OR dominant vertical scroll: redirect to horizontal so the timeline scrolls left/right
     if (e.shiftKey || Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
       e.preventDefault();
       timelineEl.scrollLeft += e.deltaY;
@@ -219,14 +224,13 @@ const TimelineArea: Component<Props> = (props) => {
                 </For>
               </Show>
 
-              <Show when={(t.type === "instrument" || t.type === "bass" || t.type === "guitar" || t.type === "voice") && (t.clips ?? []).length === 0}>
-                <div class="bl__inst-ghost" style={{ "--tc": t.color }}>
-                  <span class="bl__inst-ghost-dot" />
-                  <span class="bl__inst-ghost-name">
-                    {t.type === "bass" ? "BASS" : t.type === "guitar" ? "GUITAR" : t.type === "voice" ? "VOICE" : "LEAD"}
-                  </span>
 
-                </div>
+              <Show when={props.recordingTrackId() === t.id}>
+                <LiveRecordingClip
+                  startPx={props.recordingStartPx()}
+                  playheadPx={props.playheadPx}
+                  color={t.color}
+                />
               </Show>
 
               <For each={t.clips ?? []}>
@@ -235,14 +239,15 @@ const TimelineArea: Component<Props> = (props) => {
                     class={`bl__mclip is-${c.kind}`}
                     classList={{ "is-dragging": draggedClip()?.clipId === c.id }}
                     style={{
-                      left: `${(draggedClip()?.clipId === c.id ? draggedClip()?.barStart ?? c.barStart : c.barStart) * BAR_PX}px`,
-                      width: `${c.bars * BAR_PX - 2}px`,
+                      left: `${c.leftPx ?? (draggedClip()?.clipId === c.id ? draggedClip()?.barStart ?? c.barStart : c.barStart) * BAR_PX}px`,
+                      width: `${c.widthPx ?? c.bars * BAR_PX}px`,
                       "--tc": t.color,
                     }}
                     title={`${c.name} · ${c.bars} bar${c.bars > 1 ? "s" : ""}`}
                     onMouseDown={(e) => {
                       if (e.button !== 0) return;
                       e.stopPropagation();
+                      props.onSelectClip(t.id, c.id);
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                       clipDrag = { clipId: c.id, trackId: t.id, offsetPx: e.clientX - rect.left };
                       setDraggedClip({ clipId: c.id, barStart: c.barStart });

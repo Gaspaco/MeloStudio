@@ -1,0 +1,316 @@
+@use "../../../styles/variables" as *;
+
+/* ─────────────── AUDIO CLIP EDITOR (voice panel) ─────────────── */
+.ace {
+  display: flex;
+  flex-direction: row;
+  background: $bg-secondary;
+  border-top: 1px solid rgba(#fff, 0.06);
+  height: 18rem;
+  min-height: 14rem;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* ── Left: controls column ── */
+.ace__controls {
+  width: 16rem;
+  min-width: 16rem;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.65rem 0;
+  border-right: 1px solid rgba(#fff, 0.06);
+  overflow-y: auto;
+}
+
+.ace__header {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.15rem 0.85rem 0.6rem;
+  border-bottom: 1px solid rgba(#fff, 0.05);
+  margin-bottom: 0.25rem;
+}
+.ace__close {
+  all: unset;
+  cursor: pointer;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  color: $text-muted;
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+  svg { width: 0.65rem; height: 0.65rem; }
+  &:hover { color: $text-primary; background: rgba(#fff, 0.07); }
+}
+.ace__header-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.ace__header-name {
+  flex: 1;
+  font-family: $font-display;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: $text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Fields ── */
+.ace__field {
+  padding: 0.5rem 0.85rem;
+}
+.ace__label {
+  display: block;
+  font-family: $font-mono;
+  font-size: 0.55rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: $text-muted;
+  margin-bottom: 0.45rem;
+}
+.ace__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+}
+.ace__label-val {
+  font-family: $font-mono;
+  font-size: 0.7rem;
+  color: $text-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Stepper (pitch / speed) */
+.ace__stepper {
+  display: flex;
+  align-items: center;
+  background: rgba(#fff, 0.04);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(#fff, 0.06);
+}
+.ace__step-btn {
+  all: unset;
+  cursor: pointer;
+  width: 2.4rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  color: $text-secondary;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+  transition: color 0.12s, background 0.12s;
+  &:hover { background: rgba(#fff, 0.06); color: $text-primary; }
+}
+.ace__step-val {
+  flex: 1;
+  text-align: center;
+  font-family: $font-mono;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: $text-primary;
+  border-left: 1px solid rgba(#fff, 0.06);
+  border-right: 1px solid rgba(#fff, 0.06);
+  padding: 0 0.4rem;
+}
+
+/* Gain slider */
+.ace__slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(#fff, 0.1);
+  outline: none;
+  cursor: pointer;
+  accent-color: $accent;
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0.85rem;
+    height: 0.85rem;
+    background: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 0 2px $bg-secondary, 0 1px 4px rgba(0, 0, 0, 0.5);
+  }
+  &::-moz-range-thumb {
+    width: 0.85rem;
+    height: 0.85rem;
+    background: #fff;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+  }
+}
+
+/* Action buttons */
+.ace__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.55rem 0.85rem;
+  margin-top: auto;
+}
+.ace__btn {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.2rem;
+  border-radius: $radius-pill;
+  font-family: $font-mono;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: rgba(#fff, 0.06);
+  color: $text-primary;
+  border: 1px solid rgba(#fff, 0.08);
+  transition: background 0.15s, border-color 0.15s;
+  svg { width: 0.9rem; height: 0.9rem; }
+  &:hover { background: rgba(#fff, 0.1); }
+  &.is-on {
+    background: rgba($accent, 0.15);
+    color: $accent;
+    border-color: rgba($accent, 0.3);
+  }
+  &--retune {
+    background: rgba(#fff, 0.03);
+    color: $text-secondary;
+    &:hover { background: rgba(#fff, 0.07); color: $text-primary; }
+  }
+}
+.ace__btn-row {
+  display: flex;
+  gap: 0.4rem;
+  .ace__btn { flex: 1; }
+}
+.ace__info-btn {
+  all: unset;
+  cursor: pointer;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: $text-muted;
+  border: 1px solid rgba(#fff, 0.08);
+  flex-shrink: 0;
+  transition: color 0.15s, background 0.15s;
+  svg { width: 0.85rem; height: 0.85rem; }
+  &:hover { color: $text-primary; background: rgba(#fff, 0.06); }
+}
+
+/* ── Right: timeline waveform view ── */
+.ace__timeline {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-x: auto;
+  overflow-y: hidden;
+  &::-webkit-scrollbar { height: 8px; background: rgba(#000, 0.3); }
+  &::-webkit-scrollbar-thumb { background: rgba(#fff, 0.1); border-radius: 4px; }
+  scrollbar-color: rgba(#fff, 0.1) rgba(#000, 0.3);
+}
+
+.ace__ruler {
+  position: sticky;
+  top: 0;
+  height: 2rem;
+  display: flex;
+  background: linear-gradient(180deg, rgba(#000, 0.4), rgba($bg-secondary, 0.95));
+  border-bottom: 1px solid rgba(#fff, 0.06);
+  z-index: 2;
+  flex-shrink: 0;
+}
+.ace__ruler-bar {
+  width: 10rem;
+  flex-shrink: 0;
+  position: relative;
+  border-left: 1px solid rgba(#fff, 0.12);
+}
+.ace__ruler-num {
+  position: absolute;
+  top: 0.45rem;
+  left: 0.45rem;
+  font-family: $font-mono;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: rgba(#fff, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+
+.ace__lane {
+  position: relative;
+  flex: 1;
+  min-height: 6rem;
+  width: calc(64 * 10rem);
+  background-image:
+    linear-gradient(90deg, rgba(#fff, 0.03) 1px, transparent 1px);
+  background-size: 10rem 100%;
+}
+
+.ace__clip {
+  --tc: #{$accent};
+  position: absolute;
+  top: 0.5rem;
+  height: calc(100% - 1rem);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--tc) 18%, $bg-secondary);
+  border: 1px solid color-mix(in srgb, var(--tc) 40%, transparent);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--tc) 30%, transparent);
+}
+.ace__clip-name {
+  padding: 0.25rem 0.45rem;
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(#fff, 0.85);
+  background: rgba(0, 0, 0, 0.25);
+  border-bottom: 1px solid rgba(#fff, 0.05);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+.ace__clip-wave {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  canvas { background: transparent !important; display: block; }
+  div { background: transparent !important; }
+}
+
+.ace__playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: $accent;
+  pointer-events: none;
+  z-index: 3;
+}

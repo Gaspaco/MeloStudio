@@ -4,7 +4,7 @@
 // into currently supported tracks. It's also fully async via `suspense` in SolidJS,
 // putting up a clean loading state until the studio is absolutely ready to play.
 import { createEffect, createSignal, onCleanup } from "solid-js";
-import { apiFetch } from "~/lib/api";
+import { apiFetch, getProjectDocApi, putProjectDocApi } from "~/lib/api";
 import { unlockAudioContext } from "~/lib/audio/context";
 import type { Accessor, Setter } from "solid-js";
 import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer } from "~/lib/audio/stepSeq";
@@ -364,17 +364,14 @@ export function useProject(deps: Deps) {
     pendingDoc = null;
     pendingDocSource = null;
     removeLocalDraft();
-    const res = await apiFetch(`/api/projects/${deps.projectId}`);
-    if (!res.ok) {
+    const docResult = await getProjectDocApi(deps.projectId);
+    if (!docResult) {
       setInitialized(true);
       return;
     }
-    const doc = await res.json();
+    const doc = docResult.doc;
     const clearedDoc = { ...doc, uiTracks: [], beat: { pattern: DEFAULT_PATTERN() } };
-    await apiFetch(`/api/projects/${deps.projectId}`, {
-      method: "PUT",
-      body: JSON.stringify(clearedDoc),
-    });
+    await putProjectDocApi(deps.projectId, JSON.stringify(clearedDoc)).catch(() => {});
     const cleanPattern = DEFAULT_PATTERN();
     deps.setTracks([]);
     deps.setSelectedTrack(null);
@@ -391,9 +388,9 @@ export function useProject(deps: Deps) {
     if (!hasStudioContent(deps.tracks(), seq.getPattern(), deps.lyricsText?.())) return;
     deps.setSaveState("saving");
     try {
-      const res = await apiFetch(`/api/projects/${deps.projectId}`);
-      if (!res.ok) throw new Error(`load failed: ${res.status}`);
-      const doc = await res.json();
+      const docResult = await getProjectDocApi(deps.projectId);
+      if (!docResult) throw new Error("load failed: could not fetch project doc");
+      const doc = docResult.doc;
       const uiTracksForSave = await Promise.all(deps.tracks().map(async t => ({
         ...t,
         clips: await Promise.all((t.clips ?? []).map(async c => ({
@@ -408,14 +405,10 @@ export function useProject(deps: Deps) {
         transport: { ...(doc.transport ?? {}), bpm: deps.bpm(), timeSig: deps.timeSig() },
         musicalKey: deps.musicalKey(),
         uiTracks: uiTracksForSave,
-        lyrics: deps.lyricsText?.() ?? doc.lyrics ?? "",
+        lyrics: deps.lyricsText?.() ?? (doc.lyrics as string | undefined) ?? "",
       };
-      const { json } = fitProjectSavePayload(updated);
-      const put = await apiFetch(`/api/projects/${deps.projectId}`, {
-        method: "PUT",
-        body: json,
-      });
-      if (!put.ok) throw new Error(`save failed: ${put.status}`);
+      const { json } = fitProjectSavePayload(updated as typeof updated & { uiTracks?: UITrack[] });
+      await putProjectDocApi(deps.projectId, json);
       const savedClips = new Map(
         uiTracksForSave.flatMap((track) => (track.clips ?? []).map((clip) => [clip.id, clip] as const)),
       );
@@ -450,13 +443,11 @@ export function useProject(deps: Deps) {
   const init = async () => {
     try {
       setInitialized(false);
-      const res = await apiFetch(`/api/projects/${deps.projectId}`);
-      if (!res.ok) { deps.setError(`Couldn't load (${res.status})`); return; }
+      const docResult = await getProjectDocApi(deps.projectId);
+      if (!docResult) { deps.setError("Couldn't load project"); return; }
+      deps.setPublished?.(docResult.published);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data: any = await res.json();
-      deps.setPublished?.(data._published ?? false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const doc: any = data;
+      const doc: any = docResult.doc;
       loadedProjectDoc = doc;
 
       const savedTracks = (doc.uiTracks as UITrack[] | undefined) ?? [];

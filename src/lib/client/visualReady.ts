@@ -45,7 +45,8 @@ export function waitForAllStylesheets(maxWait = 3000, settleMs = 0): Promise<voi
       window.clearTimeout(settleTimer);
 
       for (const link of pending) {
-        if ((link as any)._foucWatching) continue;
+        // `_foucWatching` guards against attaching duplicate load listeners if `check` fires multiple times before a stylesheet loads
+      if ((link as any)._foucWatching) continue;
         (link as any)._foucWatching = true;
         link.addEventListener("load", check, { once: true });
         link.addEventListener("error", () => {
@@ -74,6 +75,7 @@ export async function waitForVisualReady(options: VisualReadyOptions = {}): Prom
     ? document.fonts.ready.then(() => undefined).catch(() => undefined)
     : Promise.resolve();
 
+  // Race: wait for stylesheets+fonts to load, but cap at totalMaxWait so a slow Google Fonts CDN never blocks the reveal
   await Promise.race([
     Promise.all([waitForAllStylesheets(stylesheetsMaxWait), fontsReady]),
     new Promise<void>((resolve) => window.setTimeout(resolve, totalMaxWait)),

@@ -122,3 +122,87 @@ export async function transcribeProjectApi(projectId: string): Promise<{ lrc: st
   }
   return res.json();
 }
+
+// ── URL builders — the only place URL shapes live ──────────────────
+export const clipUrl = (projectId: string, clipId: string) =>
+  `/api/clips/${encodeURIComponent(clipId)}?projectId=${encodeURIComponent(projectId)}`;
+
+export const pfpUrl = (userId: string) =>
+  `/api/user/${encodeURIComponent(userId)}/pfp`;
+
+export const shareUrl = (projectId: string) =>
+  `${window.location.origin}/share/${projectId}`;
+
+export const isApiClipUrl = (url: string): boolean =>
+  url.startsWith("/api/clips/") || url.includes(window.location.origin + "/api/clips/");
+
+// ── Typed fetchers ──────────────────────────────────────────────────
+
+export interface ShareProjectView {
+  id: string;
+  name: string;
+  bpm: number;
+  key?: string;
+  trackCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+  isOwnerPreview?: boolean;
+  ownerId?: string;
+  mixUrl?: string;
+  durationSec?: number;
+  genre?: string;
+  description?: string;
+  explicit?: boolean;
+  lyrics?: string;
+  published?: boolean;
+}
+
+export interface SharePlayback {
+  tracks: Array<{ id: string; name: string; color: string; clips: Array<{ id: string; startSec: number; durationSec: number; gainDb: number }> }>;
+  bpm: number;
+  projectId: string;
+}
+
+export async function getShareProjectApi(id: string): Promise<ShareProjectView | null> {
+  const res = await apiFetch(`/api/share/${encodeURIComponent(id)}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function getShareClipsApi(id: string): Promise<SharePlayback | null> {
+  const res = await apiFetch(`/api/share-clips/${encodeURIComponent(id)}`);
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function getProjectDocApi(id: string): Promise<{ doc: Record<string, unknown>; published: boolean } | null> {
+  const res = await apiFetch(`/api/projects/${encodeURIComponent(id)}`);
+  if (!res.ok) return null;
+  const raw = await res.json();
+  // The server smuggles `_published` into the doc JSON — extract it here so callers never see it
+  const { _published, ...doc } = raw as Record<string, unknown> & { _published?: boolean };
+  return { doc, published: _published ?? false };
+}
+
+export async function putProjectDocApi(id: string, json: string): Promise<void> {
+  // Strip _published from payload — it's a read-only server field
+  let payload: Record<string, unknown>;
+  try {
+    const parsed = JSON.parse(json) as Record<string, unknown>;
+    const { _published: _p, ...rest } = parsed;
+    payload = rest;
+  } catch {
+    payload = JSON.parse(json) as Record<string, unknown>;
+  }
+  const res = await apiFetch(`/api/projects/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`put project doc: ${res.status}`);
+}
+
+export async function getFollowCountsApi(): Promise<{ followers: number; following: number }> {
+  const res = await apiFetch("/api/user/follows");
+  if (!res.ok) return { followers: 0, following: 0 };
+  return res.json();
+}
