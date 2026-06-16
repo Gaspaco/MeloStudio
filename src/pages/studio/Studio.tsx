@@ -1,3 +1,4 @@
+import { MidiManager } from "~/lib/audio/midiManager";
 import { type Component, createSignal, createMemo, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
 import type * as ToneNs from "tone";
