@@ -144,7 +144,10 @@
   }
 
   // ── Content shell ────────────────────────────────────────────────
-  &__content { padding: 0 clamp(1.25rem, 4vw, 3rem) 0; }
+  &__content {
+    padding: 0 clamp(1.25rem, 4vw, 3rem) 0;
+    animation: db-page-in 0.4s ease both;
+  }
 
   // ── Shared buttons ────────────────────────────────────────────────
   &__btn {
@@ -418,4 +421,9 @@
 @keyframes dbPmIn {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes db-page-in {
+  from { opacity: 0; filter: blur(8px); }
+  to   { opacity: 1; filter: blur(0); }
 }

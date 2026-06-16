@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { Portal } from "solid-js/web";
 import { useParams } from "@solidjs/router";
 import { getAppSession } from "../../lib/app-auth";
-import { apiFetch, transcribeProjectApi, updateProjectApi, getShareProjectApi, pfpUrl as buildPfpUrl, isApiClipUrl } from "~/lib/api";
+import { apiFetch, transcribeProjectApi, updateProjectApi, getShareProjectApi, pfpUrl as buildPfpUrl, isApiClipUrl, getLikesApi, likeProjectApi, unlikeProjectApi, listCommentsApi, addCommentApi, type ProjectComment } from "~/lib/api";
 import "./share.scss";
 
 interface PublicProject {
@@ -321,6 +321,29 @@ const SharePage: Component = () => {
           const [lyricsLoading, setLyricsLoading] = createSignal(false);
           const [lyricsErr, setLyricsErr] = createSignal("");
           let lyricsScrollEl: HTMLDivElement | undefined;
+
+          const [likeData, setLikeData] = createSignal({ count: 0, liked: false });
+          const [comments, setComments] = createSignal<ProjectComment[]>([]);
+          const [commentText, setCommentText] = createSignal("");
+          const [commentsOpen, setCommentsOpen] = createSignal(false);
+
+          void getLikesApi(p().id).then(setLikeData);
+          void listCommentsApi(p().id).then(setComments);
+
+          const toggleLike = async () => {
+            const result = likeData().liked
+              ? await unlikeProjectApi(p().id)
+              : await likeProjectApi(p().id);
+            setLikeData(result);
+          };
+
+          const submitComment = async () => {
+            const text = commentText().trim();
+            if (!text) return;
+            const comment = await addCommentApi(p().id, text);
+            setComments((prev) => [comment, ...prev]);
+            setCommentText("");
+          };
           const lyricLineEls: (HTMLParagraphElement | undefined)[] = [];
 
           const parseLrc = (lrc: string): LrcLine[] => {
@@ -845,40 +868,63 @@ const SharePage: Component = () => {
 
                   <div class="sp__actions">
                     <div class="sp__actions-left">
-                      <Show when={p().isOwnerPreview}>
-                        <button class="sp__btn sp__btn--primary">
-                          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12">
-                            <circle cx="8" cy="8" r="6.5"/>
-                            <path d="M5.5 8h5M8 5.5v5"/>
-                          </svg>
-                          <span class="sp__btn-label">Publish</span>
-                        </button>
-                      </Show>
+                      <button class={`sp__btn sp__btn--like${likeData().liked ? " sp__btn--liked" : ""}`} onClick={toggleLike}>
+                        <svg viewBox="0 0 24 24" fill={likeData().liked ? "currentColor" : "none"} stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        <span class="sp__btn-label">{likeData().count || ""}</span>
+                      </button>
+                      <button class="sp__btn" onClick={() => setCommentsOpen(!commentsOpen())}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <span class="sp__btn-label">{comments().length || ""}</span>
+                      </button>
                       <button class="sp__btn" onClick={copyLink}>
                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12">
                           <path d="M9 2h5v5M14 2l-6 6M7 4H3a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V9"/>
                         </svg>
-                        <span class="sp__btn-label">{copied() ? "Copied!" : "Share privately"}</span>
+                        <span class="sp__btn-label">{copied() ? "Copied!" : "Share"}</span>
                       </button>
-                      <button class="sp__btn">
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12">
-                          <path d="M8 2v9M4 8l4 4 4-4M2 14h12"/>
-                        </svg>
-                        <span class="sp__btn-label">Download</span>
-                      </button>
-                    </div>
-                    <div class="sp__actions-right">
-                      <a class="sp__btn sp__btn--studio" href={`/studio/${p().id}`}>
-                        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" width="12" height="12">
-                          <rect x="1" y="1" width="6" height="6" rx="1"/>
-                          <rect x="9" y="1" width="6" height="6" rx="1"/>
-                          <rect x="1" y="9" width="6" height="6" rx="1"/>
-                          <rect x="9" y="9" width="6" height="6" rx="1"/>
-                        </svg>
-                        <span class="sp__btn-label">Studio</span>
-                      </a>
+                      <Show when={p().isOwnerPreview}>
+                        <a class="sp__btn sp__btn--studio" href={`/studio/${p().id}`}>
+                          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" width="12" height="12">
+                            <rect x="1" y="1" width="6" height="6" rx="1"/>
+                            <rect x="9" y="1" width="6" height="6" rx="1"/>
+                            <rect x="1" y="9" width="6" height="6" rx="1"/>
+                            <rect x="9" y="9" width="6" height="6" rx="1"/>
+                          </svg>
+                          <span class="sp__btn-label">Studio</span>
+                        </a>
+                      </Show>
                     </div>
                   </div>
+
+                  <Show when={commentsOpen()}>
+                    <div class="sp__comments">
+                      <div class="sp__comments-input">
+                        <input
+                          type="text"
+                          placeholder="Leave feedback..."
+                          value={commentText()}
+                          onInput={(e) => setCommentText(e.currentTarget.value)}
+                          onKeyDown={(e) => e.key === "Enter" && submitComment()}
+                        />
+                        <button onClick={submitComment} disabled={!commentText().trim()}>Post</button>
+                      </div>
+                      <Show when={comments().length > 0}>
+                        <div class="sp__comments-list">
+                          <For each={comments()}>
+                            {(c) => (
+                              <div class="sp__comment">
+                                <img class="sp__comment-avatar" src={buildPfpUrl(c.userId)} alt="" />
+                                <div class="sp__comment-body">
+                                  <span class="sp__comment-text">{c.body}</span>
+                                  <span class="sp__comment-date">{relativeDate(c.createdAt)}</span>
+                                </div>
+                              </div>
+                            )}
+                          </For>
+                        </div>
+                      </Show>
+                    </div>
+                  </Show>
                 </div>
               </div>
 

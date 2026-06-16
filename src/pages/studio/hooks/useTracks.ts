@@ -172,7 +172,6 @@ export function useTracks(deps: Deps) {
   };
 
   const uploadLargeClip = async (clipId: string, file: File): Promise<string | undefined> => {
-    if (file.size <= REMOTE_UPLOAD_THRESHOLD_BYTES) return undefined;
     const projectId = deps.projectId();
     if (!projectId) return undefined;
 
@@ -221,7 +220,8 @@ export function useTracks(deps: Deps) {
     };
     deps.setTracks(deps.tracks().map(t => t.id === trackId ? { ...t, clips: [...(t.clips ?? []), clip] } : t));
 
-    if (kind !== "midi" && file.size > REMOTE_UPLOAD_THRESHOLD_BYTES) {
+    // Upload to server for any audio clip — ensures persistence even if IDB is cleared
+    if (kind !== "midi") {
       const remoteUrl = await uploadLargeClip(clipId, file);
       if (remoteUrl) {
         deps.setTracks(deps.tracks().map(t => {

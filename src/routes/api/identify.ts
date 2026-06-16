@@ -3,11 +3,14 @@
 // returns { artist, title } or null. The API key never leaves the server.
 import type { APIEvent } from "@solidjs/start/server";
 import { requireUserId } from "~/lib/auth-server";
+import { rateLimit } from "~/lib/server/rateLimit";
 import { isSafeRemoteUrl, textResponse, truncateForLog } from "./_utils";
 
 const MAX_AUDIO_BYTES = 15 * 1024 * 1024;
 
 export async function POST(event: APIEvent) {
+  const rl = rateLimit(event.request, "identify", "strict");
+  if (rl) return rl;
   const userId = await requireUserId(event.request);
   if (!userId) return textResponse("unauthorized", 401);
 

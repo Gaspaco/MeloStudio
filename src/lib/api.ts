@@ -22,6 +22,7 @@ export interface ProjectListItem {
   bpm: number;
   updatedAt: string;
   trackCount: number;
+  published: boolean;
 }
 
 export async function listProjectsApi(): Promise<ProjectListItem[]> {
@@ -97,6 +98,59 @@ export async function publishProjectApi(id: string, published: boolean): Promise
   });
   if (!res.ok) throw new Error(`publish project: ${res.status}`);
 }
+
+// ── Likes ────────────────────────────────────────────────────────────────
+
+export async function getLikesApi(projectId: string): Promise<{ count: number; liked: boolean }> {
+  const res = await apiFetch(`/api/projects/${projectId}/likes`);
+  if (!res.ok) return { count: 0, liked: false };
+  return res.json();
+}
+
+export async function likeProjectApi(projectId: string): Promise<{ count: number; liked: boolean }> {
+  const res = await apiFetch(`/api/projects/${projectId}/likes`, { method: "POST" });
+  if (!res.ok) throw new Error(`like: ${res.status}`);
+  return res.json();
+}
+
+export async function unlikeProjectApi(projectId: string): Promise<{ count: number; liked: boolean }> {
+  const res = await apiFetch(`/api/projects/${projectId}/likes`, { method: "DELETE" });
+  if (!res.ok) throw new Error(`unlike: ${res.status}`);
+  return res.json();
+}
+
+// ── Comments ─────────────────────────────────────────────────────────────
+
+export interface ProjectComment {
+  id: string;
+  userId: string;
+  body: string;
+  createdAt: string;
+}
+
+export async function listCommentsApi(projectId: string): Promise<ProjectComment[]> {
+  const res = await apiFetch(`/api/projects/${projectId}/comments`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function addCommentApi(projectId: string, body: string): Promise<ProjectComment> {
+  const res = await apiFetch(`/api/projects/${projectId}/comments`, {
+    method: "POST",
+    body: JSON.stringify({ body }),
+  });
+  if (!res.ok) throw new Error(`comment: ${res.status}`);
+  return res.json();
+}
+
+export async function deleteCommentApi(projectId: string, commentId: string): Promise<void> {
+  const res = await apiFetch(`/api/projects/${projectId}/comments?commentId=${commentId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(`delete comment: ${res.status}`);
+}
+
+// ── Stats ────────────────────────────────────────────────────────────────
 
 export async function getProjectStatsApi(): Promise<{ studioHours: number }> {
   const res = await apiFetch("/api/projects/stats");

@@ -113,3 +113,35 @@ CREATE TABLE IF NOT EXISTS follows (
 
 CREATE INDEX IF NOT EXISTS idx_follows_following ON follows (following_id);
 CREATE INDEX IF NOT EXISTS idx_follows_follower  ON follows (follower_id);
+
+-- =========================================================================
+-- project_likes: one like per user per project.
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS project_likes (
+  user_id     TEXT NOT NULL,
+  project_id  UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, project_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_project_likes_project ON project_likes (project_id);
+
+-- =========================================================================
+-- project_comments: threaded comments on published projects.
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS project_comments (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id  UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  user_id     TEXT NOT NULL,
+  body        TEXT NOT NULL,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_project_comments_project
+  ON project_comments (project_id, created_at DESC);
+
+-- =========================================================================
+-- Cover art: stored in projects.data JSONB as "coverUrl" field.
+-- Also add a denormalized column for fast list queries.
+-- =========================================================================
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS cover_url TEXT;

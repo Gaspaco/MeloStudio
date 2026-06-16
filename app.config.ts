@@ -9,6 +9,9 @@ export default defineConfig({
     server: {
       port: 3000,
     },
+    optimizeDeps: {
+      exclude: ["echarts"],
+    },
     build: {
       target: "esnext",
       rollupOptions: {
@@ -18,7 +21,7 @@ export default defineConfig({
             if (id.includes("/gsap/")) return "vendor-gsap";
             if (id.includes("/tone/")) return "vendor-tone";
             if (id.includes("/three/")) return "vendor-three";
-            if (id.includes("/konva/")) return "vendor-konva";
+            if (id.includes("/echarts/") || id.includes("/zrender/")) return "vendor-echarts";
             if (id.includes("/lenis/")) return "vendor-lenis";
           },
         },

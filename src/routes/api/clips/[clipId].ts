@@ -6,6 +6,7 @@ import { getStore } from "@netlify/blobs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { getReadAccess, getOwnerAccess } from "~/lib/server/projectAccess";
+import { rateLimit } from "~/lib/server/rateLimit";
 import { isUuid, textResponse } from "../_utils";
 
 const MAX_CLIP_BYTES = 4_000_000; // Netlify buffered functions allow ~4.5 MB binary request bodies.
@@ -87,12 +88,40 @@ async function getLocalClip(projectId: string, clipId: string): Promise<{ data: 
   }
 }
 
-function localClipResponse(local: { data: Uint8Array; mime: string }): Response {
-  const body = new ArrayBuffer(local.data.byteLength);
+function parseRange(header: string | null, total: number): { start: number; end: number } | null {
+  if (!header) return null;
+  const match = header.match(/^bytes=(\d+)-(\d*)$/);
+  if (!match) return null;
+  const start = parseInt(match[1], 10);
+  const end = match[2] ? parseInt(match[2], 10) : total - 1;
+  if (start >= total || end >= total || start > end) return null;
+  return { start, end };
+}
+
+function localClipResponse(local: { data: Uint8Array; mime: string }, rangeHeader?: string | null): Response {
+  const total = local.data.byteLength;
+  const range = parseRange(rangeHeader ?? null, total);
+
+  if (range) {
+    const slice = local.data.slice(range.start, range.end + 1);
+    return new Response(slice.buffer, {
+      status: 206,
+      headers: {
+        "Content-Type": local.mime,
+        "Content-Range": `bytes ${range.start}-${range.end}/${total}`,
+        "Content-Length": String(slice.byteLength),
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
+  }
+
+  const body = new ArrayBuffer(total);
   new Uint8Array(body).set(local.data);
   return new Response(body, {
     headers: {
       "Content-Type": local.mime,
+      "Content-Length": String(total),
       "Cache-Control": "private, max-age=3600",
       "Accept-Ranges": "bytes",
     },
@@ -119,6 +148,8 @@ async function deleteLocalClip(projectId: string, clipId: string): Promise<void>
 }
 
 export async function PUT(event: APIEvent) {
+  const rl = rateLimit(event.request, "clips:put", "strict");
+  if (rl) return rl;
   const clipId = event.params.clipId;
   const searchParams = new URL(event.request.url).searchParams;
   const projectId = searchParams.get("projectId") ?? "";
@@ -218,6 +249,8 @@ export async function PUT(event: APIEvent) {
 
 
 export async function GET(event: APIEvent) {
+  const rl = rateLimit(event.request, "clips:get", "relaxed");
+  if (rl) return rl;
   const clipId = event.params.clipId;
   const searchParams = new URL(event.request.url).searchParams;
   const projectId = searchParams.get("projectId") ?? "";
@@ -233,6 +266,8 @@ export async function GET(event: APIEvent) {
   }
   if (!access.ok) return textResponse("not found", 404);
 
+  const rangeHeader = event.request.headers.get("range");
+
   const store = getClipsStore();
   if (!store) {
     const local = await getLocalClip(projectId, clipId);
@@ -240,40 +275,61 @@ export async function GET(event: APIEvent) {
       if (canUseLocalClipStore()) return new Response(null, { status: 204 });
       return textResponse("storage not available", 503);
     }
-    return localClipResponse(local);
+    return localClipResponse(local, rangeHeader);
   }
 
   try {
     const key = `${projectId}/${clipId}`;
-    const result = await store.getWithMetadata(key, { type: "stream" });
-    // 204 (not 404) signals "clip not found" — the client treats this as a gracefully-skipped optional clip
+    const result = await store.getWithMetadata(key, { type: "arrayBuffer" });
     if (!result) {
       return new Response(null, { status: 204 });
     }
 
     const metadata = result.metadata as Record<string, string> | null;
     const mime = metadata?.mime ?? "audio/mpeg";
-    
-    let streamBody: BodyInit = result.data as BodyInit;
+
+    let fullBuffer: Uint8Array;
 
     if (metadata?.chunks) {
       const chunks = parseInt(metadata.chunks as string, 10);
-      streamBody = new ReadableStream({
-        async start(controller) {
-          try {
-            for (let i = 0; i < chunks; i++) {
-              const c = await store.get(`${projectId}/${clipId}_${i}`, { type: "arrayBuffer" });
-              if (c) controller.enqueue(new Uint8Array(c as ArrayBuffer));
-            }
-            controller.close();
-          } catch(e) { controller.error(e); }
+      const buffers: Uint8Array[] = [];
+      let totalSize = 0;
+      for (let i = 0; i < chunks; i++) {
+        const c = await store.get(`${projectId}/${clipId}_${i}`, { type: "arrayBuffer" });
+        if (c) {
+          const arr = new Uint8Array(c as ArrayBuffer);
+          buffers.push(arr);
+          totalSize += arr.byteLength;
         }
+      }
+      fullBuffer = new Uint8Array(totalSize);
+      let offset = 0;
+      for (const b of buffers) { fullBuffer.set(b, offset); offset += b.byteLength; }
+    } else {
+      fullBuffer = new Uint8Array(result.data as ArrayBuffer);
+    }
+
+    const total = fullBuffer.byteLength;
+    const range = parseRange(rangeHeader, total);
+
+    if (range) {
+      const slice = fullBuffer.slice(range.start, range.end + 1);
+      return new Response(slice.buffer, {
+        status: 206,
+        headers: {
+          "Content-Type": mime,
+          "Content-Range": `bytes ${range.start}-${range.end}/${total}`,
+          "Content-Length": String(slice.byteLength),
+          "Accept-Ranges": "bytes",
+          "Cache-Control": "private, max-age=3600",
+        },
       });
     }
 
-    return new Response(streamBody, {
+    return new Response(fullBuffer.buffer, {
       headers: {
         "Content-Type": mime,
+        "Content-Length": String(total),
         "Cache-Control": "private, max-age=3600",
         "Accept-Ranges": "bytes",
       },
@@ -281,7 +337,7 @@ export async function GET(event: APIEvent) {
   } catch (err) {
     warnStorageFallback("GET", err);
     const local = await getLocalClip(projectId, clipId);
-    if (local) return localClipResponse(local);
+    if (local) return localClipResponse(local, rangeHeader);
     if (canUseLocalClipStore()) return new Response(null, { status: 204 });
     console.error("[GET /api/clips/:clipId] storage error:", err);
     return textResponse("storage unavailable", 503);
@@ -341,6 +397,8 @@ export async function HEAD(event: APIEvent) {
 
 
 export async function DELETE(event: APIEvent) {
+  const rl = rateLimit(event.request, "clips:delete", "strict");
+  if (rl) return rl;
   const clipId = event.params.clipId;
   const projectId = new URL(event.request.url).searchParams.get("projectId") ?? "";
 

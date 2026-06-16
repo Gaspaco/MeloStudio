@@ -4,6 +4,7 @@
 
 import type { APIEvent } from "@solidjs/start/server";
 import { requireUserId } from "~/lib/auth-server";
+import { rateLimit } from "~/lib/server/rateLimit";
 import { getProject, getPublicProjectDoc } from "~/lib/db/projects";
 import type { TimelineDoc } from "~/lib/audio/projectTimeline";
 import { isPlainObject, isSafeRemoteUrl, isUuid, textResponse, truncateForLog } from "./_utils";
@@ -47,6 +48,8 @@ function firstClipDataUri(doc: TimelineDoc) {
 }
 
 export async function POST(event: APIEvent) {
+  const rl = rateLimit(event.request, "transcribe", "strict");
+  if (rl) return rl;
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) return textResponse("transcription not configured", 503);
 

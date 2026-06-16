@@ -19,7 +19,9 @@ interface Project {
   key: string;
   tracks: number;
   updatedAt: string;
+  updatedAtRaw: string;
   color: string;
+  published: boolean;
 }
 
 type Tab = "overview" | "profile" | "library";
@@ -117,7 +119,9 @@ const Dashboard: Component<{
         id: p.id, name: p.name, bpm: p.bpm, key: "—",
         tracks: p.trackCount,
         updatedAt: new Date(p.updatedAt).toLocaleDateString(),
+        updatedAtRaw: p.updatedAt as string,
         color: PROJECT_COLORS[i % PROJECT_COLORS.length] as string,
+        published: p.published ?? false,
       })));
       const stats = await getProjectStatsApi();
       setStudioHours(stats.studioHours);
@@ -297,7 +301,9 @@ const Dashboard: Component<{
         id: p.id, name: p.name, bpm: p.bpm, key: "—",
         tracks: p.trackCount,
         updatedAt: new Date(p.updatedAt).toLocaleDateString(),
+        updatedAtRaw: p.updatedAt as string,
         color: PROJECT_COLORS[i % PROJECT_COLORS.length] as string,
+        published: p.published ?? false,
       })));
     } catch { setTrashActionError("Failed to restore project."); }
   };

@@ -30,6 +30,7 @@ import KeyboardPanel    from "./components/KeyboardPanel";
 import AudioClipEditor  from "./components/AudioClipEditor";
 import NavDrawer, { type NavCategory } from "./components/NavDrawer";
 import NewTrackModal    from "./components/NewTrackModal";
+import PublishModal     from "./components/PublishModal";
 
 import "./studio.scss";
 
@@ -82,6 +83,8 @@ const Studio: Component = () => {
   const [metronomeOn,        setMetronomeOn]        = createSignal(false);
   const [loopOn,             setLoopOn]             = createSignal(false);
   const [published,          setPublished]          = createSignal(false);
+  const [showPublishModal,   setShowPublishModal]   = createSignal(false);
+  const [showPublishToast,   setShowPublishToast]   = createSignal(false);
 
   const [userImage,          setUserImage]          = createSignal<string | null>(null);
 
@@ -502,7 +505,7 @@ const Studio: Component = () => {
           getMasterBus().setEnhanced(next);
         }}
         published={published}
-        onPublish={() => navigate(`/publish/${params.id}`)}
+        onPublish={() => setShowPublishModal(true)}
       />
 
       <Show when={error()}>
@@ -533,6 +536,23 @@ const Studio: Component = () => {
             <a class="bl__save-toast-link" href={`/share/${params.id}`}>View Revision</a>
           </div>
           <button class="bl__save-toast-close" onClick={() => setShowSaveToast(false)} aria-label="Dismiss">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+        </div>
+      </Show>
+
+      <Show when={showPublishToast()}>
+        <div class="bl__save-toast bl__save-toast--publish">
+          <div class="bl__save-toast-thumb">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12l5 5L20 7" />
+            </svg>
+          </div>
+          <div class="bl__save-toast-body">
+            <span class="bl__save-toast-title">Project published</span>
+            <a class="bl__save-toast-link" href={`/share/${params.id}`}>View Project</a>
+          </div>
+          <button class="bl__save-toast-close" onClick={() => setShowPublishToast(false)} aria-label="Dismiss">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
           </button>
         </div>
@@ -675,7 +695,21 @@ const Studio: Component = () => {
         />
       </Show>
 
-
+      <Show when={showPublishModal()}>
+        <PublishModal
+          projectId={params.id}
+          projectName={name}
+          published={published}
+          onClose={() => setShowPublishModal(false)}
+          onPublished={(v) => {
+            setPublished(v);
+            if (v) {
+              setShowPublishToast(true);
+              setTimeout(() => setShowPublishToast(false), 8000);
+            }
+          }}
+        />
+      </Show>
 
     </div>
   );

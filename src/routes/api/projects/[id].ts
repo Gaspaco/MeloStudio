@@ -14,7 +14,9 @@ import {
   ProjectNotFoundError,
 } from "~/lib/db/projects";
 import type { ProjectDoc } from "~/lib/audio/types";
+import { sql } from "~/lib/db/client";
 import { requireUserId } from "~/lib/auth-server";
+import { rateLimit } from "~/lib/server/rateLimit";
 import {
   cleanOptionalString,
   cleanString,
@@ -43,6 +45,8 @@ function saveErrorResponse(err: unknown): Response {
 }
 
 export async function GET(event: APIEvent) {
+  const rl = rateLimit(event.request, "projects:get", "standard");
+  if (rl) return rl;
   const userId = await requireUserId(event.request);
   if (!userId) return textResponse("unauthorized", 401);
   const id = event.params.id;
@@ -59,6 +63,8 @@ export async function GET(event: APIEvent) {
 }
 
 export async function PUT(event: APIEvent) {
+  const rl = rateLimit(event.request, "projects:put", "standard");
+  if (rl) return rl;
   const userId = await requireUserId(event.request);
   if (!userId) return textResponse("unauthorized", 401);
   const id = event.params.id;
@@ -79,6 +85,8 @@ export async function PUT(event: APIEvent) {
 }
 
 export async function PATCH(event: APIEvent) {
+  const rl = rateLimit(event.request, "projects:patch", "standard");
+  if (rl) return rl;
   const userId = await requireUserId(event.request);
   if (!userId) return textResponse("unauthorized", 401);
   const id = event.params.id;
@@ -140,8 +148,19 @@ export async function PATCH(event: APIEvent) {
       if (lyrics) doc.lyrics = lyrics;
       else delete doc.lyrics;
     }
+    if (body.coverUrl !== undefined) {
+      const coverUrl = cleanOptionalString(body.coverUrl, 500000);
+      if (coverUrl) doc.coverUrl = coverUrl;
+      else delete doc.coverUrl;
+    }
 
     await saveProject(userId, id, doc);
+
+    if (body.coverUrl !== undefined) {
+      const coverUrlCol = doc.coverUrl ?? null;
+      await sql`UPDATE projects SET cover_url = ${coverUrlCol} WHERE id = ${id}`.catch(() => {});
+    }
+
     return new Response(null, { status: 204 });
   } catch (err) {
     return saveErrorResponse(err);
@@ -149,6 +168,8 @@ export async function PATCH(event: APIEvent) {
 }
 
 export async function DELETE(event: APIEvent) {
+  const rl = rateLimit(event.request, "projects:delete", "strict");
+  if (rl) return rl;
   const userId = await requireUserId(event.request);
   if (!userId) return textResponse("unauthorized", 401);
   const id = event.params.id;
