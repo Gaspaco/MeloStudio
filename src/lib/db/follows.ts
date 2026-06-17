@@ -1,4 +1,5 @@
 import { sql } from "./client";
+import { createNotification } from "./notifications";
 
 export async function getFollowCounts(userId: string): Promise<{ followers: number; following: number }> {
   const rows = await sql`
@@ -22,6 +23,7 @@ export async function followUser(followerId: string, followingId: string): Promi
     VALUES (${followerId}, ${followingId})
     ON CONFLICT DO NOTHING
   `;
+  void createNotification(followingId, "follow", followerId).catch(() => {});
 }
 
 export async function unfollowUser(followerId: string, followingId: string): Promise<void> {

@@ -158,6 +158,95 @@ export async function getProjectStatsApi(): Promise<{ studioHours: number }> {
   return res.json();
 }
 
+// ── Notifications ────────────────────────────────────────────────────────
+
+export interface AppNotification {
+  id: string;
+  type: string;
+  actorId: string;
+  projectId: string | null;
+  commentId: string | null;
+  read: boolean;
+  createdAt: string;
+}
+
+export async function getNotificationsApi(): Promise<{ items: AppNotification[]; unread: number }> {
+  const res = await apiFetch("/api/notifications");
+  if (!res.ok) return { items: [], unread: 0 };
+  return res.json();
+}
+
+export async function markNotificationsReadApi(): Promise<void> {
+  await apiFetch("/api/notifications", { method: "PATCH" });
+}
+
+// ── Discover / Feed ──────────────────────────────────────────────────────
+
+export interface FeedProject {
+  id: string;
+  name: string;
+  bpm: number;
+  userId: string;
+  updatedAt: string;
+  coverUrl: string | null;
+  genre: string | null;
+  description: string | null;
+  likeCount: number;
+  commentCount: number;
+}
+
+export async function discoverProjectsApi(opts?: { genre?: string; sort?: string; limit?: number; offset?: number }): Promise<FeedProject[]> {
+  const params = new URLSearchParams();
+  if (opts?.genre) params.set("genre", opts.genre);
+  if (opts?.sort) params.set("sort", opts.sort);
+  if (opts?.limit) params.set("limit", String(opts.limit));
+  if (opts?.offset) params.set("offset", String(opts.offset));
+  const res = await apiFetch(`/api/discover/projects?${params}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function getFeedApi(opts?: { limit?: number; offset?: number }): Promise<FeedProject[]> {
+  const params = new URLSearchParams();
+  if (opts?.limit) params.set("limit", String(opts.limit));
+  if (opts?.offset) params.set("offset", String(opts.offset));
+  const res = await apiFetch(`/api/feed?${params}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export interface DiscoverUser {
+  id: string;
+  name: string;
+  image: boolean;
+  projectCount: number;
+  followerCount: number;
+}
+
+export async function searchUsersApi(query: string): Promise<DiscoverUser[]> {
+  const res = await apiFetch(`/api/discover/users?q=${encodeURIComponent(query)}`);
+  if (!res.ok) return [];
+  return res.json();
+}
+
+// ── Follow ───────────────────────────────────────────────────────────────
+
+export async function followUserApi(userId: string): Promise<void> {
+  await apiFetch("/api/user/follows", {
+    method: "POST",
+    body: JSON.stringify({ userId }),
+  });
+}
+
+export async function unfollowUserApi(userId: string): Promise<void> {
+  await apiFetch("/api/user/follows", {
+    method: "DELETE",
+    body: JSON.stringify({ userId }),
+  });
+}
+
+// ── Heartbeat ────────────────────────────────────────────────────────────
+
 export async function sendHeartbeat(projectId: string): Promise<void> {
   await apiFetch("/api/projects/heartbeat", {
     method: "POST",

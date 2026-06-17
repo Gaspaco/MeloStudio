@@ -10,6 +10,8 @@ import {
 import Overview from "./tabs/Overview";
 import Library from "./tabs/Library";
 import Profile from "./tabs/Profile";
+import Feed from "./tabs/Feed";
+import NotificationsDropdown from "./components/NotificationsDropdown";
 import "./dashboard.scss";
 
 interface Project {
@@ -24,7 +26,7 @@ interface Project {
   published: boolean;
 }
 
-type Tab = "overview" | "profile" | "library";
+type Tab = "overview" | "profile" | "library" | "feed";
 
 const Dashboard: Component<{
   onLogout: () => void;
@@ -369,11 +371,13 @@ const Dashboard: Component<{
         </button>
         <nav class="db__nav">
           <button class={`db__nav-link${tab() === "overview" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("overview")}>Overview</button>
+          <button class={`db__nav-link${tab() === "feed" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("feed")}>Feed</button>
           <button class={`db__nav-link${tab() === "library" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("library")}>Library</button>
           <button class={`db__nav-link${tab() === "profile" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("profile")}>Profile</button>
         </nav>
         <div class="db__bar-right">
           <span class="db__clock">{formatTime()}</span>
+          <NotificationsDropdown />
           <button class="db__bar-logout" onClick={handleLogout} title="Log out">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
           </button>
@@ -397,6 +401,10 @@ const Dashboard: Component<{
           onOpenProject={props.onOpenProject}
           switchTab={switchTab}
         />
+      </Show>
+
+      <Show when={tab() === "feed"}>
+        <Feed onOpenProject={props.onOpenProject} />
       </Show>
 
       <Show when={tab() === "library"}>
@@ -578,6 +586,10 @@ const Dashboard: Component<{
         <button class={`db__mobile-nav-btn${tab() === "overview" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("overview")}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
           <span>Overview</span>
+        </button>
+        <button class={`db__mobile-nav-btn${tab() === "feed" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("feed")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11a9 9 0 019 9M4 4a16 16 0 0116 16" /><circle cx="5" cy="19" r="1" /></svg>
+          <span>Feed</span>
         </button>
         <button class={`db__mobile-nav-btn${tab() === "library" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("library")}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14M4 19a2 2 0 01-2-2V7h4M4 19h16M8 9h8M8 13h5"/></svg>

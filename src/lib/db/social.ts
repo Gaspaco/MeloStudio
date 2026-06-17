@@ -1,4 +1,11 @@
 import { sql } from "./client";
+import { createNotification } from "./notifications";
+
+function getProjectOwner(projectId: string): Promise<string | null> {
+  return sql`SELECT user_id FROM projects WHERE id = ${projectId} LIMIT 1`
+    .then((rows: Array<{ user_id: string }>) => rows[0]?.user_id ?? null)
+    .catch(() => null);
+}
 
 // ── Likes ────────────────────────────────────────────────────────────────
 
@@ -8,6 +15,8 @@ export async function likeProject(userId: string, projectId: string): Promise<vo
     VALUES (${userId}, ${projectId})
     ON CONFLICT DO NOTHING
   `;
+  const ownerId = await getProjectOwner(projectId);
+  if (ownerId) void createNotification(ownerId, "like", userId, projectId).catch(() => {});
 }
 
 export async function unlikeProject(userId: string, projectId: string): Promise<void> {
@@ -54,6 +63,8 @@ export async function addComment(
     RETURNING id, user_id, body, created_at
   ` as Array<{ id: string; user_id: string; body: string; created_at: string }>;
   const r = rows[0];
+  const ownerId = await getProjectOwner(projectId);
+  if (ownerId) void createNotification(ownerId, "comment", userId, projectId, r.id).catch(() => {});
   return { id: r.id, userId: r.user_id, body: r.body, createdAt: r.created_at };
 }
 

@@ -145,3 +145,22 @@ CREATE INDEX IF NOT EXISTS idx_project_comments_project
 -- Also add a denormalized column for fast list queries.
 -- =========================================================================
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS cover_url TEXT;
+
+-- =========================================================================
+-- notifications: in-app notifications for social interactions.
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS notifications (
+  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     TEXT NOT NULL,
+  type        TEXT NOT NULL,
+  actor_id    TEXT NOT NULL,
+  project_id  UUID REFERENCES projects(id) ON DELETE CASCADE,
+  comment_id  UUID,
+  read        BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user
+  ON notifications (user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_unread
+  ON notifications (user_id) WHERE read = FALSE;

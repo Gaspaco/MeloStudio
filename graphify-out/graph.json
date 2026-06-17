@@ -21162,34 +21162,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/auth-instance.ts:13"
     },
     {
-      "id": "follows::getfollowcounts",
-      "label": "getFollowCounts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:3"
-    },
-    {
-      "id": "follows::isfollowing",
-      "label": "isFollowing",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:12"
-    },
-    {
-      "id": "follows::followuser",
-      "label": "followUser",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:19"
-    },
-    {
-      "id": "follows::unfollowuser",
-      "label": "unfollowUser",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:27"
-    },
-    {
       "id": "file::bottombar",
       "label": "BottomBar.tsx",
       "fileType": "code",
@@ -22128,27 +22100,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/session.tsx:8"
     },
     {
-      "id": "file::overview",
-      "label": "Overview.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:1"
-    },
-    {
-      "id": "Overview::progress",
-      "label": "progress",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:426"
-    },
-    {
-      "id": "Overview::offset",
-      "label": "offset",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:428"
-    },
-    {
       "id": "file::app_config",
       "label": "app.config.ts",
       "fileType": "code",
@@ -22161,209 +22112,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/app.config.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/app.config.ts:19"
-    },
-    {
-      "id": "file::api",
-      "label": "api.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:1"
-    },
-    {
-      "id": "api::apifetch",
-      "label": "apiFetch",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:6"
-    },
-    {
-      "id": "api::listprojectsapi",
-      "label": "listProjectsApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:28"
-    },
-    {
-      "id": "api::createprojectapi",
-      "label": "createProjectApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:34"
-    },
-    {
-      "id": "api::updateprojectapi",
-      "label": "updateProjectApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:53"
-    },
-    {
-      "id": "api::deleteprojectapi",
-      "label": "deleteProjectApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:61"
-    },
-    {
-      "id": "api::permanentlydeleteprojectapi",
-      "label": "permanentlyDeleteProjectApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:66"
-    },
-    {
-      "id": "api::restoreprojectapi",
-      "label": "restoreProjectApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:71"
-    },
-    {
-      "id": "api::listdeletedprojectsapi",
-      "label": "listDeletedProjectsApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:88"
-    },
-    {
-      "id": "api::publishprojectapi",
-      "label": "publishProjectApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:94"
-    },
-    {
-      "id": "api::getlikesapi",
-      "label": "getLikesApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:104"
-    },
-    {
-      "id": "api::likeprojectapi",
-      "label": "likeProjectApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:110"
-    },
-    {
-      "id": "api::unlikeprojectapi",
-      "label": "unlikeProjectApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:116"
-    },
-    {
-      "id": "api::listcommentsapi",
-      "label": "listCommentsApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:131"
-    },
-    {
-      "id": "api::addcommentapi",
-      "label": "addCommentApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:137"
-    },
-    {
-      "id": "api::deletecommentapi",
-      "label": "deleteCommentApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:146"
-    },
-    {
-      "id": "api::getprojectstatsapi",
-      "label": "getProjectStatsApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:155"
-    },
-    {
-      "id": "api::sendheartbeat",
-      "label": "sendHeartbeat",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:161"
-    },
-    {
-      "id": "api::transcribeprojectapi",
-      "label": "transcribeProjectApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:168"
-    },
-    {
-      "id": "api::clipurl",
-      "label": "clipUrl",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:181"
-    },
-    {
-      "id": "api::pfpurl",
-      "label": "pfpUrl",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:184"
-    },
-    {
-      "id": "api::shareurl",
-      "label": "shareUrl",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:187"
-    },
-    {
-      "id": "api::isapiclipurl",
-      "label": "isApiClipUrl",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:190"
-    },
-    {
-      "id": "api::getshareprojectapi",
-      "label": "getShareProjectApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:220"
-    },
-    {
-      "id": "api::getshareclipsapi",
-      "label": "getShareClipsApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:226"
-    },
-    {
-      "id": "api::getprojectdocapi",
-      "label": "getProjectDocApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:232"
-    },
-    {
-      "id": "api::putprojectdocapi",
-      "label": "putProjectDocApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:241"
-    },
-    {
-      "id": "api::getfollowcountsapi",
-      "label": "getFollowCountsApi",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:258"
-    },
-    {
-      "id": "file::projects",
-      "label": "projects.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/projects.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/projects.ts:1"
     },
     {
       "id": "projects::projectnotfounderror",
@@ -22490,195 +22238,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/projects.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/projects.ts:336"
-    },
-    {
-      "id": "file::dashboard",
-      "label": "Dashboard.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:1"
-    },
-    {
-      "id": "Dashboard::closemenu",
-      "label": "closeMenu",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:83"
-    },
-    {
-      "id": "Dashboard::togglemenu",
-      "label": "toggleMenu",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:84"
-    },
-    {
-      "id": "Dashboard::onkey",
-      "label": "onKey",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:158"
-    },
-    {
-      "id": "Dashboard::handlelogout",
-      "label": "handleLogout",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:184"
-    },
-    {
-      "id": "Dashboard::handleimageupload",
-      "label": "handleImageUpload",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:186"
-    },
-    {
-      "id": "Dashboard::formattime",
-      "label": "formatTime",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:200"
-    },
-    {
-      "id": "Dashboard::greeting",
-      "label": "greeting",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:203"
-    },
-    {
-      "id": "Dashboard::firstname",
-      "label": "firstName",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:210"
-    },
-    {
-      "id": "Dashboard::initials",
-      "label": "initials",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:212"
-    },
-    {
-      "id": "Dashboard::totaltracks",
-      "label": "totalTracks",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:220"
-    },
-    {
-      "id": "Dashboard::fmtstudiotime",
-      "label": "fmtStudioTime",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:222"
-    },
-    {
-      "id": "Dashboard::opencreate",
-      "label": "openCreate",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:232"
-    },
-    {
-      "id": "Dashboard::submitcreate",
-      "label": "submitCreate",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:234"
-    },
-    {
-      "id": "Dashboard::openrename",
-      "label": "openRename",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:242"
-    },
-    {
-      "id": "Dashboard::submitrename",
-      "label": "submitRename",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:249"
-    },
-    {
-      "id": "Dashboard::opendelete",
-      "label": "openDelete",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:266"
-    },
-    {
-      "id": "Dashboard::submitdelete",
-      "label": "submitDelete",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:272"
-    },
-    {
-      "id": "Dashboard::loaddeletedprojects",
-      "label": "loadDeletedProjects",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:286"
-    },
-    {
-      "id": "Dashboard::handlerestore",
-      "label": "handleRestore",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:293"
-    },
-    {
-      "id": "Dashboard::submitpermdelete",
-      "label": "submitPermDelete",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:311"
-    },
-    {
-      "id": "Dashboard::daysleft",
-      "label": "daysLeft",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:324"
-    },
-    {
-      "id": "Dashboard::switchtab",
-      "label": "switchTab",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:330"
-    },
-    {
-      "id": "Dashboard::handlestartdelete",
-      "label": "handleStartDelete",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:339"
-    },
-    {
-      "id": "Dashboard::handleconfirmdelete",
-      "label": "handleConfirmDelete",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:340"
-    },
-    {
-      "id": "Dashboard::handlecanceldelete",
-      "label": "handleCancelDelete",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:341"
-    },
-    {
-      "id": "Dashboard::handlefinaldelete",
-      "label": "handleFinalDelete",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:343"
     },
     {
       "id": "file::profile",
@@ -23220,20 +22779,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/projects/heartbeat.ts:7"
     },
     {
-      "id": "file::index",
-      "label": "index.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/projects/index.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/projects/index.ts:1"
-    },
-    {
-      "id": "index::get",
-      "label": "GET",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/projects/index.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/projects/index.ts:10"
-    },
-    {
       "id": "index::post",
       "label": "POST",
       "fileType": "code",
@@ -23302,13 +22847,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/user/[id]/pfp.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/user/[id]/pfp.ts:12"
-    },
-    {
-      "id": "file::follows",
-      "label": "follows.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/user/follows.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/user/follows.ts:1"
     },
     {
       "id": "follows::get",
@@ -23465,62 +23003,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/share/[id].tsx:1165"
     },
     {
-      "id": "file::social",
-      "label": "social.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:1"
-    },
-    {
-      "id": "social::likeproject",
-      "label": "likeProject",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:5"
-    },
-    {
-      "id": "social::unlikeproject",
-      "label": "unlikeProject",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:13"
-    },
-    {
-      "id": "social::hasliked",
-      "label": "hasLiked",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:20"
-    },
-    {
-      "id": "social::getlikecount",
-      "label": "getLikeCount",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:29"
-    },
-    {
-      "id": "social::addcomment",
-      "label": "addComment",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:46"
-    },
-    {
-      "id": "social::deletecomment",
-      "label": "deleteComment",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:60"
-    },
-    {
-      "id": "social::listcomments",
-      "label": "listComments",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:69"
-    },
-    {
       "id": "file::ratelimit",
       "label": "rateLimit.ts",
       "fileType": "code",
@@ -23652,6 +23134,783 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/projects/[id]/likes.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/projects/[id]/likes.ts:37"
+    },
+    {
+      "id": "file::overview",
+      "label": "Overview.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:1"
+    },
+    {
+      "id": "Overview::togglelike",
+      "label": "toggleLike",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:68"
+    },
+    {
+      "id": "Overview::reldate",
+      "label": "relDate",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:78"
+    },
+    {
+      "id": "Overview::initials",
+      "label": "initials",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:90"
+    },
+    {
+      "id": "Overview::hue",
+      "label": "hue",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:97"
+    },
+    {
+      "id": "Overview::fakebars",
+      "label": "fakeBars",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:99"
+    },
+    {
+      "id": "Overview::l",
+      "label": "l",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:171"
+    },
+    {
+      "id": "Overview::isplaying",
+      "label": "isPlaying",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:173"
+    },
+    {
+      "id": "file::api",
+      "label": "api.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:1"
+    },
+    {
+      "id": "api::apifetch",
+      "label": "apiFetch",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:6"
+    },
+    {
+      "id": "api::listprojectsapi",
+      "label": "listProjectsApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:28"
+    },
+    {
+      "id": "api::createprojectapi",
+      "label": "createProjectApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:34"
+    },
+    {
+      "id": "api::updateprojectapi",
+      "label": "updateProjectApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:53"
+    },
+    {
+      "id": "api::deleteprojectapi",
+      "label": "deleteProjectApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:61"
+    },
+    {
+      "id": "api::permanentlydeleteprojectapi",
+      "label": "permanentlyDeleteProjectApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:66"
+    },
+    {
+      "id": "api::restoreprojectapi",
+      "label": "restoreProjectApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:71"
+    },
+    {
+      "id": "api::listdeletedprojectsapi",
+      "label": "listDeletedProjectsApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:88"
+    },
+    {
+      "id": "api::publishprojectapi",
+      "label": "publishProjectApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:94"
+    },
+    {
+      "id": "api::getlikesapi",
+      "label": "getLikesApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:104"
+    },
+    {
+      "id": "api::likeprojectapi",
+      "label": "likeProjectApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:110"
+    },
+    {
+      "id": "api::unlikeprojectapi",
+      "label": "unlikeProjectApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:116"
+    },
+    {
+      "id": "api::listcommentsapi",
+      "label": "listCommentsApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:131"
+    },
+    {
+      "id": "api::addcommentapi",
+      "label": "addCommentApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:137"
+    },
+    {
+      "id": "api::deletecommentapi",
+      "label": "deleteCommentApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:146"
+    },
+    {
+      "id": "api::getprojectstatsapi",
+      "label": "getProjectStatsApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:155"
+    },
+    {
+      "id": "api::getnotificationsapi",
+      "label": "getNotificationsApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:173"
+    },
+    {
+      "id": "api::marknotificationsreadapi",
+      "label": "markNotificationsReadApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:179"
+    },
+    {
+      "id": "api::discoverprojectsapi",
+      "label": "discoverProjectsApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:198"
+    },
+    {
+      "id": "api::getfeedapi",
+      "label": "getFeedApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:209"
+    },
+    {
+      "id": "api::searchusersapi",
+      "label": "searchUsersApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:226"
+    },
+    {
+      "id": "api::followuserapi",
+      "label": "followUserApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:234"
+    },
+    {
+      "id": "api::unfollowuserapi",
+      "label": "unfollowUserApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:241"
+    },
+    {
+      "id": "api::sendheartbeat",
+      "label": "sendHeartbeat",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:250"
+    },
+    {
+      "id": "api::transcribeprojectapi",
+      "label": "transcribeProjectApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:257"
+    },
+    {
+      "id": "api::clipurl",
+      "label": "clipUrl",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:270"
+    },
+    {
+      "id": "api::pfpurl",
+      "label": "pfpUrl",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:273"
+    },
+    {
+      "id": "api::shareurl",
+      "label": "shareUrl",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:276"
+    },
+    {
+      "id": "api::isapiclipurl",
+      "label": "isApiClipUrl",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:279"
+    },
+    {
+      "id": "api::getshareprojectapi",
+      "label": "getShareProjectApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:309"
+    },
+    {
+      "id": "api::getshareclipsapi",
+      "label": "getShareClipsApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:315"
+    },
+    {
+      "id": "api::getprojectdocapi",
+      "label": "getProjectDocApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:321"
+    },
+    {
+      "id": "api::putprojectdocapi",
+      "label": "putProjectDocApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:330"
+    },
+    {
+      "id": "api::getfollowcountsapi",
+      "label": "getFollowCountsApi",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:347"
+    },
+    {
+      "id": "file::follows",
+      "label": "follows.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:1"
+    },
+    {
+      "id": "follows::getfollowcounts",
+      "label": "getFollowCounts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:4"
+    },
+    {
+      "id": "follows::isfollowing",
+      "label": "isFollowing",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:13"
+    },
+    {
+      "id": "follows::followuser",
+      "label": "followUser",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:20"
+    },
+    {
+      "id": "follows::unfollowuser",
+      "label": "unfollowUser",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:29"
+    },
+    {
+      "id": "file::social",
+      "label": "social.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:1"
+    },
+    {
+      "id": "social::getprojectowner",
+      "label": "getProjectOwner",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:4"
+    },
+    {
+      "id": "social::likeproject",
+      "label": "likeProject",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:12"
+    },
+    {
+      "id": "social::unlikeproject",
+      "label": "unlikeProject",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:22"
+    },
+    {
+      "id": "social::hasliked",
+      "label": "hasLiked",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:29"
+    },
+    {
+      "id": "social::getlikecount",
+      "label": "getLikeCount",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:38"
+    },
+    {
+      "id": "social::addcomment",
+      "label": "addComment",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:55"
+    },
+    {
+      "id": "social::deletecomment",
+      "label": "deleteComment",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:71"
+    },
+    {
+      "id": "social::listcomments",
+      "label": "listComments",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:80"
+    },
+    {
+      "id": "file::dashboard",
+      "label": "Dashboard.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:1"
+    },
+    {
+      "id": "Dashboard::closemenu",
+      "label": "closeMenu",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:85"
+    },
+    {
+      "id": "Dashboard::togglemenu",
+      "label": "toggleMenu",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:86"
+    },
+    {
+      "id": "Dashboard::onkey",
+      "label": "onKey",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:160"
+    },
+    {
+      "id": "Dashboard::handlelogout",
+      "label": "handleLogout",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:186"
+    },
+    {
+      "id": "Dashboard::handleimageupload",
+      "label": "handleImageUpload",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:188"
+    },
+    {
+      "id": "Dashboard::formattime",
+      "label": "formatTime",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:202"
+    },
+    {
+      "id": "Dashboard::greeting",
+      "label": "greeting",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:205"
+    },
+    {
+      "id": "Dashboard::firstname",
+      "label": "firstName",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:212"
+    },
+    {
+      "id": "Dashboard::initials",
+      "label": "initials",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:214"
+    },
+    {
+      "id": "Dashboard::totaltracks",
+      "label": "totalTracks",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:222"
+    },
+    {
+      "id": "Dashboard::fmtstudiotime",
+      "label": "fmtStudioTime",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:224"
+    },
+    {
+      "id": "Dashboard::opencreate",
+      "label": "openCreate",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:234"
+    },
+    {
+      "id": "Dashboard::submitcreate",
+      "label": "submitCreate",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:236"
+    },
+    {
+      "id": "Dashboard::openrename",
+      "label": "openRename",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:244"
+    },
+    {
+      "id": "Dashboard::submitrename",
+      "label": "submitRename",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:251"
+    },
+    {
+      "id": "Dashboard::opendelete",
+      "label": "openDelete",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:268"
+    },
+    {
+      "id": "Dashboard::submitdelete",
+      "label": "submitDelete",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:274"
+    },
+    {
+      "id": "Dashboard::loaddeletedprojects",
+      "label": "loadDeletedProjects",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:288"
+    },
+    {
+      "id": "Dashboard::handlerestore",
+      "label": "handleRestore",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:295"
+    },
+    {
+      "id": "Dashboard::submitpermdelete",
+      "label": "submitPermDelete",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:313"
+    },
+    {
+      "id": "Dashboard::daysleft",
+      "label": "daysLeft",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:326"
+    },
+    {
+      "id": "Dashboard::switchtab",
+      "label": "switchTab",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:332"
+    },
+    {
+      "id": "Dashboard::handlestartdelete",
+      "label": "handleStartDelete",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:341"
+    },
+    {
+      "id": "Dashboard::handleconfirmdelete",
+      "label": "handleConfirmDelete",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:342"
+    },
+    {
+      "id": "Dashboard::handlecanceldelete",
+      "label": "handleCancelDelete",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:343"
+    },
+    {
+      "id": "Dashboard::handlefinaldelete",
+      "label": "handleFinalDelete",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:345"
+    },
+    {
+      "id": "file::notifications",
+      "label": "notifications.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:1"
+    },
+    {
+      "id": "notifications::createnotification",
+      "label": "createNotification",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:13"
+    },
+    {
+      "id": "notifications::listnotifications",
+      "label": "listNotifications",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:27"
+    },
+    {
+      "id": "notifications::getunreadcount",
+      "label": "getUnreadCount",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:49"
+    },
+    {
+      "id": "notifications::markread",
+      "label": "markRead",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:57"
+    },
+    {
+      "id": "notifications::markallread",
+      "label": "markAllRead",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:64"
+    },
+    {
+      "id": "file::notificationsdropdown",
+      "label": "NotificationsDropdown.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:1"
+    },
+    {
+      "id": "NotificationsDropdown::load",
+      "label": "load",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:14"
+    },
+    {
+      "id": "NotificationsDropdown::handler",
+      "label": "handler",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:31"
+    },
+    {
+      "id": "NotificationsDropdown::toggle",
+      "label": "toggle",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:38"
+    },
+    {
+      "id": "NotificationsDropdown::notiftext",
+      "label": "notifText",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:48"
+    },
+    {
+      "id": "NotificationsDropdown::notificon",
+      "label": "notifIcon",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:57"
+    },
+    {
+      "id": "NotificationsDropdown::relativetime",
+      "label": "relativeTime",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:74"
+    },
+    {
+      "id": "file::feed",
+      "label": "feed.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/feed.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/feed.ts:1"
+    },
+    {
+      "id": "Feed::loadprojects",
+      "label": "loadProjects",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx:35"
+    },
+    {
+      "id": "Feed::togglelike",
+      "label": "toggleLike",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx:83"
+    },
+    {
+      "id": "Feed::copylink",
+      "label": "copyLink",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx:94"
+    },
+    {
+      "id": "Feed::relativedate",
+      "label": "relativeDate",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx:98"
+    },
+    {
+      "id": "Feed::nameinitials",
+      "label": "nameInitials",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx:111"
+    },
+    {
+      "id": "file::projects",
+      "label": "projects.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/projects.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/projects.ts:1"
+    },
+    {
+      "id": "projects::get",
+      "label": "GET",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/projects.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/projects.ts:8"
+    },
+    {
+      "id": "file::users",
+      "label": "users.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/users.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/users.ts:1"
+    },
+    {
+      "id": "users::get",
+      "label": "GET",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/users.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/users.ts:8"
+    },
+    {
+      "id": "feed::get",
+      "label": "GET",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/feed.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/feed.ts:9"
+    },
+    {
+      "id": "file::index",
+      "label": "index.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/notifications/index.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/notifications/index.ts:1"
+    },
+    {
+      "id": "index::get",
+      "label": "GET",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/notifications/index.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/notifications/index.ts:9"
+    },
+    {
+      "id": "index::patch",
+      "label": "PATCH",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/notifications/index.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/notifications/index.ts:22"
     }
   ],
   "edges": [
@@ -50107,42 +50366,6 @@
       "weight": 1
     },
     {
-      "source": "file::follows",
-      "target": "follows::getfollowcounts",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:3",
-      "weight": 1
-    },
-    {
-      "source": "file::follows",
-      "target": "follows::isfollowing",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:12",
-      "weight": 1
-    },
-    {
-      "source": "file::follows",
-      "target": "follows::followuser",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:19",
-      "weight": 1
-    },
-    {
-      "source": "file::follows",
-      "target": "follows::unfollowuser",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:27",
-      "weight": 1
-    },
-    {
       "source": "file::types",
       "target": "types::haspatterncontent",
       "relation": "contains",
@@ -51088,273 +51311,12 @@
       "weight": 1
     },
     {
-      "source": "file::overview",
-      "target": "Overview::progress",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:426",
-      "weight": 1
-    },
-    {
-      "source": "file::overview",
-      "target": "Overview::offset",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:428",
-      "weight": 1
-    },
-    {
       "source": "file::app_config",
       "target": "app_config::manualchunks",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/app.config.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/app.config.ts:19",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::apifetch",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:6",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::listprojectsapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:28",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::createprojectapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:34",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::updateprojectapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:53",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::deleteprojectapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:61",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::permanentlydeleteprojectapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:66",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::restoreprojectapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:71",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::listdeletedprojectsapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:88",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::publishprojectapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:94",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::getlikesapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:104",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::likeprojectapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:110",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::unlikeprojectapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:116",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::listcommentsapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:131",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::addcommentapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:137",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::deletecommentapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:146",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::getprojectstatsapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:155",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::sendheartbeat",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:161",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::transcribeprojectapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:168",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::clipurl",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:181",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::pfpurl",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:184",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::shareurl",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:187",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::isapiclipurl",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:190",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::getshareprojectapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:220",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::getshareclipsapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:226",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::getprojectdocapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:232",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::putprojectdocapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:241",
-      "weight": 1
-    },
-    {
-      "source": "file::api",
-      "target": "api::getfollowcountsapi",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:258",
       "weight": 1
     },
     {
@@ -51517,240 +51479,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/projects.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/projects.ts:336",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::closemenu",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:83",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::togglemenu",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:84",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::onkey",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:158",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::handlelogout",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:184",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::handleimageupload",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:186",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::formattime",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:200",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::greeting",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:203",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::firstname",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:210",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::initials",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:212",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::totaltracks",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:220",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::fmtstudiotime",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:222",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::opencreate",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:232",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::submitcreate",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:234",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::openrename",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:242",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::submitrename",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:249",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::opendelete",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:266",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::submitdelete",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:272",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::loaddeletedprojects",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:286",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::handlerestore",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:293",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::submitpermdelete",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:311",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::daysleft",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:324",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::switchtab",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:330",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::handlestartdelete",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:339",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::handleconfirmdelete",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:340",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::handlecanceldelete",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:341",
-      "weight": 1
-    },
-    {
-      "source": "file::dashboard",
-      "target": "Dashboard::handlefinaldelete",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:343",
       "weight": 1
     },
     {
@@ -52609,69 +52337,6 @@
       "weight": 1
     },
     {
-      "source": "file::social",
-      "target": "social::likeproject",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:5",
-      "weight": 1
-    },
-    {
-      "source": "file::social",
-      "target": "social::unlikeproject",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:13",
-      "weight": 1
-    },
-    {
-      "source": "file::social",
-      "target": "social::hasliked",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:20",
-      "weight": 1
-    },
-    {
-      "source": "file::social",
-      "target": "social::getlikecount",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:29",
-      "weight": 1
-    },
-    {
-      "source": "file::social",
-      "target": "social::addcomment",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:46",
-      "weight": 1
-    },
-    {
-      "source": "file::social",
-      "target": "social::deletecomment",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:60",
-      "weight": 1
-    },
-    {
-      "source": "file::social",
-      "target": "social::listcomments",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:69",
-      "weight": 1
-    },
-    {
       "source": "file::ratelimit",
       "target": "ratelimit::cleanup",
       "relation": "contains",
@@ -52805,12 +52470,903 @@
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/projects/[id]/likes.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/projects/[id]/likes.ts:37",
       "weight": 1
+    },
+    {
+      "source": "file::overview",
+      "target": "Overview::togglelike",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:68",
+      "weight": 1
+    },
+    {
+      "source": "file::overview",
+      "target": "Overview::reldate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:78",
+      "weight": 1
+    },
+    {
+      "source": "file::overview",
+      "target": "Overview::initials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:90",
+      "weight": 1
+    },
+    {
+      "source": "file::overview",
+      "target": "Overview::hue",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:97",
+      "weight": 1
+    },
+    {
+      "source": "file::overview",
+      "target": "Overview::fakebars",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:99",
+      "weight": 1
+    },
+    {
+      "source": "file::overview",
+      "target": "Overview::l",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:171",
+      "weight": 1
+    },
+    {
+      "source": "file::overview",
+      "target": "Overview::isplaying",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Overview.tsx:173",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::apifetch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:6",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::listprojectsapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:28",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::createprojectapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:34",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::updateprojectapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:53",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::deleteprojectapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:61",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::permanentlydeleteprojectapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:66",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::restoreprojectapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:71",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::listdeletedprojectsapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:88",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::publishprojectapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:94",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::getlikesapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:104",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::likeprojectapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:110",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::unlikeprojectapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:116",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::listcommentsapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:131",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::addcommentapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:137",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::deletecommentapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:146",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::getprojectstatsapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:155",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::getnotificationsapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:173",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::marknotificationsreadapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:179",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::discoverprojectsapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:198",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::getfeedapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:209",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::searchusersapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:226",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::followuserapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:234",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::unfollowuserapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:241",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::sendheartbeat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:250",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::transcribeprojectapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:257",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::clipurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:270",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::pfpurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:273",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::shareurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:276",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::isapiclipurl",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:279",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::getshareprojectapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:309",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::getshareclipsapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:315",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::getprojectdocapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:321",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::putprojectdocapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:330",
+      "weight": 1
+    },
+    {
+      "source": "file::api",
+      "target": "api::getfollowcountsapi",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/api.ts:347",
+      "weight": 1
+    },
+    {
+      "source": "file::follows",
+      "target": "follows::getfollowcounts",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:4",
+      "weight": 1
+    },
+    {
+      "source": "file::follows",
+      "target": "follows::isfollowing",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:13",
+      "weight": 1
+    },
+    {
+      "source": "file::follows",
+      "target": "follows::followuser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:20",
+      "weight": 1
+    },
+    {
+      "source": "file::follows",
+      "target": "follows::unfollowuser",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/follows.ts:29",
+      "weight": 1
+    },
+    {
+      "source": "file::social",
+      "target": "social::getprojectowner",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:4",
+      "weight": 1
+    },
+    {
+      "source": "file::social",
+      "target": "social::likeproject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:12",
+      "weight": 1
+    },
+    {
+      "source": "file::social",
+      "target": "social::unlikeproject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:22",
+      "weight": 1
+    },
+    {
+      "source": "file::social",
+      "target": "social::hasliked",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:29",
+      "weight": 1
+    },
+    {
+      "source": "file::social",
+      "target": "social::getlikecount",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:38",
+      "weight": 1
+    },
+    {
+      "source": "file::social",
+      "target": "social::addcomment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:55",
+      "weight": 1
+    },
+    {
+      "source": "file::social",
+      "target": "social::deletecomment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:71",
+      "weight": 1
+    },
+    {
+      "source": "file::social",
+      "target": "social::listcomments",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/social.ts:80",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::closemenu",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:85",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::togglemenu",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:86",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::onkey",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:160",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::handlelogout",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:186",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::handleimageupload",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:188",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::formattime",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:202",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::greeting",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:205",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::firstname",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:212",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::initials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:214",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::totaltracks",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:222",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::fmtstudiotime",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:224",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::opencreate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:234",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::submitcreate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:236",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::openrename",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:244",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::submitrename",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:251",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::opendelete",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:268",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::submitdelete",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:274",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::loaddeletedprojects",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:288",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::handlerestore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:295",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::submitpermdelete",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:313",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::daysleft",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:326",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::switchtab",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:332",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::handlestartdelete",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:341",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::handleconfirmdelete",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:342",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::handlecanceldelete",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:343",
+      "weight": 1
+    },
+    {
+      "source": "file::dashboard",
+      "target": "Dashboard::handlefinaldelete",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/Dashboard.tsx:345",
+      "weight": 1
+    },
+    {
+      "source": "file::notifications",
+      "target": "notifications::createnotification",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:13",
+      "weight": 1
+    },
+    {
+      "source": "file::notifications",
+      "target": "notifications::listnotifications",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:27",
+      "weight": 1
+    },
+    {
+      "source": "file::notifications",
+      "target": "notifications::getunreadcount",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:49",
+      "weight": 1
+    },
+    {
+      "source": "file::notifications",
+      "target": "notifications::markread",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:57",
+      "weight": 1
+    },
+    {
+      "source": "file::notifications",
+      "target": "notifications::markallread",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/db/notifications.ts:64",
+      "weight": 1
+    },
+    {
+      "source": "file::notificationsdropdown",
+      "target": "NotificationsDropdown::load",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:14",
+      "weight": 1
+    },
+    {
+      "source": "file::notificationsdropdown",
+      "target": "NotificationsDropdown::handler",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:31",
+      "weight": 1
+    },
+    {
+      "source": "file::notificationsdropdown",
+      "target": "NotificationsDropdown::toggle",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:38",
+      "weight": 1
+    },
+    {
+      "source": "file::notificationsdropdown",
+      "target": "NotificationsDropdown::notiftext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:48",
+      "weight": 1
+    },
+    {
+      "source": "file::notificationsdropdown",
+      "target": "NotificationsDropdown::notificon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:57",
+      "weight": 1
+    },
+    {
+      "source": "file::notificationsdropdown",
+      "target": "NotificationsDropdown::relativetime",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/components/NotificationsDropdown.tsx:74",
+      "weight": 1
+    },
+    {
+      "source": "file::feed",
+      "target": "Feed::loadprojects",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx:35",
+      "weight": 1
+    },
+    {
+      "source": "file::feed",
+      "target": "Feed::togglelike",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx:83",
+      "weight": 1
+    },
+    {
+      "source": "file::feed",
+      "target": "Feed::copylink",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx:94",
+      "weight": 1
+    },
+    {
+      "source": "file::feed",
+      "target": "Feed::relativedate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx:98",
+      "weight": 1
+    },
+    {
+      "source": "file::feed",
+      "target": "Feed::nameinitials",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/dashboard/tabs/Feed.tsx:111",
+      "weight": 1
+    },
+    {
+      "source": "file::projects",
+      "target": "projects::get",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/projects.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/projects.ts:8",
+      "weight": 1
+    },
+    {
+      "source": "file::users",
+      "target": "users::get",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/users.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/discover/users.ts:8",
+      "weight": 1
+    },
+    {
+      "source": "file::feed",
+      "target": "feed::get",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/feed.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/feed.ts:9",
+      "weight": 1
+    },
+    {
+      "source": "file::index",
+      "target": "index::patch",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/notifications/index.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/notifications/index.ts:22",
+      "weight": 1
     }
   ],
   "metadata": {
-    "files": 151,
-    "nodes": 3379,
-    "edges": 3239,
-    "builtAt": "2026-06-16T14:30:42.943Z"
+    "files": 157,
+    "nodes": 3416,
+    "edges": 3272,
+    "builtAt": "2026-06-17T19:14:20.627Z"
   }
 }
