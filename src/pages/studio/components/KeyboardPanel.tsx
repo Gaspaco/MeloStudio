@@ -1,6 +1,7 @@
 import { type Component, For, Show } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { SynthPreset } from "~/lib/audio/synth";
+import { getInstrumentCategoryForPreset, INSTRUMENT_CATEGORIES } from "../data/instrumentPresets";
 import type { UITrack } from "../types";
 
 interface AdsrPath { stroke: string; fill: string; }
@@ -29,6 +30,7 @@ interface KeyboardPanelProps {
 
 const KeyboardPanel: Component<KeyboardPanelProps> = (props) => {
   const selectedTrackData = () => props.tracks().find(t => t.id === props.selectedTrack());
+  const activeCategory = () => getInstrumentCategoryForPreset(props.synthPreset());
   const isGuitarOrBass = () => {
     const t = selectedTrackData();
     return t?.type === "bass" || t?.type === "guitar";
@@ -213,23 +215,36 @@ const KeyboardPanel: Component<KeyboardPanelProps> = (props) => {
           <span>{panelTitle()}</span>
 
           <Show when={!isGuitarOrBass()}>
-            <div class="bl__preset-row">
-              <For each={[
-                { id: "piano" as SynthPreset, label: "Piano" },
-                { id: "guitar" as SynthPreset, label: "Guitar" },
-                { id: "bass" as SynthPreset, label: "Bass" },
-                { id: "lead" as SynthPreset, label: "Lead" },
-                { id: "pad" as SynthPreset, label: "Pad" },
-                { id: "fm-bell" as SynthPreset, label: "FM Bell" },
-                { id: "physical-pluck" as SynthPreset, label: "Pluck" },
-              ]}>
-                {(p) => (
-                  <button
-                    class={`bl__preset ${props.synthPreset() === p.id ? "is-on" : ""}`}
-                    onClick={() => props.onUpdatePreset(p.id)}
-                  >{p.label}</button>
-                )}
-              </For>
+            <div class="bl__instrument-browser">
+              <div class="bl__preset-row" aria-label="Instrument categories">
+                <For each={INSTRUMENT_CATEGORIES}>
+                  {(category) => (
+                    <button
+                      class={`bl__preset-cat ${activeCategory().id === category.id ? "is-on" : ""}`}
+                      onClick={() => props.onUpdatePreset(category.sounds[0]!.id)}
+                      title={category.description}
+                    >
+                      <span>{category.label}</span>
+                      <small>{category.sounds.length}</small>
+                    </button>
+                  )}
+                </For>
+              </div>
+
+              <div class="bl__sound-row" aria-label={`${activeCategory().label} sounds`}>
+                <For each={activeCategory().sounds}>
+                  {(sound) => (
+                    <button
+                      class={`bl__preset ${props.synthPreset() === sound.id ? "is-on" : ""}`}
+                      onClick={() => props.onUpdatePreset(sound.id)}
+                      title={sound.description}
+                    >
+                      <span>{sound.label}</span>
+                      <small>{sound.description}</small>
+                    </button>
+                  )}
+                </For>
+              </div>
             </div>
           </Show>
         </div>
@@ -277,68 +292,75 @@ const KeyboardPanel: Component<KeyboardPanelProps> = (props) => {
         </div>
       </div>
 
-      {/* Specialty Synth Param Tweak Controls Panel */}
+      {/* Synth Controls */}
       <Show when={hasFilterControls()}>
         <div class={`bl__synth-edit is-${props.synthPreset()}`}>
           <Show when={hasEnvelopeControls()}>
-            <svg class="bl__adsr-viz" viewBox="0 0 200 52" preserveAspectRatio="none">
-              <path d={props.adsrPath().fill}
-                fill={props.synthPreset() === "pad" ? "rgba(163,116,247,0.12)" : "rgba(224,82,151,0.12)"}
-              />
-              <path d={props.adsrPath().stroke} fill="none"
-                stroke={props.synthPreset() === "pad" ? "#a374f7" : "#e05297"}
-                stroke-width="1.5" stroke-linejoin="round"
-              />
-              <text x="2"   y="50" class="bl__adsr-lbl">A</text>
-              <text x="52"  y="50" class="bl__adsr-lbl">D</text>
-              <text x="105" y="50" class="bl__adsr-lbl">S</text>
-              <text x="158" y="50" class="bl__adsr-lbl">R</text>
-            </svg>
+            <div class="bl__synth-group">
+              <span class="bl__synth-group-label">Envelope</span>
+              <div class="bl__synth-group-body">
+                <svg class="bl__adsr-viz" viewBox="0 0 200 52" preserveAspectRatio="none">
+                  <path d={props.adsrPath().fill}
+                    fill={props.synthPreset() === "pad" ? "rgba(163,116,247,0.10)" : "rgba(224,82,151,0.10)"}
+                  />
+                  <path d={props.adsrPath().stroke} fill="none"
+                    stroke={props.synthPreset() === "pad" ? "#a374f7" : "#e05297"}
+                    stroke-width="1.5" stroke-linejoin="round"
+                  />
+                  <text x="2"   y="50" class="bl__adsr-lbl">A</text>
+                  <text x="52"  y="50" class="bl__adsr-lbl">D</text>
+                  <text x="105" y="50" class="bl__adsr-lbl">S</text>
+                  <text x="158" y="50" class="bl__adsr-lbl">R</text>
+                </svg>
+                <div class="bl__synth-params">
+                  <div class="bl__synth-param">
+                    <label class="bl__synth-lbl">Attack</label>
+                    <input type="range" class="bl__synth-range" min="0.001" max="2" step="0.001"
+                      value={props.synthAttack()}
+                      onInput={(e) => props.onUpdateEnvelope(+e.currentTarget.value, props.synthDecay(), props.synthSustain(), props.synthRelease())}
+                    />
+                    <span class="bl__synth-val">{props.synthAttack() < 0.1 ? `${Math.round(props.synthAttack() * 1000)}ms` : `${props.synthAttack().toFixed(2)}s`}</span>
+                  </div>
+                  <div class="bl__synth-param">
+                    <label class="bl__synth-lbl">Decay</label>
+                    <input type="range" class="bl__synth-range" min="0.01" max="2" step="0.01"
+                      value={props.synthDecay()}
+                      onInput={(e) => props.onUpdateEnvelope(props.synthAttack(), +e.currentTarget.value, props.synthSustain(), props.synthRelease())}
+                    />
+                    <span class="bl__synth-val">{props.synthDecay() < 0.1 ? `${Math.round(props.synthDecay() * 1000)}ms` : `${props.synthDecay().toFixed(2)}s`}</span>
+                  </div>
+                  <div class="bl__synth-param">
+                    <label class="bl__synth-lbl">Sustain</label>
+                    <input type="range" class="bl__synth-range" min="0" max="1" step="0.01"
+                      value={props.synthSustain()}
+                      onInput={(e) => props.onUpdateEnvelope(props.synthAttack(), props.synthDecay(), +e.currentTarget.value, props.synthRelease())}
+                    />
+                    <span class="bl__synth-val">{Math.round(props.synthSustain() * 100)}%</span>
+                  </div>
+                  <div class="bl__synth-param">
+                    <label class="bl__synth-lbl">Release</label>
+                    <input type="range" class="bl__synth-range" min="0.01" max="4" step="0.01"
+                      value={props.synthRelease()}
+                      onInput={(e) => props.onUpdateEnvelope(props.synthAttack(), props.synthDecay(), props.synthSustain(), +e.currentTarget.value)}
+                    />
+                    <span class="bl__synth-val">{props.synthRelease() < 0.1 ? `${Math.round(props.synthRelease() * 1000)}ms` : `${props.synthRelease().toFixed(2)}s`}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </Show>
 
-          <div class="bl__synth-sliders">
-            <Show when={hasEnvelopeControls()}>
-              <div class="bl__synth-param">
-                <label class="bl__synth-lbl">Attack</label>
-                <input type="range" class="bl__synth-range" min="0.001" max="2" step="0.001"
-                  value={props.synthAttack()}
-                  onInput={(e) => props.onUpdateEnvelope(+e.currentTarget.value, props.synthDecay(), props.synthSustain(), props.synthRelease())}
+          <div class={`bl__synth-group${!hasEnvelopeControls() ? " bl__synth-group--solo" : ""}`}>
+            <span class="bl__synth-group-label">{filterParamLabel()}</span>
+            <div class="bl__synth-group-body bl__synth-group-body--single">
+              <div class="bl__synth-param bl__synth-param--wide">
+                <label class="bl__synth-lbl">{filterParamLabel()}</label>
+                <input type="range" class="bl__synth-range" min="100" max="8000" step="50"
+                  value={props.synthFilterFreq()}
+                  onInput={(e) => props.onUpdateFilter(+e.currentTarget.value)}
                 />
-                <span class="bl__synth-val">{props.synthAttack() < 0.1 ? `${Math.round(props.synthAttack() * 1000)}ms` : `${props.synthAttack().toFixed(2)}s`}</span>
+                <span class="bl__synth-val">{filterParamValue()}</span>
               </div>
-              <div class="bl__synth-param">
-                <label class="bl__synth-lbl">Decay</label>
-                <input type="range" class="bl__synth-range" min="0.01" max="2" step="0.01"
-                  value={props.synthDecay()}
-                  onInput={(e) => props.onUpdateEnvelope(props.synthAttack(), +e.currentTarget.value, props.synthSustain(), props.synthRelease())}
-                />
-                <span class="bl__synth-val">{props.synthDecay() < 0.1 ? `${Math.round(props.synthDecay() * 1000)}ms` : `${props.synthDecay().toFixed(2)}s`}</span>
-              </div>
-              <div class="bl__synth-param">
-                <label class="bl__synth-lbl">Sustain</label>
-                <input type="range" class="bl__synth-range" min="0" max="1" step="0.01"
-                  value={props.synthSustain()}
-                  onInput={(e) => props.onUpdateEnvelope(props.synthAttack(), props.synthDecay(), +e.currentTarget.value, props.synthRelease())}
-                />
-                <span class="bl__synth-val">{Math.round(props.synthSustain() * 100)}%</span>
-              </div>
-              <div class="bl__synth-param">
-                <label class="bl__synth-lbl">Release</label>
-                <input type="range" class="bl__synth-range" min="0.01" max="4" step="0.01"
-                  value={props.synthRelease()}
-                  onInput={(e) => props.onUpdateEnvelope(props.synthAttack(), props.synthDecay(), props.synthSustain(), +e.currentTarget.value)}
-                />
-                <span class="bl__synth-val">{props.synthRelease() < 0.1 ? `${Math.round(props.synthRelease() * 1000)}ms` : `${props.synthRelease().toFixed(2)}s`}</span>
-              </div>
-            </Show>
-            
-            <div class={`bl__synth-param ${!hasEnvelopeControls() ? "bl__synth-param--centered" : "bl__synth-param--wide"}`}>
-              <label class="bl__synth-lbl">{filterParamLabel()}</label>
-              <input type="range" class="bl__synth-range" min="100" max="8000" step="50"
-                value={props.synthFilterFreq()}
-                onInput={(e) => props.onUpdateFilter(+e.currentTarget.value)}
-              />
-              <span class="bl__synth-val">{filterParamValue()}</span>
             </div>
           </div>
         </div>

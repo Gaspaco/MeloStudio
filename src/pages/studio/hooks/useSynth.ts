@@ -7,6 +7,7 @@
 import { createEffect, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { unlockAudioContext } from "~/lib/audio/context";
+import { MidiManager } from "~/lib/audio/midiManager";
 import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
 import { PRESET_ADSR } from "../types";
 import type { UITrack } from "../types";
@@ -24,6 +25,8 @@ type Deps = {
   setSynthRelease: Setter<number>;
   setSynthFilterFreq: Setter<number>;
   setActivePanel: Setter<"drum" | "keys" | "voice" | null>;
+  onMidiNoteOn?: (midi: number, velocity: number) => void;
+  onMidiNoteOff?: (midi: number) => void;
 };
 
 export function useSynth(deps: Deps) {
@@ -43,6 +46,7 @@ export function useSynth(deps: Deps) {
     } else {
       synth.setPreset(preset);
     }
+    MidiManager.bindTargetSynth(synth);
   };
 
   const getSynth = () => synth;
@@ -106,6 +110,7 @@ export function useSynth(deps: Deps) {
     // MIDI note formula: (octave+1)*12 + semitone; the +1 is because MIDI octave 0 starts at note 12, not 0
     const midi = 12 * (deps.octave() + 1) + keyVal;
     synth.noteOn(midi, 0.85);
+    deps.onMidiNoteOn?.(midi, 0.85);
     const next = new Set(deps.activeNotes());
     next.add(midi);
     deps.setActiveNotes(next);
@@ -118,6 +123,7 @@ export function useSynth(deps: Deps) {
     heldKeys.delete(k);
     const midi = 12 * (deps.octave() + 1) + keyVal;
     synth?.noteOff(midi);
+    deps.onMidiNoteOff?.(midi);
     const next = new Set(deps.activeNotes());
     next.delete(midi);
     deps.setActiveNotes(next);
@@ -131,6 +137,7 @@ export function useSynth(deps: Deps) {
     ensureSynth(activePreset);
     if (!synth) return;
     synth.noteOn(midi, 0.85);
+    deps.onMidiNoteOn?.(midi, 0.85);
     const next = new Set(deps.activeNotes());
     next.add(midi);
     deps.setActiveNotes(next);
@@ -138,6 +145,7 @@ export function useSynth(deps: Deps) {
 
   const releaseKey = (midi: number) => {
     synth?.noteOff(midi);
+    deps.onMidiNoteOff?.(midi);
     const next = new Set(deps.activeNotes());
     next.delete(midi);
     deps.setActiveNotes(next);
@@ -170,12 +178,19 @@ export function useSynth(deps: Deps) {
   const allNotesOff = () => synth?.allNotesOff();
 
   onMount(() => {
+    void MidiManager.initialize().then(() => MidiManager.bindTargetSynth(synth));
+    MidiManager.bindNoteListener((event) => {
+      if (event.type === "on") deps.onMidiNoteOn?.(event.midi, event.velocity);
+      else deps.onMidiNoteOff?.(event.midi);
+    });
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
   });
 
   onCleanup(() => {
     synth?.allNotesOff();
+    MidiManager.bindTargetSynth(null);
+    MidiManager.bindNoteListener(null);
     window.removeEventListener("keydown", onKeyDown);
     window.removeEventListener("keyup", onKeyUp);
   });

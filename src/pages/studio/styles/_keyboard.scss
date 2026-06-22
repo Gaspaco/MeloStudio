@@ -1,25 +1,36 @@
 @use "../../../styles/variables" as *;
 
 /* ─────────────── KEYBOARD ─────────────── */
-.bl__preset-row {
+.bl__instrument-browser {
   display: flex;
-  gap: 0.3rem;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: min(34rem, 46vw);
   margin-left: 0.85rem;
   padding-left: 0.85rem;
   border-left: 1px solid rgba(#fff, 0.06);
 }
+
+.bl__preset-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.bl__sound-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.bl__preset-cat,
 .bl__preset {
   all: unset;
   cursor: pointer;
-  padding: 0.35rem 0.85rem;
   background: rgba(#fff, 0.025);
   border: 1px solid rgba(#fff, 0.06);
   color: $text-secondary;
-  border-radius: $radius-pill;
   font-family: $font-mono;
-  font-size: 0.58rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
   &:hover { color: $text-primary; border-color: rgba(#fff, 0.15); }
   &.is-on {
@@ -28,6 +39,71 @@
     color: $accent;
   }
 }
+
+.bl__preset-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: $radius-pill;
+  font-size: 0.56rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+
+  small {
+    display: grid;
+    place-items: center;
+    min-width: 1rem;
+    height: 1rem;
+    padding: 0 0.2rem;
+    border-radius: 999px;
+    background: rgba(#fff, 0.06);
+    color: $text-muted;
+    font-size: 0.5rem;
+    letter-spacing: 0;
+  }
+
+  &.is-on small {
+    background: rgba($accent, 0.18);
+    color: $accent;
+  }
+}
+
+.bl__preset {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 7.75rem;
+  max-width: 10rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+
+  > span {
+    color: inherit;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  > small {
+    color: $text-muted;
+    font-family: $font-sans;
+    font-size: 0.66rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &.is-on > small {
+    color: rgba($accent, 0.78);
+  }
+}
+
 .bl__oct {
   font-family: $font-mono;
   font-size: 0.65rem;
@@ -299,95 +375,196 @@ $pad-color:  #a374f7;
 
 .bl__synth-edit {
   display: flex;
-  align-items: center;
-  gap: 1.2rem;
-  padding: 0.75rem 1.5rem;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
   border-bottom: 1px solid rgba(#fff, 0.05);
-  background: rgba(#000, 0.12);
+  background:
+    linear-gradient(180deg, rgba(#fff, 0.018), transparent),
+    rgba(#000, 0.2);
+}
+
+.bl__synth-group {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: rgba(#fff, 0.02);
+  border: 1px solid rgba(#fff, 0.055);
+  border-radius: 10px;
+  overflow: hidden;
+
+  &--solo { max-width: 22rem; }
+}
+
+.bl__synth-group-label {
+  font-family: $font-mono;
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: $text-muted;
+  padding: 0.45rem 0.85rem 0;
+}
+
+.bl__synth-group-body {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.45rem 0.85rem 0.6rem;
+
+  &--single {
+    padding: 0.55rem 0.85rem 0.65rem;
+  }
 }
 
 .bl__adsr-viz {
-  width: 11rem;
-  height: 3.6rem;
+  width: 7rem;
+  height: 3.2rem;
   flex-shrink: 0;
   border: 1px solid rgba(#fff, 0.06);
-  border-radius: $radius-sm;
-  background: rgba(#000, 0.25);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba($accent, 0.05), rgba(#000, 0.12)),
+    rgba(#000, 0.2);
   overflow: visible;
+
+  .is-pad & {
+    background:
+      linear-gradient(180deg, rgba($pad-color, 0.05), rgba(#000, 0.12)),
+      rgba(#000, 0.2);
+  }
 }
+
 .bl__adsr-lbl {
   font-family: $font-mono;
   font-size: 7px;
-  fill: rgba(#fff, 0.25);
+  fill: rgba(#fff, 0.22);
   letter-spacing: 0.05em;
   text-anchor: middle;
 }
 
-.bl__synth-sliders {
+.bl__synth-params {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.35rem 1.5rem;
+  gap: 0.35rem 1rem;
   align-items: center;
+  min-width: 0;
 }
 
 .bl__synth-param {
-  display: flex;
+  display: grid;
+  grid-template-columns: 3.2rem minmax(4rem, 1fr) 2.8rem;
   align-items: center;
   gap: 0.5rem;
-  &--wide { grid-column: 1 / -1; }
+  min-width: 0;
+  &--wide { grid-template-columns: 3.2rem minmax(4rem, 1fr) 2.8rem; }
 }
 
 .bl__synth-lbl {
   font-family: $font-mono;
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: $text-muted;
-  width: 3.5rem;
-  flex-shrink: 0;
   text-align: right;
 }
 
 .bl__synth-range {
-  flex: 1;
   appearance: none;
-  height: 2px;
-  border-radius: 1px;
-  background: rgba(#fff, 0.08);
+  -webkit-appearance: none;
+  width: 100%;
+  min-width: 0;
+  height: 1.2rem;
+  border-radius: $radius-pill;
+  background: transparent;
   outline: none;
   cursor: pointer;
+
+  &::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: $radius-pill;
+    border: none;
+    background: rgba(#fff, 0.08);
+    box-shadow: inset 0 0.5px 1px rgba(#000, 0.4);
+  }
+
   &::-webkit-slider-thumb {
+    -webkit-appearance: none;
     appearance: none;
-    width: 11px; height: 11px;
+    width: 0.85rem;
+    height: 0.85rem;
+    margin-top: -0.28rem;
     border-radius: 50%;
+    border: 2px solid rgba(#fff, 0.9);
+    background: $accent;
     cursor: pointer;
-    transition: box-shadow 0.1s;
+    box-shadow:
+      0 0 0 2px rgba($accent, 0.18),
+      0 0 10px rgba($accent, 0.5),
+      0 1px 3px rgba(#000, 0.5);
+    transition: transform 0.12s, box-shadow 0.12s;
   }
+
+  &::-moz-range-track {
+    height: 4px;
+    border-radius: $radius-pill;
+    border: none;
+    background: rgba(#fff, 0.08);
+    box-shadow: inset 0 0.5px 1px rgba(#000, 0.4);
+  }
+
+  &::-moz-range-thumb {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    border: 2px solid rgba(#fff, 0.9);
+    background: $accent;
+    cursor: pointer;
+    box-shadow:
+      0 0 0 2px rgba($accent, 0.18),
+      0 0 10px rgba($accent, 0.5),
+      0 1px 3px rgba(#000, 0.5);
+  }
+
+  &:hover::-webkit-slider-thumb,
+  &:focus-visible::-webkit-slider-thumb {
+    transform: scale(1.12);
+    box-shadow:
+      0 0 0 3px rgba($accent, 0.25),
+      0 0 14px rgba($accent, 0.7),
+      0 1px 3px rgba(#000, 0.5);
+  }
+
+  &:hover::-moz-range-thumb,
+  &:focus-visible::-moz-range-thumb {
+    box-shadow:
+      0 0 0 3px rgba($accent, 0.25),
+      0 0 14px rgba($accent, 0.7),
+      0 1px 3px rgba(#000, 0.5);
+  }
+
   .is-lead & {
-    &::-webkit-slider-thumb {
-      background: $lead-color;
-      box-shadow: 0 0 7px rgba($lead-color, 0.6);
-    }
-    &::-webkit-slider-runnable-track { background: rgba($lead-color, 0.14); }
+    &::-webkit-slider-thumb { background: $lead-color; box-shadow: 0 0 0 2px rgba($lead-color, 0.18), 0 0 10px rgba($lead-color, 0.5), 0 1px 3px rgba(#000, 0.5); }
+    &::-moz-range-thumb { background: $lead-color; box-shadow: 0 0 0 2px rgba($lead-color, 0.18), 0 0 10px rgba($lead-color, 0.5), 0 1px 3px rgba(#000, 0.5); }
   }
+
   .is-pad & {
-    &::-webkit-slider-thumb {
-      background: $pad-color;
-      box-shadow: 0 0 7px rgba($pad-color, 0.6);
-    }
-    &::-webkit-slider-runnable-track { background: rgba($pad-color, 0.14); }
+    &::-webkit-slider-thumb { background: $pad-color; box-shadow: 0 0 0 2px rgba($pad-color, 0.18), 0 0 10px rgba($pad-color, 0.5), 0 1px 3px rgba(#000, 0.5); }
+    &::-moz-range-thumb { background: $pad-color; box-shadow: 0 0 0 2px rgba($pad-color, 0.18), 0 0 10px rgba($pad-color, 0.5), 0 1px 3px rgba(#000, 0.5); }
   }
 }
 
 .bl__synth-val {
   font-family: $font-mono;
-  font-size: 0.55rem;
+  font-size: 0.52rem;
   color: $text-secondary;
-  min-width: 3.2rem;
   white-space: nowrap;
   text-align: right;
+  min-width: 2.4rem;
 }
 
 // Active preset pill highlights for Lead and Pad
@@ -397,3 +574,29 @@ $pad-color:  #a374f7;
   color: $accent;
 }
 
+@media (max-width: 920px) {
+  .bl__synth-edit {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .bl__synth-group--solo { max-width: none; }
+
+  .bl__synth-group-body {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bl__adsr-viz {
+    width: 100%;
+    height: 3rem;
+  }
+
+  .bl__synth-params {
+    grid-template-columns: 1fr;
+  }
+
+  .bl__synth-param {
+    grid-template-columns: 3.2rem minmax(0, 1fr) 2.8rem;
+  }
+}

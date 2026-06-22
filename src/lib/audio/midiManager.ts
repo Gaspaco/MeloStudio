@@ -5,6 +5,7 @@ import type { PolySynth } from "./synth";
 class MidiHardwareManager {
   private midiAccess: MIDIAccess | null = null;
   private activeSynth: PolySynth | null = null;
+  private noteListener: ((event: { type: "on" | "off"; midi: number; velocity: number }) => void) | null = null;
 
   /**
    * Initializes the browser Web MIDI API subsystem and subscribes to hardware inputs.
@@ -37,6 +38,10 @@ class MidiHardwareManager {
    */
   bindTargetSynth(synth: PolySynth | null): void {
     this.activeSynth = synth;
+  }
+
+  bindNoteListener(listener: ((event: { type: "on" | "off"; midi: number; velocity: number }) => void) | null): void {
+    this.noteListener = listener;
   }
 
   /**
@@ -89,14 +94,17 @@ class MidiHardwareManager {
         const velocity = data2 / 127;
         if (velocity > 0) {
           this.activeSynth.noteOn(data1, velocity);
+          this.noteListener?.({ type: "on", midi: data1, velocity });
         } else {
           // Note On with velocity 0 is the MIDI spec's way of sending Note Off
           this.activeSynth.noteOff(data1);
+          this.noteListener?.({ type: "off", midi: data1, velocity: 0 });
         }
         break;
       }
       case 0x80: { // Note Off
         this.activeSynth.noteOff(data1);
+        this.noteListener?.({ type: "off", midi: data1, velocity: 0 });
         break;
       }
       case 0xe0: { // Pitch Bend — 14-bit value split across data1 (LSB) and data2 (MSB)

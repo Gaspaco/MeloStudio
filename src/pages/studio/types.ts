@@ -2,17 +2,27 @@ export type TrackType = "drum" | "voice" | "instrument" | "sampler" | "bass" | "
 
 export type ClipKind = "audio" | "midi" | "video";
 
+export interface MidiNoteEvent {
+  midi: number;
+  startBars: number;
+  durationBars: number;
+  velocity: number;
+}
+
 export interface MediaClip {
   id: string;
+  assetId?: string;
   kind: ClipKind;
   name: string;
   barStart: number;
   bars: number;
+  sourceOffsetBars?: number;
   widthPx?: number;
   leftPx?: number;
   pitch?: number;       // semitones, default 0
   playbackRate?: number; // speed multiplier, default 1
   gain?: number;        // dB, default 0
+  midiNotes?: MidiNoteEvent[];
   reversed?: boolean;
   url?: string;
   dataUrl?: string;
@@ -30,6 +40,21 @@ export interface UITrack {
   color: string;
   clips?: MediaClip[];
 }
+
+export const isAudioTrackType = (type: TrackType): boolean =>
+  type === "voice";
+
+export const isInstrumentTrackType = (type: TrackType): boolean =>
+  type === "instrument" || type === "bass" || type === "guitar";
+
+export const isTrackTypeAllowedForClipKind = (trackType: TrackType, clipKind: ClipKind): boolean => {
+  if (clipKind === "audio" || clipKind === "video") return isAudioTrackType(trackType);
+  if (clipKind === "midi") return isInstrumentTrackType(trackType);
+  return false;
+};
+
+export const isTrackAllowedForClip = (track: UITrack, clip: MediaClip): boolean =>
+  isTrackTypeAllowedForClipKind(track.type, clip.kind);
 
 export const hasPatternContent = (pattern: { rows?: Array<{ velocities?: number[] }> } | null | undefined): boolean =>
   Boolean(pattern?.rows?.some(row => row.velocities?.some(velocity => velocity > 0)));

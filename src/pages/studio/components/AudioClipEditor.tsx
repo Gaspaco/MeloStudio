@@ -3,7 +3,7 @@ import type { Accessor } from "solid-js";
 import type { MediaClip, UITrack } from "../types";
 import AudioWaveformDisplay from "./AudioWaveformDisplay";
 
-const MAIN_BAR_PX = 80;
+const MAIN_BAR_PX = 240;
 const ZOOM = 2;
 const EDITOR_BAR_PX = MAIN_BAR_PX * ZOOM; // 160px per bar in editor view
 const TOTAL_BARS = 64;

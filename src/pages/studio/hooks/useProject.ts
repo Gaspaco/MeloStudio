@@ -11,7 +11,7 @@ import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer 
 import { type SynthPreset } from "~/lib/audio/synth";
 import { loadClip, loadClipBlob, removeClip, storeClip } from "~/lib/clipStore";
 import { remoteClipUploadErrorMessage, uploadRemoteClip } from "~/lib/remoteClips";
-import { type MediaClip, type UITrack, TRACK_DEFS, hasStudioContent } from "../types";
+import { type MediaClip, type UITrack, TRACK_DEFS, hasStudioContent, isTrackAllowedForClip } from "../types";
 
 type Deps = {
   projectId: string;
@@ -62,7 +62,9 @@ export function useProject(deps: Deps) {
   };
 
   const clipBlob = async (clip: MediaClip): Promise<Blob | null> => {
-    let blob = await loadClipBlob(clip.id).catch(() => null);
+    const assetId = clip.assetId ?? clip.id;
+    let blob = await loadClipBlob(assetId).catch(() => null);
+    if (!blob && assetId !== clip.id) blob = await loadClipBlob(clip.id).catch(() => null);
     if (!blob && clip.url) blob = await fetch(clip.url).then((res) => res.blob()).catch(() => null);
     return blob;
   };
@@ -79,10 +81,11 @@ export function useProject(deps: Deps) {
   };
 
   const tryRemoteUpload = async (clip: MediaClip, blob: Blob): Promise<string | undefined> => {
+    const assetId = clip.assetId ?? clip.id;
     try {
-      const result = await uploadRemoteClip(deps.projectId, clip.id, blob, blob.type || "audio/mpeg");
+      const result = await uploadRemoteClip(deps.projectId, assetId, blob, blob.type || "audio/mpeg");
       if (result.remoteUrl) return result.remoteUrl;
-      console.warn(`[useProject] server clip upload not stored (${result.status}) for ${clip.id}`);
+      console.warn(`[useProject] server clip upload not stored (${result.status}) for ${assetId}`);
       if (!warnedRemoteStorageUnavailable) {
         warnedRemoteStorageUnavailable = true;
         deps.setError(remoteClipUploadErrorMessage(result));
@@ -119,7 +122,7 @@ export function useProject(deps: Deps) {
 
   const cleanTracksForDraft = (tracks: UITrack[]): UITrack[] => tracks.map((track) => ({
     ...track,
-    clips: track.clips?.map((clip) => ({ ...clip, url: undefined })),
+    clips: track.clips?.filter((clip) => isTrackAllowedForClip(track, clip)).map((clip) => ({ ...clip, url: undefined })),
   }));
 
   const currentDraftDoc = () => {
@@ -241,15 +244,18 @@ export function useProject(deps: Deps) {
           if (!TRACK_DEFS.find(d => d.type === t.type)) continue;
           const restoredClips = [];
           for (const clip of t.clips ?? []) {
+            if (!isTrackAllowedForClip(t, clip)) continue;
             if (clip.kind !== "midi") {
               let remoteUrl = clip.remoteUrl;
               // 1. Try IndexedDB (fast, local)
-              let url = await loadClip(clip.id).catch(() => null);
+              const assetId = clip.assetId ?? clip.id;
+              let url = await loadClip(assetId).catch(() => null);
+              if (!url && assetId !== clip.id) url = await loadClip(clip.id).catch(() => null);
               // 2. Fall back to inline dataUrl (small clips only)
               if (!url && clip.dataUrl) {
                 const blob = await fetch(clip.dataUrl).then((res) => res.blob()).catch(() => null);
                 if (blob) {
-                  await storeClip(clip.id, blob).catch(() => {});
+                  await storeClip(assetId, blob).catch(() => {});
                   url = URL.createObjectURL(blob);
                 }
               }
@@ -262,7 +268,7 @@ export function useProject(deps: Deps) {
                 } else if (res && res.ok) {
                   const blob = await res.blob().catch(() => null);
                   if (blob && blob.size > 0) {
-                    await storeClip(clip.id, blob).catch(() => {});
+                    await storeClip(assetId, blob).catch(() => {});
                     url = URL.createObjectURL(blob);
                   }
                 }
@@ -361,7 +367,7 @@ export function useProject(deps: Deps) {
       const doc = docResult.doc;
       const uiTracksForSave = await Promise.all(deps.tracks().map(async t => ({
         ...t,
-        clips: await Promise.all((t.clips ?? []).map(async c => ({
+        clips: await Promise.all((t.clips ?? []).filter(c => isTrackAllowedForClip(t, c)).map(async c => ({
           ...c,
           url: undefined,
           ...(await persistedClipFields(c)),
