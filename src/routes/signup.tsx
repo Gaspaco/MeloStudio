@@ -17,7 +17,6 @@ export default function SignupPage() {
     <>
       <Suspense fallback={<RouteVeil label="Loading" />}>
         <Signup
-          onBack={() => navigate("/")}
           onLogin={(email) => navigate(email ? `/login?email=${encodeURIComponent(email)}` : "/login")}
           onSuccess={finishSignup}
         />

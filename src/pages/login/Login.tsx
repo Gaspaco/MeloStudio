@@ -14,7 +14,7 @@ type NeonSocialAuthClient = {
 
 const neonAuthClient = authClient as unknown as NeonSocialAuthClient;
 
-const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: () => void; onSuccess?: () => void }> = (props) => {
+const Login: Component<{ onBack?: () => void; onSignup?: () => void; onForgot?: () => void; onSuccess?: () => void }> = (props) => {
   let pageRef: HTMLDivElement | undefined;
 
   const [searchParams] = useSearchParams();
@@ -130,12 +130,14 @@ const Login: Component<{ onBack: () => void; onSignup?: () => void; onForgot?: (
   return (
     <div ref={(el) => { pageRef = el; }} class="login">
       {/* Top bar */}
-      <button class="login__back" onClick={props.onBack}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M19 12H5M5 12L11 6M5 12L11 18" />
-        </svg>
-        <span>Back</span>
-      </button>
+      {props.onBack && (
+        <button class="login__back" onClick={props.onBack}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M19 12H5M5 12L11 6M5 12L11 18" />
+          </svg>
+          <span>Back</span>
+        </button>
+      )}
 
       <div class="login__meta">
         <span>Authenticate</span>

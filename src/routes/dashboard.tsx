@@ -26,7 +26,6 @@ export default function DashboardPage() {
           onLogout={() => navigate("/login", { replace: true })}
           onNewProject={handleNewProject}
           onOpenProject={(id) => navigate(`/studio/${id}`)}
-          onHome={() => navigate("/")}
         />
       </Suspense>
     </ProtectedPage>

@@ -7,7 +7,6 @@ import {
   getProjectStatsApi, listDeletedProjectsApi, restoreProjectApi,
   permanentlyDeleteProjectApi, getFollowCountsApi, type DeletedProjectListItem,
 } from "../../lib/api";
-import Overview from "./tabs/Overview";
 import Library from "./tabs/Library";
 import Profile from "./tabs/Profile";
 import Feed from "./tabs/Feed";
@@ -26,13 +25,12 @@ interface Project {
   published: boolean;
 }
 
-type Tab = "overview" | "profile" | "library" | "feed";
+type Tab = "home" | "profile" | "library";
 
 const Dashboard: Component<{
   onLogout: () => void;
   onNewProject: (name?: string) => void;
   onOpenProject: (id: string) => void;
-  onHome: () => void;
 }> = (props) => {
   let pageRef: HTMLDivElement | undefined;
 
@@ -49,7 +47,7 @@ const Dashboard: Component<{
 
   // ── UI state ───────────────────────────────────────────────────────
   const [time, setTime] = createSignal(new Date());
-  const [tab, setTab] = createSignal<Tab>("overview");
+  const [tab, setTab] = createSignal<Tab>("home");
 
   // ── Library state ──────────────────────────────────────────────────
   const [libCat, setLibCat] = createSignal<"all" | "mine" | "liked" | "deleted">("all");
@@ -176,10 +174,7 @@ const Dashboard: Component<{
     const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
     tl.fromTo(pageRef, { opacity: 0 }, { opacity: 1, duration: 0.4 });
     tl.fromTo(".db__bar", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9 }, 0.1);
-    tl.fromTo(".db__hero-char", { y: "140%", opacity: 0, rotateZ: 6 }, { y: "0%", opacity: 1, rotateZ: 0, duration: 1.1, stagger: 0.02 }, 0.15);
-    tl.fromTo(".db__hero-script", { opacity: 0, y: 60, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.3 }, 0.3);
-    tl.fromTo(".db__stat", { opacity: 0, y: 25 }, { opacity: 1, y: 0, duration: 0.7, stagger: 0.06 }, 0.5);
-    tl.fromTo(".db__section", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, stagger: 0.15 }, 0.7);
+    tl.fromTo(".db__content", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.9 }, 0.3);
   });
 
   // ── Auth ───────────────────────────────────────────────────────────
@@ -361,17 +356,14 @@ const Dashboard: Component<{
 
       {/* ── Bar ──────────────────────────────────────────────────── */}
       <header class="db__bar">
-        <button class="db__bar-brand" onClick={props.onHome} title="Back to home">
-          <svg class="db__bar-brand-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 19l-7-7 7-7" /></svg>
-          <span class="db__bar-brand-sep" />
+        <span class="db__bar-brand">
           <span class="db__bar-brand-word">
             <span class="db__bar-brand-melo">Melo</span>
             <span class="db__bar-brand-studio">Studio</span>
           </span>
-        </button>
+        </span>
         <nav class="db__nav">
-          <button class={`db__nav-link${tab() === "overview" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("overview")}>Overview</button>
-          <button class={`db__nav-link${tab() === "feed" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("feed")}>Feed</button>
+          <button class={`db__nav-link${tab() === "home" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("home")}>Home</button>
           <button class={`db__nav-link${tab() === "library" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("library")}>Library</button>
           <button class={`db__nav-link${tab() === "profile" ? " db__nav-link--active" : ""}`} onClick={() => switchTab("profile")}>Profile</button>
         </nav>
@@ -385,25 +377,7 @@ const Dashboard: Component<{
       </header>
 
       {/* ── Tab content ───────────────────────────────────────────── */}
-      <Show when={tab() === "overview"}>
-        <Overview
-          projects={projects}
-          userImage={() => user()?.image}
-          loadingProjects={loadingProjects}
-          greeting={greeting}
-          firstName={firstName}
-          totalTracks={totalTracks}
-          studioHours={studioHours}
-          fmtStudioTime={fmtStudioTime}
-          openCreate={openCreate}
-          openRename={openRename}
-          openDelete={openDelete}
-          onOpenProject={props.onOpenProject}
-          switchTab={switchTab}
-        />
-      </Show>
-
-      <Show when={tab() === "feed"}>
+      <Show when={tab() === "home"}>
         <Feed onOpenProject={props.onOpenProject} />
       </Show>
 
@@ -583,13 +557,9 @@ const Dashboard: Component<{
 
       {/* ── Mobile bottom nav ─────────────────────────────────────── */}
       <nav class="db__mobile-nav">
-        <button class={`db__mobile-nav-btn${tab() === "overview" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("overview")}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          <span>Overview</span>
-        </button>
-        <button class={`db__mobile-nav-btn${tab() === "feed" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("feed")}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11a9 9 0 019 9M4 4a16 16 0 0116 16" /><circle cx="5" cy="19" r="1" /></svg>
-          <span>Feed</span>
+        <button class={`db__mobile-nav-btn${tab() === "home" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("home")}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z" /></svg>
+          <span>Home</span>
         </button>
         <button class={`db__mobile-nav-btn${tab() === "library" ? " db__mobile-nav-btn--active" : ""}`} onClick={() => switchTab("library")}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19V5a2 2 0 012-2h12a2 2 0 012 2v14M4 19a2 2 0 01-2-2V7h4M4 19h16M8 9h8M8 13h5"/></svg>

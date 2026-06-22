@@ -3,9 +3,25 @@ import { FileRoutes } from "@solidjs/start/router";
 import { createEffect, createSignal, onCleanup, onMount, Show, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";
 import { waitForVisualReady } from "~/lib/client/visualReady";
+import { installI18n } from "~/lib/i18n";
 import "./styles/global.scss";
 
 let bootSignaled = false;
+function applyStoredTheme() {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+
+  const theme = window.localStorage.getItem("ms_theme") ?? "dark";
+  if (theme === "system") {
+    const prefersLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+    document.documentElement.setAttribute("data-theme", prefersLight ? "light" : "dark");
+    return;
+  }
+
+  document.documentElement.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+}
+
+applyStoredTheme();
+
 function BootReady() {
   onMount(() => {
     if (bootSignaled || typeof document === "undefined") return;
@@ -44,6 +60,7 @@ function NavigationVeil() {
       const minVisible = 180;
       hideTimer = window.setTimeout(() => {
         if (token === routeToken) setActive(false);
+        document.dispatchEvent(new Event("app:content-ready"));
       }, Math.max(0, minVisible - elapsed));
     });
   });
@@ -61,6 +78,12 @@ function NavigationVeil() {
 }
 
 function AppRoot(props: { children?: any }) {
+  onMount(() => {
+    applyStoredTheme();
+    const cleanupI18n = installI18n();
+    onCleanup(cleanupI18n);
+  });
+
   return (
     <>
       <Suspense fallback={<RouteVeil label="Loading page" />}>

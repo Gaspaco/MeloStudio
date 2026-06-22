@@ -256,9 +256,9 @@ const SharePage: Component = () => {
   return (
     <div class="sp">
       <nav class="sp__nav">
-        <a class="sp__logo" href="/">
+        <span class="sp__logo" aria-label="MeloStudio">
           <span class="sp__logo-melo">Melo</span><span class="sp__logo-studio">Studio</span>
-        </a>
+        </span>
         <div class="sp__nav-group">
           <Show when={sessionUser()} fallback={
             <>
@@ -294,7 +294,7 @@ const SharePage: Component = () => {
         <div class="sp__state sp__state--empty">
           <h2>Track Not Found</h2>
           <p>This project isn't published or the link is invalid.</p>
-          <a href="/">← Back to MeloStudio</a>
+          <a href="/login">← Sign in to MeloStudio</a>
         </div>
       </Show>
 

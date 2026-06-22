@@ -82,9 +82,9 @@ const PublishPageInner: Component = () => {
   return (
     <div class="pub">
       <nav class="pub__nav">
-        <a class="pub__nav-logo" href="/">
+        <span class="pub__nav-logo" aria-label="MeloStudio">
           <span class="pub__nav-logo-melo">Melo</span><span class="pub__nav-logo-studio">Studio</span>
-        </a>
+        </span>
         <a class="pub__nav-back" href={`/studio/${params.id}`}>
           Back to Studio
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 3L16 8l-6 5"/></svg>
