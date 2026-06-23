@@ -45,6 +45,7 @@ export function useTransport(deps: Deps) {
   let midiTimers: ReturnType<typeof setTimeout>[] = [];
   let cycleBoundaryTimer: ReturnType<typeof setTimeout> | null = null;
   let startTime = 0;
+  let playbackRunId = 0;
 
   // One bar = 4 beats; one beat = 60 / bpm seconds.
   const barsToSecs = (bars: number) => bars * 4 * (60 / deps.bpm());
@@ -64,7 +65,10 @@ export function useTransport(deps: Deps) {
     deps.tracks().filter(track => isInstrumentTrackType(track.type));
 
   const synthPresetForTrack = (track: UITrack): SynthPreset =>
-    track.type === "bass" ? "bass" : track.type === "guitar" ? "guitar" : "piano";
+    track.type === "bass" ? "bass" : track.type === "guitar" ? "guitar" : track.instrumentPreset ?? "piano";
+
+  const isPlaybackRunActive = (runId: number) =>
+    runId === playbackRunId && deps.playing();
 
   const cycleBounds = () => {
     const rawStartPx = Math.max(0, Math.min(deps.cycleStartPx(), deps.cycleEndPx()));
@@ -87,6 +91,7 @@ export function useTransport(deps: Deps) {
   };
 
   const stopAudioPlayback = () => {
+    playbackRunId++;
     for (const src of audioSources) { try { src.stop(); } catch { /* already ended */ } }
     audioSources = [];
     if (playbackRaf) { cancelAnimationFrame(playbackRaf); playbackRaf = null; }
@@ -99,7 +104,7 @@ export function useTransport(deps: Deps) {
     if (masterGainNode) { try { masterGainNode.disconnect(); } catch { /* */ } masterGainNode = null; }
   };
 
-  const scheduleMidiPlayback = (timelineStartSecs: number, segmentEndSecs: number) => {
+  const scheduleMidiPlayback = (timelineStartSecs: number, segmentEndSecs: number, runId: number) => {
     let synth = deps.getSynth();
     if (!synth) {
       const firstPlayableMidiTrack = instrumentTracks().find(track =>
@@ -119,6 +124,7 @@ export function useTransport(deps: Deps) {
 
     for (const track of instrumentTracks()) {
       if (track.muted) continue;
+      const trackPreset = synthPresetForTrack(track);
       for (const clip of track.clips ?? []) {
         if (clip.kind !== "midi" || !clip.midiNotes?.length) continue;
         const clipStartSecs = barsToSecs(clip.barStart);
@@ -133,7 +139,6 @@ export function useTransport(deps: Deps) {
           if (noteEndSecs <= timelineStartSecs) continue;
           if (noteStartSecs >= segmentEndSecs) continue;
 
-          const elapsedIntoNote = Math.max(0, timelineStartSecs - noteStartSecs);
           const delayMs = Math.max(0, (noteStartSecs - timelineStartSecs) * 1000);
           const clippedEndSecs = Math.min(noteEndSecs, segmentEndSecs);
           const durationMs = Math.max(20, (clippedEndSecs - Math.max(noteStartSecs, timelineStartSecs)) * 1000);
@@ -141,8 +146,12 @@ export function useTransport(deps: Deps) {
           const velocity = Math.max(0.05, Math.min(1, note.velocity));
 
           const onTimer = setTimeout(() => {
+            if (!isPlaybackRunActive(runId)) return;
+            if (synthPresetForTrack(track) === trackPreset) synth.setPreset(trackPreset);
             synth.noteOn(midi, velocity * (track.volume ?? 1));
-            const offTimer = setTimeout(() => synth.noteOff(midi), durationMs);
+            const offTimer = setTimeout(() => {
+              if (isPlaybackRunActive(runId)) synth.noteOff(midi);
+            }, durationMs);
             midiTimers.push(offTimer);
           }, delayMs);
           midiTimers.push(onTimer);
@@ -158,6 +167,7 @@ export function useTransport(deps: Deps) {
 
   const startAudioPlayback = async (requestedStartPx = deps.playheadPx()) => {
     stopAudioPlayback();
+    const runId = playbackRunId;
     const ctx = getAudioContext();
     const playbackStartPx = normalizedPlaybackStartPx(requestedStartPx);
     if (Math.abs(playbackStartPx - deps.playheadPx()) > 0.5) deps.setPlayheadPx(playbackStartPx);
@@ -189,6 +199,7 @@ export function useTransport(deps: Deps) {
       const el = getAudioContext().currentTime - playbackStartCtxTime;
       const currentSecs = playbackStartTimelineSecs + el;
       const liveBounds = cycleBounds();
+      if (!isPlaybackRunActive(runId)) return;
       if (liveBounds.enabled && currentSecs >= liveBounds.endSecs) {
         doLoop();
         return;
@@ -204,6 +215,7 @@ export function useTransport(deps: Deps) {
       const boundaryDelayMs = Math.max(0, (bounds.endSecs - timelineStartSecs) * 1000);
       cycleBoundaryTimer = setTimeout(() => {
         if (!deps.playing()) return;
+        if (!isPlaybackRunActive(runId)) return;
         doLoop();
       }, boundaryDelayMs);
     }
@@ -235,10 +247,13 @@ export function useTransport(deps: Deps) {
             const res = audioSrc.startsWith("/api/") ? await apiFetch(requestSrc) : await fetch(requestSrc);
             if (res.status === 204 || !res.ok) { failedSrcCache.add(audioSrc); continue; }
             const ab = await res.arrayBuffer();
+            if (!isPlaybackRunActive(runId)) return;
             buffer = await ctx.decodeAudioData(ab);
+            if (!isPlaybackRunActive(runId)) return;
             audioBufferCache.set(audioSrc, buffer);
           } catch { failedSrcCache.add(audioSrc); continue; }
         }
+        if (!isPlaybackRunActive(runId)) return;
         const clipStartSecs = barsToSecs(clip.barStart);
         const clipDurationSecs = barsToSecs(clip.bars);
         const clipEndSecs   = clipStartSecs + clipDurationSecs;
@@ -259,7 +274,8 @@ export function useTransport(deps: Deps) {
       }
     }
 
-    scheduleMidiPlayback(timelineStartSecs, segmentEndSecs);
+    if (!isPlaybackRunActive(runId)) return;
+    scheduleMidiPlayback(timelineStartSecs, segmentEndSecs, runId);
   };
 
   const togglePlay = async () => {

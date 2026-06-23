@@ -66,8 +66,10 @@ export function useSynth(deps: Deps) {
         deps.setOctave(4);
         deps.setActivePanel("keys");
       } else if (t.type === "instrument") {
-        if (deps.synthPreset() === "bass" || deps.synthPreset() === "guitar") {
-          deps.setSynthPreset("piano"); synth?.setPreset("piano");
+        const nextPreset = t.instrumentPreset ?? "piano";
+        if (deps.synthPreset() !== nextPreset) {
+          deps.setSynthPreset(nextPreset);
+          synth?.setPreset(nextPreset);
         }
         deps.setOctave(4);
         deps.setActivePanel("keys");

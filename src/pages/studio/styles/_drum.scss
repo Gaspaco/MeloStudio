@@ -1,14 +1,61 @@
 @use "../../../styles/variables" as *;
 
 /* ─────────────── DRUM PANEL ─────────────── */
+.bl__bottom-panel-shell {
+  position: relative;
+  flex: 0 0 auto;
+  min-height: 10.625rem;
+  max-height: min(32.5rem, calc(100vh - 13.75rem));
+  display: flex;
+  flex-direction: column;
+  background: rgba(#fff, 0.015);
+  border-top: 1px solid rgba(#fff, 0.06);
+  min-width: 0;
+}
+
+.bl__bottom-panel-resizer {
+  all: unset;
+  cursor: row-resize;
+  position: relative;
+  flex: 0 0 0.65rem;
+  display: grid;
+  place-items: center;
+  background: rgba(#000, 0.2);
+  border-bottom: 1px solid rgba(#fff, 0.045);
+  touch-action: none;
+
+  span {
+    width: 3.5rem;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(#fff, 0.16);
+    transition: background 0.15s, width 0.15s;
+  }
+
+  &:hover span,
+  &:focus-visible span {
+    width: 4.4rem;
+    background: rgba($accent, 0.72);
+  }
+}
+
 .bl__drum-panel,
 .bl__kb-panel {
   background: rgba(#fff, 0.015);
-  border-top: 1px solid rgba(#fff, 0.05);
+  border-top: 0;
   display: flex;
   flex-direction: column;
-  flex: 0 0 auto;
-  max-height: 30rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+}
+
+.bl__drum-panel {
+  overflow: hidden;
+}
+
+.bl__kb-panel {
+  overflow-y: auto;
 }
 .bl__dp-head {
   display: flex;
@@ -219,6 +266,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
+  flex: 1;
+  min-height: 0;
 }
 .bl__dp-row {
   display: grid;
@@ -327,4 +376,3 @@
     transform: scale(1.04);
   }
 }
-

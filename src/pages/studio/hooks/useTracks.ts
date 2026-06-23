@@ -412,6 +412,7 @@ export function useTracks(deps: Deps) {
       id: crypto.randomUUID(), name: def.label, type,
       muted: false, solo: false, volume: 0.8, pan: 0,
       color: type === "drum" ? def.color : randomTrackColor(),
+      ...(type === "instrument" ? { instrumentPreset: "piano" as SynthPreset } : {}),
     };
     deps.setTracks([...deps.tracks(), t]);
     deps.setSelectedTrack(t.id);
@@ -629,6 +630,7 @@ export function useTracks(deps: Deps) {
           id: crypto.randomUUID(), name, type,
           muted: false, solo: false, volume: 0.8, pan: 0,
           color: type === "drum" ? def.color : randomTrackColor(),
+          ...(type === "instrument" ? { instrumentPreset: "piano" as SynthPreset } : {}),
         };
       });
       deps.setTracks(newTracks);

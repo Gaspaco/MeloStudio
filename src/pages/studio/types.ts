@@ -1,3 +1,5 @@
+import type { SynthPreset } from "~/lib/audio/synth";
+
 export type TrackType = "drum" | "voice" | "instrument" | "sampler" | "bass" | "guitar";
 
 export type ClipKind = "audio" | "midi" | "video";
@@ -33,6 +35,7 @@ export interface UITrack {
   id: string;
   name: string;
   type: TrackType;
+  instrumentPreset?: SynthPreset;
   muted: boolean;
   solo: boolean;
   volume: number; // 0..1

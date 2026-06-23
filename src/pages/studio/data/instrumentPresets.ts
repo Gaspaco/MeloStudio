@@ -63,5 +63,5 @@ export const INSTRUMENT_CATEGORIES: InstrumentCategory[] = [
 export function getInstrumentCategoryForPreset(preset: SynthPreset): InstrumentCategory {
   return INSTRUMENT_CATEGORIES.find((category) =>
     category.sounds.some((sound) => sound.id === preset)
-  ) ?? INSTRUMENT_CATEGORIES[0];
+  ) ?? INSTRUMENT_CATEGORIES[0]!;
 }
