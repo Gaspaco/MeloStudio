@@ -203,7 +203,7 @@ const TimelineArea: Component<Props> = (props) => {
     const trackId = lane?.dataset.trackId;
     const trackIndex = Number(lane?.dataset.trackIndex ?? NaN);
     const track = props.tracks().find((item) => item.id === trackId);
-    if (!track || !Number.isFinite(trackIndex)) return null;
+    if (!lane || !track || !Number.isFinite(trackIndex)) return null;
     if (kind && !isTrackTypeAllowedForClipKind(track.type, kind)) return null;
     return { track, trackIndex, laneTop: lane.getBoundingClientRect().top };
   };
@@ -225,8 +225,8 @@ const TimelineArea: Component<Props> = (props) => {
 
   const onTimelineWheel = (e: WheelEvent) => {
     if (!timelineEl) return;
-    // Shift+wheel (Mac convention) OR dominant vertical scroll: redirect to horizontal so the timeline scrolls left/right
-    if (e.shiftKey || Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+    // Keep horizontal timeline navigation available without stealing normal vertical track scrolling.
+    if (e.shiftKey && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
       e.preventDefault();
       timelineEl.scrollLeft += e.deltaY;
     }

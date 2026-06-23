@@ -69,6 +69,7 @@ const Studio: Component = () => {
   const [titleEditing,       setTitleEditing]       = createSignal(false);
   const [drumPanelOpen,      setDrumPanelOpen]      = createSignal(true);
   const [activePanel,        setActivePanel]        = createSignal<"drum" | "keys" | "voice" | null>(null);
+  const [bottomPanelHeight,  setBottomPanelHeight]  = createSignal(300);
   const [selectedClipId,     setSelectedClipId]     = createSignal<string | null>(null);
   const [drumSwing,          setDrumSwing]          = createSignal(0);
   const [drumSteps,          setDrumSteps]          = createSignal(16);
@@ -142,6 +143,46 @@ const Studio: Component = () => {
   };
 
   let trk!: ReturnType<typeof useTracks>;
+
+  const PANEL_MIN_HEIGHT = 170;
+  const PANEL_MAX_HEIGHT = 520;
+  const MAIN_MIN_HEIGHT = 220;
+  let panelResizeState: { startY: number; startHeight: number } | null = null;
+
+  const clampBottomPanelHeight = (height: number) => {
+    const viewportMax = typeof window === "undefined"
+      ? PANEL_MAX_HEIGHT
+      : Math.max(PANEL_MIN_HEIGHT, window.innerHeight - MAIN_MIN_HEIGHT);
+    return Math.max(PANEL_MIN_HEIGHT, Math.min(height, PANEL_MAX_HEIGHT, viewportMax));
+  };
+
+  const stopPanelResize = () => {
+    if (!panelResizeState) return;
+    panelResizeState = null;
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+    window.removeEventListener("pointermove", onPanelResizeMove);
+    window.removeEventListener("pointerup", stopPanelResize);
+    window.removeEventListener("pointercancel", stopPanelResize);
+  };
+
+  const onPanelResizeMove = (e: PointerEvent) => {
+    if (!panelResizeState) return;
+    const delta = panelResizeState.startY - e.clientY;
+    setBottomPanelHeight(clampBottomPanelHeight(panelResizeState.startHeight + delta));
+  };
+
+  const startPanelResize = (e: PointerEvent & { currentTarget: HTMLElement }) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    panelResizeState = { startY: e.clientY, startHeight: bottomPanelHeight() };
+    document.body.style.cursor = "row-resize";
+    document.body.style.userSelect = "none";
+    window.addEventListener("pointermove", onPanelResizeMove);
+    window.addEventListener("pointerup", stopPanelResize);
+    window.addEventListener("pointercancel", stopPanelResize);
+  };
+  onCleanup(stopPanelResize);
 
   const sth = useSynth({
     tracks, selectedTrack, masterVol,
@@ -796,52 +837,75 @@ const Studio: Component = () => {
       </div>
 
       <Show when={activePanel() === "drum" && tracks().some(t => t.type === "drum")}>
-        <DrumPanel
-          pattern={pattern} currentStep={currentStep}
-          drumSteps={drumSteps} drumSwing={drumSwing}
-          drumVolume={() => tracks().find(t => t.type === "drum")?.volume ?? 0.8}
-          onToggleStep={drum.toggleStep}
-          onCycleStepVelocity={drum.cycleStepVelocity}
-          onToggleRowMute={drum.toggleRowMute}
-          onUpdateRowGain={drum.updateRowGain}
-          onUpdateSwing={drum.updateSwing}
-          onUpdateDrumSteps={drum.updateDrumSteps}
-          onSetDrumVolume={(v) => {
-            const drumTrack = tracks().find(t => t.type === "drum");
-            if (drumTrack) trk.patchTrack(drumTrack.id, { volume: v });
-          }}
-          onClearPattern={drum.clearPattern}
-          onCollapse={() => setActivePanel(null)}
-        />
+        <div class="bl__bottom-panel-shell" style={{ height: `${bottomPanelHeight()}px` }}>
+          <button
+            class="bl__bottom-panel-resizer"
+            type="button"
+            aria-label="Resize editor"
+            title="Resize editor"
+            onPointerDown={startPanelResize}
+          >
+            <span />
+          </button>
+          <DrumPanel
+            pattern={pattern} currentStep={currentStep}
+            drumSteps={drumSteps} drumSwing={drumSwing}
+            drumVolume={() => tracks().find(t => t.type === "drum")?.volume ?? 0.8}
+            onToggleStep={drum.toggleStep}
+            onCycleStepVelocity={drum.cycleStepVelocity}
+            onToggleRowMute={drum.toggleRowMute}
+            onUpdateRowGain={drum.updateRowGain}
+            onUpdateSwing={drum.updateSwing}
+            onUpdateDrumSteps={drum.updateDrumSteps}
+            onSetDrumVolume={(v) => {
+              const drumTrack = tracks().find(t => t.type === "drum");
+              if (drumTrack) trk.patchTrack(drumTrack.id, { volume: v });
+            }}
+            onClearPattern={drum.clearPattern}
+            onCollapse={() => setActivePanel(null)}
+          />
+        </div>
       </Show>
 
       <Show when={activePanel() === "keys" && (() => {
         const t = tracks().find(tr => tr.id === selectedTrack());
         return t && (t.type === "instrument" || t.type === "bass" || t.type === "guitar");
       })()}>
-        <KeyboardPanel
-          tracks={tracks} selectedTrack={selectedTrack}
-          synthPreset={synthPreset} octave={octave} activeNotes={activeNotes}
-          synthAttack={synthAttack} synthDecay={synthDecay}
-          synthSustain={synthSustain} synthRelease={synthRelease}
-          synthFilterFreq={synthFilterFreq} adsrPath={adsrPath}
-          onPressKey={sth.pressKey} onReleaseKey={sth.releaseKey}
-          onUpdatePreset={(preset) => {
-            sth.updatePreset(preset);
-            const id = selectedTrack();
-            const track = tracks().find(t => t.id === id);
-            if (id && track && (track.type === "instrument" || track.type === "bass" || track.type === "guitar")) {
-              trk.patchTrack(id, { instrumentPreset: preset });
-            }
-          }} onUpdateEnvelope={sth.updateEnvelope}
-          onUpdateFilter={sth.updateFilterFreq}
-          onSetOctave={setOctave}
-          onSetVolume={(v) => {
-            const id = selectedTrack();
-            if (id) trk.patchTrack(id, { volume: v });
-          }}
-          onCollapse={() => setActivePanel(null)}
-        />
+        <div class="bl__bottom-panel-shell" style={{ height: `${bottomPanelHeight()}px` }}>
+          <button
+            class="bl__bottom-panel-resizer"
+            type="button"
+            aria-label="Resize editor"
+            title="Resize editor"
+            onPointerDown={startPanelResize}
+          >
+            <span />
+          </button>
+          <KeyboardPanel
+            tracks={tracks} selectedTrack={selectedTrack}
+            synthPreset={synthPreset} octave={octave} activeNotes={activeNotes}
+            synthAttack={synthAttack} synthDecay={synthDecay}
+            synthSustain={synthSustain} synthRelease={synthRelease}
+            synthFilterFreq={synthFilterFreq} adsrPath={adsrPath}
+            onPressKey={sth.pressKey} onReleaseKey={sth.releaseKey}
+            onUpdatePreset={(preset) => {
+              sth.updatePreset(preset);
+              const id = selectedTrack();
+              const track = tracks().find(t => t.id === id);
+              if (id && track && (track.type === "instrument" || track.type === "bass" || track.type === "guitar")) {
+                trk.patchTrack(id, { instrumentPreset: preset });
+              }
+            }}
+            onUpdateEnvelope={sth.updateEnvelope}
+            onUpdateFilter={sth.updateFilterFreq}
+            onSetOctave={setOctave}
+            onSetVolume={(v) => {
+              const id = selectedTrack();
+              if (id) trk.patchTrack(id, { volume: v });
+            }}
+            onCollapse={() => setActivePanel(null)}
+          />
+        </div>
       </Show>
 
 
