@@ -19,6 +19,9 @@ function revealApp() {
 		.then(() => {
 			const bootVeil = document.getElementById("boot-veil");
 			document.documentElement.removeAttribute("data-app-booting");
+			document.documentElement.removeAttribute("data-skip-boot-veil");
+			try { sessionStorage.setItem("melostudio_loaded", "1"); }
+			catch {}
 			if (bootVeil) {
 				bootVeil.setAttribute("data-hiding", "true");
 				window.setTimeout(() => bootVeil.remove(), 260);

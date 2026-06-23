@@ -58,16 +58,19 @@ export function useSynth(deps: Deps) {
     if (lastSelectedTrack !== trackId) {
       lastSelectedTrack = trackId;
       if (t.type === "bass") {
-        if (deps.synthPreset() !== "bass") { deps.setSynthPreset("bass"); synth?.setPreset("bass"); }
+        const preset = t.instrumentPreset ?? "bass";
+        if (deps.synthPreset() !== preset) { deps.setSynthPreset(preset); synth?.setPreset(preset); }
         deps.setOctave(2);
         deps.setActivePanel("keys");
       } else if (t.type === "guitar") {
-        if (deps.synthPreset() !== "guitar") { deps.setSynthPreset("guitar"); synth?.setPreset("guitar"); }
+        const preset = t.instrumentPreset ?? "guitar";
+        if (deps.synthPreset() !== preset) { deps.setSynthPreset(preset); synth?.setPreset(preset); }
         deps.setOctave(4);
         deps.setActivePanel("keys");
       } else if (t.type === "instrument") {
-        if (deps.synthPreset() === "bass" || deps.synthPreset() === "guitar") {
-          deps.setSynthPreset("piano"); synth?.setPreset("piano");
+        const preset = t.instrumentPreset ?? "piano";
+        if (deps.synthPreset() !== preset) {
+          deps.setSynthPreset(preset); synth?.setPreset(preset);
         }
         deps.setOctave(4);
         deps.setActivePanel("keys");
@@ -104,7 +107,7 @@ export function useSynth(deps: Deps) {
     e.preventDefault();
     await unlockAudioContext();
     const activePreset: SynthPreset = sel.type === "bass" ? "bass"
-      : sel.type === "guitar" ? "guitar" : deps.synthPreset();
+      : sel.type === "guitar" ? "guitar" : (sel.instrumentPreset ?? deps.synthPreset());
     ensureSynth(activePreset);
     if (!synth) return;
     // MIDI note formula: (octave+1)*12 + semitone; the +1 is because MIDI octave 0 starts at note 12, not 0
@@ -133,7 +136,7 @@ export function useSynth(deps: Deps) {
     await unlockAudioContext();
     const sel = deps.tracks().find(t => t.id === deps.selectedTrack());
     const activePreset: SynthPreset = sel?.type === "bass" ? "bass"
-      : sel?.type === "guitar" ? "guitar" : deps.synthPreset();
+      : sel?.type === "guitar" ? "guitar" : (sel?.instrumentPreset ?? deps.synthPreset());
     ensureSynth(activePreset);
     if (!synth) return;
     synth.noteOn(midi, 0.85);

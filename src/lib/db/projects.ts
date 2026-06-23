@@ -155,6 +155,7 @@ export interface PublicProjectView {
   updatedAt: string;
   ownerId?: string;
   mixUrl?: string;
+  coverUrl?: string;
   durationSec?: number;
   genre?: string;
   description?: string;
@@ -182,6 +183,7 @@ export async function getPublicProject(projectId: string): Promise<PublicProject
     updatedAt: rows[0].updated_at,
     ownerId: rows[0].user_id,
     mixUrl: doc.mixUrl,
+    coverUrl: doc.coverUrl,
     durationSec: getProjectDurationSec(doc, bpm),
     genre: doc.genre,
     description: doc.description,

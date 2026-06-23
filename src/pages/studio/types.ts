@@ -1,3 +1,5 @@
+import type { SynthPreset } from "~/lib/audio/synth";
+
 export type TrackType = "drum" | "voice" | "instrument" | "sampler" | "bass" | "guitar";
 
 export type ClipKind = "audio" | "midi" | "video";
@@ -38,6 +40,7 @@ export interface UITrack {
   volume: number; // 0..1
   pan: number;    // -1..1
   color: string;
+  instrumentPreset?: SynthPreset;
   clips?: MediaClip[];
 }
 

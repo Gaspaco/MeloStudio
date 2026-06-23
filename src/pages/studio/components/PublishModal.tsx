@@ -1,5 +1,5 @@
 import { type Component, type Accessor, createSignal, Show } from "solid-js";
-import { apiFetch, publishProjectApi } from "~/lib/api";
+import { apiFetch, publishProjectApi, shareUrl } from "~/lib/api";
 
 const GENRES = [
   "Other", "Hip Hop", "R&B", "Pop", "Rock", "Electronic", "Jazz",
@@ -12,6 +12,7 @@ interface PublishModalProps {
   projectName: Accessor<string>;
   published: Accessor<boolean>;
   onClose: () => void;
+  onBeforePublish?: () => Promise<void>;
   onPublished: (published: boolean) => void;
 }
 
@@ -25,6 +26,9 @@ const PublishModal: Component<PublishModalProps> = (props) => {
   const [busy, setBusy] = createSignal(false);
   const [err, setErr] = createSignal("");
   const [coverUrl, setCoverUrl] = createSignal<string | null>(null);
+  const getShareUrl = () => typeof window === "undefined" ? `/share/${props.projectId}` : shareUrl(props.projectId);
+  const [publishedUrl, setPublishedUrl] = createSignal(props.published() ? getShareUrl() : "");
+  const [copied, setCopied] = createSignal(false);
 
   let coverInput!: HTMLInputElement;
 
@@ -40,10 +44,23 @@ const PublishModal: Component<PublishModalProps> = (props) => {
 
   const descLen = () => description().length;
 
+  const copyShareLink = async () => {
+    const url = publishedUrl() || getShareUrl();
+    setErr("");
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1800);
+    } catch {
+      setErr("Could not copy the link. Select the URL and copy it manually.");
+    }
+  };
+
   const handlePublish = async () => {
     setBusy(true);
     setErr("");
     try {
+      await props.onBeforePublish?.();
       const res = await apiFetch(`/api/projects/${props.projectId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -52,13 +69,15 @@ const PublishModal: Component<PublishModalProps> = (props) => {
           genre: genre(),
           description: description() || undefined,
           explicit: explicit(),
+          unlisted: unlisted(),
           coverUrl: coverUrl() || undefined,
         }),
       });
       if (!res.ok) throw new Error(`Save failed: ${res.status}`);
       await publishProjectApi(props.projectId, true);
+      setPublishedUrl(getShareUrl());
+      setCopied(false);
       props.onPublished(true);
-      props.onClose();
     } catch (e: any) {
       setErr(e.message ?? "Something went wrong");
     } finally {
@@ -165,10 +184,25 @@ const PublishModal: Component<PublishModalProps> = (props) => {
           <p class="bl__pub-err">{err()}</p>
         </Show>
 
+        <Show when={publishedUrl()}>
+          <div class="bl__pub-share">
+            <span class="bl__pub-share-label">Public share link</span>
+            <div class="bl__pub-share-row">
+              <input class="bl__pub-share-input" value={publishedUrl()} readonly onFocus={(e) => e.currentTarget.select()} />
+              <button class="bl__pub-share-copy" onClick={copyShareLink}>
+                {copied() ? "Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+        </Show>
+
         <div class="bl__pub-actions">
-          <button class="bl__pub-btn bl__pub-btn--cancel" onClick={props.onClose}>Cancel</button>
+          <button class="bl__pub-btn bl__pub-btn--cancel" onClick={props.onClose}>{publishedUrl() ? "Close" : "Cancel"}</button>
+          <Show when={publishedUrl()}>
+            <a class="bl__pub-btn bl__pub-btn--view" href={publishedUrl()}>View Project</a>
+          </Show>
           <button class="bl__pub-btn bl__pub-btn--publish" disabled={busy()} onClick={handlePublish}>
-            {busy() ? "Publishing…" : "Publish"}
+            {busy() ? "Publishing…" : publishedUrl() ? "Update Share" : "Publish"}
           </button>
         </div>
       </div>

@@ -64,7 +64,7 @@ export function useTransport(deps: Deps) {
     deps.tracks().filter(track => isInstrumentTrackType(track.type));
 
   const synthPresetForTrack = (track: UITrack): SynthPreset =>
-    track.type === "bass" ? "bass" : track.type === "guitar" ? "guitar" : "piano";
+    track.instrumentPreset ?? (track.type === "bass" ? "bass" : track.type === "guitar" ? "guitar" : "piano");
 
   const cycleBounds = () => {
     const rawStartPx = Math.max(0, Math.min(deps.cycleStartPx(), deps.cycleEndPx()));
@@ -141,6 +141,7 @@ export function useTransport(deps: Deps) {
           const velocity = Math.max(0.05, Math.min(1, note.velocity));
 
           const onTimer = setTimeout(() => {
+            deps.ensureSynth?.(synthPresetForTrack(track));
             synth.noteOn(midi, velocity * (track.volume ?? 1));
             const offTimer = setTimeout(() => synth.noteOff(midi), durationMs);
             midiTimers.push(offTimer);

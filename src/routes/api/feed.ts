@@ -25,7 +25,7 @@ export async function GET(event: APIEvent) {
         (SELECT COUNT(*)::int FROM project_comments pc WHERE pc.project_id = p.id) AS comment_count
       FROM projects p
       INNER JOIN follows f ON f.following_id = p.user_id AND f.follower_id = ${userId}
-      WHERE p.published = TRUE AND p.deleted_at IS NULL
+      WHERE p.published = TRUE AND p.deleted_at IS NULL AND p.data->>'unlisted' IS DISTINCT FROM 'true'
       ORDER BY p.updated_at DESC
       LIMIT ${limit} OFFSET ${offset}
     ` as Array<Record<string, unknown>>;

@@ -43,7 +43,7 @@ export async function GET(event: APIEvent) {
 
     const doc = row.data;
     const bpm: number = doc.transport?.bpm ?? row.bpm ?? 120;
-    const tracks = getSharePlaybackTracks(doc, bpm);
+    const tracks = getSharePlaybackTracks(doc, bpm, id);
 
     const pattern = doc.beat?.pattern;
     const hasDrums = !!pattern?.rows?.some((row) =>

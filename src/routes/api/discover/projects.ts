@@ -26,7 +26,7 @@ export async function GET(event: APIEvent) {
             (SELECT COUNT(*)::int FROM project_likes pl WHERE pl.project_id = p.id) AS like_count,
             (SELECT COUNT(*)::int FROM project_comments pc WHERE pc.project_id = p.id) AS comment_count
           FROM projects p
-          WHERE p.published = TRUE AND p.deleted_at IS NULL AND p.data->>'genre' = ${genre}
+          WHERE p.published = TRUE AND p.deleted_at IS NULL AND p.data->>'unlisted' IS DISTINCT FROM 'true' AND p.data->>'genre' = ${genre}
           ORDER BY like_count DESC, p.updated_at DESC
           LIMIT ${limit} OFFSET ${offset}
         `;
@@ -38,7 +38,7 @@ export async function GET(event: APIEvent) {
             (SELECT COUNT(*)::int FROM project_likes pl WHERE pl.project_id = p.id) AS like_count,
             (SELECT COUNT(*)::int FROM project_comments pc WHERE pc.project_id = p.id) AS comment_count
           FROM projects p
-          WHERE p.published = TRUE AND p.deleted_at IS NULL
+          WHERE p.published = TRUE AND p.deleted_at IS NULL AND p.data->>'unlisted' IS DISTINCT FROM 'true'
           ORDER BY like_count DESC, p.updated_at DESC
           LIMIT ${limit} OFFSET ${offset}
         `;
@@ -52,7 +52,7 @@ export async function GET(event: APIEvent) {
             (SELECT COUNT(*)::int FROM project_likes pl WHERE pl.project_id = p.id) AS like_count,
             (SELECT COUNT(*)::int FROM project_comments pc WHERE pc.project_id = p.id) AS comment_count
           FROM projects p
-          WHERE p.published = TRUE AND p.deleted_at IS NULL AND p.data->>'genre' = ${genre}
+          WHERE p.published = TRUE AND p.deleted_at IS NULL AND p.data->>'unlisted' IS DISTINCT FROM 'true' AND p.data->>'genre' = ${genre}
           ORDER BY p.updated_at DESC
           LIMIT ${limit} OFFSET ${offset}
         `;
@@ -64,7 +64,7 @@ export async function GET(event: APIEvent) {
             (SELECT COUNT(*)::int FROM project_likes pl WHERE pl.project_id = p.id) AS like_count,
             (SELECT COUNT(*)::int FROM project_comments pc WHERE pc.project_id = p.id) AS comment_count
           FROM projects p
-          WHERE p.published = TRUE AND p.deleted_at IS NULL
+          WHERE p.published = TRUE AND p.deleted_at IS NULL AND p.data->>'unlisted' IS DISTINCT FROM 'true'
           ORDER BY p.updated_at DESC
           LIMIT ${limit} OFFSET ${offset}
         `;

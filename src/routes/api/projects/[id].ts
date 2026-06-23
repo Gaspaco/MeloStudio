@@ -143,6 +143,11 @@ export async function PATCH(event: APIEvent) {
       if (explicit === null) return textResponse("explicit must be boolean", 400);
       doc.explicit = explicit;
     }
+    if (body.unlisted !== undefined) {
+      const unlisted = parseBoolean(body.unlisted);
+      if (unlisted === null) return textResponse("unlisted must be boolean", 400);
+      doc.unlisted = unlisted;
+    }
     if (body.lyrics !== undefined) {
       const lyrics = cleanOptionalString(body.lyrics, 50000);
       if (lyrics) doc.lyrics = lyrics;

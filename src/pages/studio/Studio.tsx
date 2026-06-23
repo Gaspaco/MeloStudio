@@ -826,7 +826,14 @@ const Studio: Component = () => {
           synthSustain={synthSustain} synthRelease={synthRelease}
           synthFilterFreq={synthFilterFreq} adsrPath={adsrPath}
           onPressKey={sth.pressKey} onReleaseKey={sth.releaseKey}
-          onUpdatePreset={sth.updatePreset} onUpdateEnvelope={sth.updateEnvelope}
+          onUpdatePreset={(preset) => {
+            sth.updatePreset(preset);
+            const id = selectedTrack();
+            const track = tracks().find(t => t.id === id);
+            if (id && track && (track.type === "instrument" || track.type === "bass" || track.type === "guitar")) {
+              trk.patchTrack(id, { instrumentPreset: preset });
+            }
+          }} onUpdateEnvelope={sth.updateEnvelope}
           onUpdateFilter={sth.updateFilterFreq}
           onSetOctave={setOctave}
           onSetVolume={(v) => {
@@ -900,6 +907,7 @@ const Studio: Component = () => {
           projectName={name}
           published={published}
           onClose={() => setShowPublishModal(false)}
+          onBeforePublish={project.save}
           onPublished={(v) => {
             setPublished(v);
             if (v) {
