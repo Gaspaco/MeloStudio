@@ -36,7 +36,7 @@ const MidiNotesOverview: Component<{ clip: MediaClip }> = (props) => {
   const minMidi = () => Math.max(0, Math.min(...notes().map(note => note.midi), MIDI_OVERVIEW_MIN));
   const maxMidi = () => Math.min(127, Math.max(...notes().map(note => note.midi), MIDI_OVERVIEW_MAX));
   const pitchRows = () => Math.max(12, maxMidi() - minMidi() + 1);
-  const noteHeightPx = () => Math.max(2, Math.min(5, 72 / pitchRows()));
+  const noteHeightPx = () => Math.max(4, Math.min(7, 88 / pitchRows()));
   const noteTop = (midi: number) => {
     const normalized = (Math.max(minMidi(), Math.min(maxMidi(), midi)) - minMidi()) / Math.max(1, maxMidi() - minMidi());
     return `${4 + (1 - normalized) * 88}%`;

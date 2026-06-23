@@ -19,3 +19,7 @@ declare module "*.mp3" {
   const src: string;
   export default src;
 }
+
+// Stub declarations for types referenced by third-party library declarations
+// that are not available in a browser-targeted project.
+type Timer = ReturnType<typeof setTimeout>;

@@ -10,13 +10,14 @@ import { apiFetch } from "~/lib/api";
 import { unlockAudioContext, getAudioContext } from "~/lib/audio/context";
 import { getMasterBus } from "~/lib/audio/masterBus";
 import type { StepPattern, StepSequencer } from "~/lib/audio/stepSeq";
-import type { PolySynth } from "~/lib/audio/synth";
+import type { PolySynth, SynthPreset } from "~/lib/audio/synth";
 import { hasPatternContent, isAudioTrackType, isInstrumentTrackType, type UITrack } from "../types";
 import { STUDIO_BAR_PX } from "../lib/regionMath";
 
 type Deps = {
   getSeq: () => StepSequencer | null;
   getSynth: () => PolySynth | null;
+  ensureSynth?: (preset: SynthPreset) => void;
   tracks: Accessor<UITrack[]>;
   bpm: Accessor<number>; setBpm: Setter<number>;
   playing: Accessor<boolean>; setPlaying: Setter<boolean>;
@@ -62,6 +63,9 @@ export function useTransport(deps: Deps) {
   const instrumentTracks = () =>
     deps.tracks().filter(track => isInstrumentTrackType(track.type));
 
+  const synthPresetForTrack = (track: UITrack): SynthPreset =>
+    track.type === "bass" ? "bass" : track.type === "guitar" ? "guitar" : "piano";
+
   const cycleBounds = () => {
     const rawStartPx = Math.max(0, Math.min(deps.cycleStartPx(), deps.cycleEndPx()));
     const rawEndPx = Math.max(deps.cycleStartPx(), deps.cycleEndPx());
@@ -96,7 +100,21 @@ export function useTransport(deps: Deps) {
   };
 
   const scheduleMidiPlayback = (timelineStartSecs: number, segmentEndSecs: number) => {
-    const synth = deps.getSynth();
+    let synth = deps.getSynth();
+    if (!synth) {
+      const firstPlayableMidiTrack = instrumentTracks().find(track =>
+        !track.muted && (track.clips ?? []).some(clip =>
+          clip.kind === "midi" &&
+          Boolean(clip.midiNotes?.length) &&
+          barsToSecs(clip.barStart + clip.bars) > timelineStartSecs &&
+          barsToSecs(clip.barStart) < segmentEndSecs
+        )
+      );
+      if (firstPlayableMidiTrack) {
+        deps.ensureSynth?.(synthPresetForTrack(firstPlayableMidiTrack));
+        synth = deps.getSynth();
+      }
+    }
     if (!synth) return;
 
     for (const track of instrumentTracks()) {

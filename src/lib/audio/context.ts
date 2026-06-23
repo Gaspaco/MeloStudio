@@ -35,10 +35,11 @@ export function getAudioContext(): AudioContext {
 }
 
 export function bindToneToContext(): void {
-  if (toneBound) return;
   const c = getAudioContext();
+  const toneContext = Tone.getContext() as unknown as { rawContext?: AudioContext };
+  if (toneBound && toneContext.rawContext === c) return;
   // setContext accepts a raw AudioContext in Tone v15+
-  if ((Tone.getContext() as unknown as { rawContext?: AudioContext }).rawContext !== c) {
+  if (toneContext.rawContext !== c) {
     Tone.setContext(c);
   }
   toneBound = true;

@@ -154,7 +154,7 @@ const Studio: Component = () => {
   });
 
   const transport = useTransport({
-    getSeq: () => seq, getSynth: sth.getSynth,
+    getSeq: () => seq, getSynth: sth.getSynth, ensureSynth: sth.ensureSynth,
     tracks, bpm, setBpm, playing, setPlaying,
     elapsed, setElapsed, masterVol, setMasterVol,
     playheadPx, setPlayheadPx, pattern, setPattern,
@@ -296,6 +296,24 @@ const Studio: Component = () => {
     };
     window.addEventListener("keydown", handleGlobalKey);
     onCleanup(() => window.removeEventListener("keydown", handleGlobalKey));
+
+    const stopCachedPlayback = () => {
+      seq?.stop();
+      sth.allNotesOff();
+      transport.stopAudioPlayback();
+      setPlaying(false);
+      stopMetronome();
+    };
+    const handlePageHide = () => stopCachedPlayback();
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) stopCachedPlayback();
+    };
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("pageshow", handlePageShow);
+    onCleanup(() => {
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pageshow", handlePageShow);
+    });
 
   });
 

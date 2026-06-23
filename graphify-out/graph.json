@@ -20217,174 +20217,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/masterBus.ts:98"
     },
     {
-      "id": "file::stepseq",
-      "label": "stepSeq.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:1"
-    },
-    {
-      "id": "stepseq::sanitizepattern",
-      "label": "sanitizePattern",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:23"
-    },
-    {
-      "id": "stepSeq::default_pattern",
-      "label": "DEFAULT_PATTERN",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:57"
-    },
-    {
-      "id": "stepSeq::dbtogain",
-      "label": "dbToGain",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:72"
-    },
-    {
-      "id": "stepseq::stepsequencer",
-      "label": "StepSequencer",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:74"
-    },
-    {
-      "id": "stepseq::stepsequencer::constructor",
-      "label": ".constructor",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:86"
-    },
-    {
-      "id": "stepseq::stepsequencer::ensureaudiograph",
-      "label": ".ensureAudioGraph",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:90"
-    },
-    {
-      "id": "stepseq::stepsequencer::setpattern",
-      "label": ".setPattern",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:100"
-    },
-    {
-      "id": "stepseq::stepsequencer::getpattern",
-      "label": ".getPattern",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:105"
-    },
-    {
-      "id": "stepseq::stepsequencer::setbpm",
-      "label": ".setBpm",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:106"
-    },
-    {
-      "id": "stepseq::stepsequencer::setmastergaindb",
-      "label": ".setMasterGainDb",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:110"
-    },
-    {
-      "id": "stepseq::stepsequencer::togglestep",
-      "label": ".toggleStep",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:115"
-    },
-    {
-      "id": "stepseq::stepsequencer::setstepvelocity",
-      "label": ".setStepVelocity",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:123"
-    },
-    {
-      "id": "stepseq::stepsequencer::setrowmuted",
-      "label": ".setRowMuted",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:128"
-    },
-    {
-      "id": "stepseq::stepsequencer::setrowgaindb",
-      "label": ".setRowGainDb",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:132"
-    },
-    {
-      "id": "stepseq::stepsequencer::clearrow",
-      "label": ".clearRow",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:136"
-    },
-    {
-      "id": "stepseq::stepsequencer::setswing",
-      "label": ".setSwing",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:140"
-    },
-    {
-      "id": "stepseq::stepsequencer::setsteps",
-      "label": ".setSteps",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:145"
-    },
-    {
-      "id": "stepseq::stepsequencer::previewdrum",
-      "label": ".previewDrum",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:159"
-    },
-    {
-      "id": "stepseq::stepsequencer::start",
-      "label": ".start",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:171"
-    },
-    {
-      "id": "stepseq::stepsequencer::stop",
-      "label": ".stop",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:182"
-    },
-    {
-      "id": "stepseq::stepsequencer::rebuildsequence",
-      "label": ".rebuildSequence",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:194"
-    },
-    {
-      "id": "stepseq::stepsequencer::schedulestep",
-      "label": ".scheduleStep",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:210"
-    },
-    {
-      "id": "stepseq::stepsequencer::dispose",
-      "label": ".dispose",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:226"
-    },
-    {
       "id": "file::migrate",
       "label": "migrate.ts",
       "fileType": "code",
@@ -21111,41 +20943,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:95"
-    },
-    {
-      "id": "file::context",
-      "label": "context.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:1"
-    },
-    {
-      "id": "context::getexistingaudiocontext",
-      "label": "getExistingAudioContext",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:9"
-    },
-    {
-      "id": "context::getaudiocontext",
-      "label": "getAudioContext",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:13"
-    },
-    {
-      "id": "context::bindtonetocontext",
-      "label": "bindToneToContext",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:37"
-    },
-    {
-      "id": "context::unlockaudiocontext",
-      "label": "unlockAudioContext",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:47"
     },
     {
       "id": "file::projecttimeline",
@@ -22821,13 +22618,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/feed.ts:9"
     },
     {
-      "id": "file::index",
-      "label": "index.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/notifications/index.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/api/notifications/index.ts:1"
-    },
-    {
       "id": "index::get",
       "label": "GET",
       "fileType": "code",
@@ -23780,118 +23570,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/KeyboardPanel.tsx:175"
     },
     {
-      "id": "file::timelinearea",
-      "label": "TimelineArea.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:1"
-    },
-    {
-      "id": "TimelineArea::flushclipdrag",
-      "label": "flushClipDrag",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:172"
-    },
-    {
-      "id": "TimelineArea::queueclipdrag",
-      "label": "queueClipDrag",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:177"
-    },
-    {
-      "id": "TimelineArea::drumleft",
-      "label": "drumLeft",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:184"
-    },
-    {
-      "id": "TimelineArea::snapclipleftpx",
-      "label": "snapClipLeftPx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:189"
-    },
-    {
-      "id": "TimelineArea::trackatclientpoint",
-      "label": "trackAtClientPoint",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:200"
-    },
-    {
-      "id": "TimelineArea::dragtransform",
-      "label": "dragTransform",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:211"
-    },
-    {
-      "id": "TimelineArea::dragwidth",
-      "label": "dragWidth",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:217"
-    },
-    {
-      "id": "TimelineArea::closectx",
-      "label": "closeCtx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:224"
-    },
-    {
-      "id": "TimelineArea::ontimelinewheel",
-      "label": "onTimelineWheel",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:226"
-    },
-    {
-      "id": "TimelineArea::ontimelinemousedown",
-      "label": "onTimelineMouseDown",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:235"
-    },
-    {
-      "id": "TimelineArea::onrulermousedown",
-      "label": "onRulerMouseDown",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:242"
-    },
-    {
-      "id": "TimelineArea::setcyclefromdrag",
-      "label": "setCycleFromDrag",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:253"
-    },
-    {
-      "id": "TimelineArea::onwinmousemove",
-      "label": "onWinMouseMove",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:263"
-    },
-    {
-      "id": "TimelineArea::onwinmouseup",
-      "label": "onWinMouseUp",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:346"
-    },
-    {
-      "id": "TimelineArea::onlanedblclick",
-      "label": "onLaneDblClick",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:379"
-    },
-    {
       "id": "file::useproject",
       "label": "useProject.ts",
       "fileType": "code",
@@ -23967,20 +23645,6 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:103"
-    },
-    {
-      "id": "file::usetransport",
-      "label": "useTransport.ts",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:1"
-    },
-    {
-      "id": "usetransport::usetransport",
-      "label": "useTransport",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:32"
     },
     {
       "id": "file::types",
@@ -24186,6 +23850,223 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/lib/regionMath.ts:176"
     },
     {
+      "id": "file::navdrawer",
+      "label": "NavDrawer.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx:1"
+    },
+    {
+      "id": "NavDrawer::activecat",
+      "label": "activeCat",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx:42"
+    },
+    {
+      "id": "file::context",
+      "label": "context.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:1"
+    },
+    {
+      "id": "context::getexistingaudiocontext",
+      "label": "getExistingAudioContext",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:9"
+    },
+    {
+      "id": "context::getaudiocontext",
+      "label": "getAudioContext",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:13"
+    },
+    {
+      "id": "context::bindtonetocontext",
+      "label": "bindToneToContext",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:37"
+    },
+    {
+      "id": "context::unlockaudiocontext",
+      "label": "unlockAudioContext",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:48"
+    },
+    {
+      "id": "file::stepseq",
+      "label": "stepSeq.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:1"
+    },
+    {
+      "id": "stepseq::sanitizepattern",
+      "label": "sanitizePattern",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:23"
+    },
+    {
+      "id": "stepSeq::default_pattern",
+      "label": "DEFAULT_PATTERN",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:57"
+    },
+    {
+      "id": "stepSeq::dbtogain",
+      "label": "dbToGain",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:72"
+    },
+    {
+      "id": "stepseq::stepsequencer",
+      "label": "StepSequencer",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:74"
+    },
+    {
+      "id": "stepseq::stepsequencer::constructor",
+      "label": ".constructor",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:86"
+    },
+    {
+      "id": "stepseq::stepsequencer::ensureaudiograph",
+      "label": ".ensureAudioGraph",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:90"
+    },
+    {
+      "id": "stepseq::stepsequencer::setpattern",
+      "label": ".setPattern",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:100"
+    },
+    {
+      "id": "stepseq::stepsequencer::getpattern",
+      "label": ".getPattern",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:105"
+    },
+    {
+      "id": "stepseq::stepsequencer::setbpm",
+      "label": ".setBpm",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:106"
+    },
+    {
+      "id": "stepseq::stepsequencer::setmastergaindb",
+      "label": ".setMasterGainDb",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:110"
+    },
+    {
+      "id": "stepseq::stepsequencer::togglestep",
+      "label": ".toggleStep",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:115"
+    },
+    {
+      "id": "stepseq::stepsequencer::setstepvelocity",
+      "label": ".setStepVelocity",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:123"
+    },
+    {
+      "id": "stepseq::stepsequencer::setrowmuted",
+      "label": ".setRowMuted",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:128"
+    },
+    {
+      "id": "stepseq::stepsequencer::setrowgaindb",
+      "label": ".setRowGainDb",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:132"
+    },
+    {
+      "id": "stepseq::stepsequencer::clearrow",
+      "label": ".clearRow",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:136"
+    },
+    {
+      "id": "stepseq::stepsequencer::setswing",
+      "label": ".setSwing",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:140"
+    },
+    {
+      "id": "stepseq::stepsequencer::setsteps",
+      "label": ".setSteps",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:145"
+    },
+    {
+      "id": "stepseq::stepsequencer::previewdrum",
+      "label": ".previewDrum",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:159"
+    },
+    {
+      "id": "stepseq::stepsequencer::start",
+      "label": ".start",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:171"
+    },
+    {
+      "id": "stepseq::stepsequencer::stop",
+      "label": ".stop",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:189"
+    },
+    {
+      "id": "stepseq::stepsequencer::rebuildsequence",
+      "label": ".rebuildSequence",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:201"
+    },
+    {
+      "id": "stepseq::stepsequencer::schedulestep",
+      "label": ".scheduleStep",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:217"
+    },
+    {
+      "id": "stepseq::stepsequencer::dispose",
+      "label": ".dispose",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:233"
+    },
+    {
       "id": "file::studio",
       "label": "Studio.tsx",
       "fileType": "code",
@@ -24291,158 +24172,312 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:272"
     },
     {
+      "id": "Studio::stopcachedplayback",
+      "label": "stopCachedPlayback",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:300"
+    },
+    {
+      "id": "Studio::handlepagehide",
+      "label": "handlePageHide",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:307"
+    },
+    {
+      "id": "Studio::handlepageshow",
+      "label": "handlePageShow",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:308"
+    },
+    {
       "id": "Studio::starthb",
       "label": "startHb",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:314"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:332"
     },
     {
       "id": "Studio::stophb",
       "label": "stopHb",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:319"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:337"
     },
     {
       "id": "Studio::onvis",
       "label": "onVis",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:322"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:340"
     },
     {
       "id": "Studio::playmetronomeclick",
       "label": "playMetronomeClick",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:336"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:354"
     },
     {
       "id": "Studio::startmetronome",
       "label": "startMetronome",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:350"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:368"
     },
     {
       "id": "Studio::stopmetronome",
       "label": "stopMetronome",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:363"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:381"
     },
     {
       "id": "Studio::togglemetronome",
       "label": "toggleMetronome",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:369"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:387"
     },
     {
       "id": "Studio::handlesave",
       "label": "handleSave",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:383"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:401"
     },
     {
       "id": "Studio::schedulesnap",
       "label": "scheduleSnap",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:397"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:415"
     },
     {
       "id": "Studio::starteditingtitle",
       "label": "startEditingTitle",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:411"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:429"
     },
     {
       "id": "Studio::committitle",
       "label": "commitTitle",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:415"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:433"
     },
     {
       "id": "Studio::canceltitle",
       "label": "cancelTitle",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:423"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:441"
     },
     {
       "id": "Studio::applytemplate",
       "label": "applyTemplate",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:428"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:446"
     },
     {
       "id": "Studio::saveandnavigate",
       "label": "saveAndNavigate",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:462"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:480"
     },
     {
       "id": "Studio::pickimportfiles",
       "label": "pickImportFiles",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:467"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:485"
     },
     {
       "id": "Studio::setcycletoselectedclip",
       "label": "setCycleToSelectedClip",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:469"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:487"
     },
     {
       "id": "Studio::showshortcuthelp",
       "label": "showShortcutHelp",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:483"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:501"
     },
     {
       "id": "Studio::close",
       "label": "close",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:498"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:516"
     },
     {
       "id": "Studio::run",
       "label": "run",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:499"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:517"
     },
     {
       "id": "studio::async",
       "label": "async",
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:651"
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:669"
     },
     {
-      "id": "file::navdrawer",
-      "label": "NavDrawer.tsx",
+      "id": "file::timelinearea",
+      "label": "TimelineArea.tsx",
       "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx:1"
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:1"
     },
     {
-      "id": "NavDrawer::activecat",
-      "label": "activeCat",
+      "id": "TimelineArea::flushclipdrag",
+      "label": "flushClipDrag",
       "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx:42"
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:172"
+    },
+    {
+      "id": "TimelineArea::queueclipdrag",
+      "label": "queueClipDrag",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:177"
+    },
+    {
+      "id": "TimelineArea::drumleft",
+      "label": "drumLeft",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:184"
+    },
+    {
+      "id": "TimelineArea::snapclipleftpx",
+      "label": "snapClipLeftPx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:189"
+    },
+    {
+      "id": "TimelineArea::trackatclientpoint",
+      "label": "trackAtClientPoint",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:200"
+    },
+    {
+      "id": "TimelineArea::dragtransform",
+      "label": "dragTransform",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:211"
+    },
+    {
+      "id": "TimelineArea::dragwidth",
+      "label": "dragWidth",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:217"
+    },
+    {
+      "id": "TimelineArea::closectx",
+      "label": "closeCtx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:224"
+    },
+    {
+      "id": "TimelineArea::ontimelinewheel",
+      "label": "onTimelineWheel",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:226"
+    },
+    {
+      "id": "TimelineArea::ontimelinemousedown",
+      "label": "onTimelineMouseDown",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:235"
+    },
+    {
+      "id": "TimelineArea::onrulermousedown",
+      "label": "onRulerMouseDown",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:242"
+    },
+    {
+      "id": "TimelineArea::setcyclefromdrag",
+      "label": "setCycleFromDrag",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:253"
+    },
+    {
+      "id": "TimelineArea::onwinmousemove",
+      "label": "onWinMouseMove",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:263"
+    },
+    {
+      "id": "TimelineArea::onwinmouseup",
+      "label": "onWinMouseUp",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:346"
+    },
+    {
+      "id": "TimelineArea::onlanedblclick",
+      "label": "onLaneDblClick",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:379"
+    },
+    {
+      "id": "file::usetransport",
+      "label": "useTransport.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:1"
+    },
+    {
+      "id": "usetransport::usetransport",
+      "label": "useTransport",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:33"
+    },
+    {
+      "id": "file::index",
+      "label": "index.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/index.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/index.tsx:1"
+    },
+    {
+      "id": "file::global_d",
+      "label": "global.d.ts",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/global.d.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/global.d.ts:1"
+    },
+    {
+      "id": "global_d::colorthief",
+      "label": "ColorThief",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/global.d.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/global.d.ts:12"
     }
   ],
   "edges": [
@@ -50007,213 +50042,6 @@
       "weight": 1
     },
     {
-      "source": "file::stepseq",
-      "target": "stepseq::sanitizepattern",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:23",
-      "weight": 1
-    },
-    {
-      "source": "file::stepseq",
-      "target": "stepSeq::default_pattern",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:57",
-      "weight": 1
-    },
-    {
-      "source": "file::stepseq",
-      "target": "stepSeq::dbtogain",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:72",
-      "weight": 1
-    },
-    {
-      "source": "file::stepseq",
-      "target": "stepseq::stepsequencer",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:74",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::constructor",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:86",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::ensureaudiograph",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:90",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::setpattern",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:100",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::getpattern",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:105",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::setbpm",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:106",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::setmastergaindb",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:110",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::togglestep",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:115",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::setstepvelocity",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:123",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::setrowmuted",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:128",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::setrowgaindb",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:132",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::clearrow",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:136",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::setswing",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:140",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::setsteps",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:145",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::previewdrum",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:159",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::start",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:171",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::stop",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:182",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::rebuildsequence",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:194",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::schedulestep",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:210",
-      "weight": 1
-    },
-    {
-      "source": "stepseq::stepsequencer",
-      "target": "stepseq::stepsequencer::dispose",
-      "relation": "method",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:226",
-      "weight": 1
-    },
-    {
       "source": "file::auth_server",
       "target": "auth_server::getjwks",
       "relation": "contains",
@@ -50823,42 +50651,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/app-auth.ts:95",
-      "weight": 1
-    },
-    {
-      "source": "file::context",
-      "target": "context::getexistingaudiocontext",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:9",
-      "weight": 1
-    },
-    {
-      "source": "file::context",
-      "target": "context::getaudiocontext",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:13",
-      "weight": 1
-    },
-    {
-      "source": "file::context",
-      "target": "context::bindtonetocontext",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:37",
-      "weight": 1
-    },
-    {
-      "source": "file::context",
-      "target": "context::unlockaudiocontext",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:47",
       "weight": 1
     },
     {
@@ -53778,141 +53570,6 @@
       "weight": 1
     },
     {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::flushclipdrag",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:172",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::queueclipdrag",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:177",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::drumleft",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:184",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::snapclipleftpx",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:189",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::trackatclientpoint",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:200",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::dragtransform",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:211",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::dragwidth",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:217",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::closectx",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:224",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::ontimelinewheel",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:226",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::ontimelinemousedown",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:235",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::onrulermousedown",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:242",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::setcyclefromdrag",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:253",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::onwinmousemove",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:263",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::onwinmouseup",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:346",
-      "weight": 1
-    },
-    {
-      "source": "file::timelinearea",
-      "target": "TimelineArea::onlanedblclick",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:379",
-      "weight": 1
-    },
-    {
       "source": "file::useproject",
       "target": "useproject::useproject",
       "relation": "contains",
@@ -53982,15 +53639,6 @@
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTracks.ts:103",
-      "weight": 1
-    },
-    {
-      "source": "file::usetransport",
-      "target": "usetransport::usetransport",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:32",
       "weight": 1
     },
     {
@@ -54228,6 +53876,258 @@
       "weight": 1
     },
     {
+      "source": "file::navdrawer",
+      "target": "NavDrawer::activecat",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx:42",
+      "weight": 1
+    },
+    {
+      "source": "file::context",
+      "target": "context::getexistingaudiocontext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:9",
+      "weight": 1
+    },
+    {
+      "source": "file::context",
+      "target": "context::getaudiocontext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:13",
+      "weight": 1
+    },
+    {
+      "source": "file::context",
+      "target": "context::bindtonetocontext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:37",
+      "weight": 1
+    },
+    {
+      "source": "file::context",
+      "target": "context::unlockaudiocontext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/context.ts:48",
+      "weight": 1
+    },
+    {
+      "source": "file::stepseq",
+      "target": "stepseq::sanitizepattern",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:23",
+      "weight": 1
+    },
+    {
+      "source": "file::stepseq",
+      "target": "stepSeq::default_pattern",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:57",
+      "weight": 1
+    },
+    {
+      "source": "file::stepseq",
+      "target": "stepSeq::dbtogain",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:72",
+      "weight": 1
+    },
+    {
+      "source": "file::stepseq",
+      "target": "stepseq::stepsequencer",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:74",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::constructor",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:86",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::ensureaudiograph",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:90",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::setpattern",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:100",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::getpattern",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:105",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::setbpm",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:106",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::setmastergaindb",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:110",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::togglestep",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:115",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::setstepvelocity",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:123",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::setrowmuted",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:128",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::setrowgaindb",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:132",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::clearrow",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:136",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::setswing",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:140",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::setsteps",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:145",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::previewdrum",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:159",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::start",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:171",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::stop",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:189",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::rebuildsequence",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:201",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::schedulestep",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:217",
+      "weight": 1
+    },
+    {
+      "source": "stepseq::stepsequencer",
+      "target": "stepseq::stepsequencer::dispose",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/audio/stepSeq.ts:233",
+      "weight": 1
+    },
+    {
       "source": "file::studio",
       "target": "Studio::gettone",
       "relation": "contains",
@@ -54355,11 +54255,38 @@
     },
     {
       "source": "file::studio",
+      "target": "Studio::stopcachedplayback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:300",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::handlepagehide",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:307",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
+      "target": "Studio::handlepageshow",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:308",
+      "weight": 1
+    },
+    {
+      "source": "file::studio",
       "target": "Studio::starthb",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:314",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:332",
       "weight": 1
     },
     {
@@ -54368,7 +54295,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:319",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:337",
       "weight": 1
     },
     {
@@ -54377,7 +54304,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:322",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:340",
       "weight": 1
     },
     {
@@ -54386,7 +54313,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:336",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:354",
       "weight": 1
     },
     {
@@ -54395,7 +54322,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:350",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:368",
       "weight": 1
     },
     {
@@ -54404,7 +54331,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:363",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:381",
       "weight": 1
     },
     {
@@ -54413,7 +54340,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:369",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:387",
       "weight": 1
     },
     {
@@ -54422,7 +54349,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:383",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:401",
       "weight": 1
     },
     {
@@ -54431,7 +54358,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:397",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:415",
       "weight": 1
     },
     {
@@ -54440,7 +54367,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:411",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:429",
       "weight": 1
     },
     {
@@ -54449,7 +54376,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:415",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:433",
       "weight": 1
     },
     {
@@ -54458,7 +54385,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:423",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:441",
       "weight": 1
     },
     {
@@ -54467,7 +54394,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:428",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:446",
       "weight": 1
     },
     {
@@ -54476,7 +54403,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:462",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:480",
       "weight": 1
     },
     {
@@ -54485,7 +54412,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:467",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:485",
       "weight": 1
     },
     {
@@ -54494,7 +54421,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:469",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:487",
       "weight": 1
     },
     {
@@ -54503,7 +54430,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:483",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:501",
       "weight": 1
     },
     {
@@ -54512,7 +54439,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:498",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:516",
       "weight": 1
     },
     {
@@ -54521,7 +54448,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:499",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:517",
       "weight": 1
     },
     {
@@ -54530,23 +54457,167 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:651",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/Studio.tsx:669",
       "weight": 1
     },
     {
-      "source": "file::navdrawer",
-      "target": "NavDrawer::activecat",
+      "source": "file::timelinearea",
+      "target": "TimelineArea::flushclipdrag",
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/NavDrawer.tsx:42",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:172",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::queueclipdrag",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:177",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::drumleft",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:184",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::snapclipleftpx",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:189",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::trackatclientpoint",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:200",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::dragtransform",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:211",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::dragwidth",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:217",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::closectx",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:224",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::ontimelinewheel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:226",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::ontimelinemousedown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:235",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::onrulermousedown",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:242",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::setcyclefromdrag",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:253",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::onwinmousemove",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:263",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::onwinmouseup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:346",
+      "weight": 1
+    },
+    {
+      "source": "file::timelinearea",
+      "target": "TimelineArea::onlanedblclick",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/components/TimelineArea.tsx:379",
+      "weight": 1
+    },
+    {
+      "source": "file::usetransport",
+      "target": "usetransport::usetransport",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/studio/hooks/useTransport.ts:33",
+      "weight": 1
+    },
+    {
+      "source": "file::global_d",
+      "target": "global_d::colorthief",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/global.d.ts",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/global.d.ts:12",
       "weight": 1
     }
   ],
   "metadata": {
-    "files": 162,
-    "nodes": 3492,
-    "edges": 3344,
-    "builtAt": "2026-06-23T11:27:29.862Z"
+    "files": 164,
+    "nodes": 3497,
+    "edges": 3348,
+    "builtAt": "2026-06-23T11:41:06.343Z"
   }
 }
