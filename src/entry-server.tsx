@@ -30,7 +30,6 @@ export default createHandler(() => (
               color: #f4f1ea;
             }
             html[data-app-booting] #app { visibility: hidden; opacity: 0; }
-            html:not([data-app-booting]) #boot-veil,
             html[data-skip-boot-veil] #boot-veil { display: none !important; }
             #boot-veil {
               position: fixed;
@@ -38,6 +37,12 @@ export default createHandler(() => (
               z-index: 2147483647;
               background: #07070a;
               visibility: visible;
+              opacity: 1;
+              transition: opacity 0.55s ease;
+            }
+            #boot-veil[data-hiding="true"] {
+              opacity: 0;
+              pointer-events: none;
             }
             #boot-veil .loader {
               position: absolute;

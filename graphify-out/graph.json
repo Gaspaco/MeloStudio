@@ -24403,27 +24403,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/share/[id].tsx:1235"
     },
     {
-      "id": "file::entry_client",
-      "label": "entry-client.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:1"
-    },
-    {
-      "id": "entry_client::approot",
-      "label": "appRoot",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:5"
-    },
-    {
-      "id": "entry_client::revealapp",
-      "label": "revealApp",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:13"
-    },
-    {
       "id": "file::i18n",
       "label": "i18n.ts",
       "fileType": "code",
@@ -24534,6 +24513,27 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/i18n.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/i18n.ts:262"
+    },
+    {
+      "id": "file::entry_client",
+      "label": "entry-client.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:1"
+    },
+    {
+      "id": "entry_client::approot",
+      "label": "appRoot",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:5"
+    },
+    {
+      "id": "entry_client::revealapp",
+      "label": "revealApp",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:13"
     },
     {
       "id": "file::entry_server",
@@ -54605,24 +54605,6 @@
       "weight": 1
     },
     {
-      "source": "file::entry_client",
-      "target": "entry_client::approot",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:5",
-      "weight": 1
-    },
-    {
-      "source": "file::entry_client",
-      "target": "entry_client::revealapp",
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:13",
-      "weight": 1
-    },
-    {
       "source": "file::i18n",
       "target": "i18n::getsavedlanguage",
       "relation": "contains",
@@ -54756,12 +54738,30 @@
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/i18n.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/i18n.ts:262",
       "weight": 1
+    },
+    {
+      "source": "file::entry_client",
+      "target": "entry_client::approot",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:5",
+      "weight": 1
+    },
+    {
+      "source": "file::entry_client",
+      "target": "entry_client::revealapp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:13",
+      "weight": 1
     }
   ],
   "metadata": {
     "files": 164,
     "nodes": 3506,
     "edges": 3357,
-    "builtAt": "2026-06-23T20:37:43.420Z"
+    "builtAt": "2026-06-23T21:29:30.308Z"
   }
 }
