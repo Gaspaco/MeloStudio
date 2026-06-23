@@ -20,8 +20,6 @@ export default createHandler(() => (
               inset: 0;
               z-index: 2147483647;
               background: #07070a;
-              transform: translateZ(0);
-              backface-visibility: hidden;
               transition: opacity 220ms ease, visibility 0s linear 220ms;
               visibility: visible;
             }

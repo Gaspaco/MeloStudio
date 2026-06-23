@@ -16,8 +16,6 @@ html[data-skip-boot-veil] #boot-veil {
   min-height: 100vh;
   background: #07070a;
   color: #f4f1ea;
-  transform: translateZ(0);
-  backface-visibility: hidden;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
