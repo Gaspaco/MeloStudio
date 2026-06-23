@@ -6,12 +6,27 @@ export default createHandler(() => (
       <html lang="en" data-app-booting="">
         <head>
           <meta charset="utf-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
           <meta name="color-scheme" content="dark" />
-          <meta name="theme-color" content="#030303" />
+          <meta name="theme-color" content="#07070a" />
           <style>{`
-            html, body, #app { min-height: 100%; }
-            body { margin: 0; background: #07070a; color: #f4f1ea; }
+            html, body, #app {
+              width: 100%;
+              min-height: 100%;
+              background: #07070a;
+            }
+            html {
+              min-height: 100vh;
+              min-height: 100dvh;
+              color-scheme: dark;
+            }
+            body {
+              margin: 0;
+              min-height: 100vh;
+              min-height: 100dvh;
+              background: #07070a;
+              color: #f4f1ea;
+            }
             html[data-app-booting] #app { visibility: hidden; opacity: 0; }
             html:not([data-app-booting]) #boot-veil,
             html[data-skip-boot-veil] #boot-veil { display: none !important; }
@@ -20,11 +35,10 @@ export default createHandler(() => (
               inset: 0;
               z-index: 2147483647;
               background: #07070a;
-              transition: opacity 220ms ease, visibility 0s linear 220ms;
               visibility: visible;
             }
             #boot-veil .loader {
-              position: fixed;
+              position: absolute;
               inset: 0;
               background: #07070a;
               display: flex;
@@ -86,11 +100,6 @@ export default createHandler(() => (
             }
             @keyframes bootStudioChar {
               to { transform: translateX(0); opacity: 1; }
-            }
-            #boot-veil[data-hiding="true"] {
-              opacity: 0;
-              visibility: hidden;
-              pointer-events: none;
             }
           `}</style>
           <script>{`
