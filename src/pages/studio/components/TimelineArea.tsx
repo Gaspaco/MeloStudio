@@ -1,9 +1,23 @@
 import { type Component, For, Show, createSignal, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { MicVocal, FileMusic } from "lucide-solid";
-import { type TrackType, type UITrack, TEMPLATES } from "../types";
+import { type ClipKind, type TrackType, type UITrack, TEMPLATES, isTrackAllowedForClip, isTrackTypeAllowedForClipKind } from "../types";
 import type { StepPattern } from "~/lib/audio/stepSeq";
+import type { MediaClip } from "../types";
 import AudioWaveformDisplay from "./AudioWaveformDisplay";
+import LiveRecordingClip from "./LiveRecordingClip";
+import {
+  MIN_REGION_PX,
+  STUDIO_BAR_PX,
+  STUDIO_BEAT_PX,
+  clipLeftPx,
+  clipRightPx,
+  clipWidthPx,
+  pxToBars,
+  snapMoveLeftPx,
+  snapRegionEdgePx,
+  type RegionEdge,
+} from "../lib/regionMath";
 
 type ClipCtxMenu = { x: number; y: number; trackId: string; clipId: string; clipName: string; renaming?: boolean };
 
@@ -14,7 +28,79 @@ const MediaClipIcon: Component<{ kind: string }> = (props) => {
   return Icon ? <Icon size={11} stroke-width={1.6} aria-hidden="true" /> : null;
 };
 
-const BAR_PX = 80;
+const MIDI_OVERVIEW_MIN = 36;
+const MIDI_OVERVIEW_MAX = 84;
+
+const MidiNotesOverview: Component<{ clip: MediaClip }> = (props) => {
+  const notes = () => props.clip.midiNotes ?? [];
+  const minMidi = () => Math.max(0, Math.min(...notes().map(note => note.midi), MIDI_OVERVIEW_MIN));
+  const maxMidi = () => Math.min(127, Math.max(...notes().map(note => note.midi), MIDI_OVERVIEW_MAX));
+  const pitchRows = () => Math.max(12, maxMidi() - minMidi() + 1);
+  const noteHeightPx = () => Math.max(4, Math.min(7, 88 / pitchRows()));
+  const noteTop = (midi: number) => {
+    const normalized = (Math.max(minMidi(), Math.min(maxMidi(), midi)) - minMidi()) / Math.max(1, maxMidi() - minMidi());
+    return `${4 + (1 - normalized) * 88}%`;
+  };
+  const noteLeft = (startBars: number) => `${Math.max(0, (startBars / Math.max(0.001, props.clip.bars)) * 100)}%`;
+  const noteWidth = (durationBars: number) => `${Math.max(0.35, (durationBars / Math.max(0.001, props.clip.bars)) * 100)}%`;
+
+  return (
+    <div class="bl__midi-notes">
+      <Show when={notes().length > 0} fallback={<div class="bl__midi-empty-grid" />}>
+        <For each={notes()}>
+          {(note) => (
+            <span
+              class="bl__midi-note"
+              style={{
+                left: noteLeft(note.startBars),
+                width: noteWidth(note.durationBars),
+                top: noteTop(note.midi),
+                height: `${noteHeightPx()}px`,
+                opacity: `${0.55 + Math.max(0, Math.min(1, note.velocity)) * 0.4}`,
+              }}
+            />
+          )}
+        </For>
+      </Show>
+    </div>
+  );
+};
+
+const LiveMidiRecordingClip: Component<{ startPx: number; playheadPx: Accessor<number>; color: string }> = (props) => {
+  const widthPx = () => Math.max(8, props.playheadPx() - props.startPx);
+  return (
+    <div
+      class="bl__live-midi-clip"
+      style={{
+        left: `${props.startPx}px`,
+        width: `${widthPx()}px`,
+        "--tc": props.color,
+      }}
+    >
+      <span class="bl__live-midi-pulse" />
+      <span class="bl__live-midi-bar" />
+      <span class="bl__live-midi-bar" />
+      <span class="bl__live-midi-bar" />
+    </div>
+  );
+};
+
+const BAR_PX = STUDIO_BAR_PX;
+const BEAT_PX = STUDIO_BEAT_PX;
+const EDGE_SNAP_PX = 12;
+const MIN_CYCLE_WIDTH_PX = STUDIO_BEAT_PX;
+
+type DraggedClipState = {
+  clipId: string;
+  barStart: number;
+  leftPx: number;
+  snappedLeftPx: number;
+  widthPx: number;
+  targetPx: number;
+  sourceTrackId: string;
+  targetTrackId: string;
+  deltaY: number;
+};
 
 type Props = {
   tracks: Accessor<UITrack[]>;
@@ -33,6 +119,9 @@ type Props = {
   onLanesDrop: (e: DragEvent) => Promise<void>;
   onDeleteClip: (trackId: string, clipId: string) => void;
   onMoveClip: (trackId: string, clipId: string, newBarStart: number) => void;
+  onMoveClipToTrack: (sourceTrackId: string, clipId: string, targetTrackId: string, newBarStart: number) => void;
+  onTrimClip: (trackId: string, clipId: string, edge: RegionEdge, targetPx: number) => void;
+  onSplitClip: (trackId: string, clipId: string, playheadPx: number) => void;
   onRenameClip: (trackId: string, clipId: string, name: string) => void;
   onDuplicateClip: (trackId: string, clipId: string) => void;
   onCreateRegion: (trackId: string, barStart: number) => void;
@@ -40,6 +129,15 @@ type Props = {
   onImportFiles: (files: File[]) => Promise<void>;
   onAddTrack: (type: TrackType, openModal?: boolean) => void;
   onShowNewTrack: () => void;
+  recordingTrackId: Accessor<string | null>;
+  recordingStartPx: Accessor<number>;
+  recordingMode: Accessor<"audio" | "midi" | null>;
+  cycleEnabled: Accessor<boolean>;
+  cycleStartPx: Accessor<number>;
+  cycleEndPx: Accessor<number>;
+  onSetCycle: (startPx: number, endPx: number, activate?: boolean) => void;
+  onToggleCycle: () => void;
+  onSelectClip: (trackId: string, clipId: string) => void;
 };
 
 const BARS = Array.from({ length: 128 }, (_, i) => i + 1);
@@ -49,11 +147,77 @@ const TimelineArea: Component<Props> = (props) => {
   let dragState: { x: number; scroll: number } | null = null;
   let renameInputEl: HTMLInputElement | undefined;
   let playheadDragState: { startX: number; startPx: number } | null = null;
+  let cycleDragState: { mode: "move" | "left" | "right"; startX: number; startPx: number; endPx: number; moved: boolean } | null = null;
   let importInputEl: HTMLInputElement | undefined;
 
   // clip drag state
-  let clipDrag: { clipId: string; trackId: string; offsetPx: number } | null = null;
-  const [draggedClip, setDraggedClip] = createSignal<{ clipId: string; barStart: number } | null>(null);
+  let clipDrag: {
+    clipId: string;
+    trackId: string;
+    mode: "move" | "trim-left" | "trim-right";
+    offsetPx: number;
+    widthPx: number;
+    startLeftPx: number;
+    startRightPx: number;
+    minLeftPx: number;
+    kind?: ClipKind;
+    isDrum?: boolean;
+    sourceTrackIndex?: number;
+    sourceLaneTop?: number;
+  } | null = null;
+  let pendingClipDrag: DraggedClipState | null = null;
+  let clipDragRaf: number | undefined;
+  const [draggedClip, setDraggedClip] = createSignal<DraggedClipState | null>(null);
+
+  const flushClipDrag = () => {
+    clipDragRaf = undefined;
+    if (pendingClipDrag) setDraggedClip(pendingClipDrag);
+  };
+
+  const queueClipDrag = (next: DraggedClipState) => {
+    pendingClipDrag = next;
+    if (clipDragRaf === undefined) clipDragRaf = requestAnimationFrame(flushClipDrag);
+  };
+
+  // drum clip positions — keyed by "trackId:barIdx"
+  const [drumPositions, setDrumPositions] = createSignal<Record<string, number>>({});
+  const drumLeft = (trackId: string, barIdx: number) => {
+    const key = `${trackId}:${barIdx}`;
+    return drumPositions()[key] ?? barIdx * BAR_PX;
+  };
+
+  const snapClipLeftPx = (trackId: string, clipId: string, desiredLeftPx: number, widthPx: number, isDrum?: boolean) => {
+    if (isDrum) {
+      const snappedLeftPx = Math.max(0, Math.round(desiredLeftPx / BAR_PX) * BAR_PX);
+      return { visualLeftPx: snappedLeftPx, snappedLeftPx };
+    }
+
+    const track = props.tracks().find((item) => item.id === trackId);
+    const snappedLeftPx = snapMoveLeftPx(track?.clips ?? [], clipId, desiredLeftPx, widthPx, BEAT_PX, EDGE_SNAP_PX);
+    return { visualLeftPx: snappedLeftPx, snappedLeftPx };
+  };
+
+  const trackAtClientPoint = (clientX: number, clientY: number, kind?: ClipKind) => {
+    const element = document.elementFromPoint(clientX, clientY) as HTMLElement | null;
+    const lane = element?.closest<HTMLElement>(".bl__lane[data-track-id]");
+    const trackId = lane?.dataset.trackId;
+    const trackIndex = Number(lane?.dataset.trackIndex ?? NaN);
+    const track = props.tracks().find((item) => item.id === trackId);
+    if (!track || !Number.isFinite(trackIndex)) return null;
+    if (kind && !isTrackTypeAllowedForClipKind(track.type, kind)) return null;
+    return { track, trackIndex, laneTop: lane.getBoundingClientRect().top };
+  };
+
+  const dragTransform = (clipId: string, baseLeftPx: number) => {
+    const dc = draggedClip();
+    if (!dc || dc.clipId !== clipId) return undefined;
+    return `translate3d(${dc.leftPx - baseLeftPx}px, ${dc.deltaY - 2}px, 0)`;
+  };
+
+  const dragWidth = (clipId: string, baseWidthPx: number) => {
+    const dc = draggedClip();
+    return dc && dc.clipId === clipId ? dc.widthPx : baseWidthPx;
+  };
 
   // clip context menu
   const [ctxMenu, setCtxMenu] = createSignal<ClipCtxMenu | null>(null);
@@ -61,6 +225,7 @@ const TimelineArea: Component<Props> = (props) => {
 
   const onTimelineWheel = (e: WheelEvent) => {
     if (!timelineEl) return;
+    // Shift+wheel (Mac convention) OR dominant vertical scroll: redirect to horizontal so the timeline scrolls left/right
     if (e.shiftKey || Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
       e.preventDefault();
       timelineEl.scrollLeft += e.deltaY;
@@ -85,23 +250,127 @@ const TimelineArea: Component<Props> = (props) => {
     document.body.style.cursor = "col-resize";
   };
 
+  const setCycleFromDrag = (startPx: number, endPx: number) => {
+    const left = Math.max(0, Math.min(startPx, endPx - MIN_CYCLE_WIDTH_PX));
+    const right = Math.max(left + MIN_CYCLE_WIDTH_PX, endPx);
+    props.onSetCycle(
+      Math.round(left / BEAT_PX) * BEAT_PX,
+      Math.round(right / BEAT_PX) * BEAT_PX,
+      true,
+    );
+  };
+
   const onWinMouseMove = (e: MouseEvent) => {
     if (dragState && timelineEl) timelineEl.scrollLeft = dragState.scroll - (e.clientX - dragState.x);
     if (playheadDragState) props.setPlayheadPx(Math.max(0, playheadDragState.startPx + (e.clientX - playheadDragState.startX)));
+    if (cycleDragState) {
+      e.preventDefault();
+      const dx = e.clientX - cycleDragState.startX;
+      if (Math.abs(dx) > 3) cycleDragState.moved = true;
+      if (cycleDragState.mode === "move") {
+        const width = cycleDragState.endPx - cycleDragState.startPx;
+        const nextStart = Math.max(0, cycleDragState.startPx + dx);
+        setCycleFromDrag(nextStart, nextStart + width);
+      } else if (cycleDragState.mode === "left") {
+        setCycleFromDrag(cycleDragState.startPx + dx, cycleDragState.endPx);
+      } else {
+        setCycleFromDrag(cycleDragState.startPx, cycleDragState.endPx + dx);
+      }
+    }
     if (clipDrag && timelineEl) {
+      e.preventDefault();
       const rect = timelineEl.getBoundingClientRect();
-      const x = e.clientX - rect.left + timelineEl.scrollLeft - clipDrag.offsetPx;
-      setDraggedClip({ clipId: clipDrag.clipId, barStart: Math.max(0, Math.round(x / BAR_PX)) });
+      const pointerPx = e.clientX - rect.left + timelineEl.scrollLeft;
+      const target = clipDrag.mode === "move"
+        ? trackAtClientPoint(e.clientX, e.clientY, clipDrag.kind)
+        : null;
+      const targetTrackId = target?.track.id ?? clipDrag.trackId;
+      const targetIndex = target?.trackIndex ?? clipDrag.sourceTrackIndex ?? 0;
+      const sourceIndex = clipDrag.sourceTrackIndex ?? targetIndex;
+      const fallbackDeltaY = (targetIndex - sourceIndex) * ((document.querySelector(".bl__lane") as HTMLElement | null)?.getBoundingClientRect().height ?? 88);
+      const deltaY = clipDrag.mode === "move" ? ((target && clipDrag.sourceLaneTop !== undefined) ? target.laneTop - clipDrag.sourceLaneTop : fallbackDeltaY) : 0;
+      if (clipDrag.mode === "move") {
+        const desiredLeftPx = Math.max(0, pointerPx - clipDrag.offsetPx);
+        const { visualLeftPx, snappedLeftPx } = snapClipLeftPx(
+          targetTrackId,
+          clipDrag.clipId,
+          desiredLeftPx,
+          clipDrag.widthPx,
+          clipDrag.isDrum,
+        );
+        queueClipDrag({
+          clipId: clipDrag.clipId,
+          barStart: pxToBars(snappedLeftPx),
+          leftPx: visualLeftPx,
+          snappedLeftPx,
+          widthPx: clipDrag.widthPx,
+          targetPx: snappedLeftPx,
+          sourceTrackId: clipDrag.trackId,
+          targetTrackId,
+          deltaY,
+        });
+      } else if (clipDrag.mode === "trim-left") {
+        const track = props.tracks().find((item) => item.id === clipDrag?.trackId);
+        const snappedEdgePx = snapRegionEdgePx(track?.clips ?? [], clipDrag.clipId, Math.max(0, pointerPx), BEAT_PX, EDGE_SNAP_PX);
+        const leftPx = Math.max(clipDrag.minLeftPx, Math.min(snappedEdgePx, clipDrag.startRightPx - MIN_REGION_PX));
+        queueClipDrag({
+          clipId: clipDrag.clipId,
+          barStart: pxToBars(leftPx),
+          leftPx,
+          snappedLeftPx: leftPx,
+          widthPx: clipDrag.startRightPx - leftPx,
+          targetPx: leftPx,
+          sourceTrackId: clipDrag.trackId,
+          targetTrackId: clipDrag.trackId,
+          deltaY: 0,
+        });
+      } else {
+        const track = props.tracks().find((item) => item.id === clipDrag?.trackId);
+        const snappedEdgePx = snapRegionEdgePx(track?.clips ?? [], clipDrag.clipId, Math.max(0, pointerPx), BEAT_PX, EDGE_SNAP_PX);
+        const rightPx = Math.max(clipDrag.startLeftPx + MIN_REGION_PX, snappedEdgePx);
+        queueClipDrag({
+          clipId: clipDrag.clipId,
+          barStart: pxToBars(clipDrag.startLeftPx),
+          leftPx: clipDrag.startLeftPx,
+          snappedLeftPx: clipDrag.startLeftPx,
+          widthPx: rightPx - clipDrag.startLeftPx,
+          targetPx: rightPx,
+          sourceTrackId: clipDrag.trackId,
+          targetTrackId: clipDrag.trackId,
+          deltaY: 0,
+        });
+      }
     }
   };
 
   const onWinMouseUp = () => {
     if (dragState) { dragState = null; document.body.style.cursor = ""; }
     if (playheadDragState) { playheadDragState = null; document.body.style.cursor = ""; }
+    if (cycleDragState) {
+      if (cycleDragState.mode === "move" && !cycleDragState.moved) props.onToggleCycle();
+      cycleDragState = null;
+      document.body.style.cursor = "";
+    }
     if (clipDrag) {
-      const dc = draggedClip();
-      if (dc) props.onMoveClip(clipDrag.trackId, clipDrag.clipId, dc.barStart);
+      if (clipDragRaf !== undefined) {
+        cancelAnimationFrame(clipDragRaf);
+        clipDragRaf = undefined;
+      }
+      if (pendingClipDrag) setDraggedClip(pendingClipDrag);
+      const dc = pendingClipDrag ?? draggedClip();
+      if (dc) {
+        if (clipDrag.isDrum) {
+          setDrumPositions(prev => ({ ...prev, [clipDrag!.clipId]: dc.snappedLeftPx }));
+        } else if (clipDrag.mode === "trim-left") {
+          props.onTrimClip(clipDrag.trackId, clipDrag.clipId, "left", dc.targetPx);
+        } else if (clipDrag.mode === "trim-right") {
+          props.onTrimClip(clipDrag.trackId, clipDrag.clipId, "right", dc.targetPx);
+        } else {
+          props.onMoveClipToTrack(clipDrag.trackId, clipDrag.clipId, dc.targetTrackId, dc.barStart);
+        }
+      }
       clipDrag = null;
+      pendingClipDrag = null;
       setDraggedClip(null);
       document.body.style.cursor = "";
     }
@@ -122,6 +391,7 @@ const TimelineArea: Component<Props> = (props) => {
     window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCtx(); });
   });
   onCleanup(() => {
+    if (clipDragRaf !== undefined) cancelAnimationFrame(clipDragRaf);
     window.removeEventListener("mousemove", onWinMouseMove);
     window.removeEventListener("mouseup", onWinMouseUp);
     window.removeEventListener("click", closeCtx);
@@ -135,6 +405,46 @@ const TimelineArea: Component<Props> = (props) => {
       onMouseDown={onTimelineMouseDown}
     >
       <div class="bl__ruler" onMouseDown={onRulerMouseDown}>
+        <div
+          class={`bl__cycle ${props.cycleEnabled() ? "is-active" : ""}`}
+          style={{
+            left: `${props.cycleStartPx()}px`,
+            width: `${Math.max(MIN_CYCLE_WIDTH_PX, props.cycleEndPx() - props.cycleStartPx())}px`,
+          }}
+          onMouseDown={(e) => {
+            if (e.button !== 0) return;
+            e.preventDefault();
+            e.stopPropagation();
+            cycleDragState = { mode: "move", startX: e.clientX, startPx: props.cycleStartPx(), endPx: props.cycleEndPx(), moved: false };
+            document.body.style.cursor = "grabbing";
+          }}
+        >
+          <span
+            class="bl__cycle-locator bl__cycle-locator--left"
+            title="Left locator"
+            onMouseDown={(e) => {
+              if (e.button !== 0) return;
+              e.preventDefault();
+              e.stopPropagation();
+              props.onSetCycle(props.cycleStartPx(), props.cycleEndPx(), true);
+              cycleDragState = { mode: "left", startX: e.clientX, startPx: props.cycleStartPx(), endPx: props.cycleEndPx(), moved: false };
+              document.body.style.cursor = "ew-resize";
+            }}
+          />
+          <span class="bl__cycle-fill" />
+          <span
+            class="bl__cycle-locator bl__cycle-locator--right"
+            title="Right locator"
+            onMouseDown={(e) => {
+              if (e.button !== 0) return;
+              e.preventDefault();
+              e.stopPropagation();
+              props.onSetCycle(props.cycleStartPx(), props.cycleEndPx(), true);
+              cycleDragState = { mode: "right", startX: e.clientX, startPx: props.cycleStartPx(), endPx: props.cycleEndPx(), moved: false };
+              document.body.style.cursor = "ew-resize";
+            }}
+          />
+        </div>
         <For each={BARS}>{(b) => <div class="bl__bar"><span class="bl__bar-num">{b}</span></div>}</For>
       </div>
 
@@ -184,10 +494,14 @@ const TimelineArea: Component<Props> = (props) => {
           </div>
         </Show>
 
+        <div class="bl__timeline-automix-spacer" aria-hidden="true" />
+
         <For each={props.tracks()}>
-          {(t) => (
+          {(t, trackIndex) => (
             <div
-              class={`bl__lane ${props.selectedTrack() === t.id ? "is-sel" : ""} ${props.dropTarget()?.trackId === t.id ? "is-drop" : ""}`}
+              class={`bl__lane ${props.selectedTrack() === t.id ? "is-sel" : ""} ${props.dropTarget()?.trackId === t.id ? "is-drop" : ""} ${draggedClip()?.targetTrackId === t.id ? "is-region-target" : ""} ${draggedClip()?.sourceTrackId === t.id ? "is-drag-origin" : ""}`}
+              data-track-id={t.id}
+              data-track-index={trackIndex()}
               style={{ "--tc": t.color }}
               onDragOver={(e) => props.onLaneDragOver(e, t.id)}
               onDragLeave={props.onLaneDragLeave}
@@ -197,55 +511,105 @@ const TimelineArea: Component<Props> = (props) => {
               <Show when={t.type === "drum"}>
                 <For each={props.drumClipBars()}>
                   {(barIdx) => (
-                    <div class="bl__clip" style={{ left: `${barIdx * BAR_PX}px`, width: `${BAR_PX - 2}px`, "--tc": t.color }}>
+                    <div
+                      class="bl__clip"
+                      classList={{ "is-dragging": draggedClip()?.clipId === `${t.id}:${barIdx}` }}
+                      style={{
+                        left: `${drumLeft(t.id, barIdx)}px`,
+                        width: `${BAR_PX}px`,
+                        "--tc": t.color,
+                        transform: dragTransform(`${t.id}:${barIdx}`, drumLeft(t.id, barIdx)),
+                      }}
+                      onMouseDown={(e) => {
+                        if (e.button !== 0) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const key = `${t.id}:${barIdx}`;
+                        const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                        const leftPx = drumPositions()[key] ?? barIdx * BAR_PX;
+                        clipDrag = { clipId: key, trackId: t.id, mode: "move", offsetPx: e.clientX - rect.left, widthPx: BAR_PX, startLeftPx: leftPx, startRightPx: leftPx + BAR_PX, minLeftPx: 0, kind: "midi", isDrum: true, sourceTrackIndex: trackIndex(), sourceLaneTop: (e.currentTarget as HTMLElement).closest(".bl__lane")?.getBoundingClientRect().top };
+                        setDraggedClip({ clipId: key, barStart: barIdx, leftPx, snappedLeftPx: leftPx, widthPx: BAR_PX, targetPx: leftPx, sourceTrackId: t.id, targetTrackId: t.id, deltaY: 0 });
+                        document.body.style.cursor = "grabbing";
+                      }}
+                    >
                       <div class="bl__clip-header">
-                        <span class="bl__clip-dot-led" /><span class="bl__clip-name">DRUMS</span>
+                        <span class="bl__clip-name">{t.name || "Drum Machine"}</span>
                       </div>
-                      <div class="bl__clip-matrix">
-                        <For each={props.pattern().rows.slice(0, 8)}>
-                          {(row) => (
-                            <div class="bl__clip-mrow">
-                              <For each={row.velocities.slice(0, 16)}>
-                                {(v, i) => (
-                                  <span class="bl__clip-cell" classList={{ "is-hit": v > 0, "is-beat": i() % 4 === 0, "is-soft": v > 0 && v < 0.55 }} />
-                                )}
-                              </For>
-                            </div>
-                          )}
-                        </For>
+                      <div class="bl__clip-body">
+                        <div class="bl__clip-beats">
+                          <span class="bl__clip-beat-line" />
+                          <span class="bl__clip-beat-line" />
+                          <span class="bl__clip-beat-line" />
+                        </div>
+                        <div class="bl__clip-center">
+                          <svg class="bl__clip-icon" viewBox="0 0 24 24" fill="none">
+                            <rect x="2" y="2" width="20" height="20" rx="3" stroke="currentColor" stroke-width="1.5" />
+                            <line x1="2" y1="8.5" x2="22" y2="8.5" stroke="currentColor" stroke-width="0.75" opacity="0.5" />
+                            <line x1="2" y1="14.5" x2="22" y2="14.5" stroke="currentColor" stroke-width="0.75" opacity="0.5" />
+                            <line x1="8.5" y1="2" x2="8.5" y2="22" stroke="currentColor" stroke-width="0.75" opacity="0.5" />
+                            <line x1="15.5" y1="2" x2="15.5" y2="22" stroke="currentColor" stroke-width="0.75" opacity="0.5" />
+                            <circle cx="5.5" cy="5.5" r="1.5" fill="currentColor" opacity="0.9" />
+                            <circle cx="12" cy="5.5" r="1.5" fill="currentColor" opacity="0.9" />
+                            <circle cx="5.5" cy="11.5" r="1.5" fill="currentColor" opacity="0.6" />
+                            <circle cx="18.5" cy="11.5" r="1.5" fill="currentColor" opacity="0.9" />
+                            <circle cx="12" cy="17.5" r="1.5" fill="currentColor" opacity="0.6" />
+                            <circle cx="18.5" cy="17.5" r="1.5" fill="currentColor" opacity="0.9" />
+                          </svg>
+                          <span class="bl__clip-pattern-label">{String.fromCharCode(65 + barIdx)}</span>
+                        </div>
                       </div>
                     </div>
                   )}
                 </For>
               </Show>
 
-              <Show when={(t.type === "instrument" || t.type === "bass" || t.type === "guitar" || t.type === "voice") && (t.clips ?? []).length === 0}>
-                <div class="bl__inst-ghost" style={{ "--tc": t.color }}>
-                  <span class="bl__inst-ghost-dot" />
-                  <span class="bl__inst-ghost-name">
-                    {t.type === "bass" ? "BASS" : t.type === "guitar" ? "GUITAR" : t.type === "voice" ? "VOICE" : "LEAD"}
-                  </span>
 
-                </div>
+              <Show when={props.recordingTrackId() === t.id}>
+                <Show
+                  when={props.recordingMode() === "midi"}
+                  fallback={
+                    <LiveRecordingClip
+                      startPx={props.recordingStartPx()}
+                      playheadPx={props.playheadPx}
+                      color={t.color}
+                    />
+                  }
+                >
+                  <LiveMidiRecordingClip
+                    startPx={props.recordingStartPx()}
+                    playheadPx={props.playheadPx}
+                    color={t.color}
+                  />
+                </Show>
               </Show>
 
-              <For each={t.clips ?? []}>
+              <For each={(t.clips ?? []).filter((clip) => isTrackAllowedForClip(t, clip))}>
                 {(c) => (
+                  (() => {
+                    const baseLeftPx = clipLeftPx(c);
+                    const baseWidthPx = clipWidthPx(c);
+                    const baseRightPx = clipRightPx(c);
+                    const minLeftPx = Math.max(0, baseLeftPx - (c.sourceOffsetBars ?? 0) * BAR_PX);
+                    return (
                   <div
                     class={`bl__mclip is-${c.kind}`}
                     classList={{ "is-dragging": draggedClip()?.clipId === c.id }}
                     style={{
-                      left: `${(draggedClip()?.clipId === c.id ? draggedClip()?.barStart ?? c.barStart : c.barStart) * BAR_PX}px`,
-                      width: `${c.bars * BAR_PX - 2}px`,
+                      left: `${baseLeftPx}px`,
+                      width: `${dragWidth(c.id, baseWidthPx)}px`,
                       "--tc": t.color,
+                      transform: dragTransform(c.id, baseLeftPx),
                     }}
                     title={`${c.name} · ${c.bars} bar${c.bars > 1 ? "s" : ""}`}
                     onMouseDown={(e) => {
                       if (e.button !== 0) return;
                       e.stopPropagation();
+                      e.preventDefault();
+                      props.onSelectClip(t.id, c.id);
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                      clipDrag = { clipId: c.id, trackId: t.id, offsetPx: e.clientX - rect.left };
-                      setDraggedClip({ clipId: c.id, barStart: c.barStart });
+                      clipDrag = { clipId: c.id, trackId: t.id, mode: "move", offsetPx: e.clientX - rect.left, widthPx: baseWidthPx, startLeftPx: baseLeftPx, startRightPx: baseRightPx, minLeftPx, kind: c.kind, sourceTrackIndex: trackIndex(), sourceLaneTop: (e.currentTarget as HTMLElement).closest(".bl__lane")?.getBoundingClientRect().top };
+                      const leftPx = clipLeftPx(c);
+                      setDraggedClip({ clipId: c.id, barStart: c.barStart, leftPx, snappedLeftPx: leftPx, widthPx: baseWidthPx, targetPx: leftPx, sourceTrackId: t.id, targetTrackId: t.id, deltaY: 0 });
                       document.body.style.cursor = "grabbing";
                     }}
                     onContextMenu={(e) => {
@@ -254,6 +618,32 @@ const TimelineArea: Component<Props> = (props) => {
                       setCtxMenu({ x: e.clientX, y: e.clientY, trackId: t.id, clipId: c.id, clipName: c.name });
                     }}
                   >
+                    <span
+                      class="bl__mclip-trim bl__mclip-trim--left"
+                      title="Trim left edge"
+                      onMouseDown={(e) => {
+                        if (e.button !== 0) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        props.onSelectClip(t.id, c.id);
+                        clipDrag = { clipId: c.id, trackId: t.id, mode: "trim-left", offsetPx: 0, widthPx: baseWidthPx, startLeftPx: baseLeftPx, startRightPx: baseRightPx, minLeftPx, kind: c.kind, sourceTrackIndex: trackIndex(), sourceLaneTop: (e.currentTarget as HTMLElement).closest(".bl__lane")?.getBoundingClientRect().top };
+                        setDraggedClip({ clipId: c.id, barStart: c.barStart, leftPx: baseLeftPx, snappedLeftPx: baseLeftPx, widthPx: baseWidthPx, targetPx: baseLeftPx, sourceTrackId: t.id, targetTrackId: t.id, deltaY: 0 });
+                        document.body.style.cursor = "ew-resize";
+                      }}
+                    />
+                    <span
+                      class="bl__mclip-trim bl__mclip-trim--right"
+                      title="Trim right edge"
+                      onMouseDown={(e) => {
+                        if (e.button !== 0) return;
+                        e.preventDefault();
+                        e.stopPropagation();
+                        props.onSelectClip(t.id, c.id);
+                        clipDrag = { clipId: c.id, trackId: t.id, mode: "trim-right", offsetPx: 0, widthPx: baseWidthPx, startLeftPx: baseLeftPx, startRightPx: baseRightPx, minLeftPx, kind: c.kind, sourceTrackIndex: trackIndex(), sourceLaneTop: (e.currentTarget as HTMLElement).closest(".bl__lane")?.getBoundingClientRect().top };
+                        setDraggedClip({ clipId: c.id, barStart: c.barStart, leftPx: baseLeftPx, snappedLeftPx: baseLeftPx, widthPx: baseWidthPx, targetPx: baseRightPx, sourceTrackId: t.id, targetTrackId: t.id, deltaY: 0 });
+                        document.body.style.cursor = "ew-resize";
+                      }}
+                    />
                     <div class="bl__mclip-head">
                       <span class="bl__mclip-icon" aria-hidden="true"><MediaClipIcon kind={c.kind} /></span>
                       <span class="bl__mclip-name">{c.name}</span>
@@ -265,11 +655,20 @@ const TimelineArea: Component<Props> = (props) => {
                       >×</button>
                     </div>
                     <div class="bl__mclip-body">
-                      <Show when={c.kind !== "midi" && c.url}>
-                        <AudioWaveformDisplay url={c.url} color={t.color} />
+                      <Show
+                        when={c.kind === "midi"}
+                        fallback={
+                          <Show when={c.url}>
+                            <AudioWaveformDisplay url={c.url} color={t.color} />
+                          </Show>
+                        }
+                      >
+                        <MidiNotesOverview clip={c} />
                       </Show>
                     </div>
                   </div>
+                    );
+                  })()
                 )}
               </For>
 
@@ -338,6 +737,10 @@ const TimelineArea: Component<Props> = (props) => {
                 <button class="bl__clip-ctx-item" onClick={() => { props.onDuplicateClip(menu().trackId, menu().clipId); closeCtx(); }}>
                   <span>Duplicate</span>
                   <span class="bl__clip-ctx-kbd">⌘D</span>
+                </button>
+                <button class="bl__clip-ctx-item" onClick={() => { props.onSplitClip(menu().trackId, menu().clipId, props.playheadPx()); closeCtx(); }}>
+                  <span>Split at Playhead</span>
+                  <span class="bl__clip-ctx-kbd">⌘E</span>
                 </button>
                 <button class="bl__clip-ctx-item" onClick={() => { props.onDeleteClip(menu().trackId, menu().clipId); closeCtx(); }}>
                   <span>Cut</span>

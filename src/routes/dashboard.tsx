@@ -1,20 +1,13 @@
 import { useNavigate } from "@solidjs/router";
-import { createResource, lazy, Show, Suspense } from "solid-js";
+import { lazy, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";
 import { createProjectApi } from "~/lib/api";
-import { getAppSession } from "~/lib/app-auth";
+import { ProtectedPage } from "~/lib/session";
 
 const Dashboard = lazy(() => import("~/pages/dashboard/Dashboard"));
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-
-  const [session] = createResource(async () => {
-    const appSession = await getAppSession();
-    if (appSession) return appSession.data;
-    navigate("/login", { replace: true });
-    return null;
-  });
 
   const handleNewProject = async (name: string = "Untitled Project") => {
     try {
@@ -27,15 +20,14 @@ export default function DashboardPage() {
   };
 
   return (
-    <Show when={session()} fallback={<RouteVeil label="Opening dashboard" />}>
+    <ProtectedPage label="dashboard">
       <Suspense fallback={<RouteVeil label="Opening dashboard" />}>
         <Dashboard
           onLogout={() => navigate("/login", { replace: true })}
           onNewProject={handleNewProject}
           onOpenProject={(id) => navigate(`/studio/${id}`)}
-          onHome={() => navigate("/")}
         />
       </Suspense>
-    </Show>
+    </ProtectedPage>
   );
 }

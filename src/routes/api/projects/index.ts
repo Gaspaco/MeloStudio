@@ -4,9 +4,12 @@
 import type { APIEvent } from "@solidjs/start/server";
 import { listProjects, listDeletedProjects, createProject } from "~/lib/db/projects";
 import { requireUserId } from "~/lib/auth-server";
+import { rateLimit } from "~/lib/server/rateLimit";
 import { cleanString, isPlainObject, textResponse } from "../_utils";
 
 export async function GET(event: APIEvent) {
+  const rl = rateLimit(event.request, "projects:list", "standard");
+  if (rl) return rl;
   const userId = await requireUserId(event.request);
   if (!userId) return textResponse("unauthorized", 401);
   try {
@@ -24,6 +27,8 @@ export async function GET(event: APIEvent) {
 }
 
 export async function POST(event: APIEvent) {
+  const rl = rateLimit(event.request, "projects:create", "strict");
+  if (rl) return rl;
   const userId = await requireUserId(event.request);
   if (!userId) return textResponse("unauthorized", 401);
   let body: unknown = {};

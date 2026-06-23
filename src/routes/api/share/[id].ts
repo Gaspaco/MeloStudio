@@ -4,10 +4,13 @@
 import type { APIEvent } from "@solidjs/start/server";
 import { getPublicProject, getProject } from "~/lib/db/projects";
 import { requireUserId } from "~/lib/auth-server";
+import { rateLimit } from "~/lib/server/rateLimit";
 import { getProjectDurationSec, getProjectTrackCount } from "~/lib/audio/projectTimeline";
 import { isUuid, textResponse } from "../_utils";
 
 export async function GET(event: APIEvent) {
+  const rl = rateLimit(event.request, "share", "relaxed");
+  if (rl) return rl;
   const id = event.params.id;
   if (!isUuid(id)) return textResponse("invalid id", 400);
 

@@ -4,14 +4,13 @@
   min-height: 100vh;
   background: $bg-primary;
   color: $text-primary;
-  overflow-x: hidden;
+  // `clip` instead of `hidden` so this element doesn't become a scroll container (which breaks position:sticky children)
+  overflow-x: clip;
 
   // ── Nav bar ──────────────────────────────────────────────────────
   &__bar {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
     z-index: 100;
     height: 4.5rem;
     display: flex;
@@ -22,10 +21,8 @@
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
     border-bottom: 1px solid rgba(#fff, 0.05);
-    will-change: transform;
   }
 
-  // Combined back-arrow + wordmark
   &__bar-brand {
     all: unset;
     cursor: pointer;
@@ -33,43 +30,29 @@
     align-items: center;
     gap: 0.55rem;
     padding: 0.4rem 0.9rem 0.4rem 0.65rem;
-    margin-left: -1.5rem; // push even further left into padding
+    margin-left: -1.5rem;
     border-radius: 0.625rem;
     border: 1px solid transparent;
     transition: background 0.2s, border-color 0.2s;
-
-    &:hover {
-      background: rgba(#fff, 0.04);
-      border-color: rgba(#fff, 0.07);
-    }
+    &:hover { background: rgba(#fff, 0.04); border-color: rgba(#fff, 0.07); }
   }
 
   &__bar-brand-arrow {
-    width: 14px;
-    height: 14px;
+    width: 14px; height: 14px;
     color: rgba(#fff, 0.28);
     flex-shrink: 0;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s;
-
-    .db__bar-brand:hover & {
-      transform: translateX(-2px);
-      color: rgba(#fff, 0.55);
-    }
+    .db__bar-brand:hover & { transform: translateX(-2px); color: rgba(#fff, 0.55); }
   }
 
   &__bar-brand-sep {
     display: block;
-    width: 1px;
-    height: 1.1rem;
+    width: 1px; height: 1.1rem;
     background: rgba(#fff, 0.1);
     flex-shrink: 0;
   }
 
-  &__bar-brand-word {
-    display: flex;
-    align-items: baseline;
-    gap: 0.18em;
-  }
+  &__bar-brand-word { display: flex; align-items: baseline; gap: 0.18em; }
 
   &__bar-brand-melo {
     font-family: $font-display;
@@ -84,19 +67,12 @@
     font-family: $font-script;
     font-size: 1.4rem;
     font-weight: 400;
-    letter-spacing: 0;
     color: #fff;
-    text-transform: none;
   }
 
   &__bar-right { margin-left: auto; display: flex; align-items: center; gap: 0.5rem; }
 
-  // Nav tabs — minimal floating style
-  &__nav {
-    display: flex;
-    gap: 0.15rem;
-    margin-left: 0.5rem;
-  }
+  &__nav { display: flex; gap: 0.15rem; margin-left: 0.5rem; }
 
   &__nav-link {
     all: unset;
@@ -109,16 +85,8 @@
     padding: 0.45rem 1rem;
     border-radius: 8px;
     transition: color 0.2s, background 0.2s;
-
-    &:hover {
-      color: $text-secondary;
-      background: rgba(#fff, 0.04);
-    }
-
-    &--active {
-      color: $text-primary;
-      background: rgba(#fff, 0.07);
-    }
+    &:hover { color: $text-secondary; background: rgba(#fff, 0.04); }
+    &--active { color: $text-primary; background: rgba(#fff, 0.07); }
   }
 
   &__clock {
@@ -129,56 +97,44 @@
     font-variant-numeric: tabular-nums;
   }
 
-  // Avatar — always visible, accent ring
   &__bar-avatar {
     all: unset;
     cursor: pointer;
     display: grid;
     place-items: center;
-    width: 2rem;
-    height: 2rem;
+    width: 2rem; height: 2rem;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
     background: linear-gradient(145deg, rgba($accent, 0.2), rgba($accent, 0.05));
     border: 1.5px solid rgba($accent, 0.28);
     transition: border-color 0.2s, box-shadow 0.2s;
-
     img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-    &:hover {
-      border-color: rgba($accent, 0.6);
-      box-shadow: 0 0 0 3px rgba($accent, 0.1);
-    }
+    &:hover { border-color: rgba($accent, 0.6); box-shadow: 0 0 0 3px rgba($accent, 0.1); }
   }
 
   &__bar-avatar-initials {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     font-family: $font-display;
     font-size: 0.6rem;
     font-weight: 700;
     color: $accent;
   }
 
-  // Logout — icon-only button
   &__bar-logout {
     all: unset;
     cursor: pointer;
     display: grid;
     place-items: center;
-    width: 2rem;
-    height: 2rem;
+    width: 2rem; height: 2rem;
     border-radius: 0.5rem;
     border: 1px solid transparent;
     color: rgba(#fff, 0.28);
     transition: color 0.2s, background 0.2s, border-color 0.2s;
-
     svg { width: 15px; height: 15px; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
-
     &:hover {
       color: rgba(#fff, 0.65);
       background: rgba(#fff, 0.04);
@@ -187,939 +143,13 @@
     }
   }
 
-  // ── Content ──────────────────────────────────────────────────────
-  &__content { padding: 4.5rem clamp(1.25rem, 4vw, 3rem) 0; }
-  &__rule { width: 100%; height: 1px; background: $border; transform-origin: left; }
-
-  // ── Hero ─────────────────────────────────────────────────────────
-  &__hero {
-    padding: 5rem 0 3rem;
-    display: flex;
-    align-items: center;
-    gap: clamp(1rem, 3vw, 3rem);
-    flex-wrap: nowrap;
-  }
-  &__hero-left { min-width: 0; flex: 0 1 auto; display: flex; flex-direction: column; }
-  &__hero-avatar {
-    all: unset;
-    cursor: pointer;
-    width: clamp(4.5rem, 14vw, 17rem);
-    height: clamp(4.5rem, 14vw, 17rem);
-    flex-shrink: 0;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    background: linear-gradient(135deg, rgba($accent, 0.18), rgba($accent, 0.04));
-    border: 2.5px solid rgba($accent, 0.25);
-    transition: border-color 0.3s, box-shadow 0.3s;
-    &:hover {
-      border-color: $accent;
-      box-shadow: 0 0 40px rgba($accent, 0.2);
-    }
-  }
-  &__hero-avatar-text {
-    font-family: $font-display;
-    font-size: clamp(2.5rem, 5vw, 4rem);
-    font-weight: 700;
-    color: $accent;
-    letter-spacing: -0.02em;
-  }
-  &__hero-avatar-img { width: 100%; height: 100%; object-fit: cover; }
-  &__hero-greeting {
-    display: flex;
-    align-items: baseline;
-    gap: 0.3em;
-    flex-wrap: wrap;
-    margin-bottom: 8px;
-  }
-  &__hero-script {
-    font-family: $font-script;
-    font-size: clamp(3.5rem, 7vw, 6rem);
-    color: $accent;
-    line-height: 1;
-    will-change: transform;
-  }
-  &__hero-clip { overflow: hidden; display: inline-flex; }
-  &__hero-char {
-    display: inline-block;
-    font-family: $font-display;
-    font-weight: 800;
-    line-height: 1;
-    font-size: clamp(4.375rem, 9vw, 7.5rem);
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-    color: $text-primary;
-    will-change: transform;
-  }
-  &__hero-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-    flex-wrap: wrap;
-  }
-  &__hero-meta-item {
-    font-family: $font-mono;
-    font-size: 0.7rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: $text-secondary;
-  }
-  &__hero-meta-sep { font-size: 0.55rem; color: $text-muted; user-select: none; }
-
-  // ── Stats ─────────────────────────────────────────────────────────
-  &__stats {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-left: 1px solid $border;
-  }
-  &__stat {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 2.5rem 2rem;
-    border-right: 1px solid $border;
-    transition: background 0.3s;
-    &:hover { background: rgba(#fff, 0.015); }
-  }
-  &__stat-num {
-    font-family: $font-display;
-    font-size: clamp(2rem, 3.5vw, 3rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: $text-primary;
-  }
-  &__stat-label {
-    font-family: $font-mono;
-    font-size: 0.55rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: $text-muted;
-  }
-  &__stat-bar {
-    display: block;
-    width: 100%;
-    height: 2px;
-    background: $border;
-    margin-top: 1rem;
-    border-radius: 1px;
-    overflow: hidden;
-  }
-  &__stat-fill {
-    display: block;
-    height: 100%;
-    background: $accent;
-    border-radius: 1px;
-    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  // ── Sections ─────────────────────────────────────────────────────
-  &__section { padding: 3.5rem 0; }
-  &__section-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2rem;
-  }
-  &__section-idx {
-    font-family: $font-mono;
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    color: $accent;
-    &--danger { color: #e05050; }
-  }
-  &__section-title {
-    font-family: $font-display;
-    font-size: clamp(1.1rem, 1.6vw, 1.35rem);
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: $text-primary;
-    margin: 0;
-  }
-  &__section-action {
-    all: unset;
-    cursor: pointer;
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-family: $font-mono;
-    font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: $accent;
-    padding: 0.5rem 1rem;
-    border: 1px solid rgba($accent, 0.25);
-    border-radius: $radius-pill;
-    transition: background 0.3s, border-color 0.3s, transform 0.3s;
-    svg { width: 14px; height: 14px; }
-    &:hover {
-      background: rgba($accent, 0.08);
-      border-color: $accent;
-      transform: translateY(-1px);
-    }
-  }
-
-
-  // ── Loading skeleton ─────────────────────────────────────────────
-  &__skeletons {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  &__skeleton-row {
-    height: 3.25rem;
-    border-radius: 0.5rem;
-    background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%);
-    background-size: 200% 100%;
-    animation: skeletonShimmer 1.4s ease-in-out infinite;
-  }
-
-  @keyframes skeletonShimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-
-  // ── Empty state ───────────────────────────────────────────────────
-  &__empty {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 5rem 2rem;
-    border: 1px solid $border;
-    border-radius: 1rem;
-    overflow: hidden;
-  }
-  &__empty-glow {
-    position: absolute;
-    top: -40%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 20rem;
-    height: 20rem;
-    pointer-events: none;
-    background: radial-gradient(circle, rgba($accent, 0.06) 0%, transparent 70%);
-  }
-  &__empty-note { font-size: 3rem; opacity: 0.15; margin-bottom: 1.5rem; user-select: none; }
-  &__empty-title {
-    font-family: $font-display;
-    font-size: clamp(1.15rem, 1.8vw, 1.5rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: $text-primary;
-    margin: 0;
-  }
-  &__empty-sub {
-    font-family: $font-sans;
-    font-size: 0.85rem;
-    color: $text-secondary;
-    margin: 0.5rem 0 0;
-    max-width: 22rem;
-  }
-  &__empty-cta {
-    all: unset;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-top: 2rem;
-    padding: 0.75rem 1.75rem;
-    font-family: $font-mono;
-    font-size: 0.6rem;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #fff;
-    background: $accent;
-    border-radius: $radius-pill;
-    box-shadow: 0 4px 24px rgba($accent, 0.2);
-    transition: transform 0.3s, box-shadow 0.3s;
-    svg { width: 16px; height: 16px; transition: transform 0.3s; }
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 32px rgba($accent, 0.35);
-      svg { transform: translate(2px, -2px); }
-    }
-  }
-
-  // ── Projects table ────────────────────────────────────────────────
-  &__table-head {
-    display: grid;
-    grid-template-columns: 3rem 1fr 5rem 5rem 5rem 7rem 4rem;
-    align-items: center;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid $border;
-  }
-  &__th {
-    font-family: $font-mono;
-    font-size: 0.5rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: $text-muted;
-  }
-  &__table-row {
-    display: grid;
-    grid-template-columns: 3rem 1fr 5rem 5rem 5rem 7rem 4rem;
-    align-items: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid rgba(#fff, 0.03);
-    cursor: pointer;
-    transition: background 0.2s, padding-left 0.3s;
-    .db__act-btn {
-      opacity: 0;
-      transform: scale(0.9);
-      transition: opacity 0.2s, transform 0.2s, background 0.15s, color 0.15s;
-    }
-    &:hover { background: rgba(#fff, 0.015); padding-left: 0.5rem; }
-    &:hover .db__td--name { color: $accent; }
-    &:hover .db__act-btn { opacity: 1; transform: scale(1); }
-  }
-  &__td {
-    font-family: $font-sans;
-    font-size: 0.85rem;
-    color: $text-secondary;
-    display: flex;
-    align-items: center;
-    &--num { font-family: $font-mono; font-size: 0.6rem; color: $text-muted; letter-spacing: 0.06em; }
-    &--name { color: $text-primary; font-weight: 500; gap: 0.75rem; transition: color 0.2s; }
-    &--time { font-size: 0.75rem; color: $text-muted; }
-    &--acts { display: flex; gap: 0.5rem; justify-content: flex-end; padding-right: 0.5rem; }
-  }
-  &__td-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-  &__act-btn {
-    all: unset;
-    cursor: pointer;
-    display: grid;
-    place-items: center;
-    width: 1.8rem;
-    height: 1.8rem;
-    border-radius: 4px;
-    color: $text-muted;
-    background: rgba(#fff, 0.05);
-    svg { width: 0.9rem; height: 0.9rem; display: block; }
-    &:hover { background: rgba(#fff, 0.1); color: $text-primary; }
-    &--danger:hover { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-  }
-
-  // ── Quick actions ─────────────────────────────────────────────────
-  &__actions { display: flex; flex-direction: column; }
-  &__act {
-    all: unset;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1.5rem 0;
-    border-bottom: 1px solid $border;
-    transition: padding-left 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    &:first-child { border-top: 1px solid $border; }
-    &:hover { padding-left: 1.5rem; }
-    &:hover .db__act-arrow { opacity: 1; transform: translate(3px, -3px); color: $accent; }
-    &:hover .db__act-icon svg { color: $accent; }
-    &:hover .db__act-label { color: $text-primary; }
-  }
-  &__act-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: grid;
-    place-items: center;
-    border-radius: 0.625rem;
-    background: rgba(#fff, 0.03);
-    border: 1px solid $border;
-    flex-shrink: 0;
-    transition: border-color 0.3s;
-    svg { width: 18px; height: 18px; color: $text-secondary; transition: color 0.3s; }
-  }
-  &__act:hover &__act-icon { border-color: rgba($accent, 0.3); }
-  &__act-body { display: flex; flex-direction: column; gap: 0.2rem; flex: 1; }
-  &__act-label {
-    font-family: $font-sans;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: $text-secondary;
-    transition: color 0.3s;
-  }
-  &__act-desc { font-family: $font-sans; font-size: 0.75rem; color: $text-muted; }
-  &__act-arrow {
-    width: 18px;
-    height: 18px;
-    color: $text-muted;
-    opacity: 0.25;
-    flex-shrink: 0;
-    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), color 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  // ── Brand footer ──────────────────────────────────────────────────
-  &__brand {
-    padding: 6rem 0 0.75rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    user-select: none;
-    line-height: 0.85;
-  }
-  &__brand-melo {
-    font-family: $font-display;
-    font-size: clamp(7rem, 20vw, 20rem);
-    font-weight: 800;
-    letter-spacing: -0.05em;
-    color: $text-primary;
-    display: block;
-    overflow: hidden;
-    padding-right: 0.08em;
-  }
-  &__brand-studio {
-    font-family: $font-script;
-    color: $accent;
-    font-size: clamp(5rem, 16vw, 16rem);
-    margin-top: -0.1em;
-    display: block;
-    overflow: hidden;
-  }
-
-  // ── Profile page layout ───────────────────────────────────────────
-  &__content--profile {
-    padding-top: 5.5rem;
-    max-width: 1520px;
-    margin: 0 auto;
-  }
-
-  &__ticket {
-    display: flex;
-    background: #0b0b0b;
-    border: 1px solid #222;
-    border-radius: 10px;
-    margin-bottom: 2.5rem;
-    position: relative;
-    overflow: hidden;
-    min-height: 22rem;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.55);
-
-  }
-
-  &__ticket-stripe {
-    flex-shrink: 0;
-    width: 3rem;
-    background: $accent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  &__ticket-stripe-text {
-    font-family: $font-display;
-    font-size: 0.5rem;
-    font-weight: 800;
-    letter-spacing: 0.4em;
-    text-transform: uppercase;
-    color: rgba(0, 0, 0, 0.7);
-    writing-mode: vertical-rl;
-    transform: rotate(180deg);
-    user-select: none;
-  }
-
-  &__ticket-main {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  &__ticket-toprow {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.55rem 1.5rem;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
-    position: relative;
-
-    &::before, &::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      transform: translateY(50%);
-      width: 1.2rem;
-      height: 1.2rem;
-      border-radius: 50%;
-      background: $bg-primary;
-      z-index: 2;
-    }
-    &::before { left: -0.6rem; }
-    &::after  { right: -0.6rem; }
-  }
-
-  &__ticket-logo { display: flex; align-items: baseline; gap: 0.15em; }
-
-  &__ticket-logo-melo {
-    font-family: $font-display;
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: $accent;
-  }
-
-  &__ticket-logo-studio {
-    font-family: $font-script;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.4);
-  }
-
-  &__ticket-season {
-    font-family: $font-sans;
-    font-size: 0.55rem;
-    color: rgba(255, 255, 255, 0.45);
-  }
-
-  &__ticket-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 2rem;
-    padding: 2rem 1.5rem 1.5rem;
-    flex: 1;
-  }
-
-  &__ticket-event {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  &__ticket-name {
-    font-family: $font-display;
-    font-size: clamp(2.2rem, 4.5vw, 3.5rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: $text-primary;
-    margin: 0 0 0.5rem;
-    line-height: 0.95;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__ticket-email {
-    font-family: $font-sans;
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.45);
-    margin-bottom: 1rem;
-  }
-
-  &__ticket-tags {
-    display: flex;
-    gap: 0.4rem;
-    flex-wrap: wrap;
-  }
-
-  &__ticket-tag {
-    font-family: $font-sans;
-    font-size: 0.58rem;
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.55);
-    background: rgba(255, 255, 255, 0.04);
-    border: none;
-    border-radius: 3px;
-    padding: 0.2rem 0.55rem;
-
-    &--live {
-      color: #4ade80;
-      background: rgba(74, 222, 128, 0.08);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-    }
-  }
-
-  &__ticket-tag-dot {
-    width: 0.3rem;
-    height: 0.3rem;
-    border-radius: 50%;
-    background: #4ade80;
-    flex-shrink: 0;
-  }
-
-  &__ticket-photo-wrap {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    position: relative;
-  }
-
-  &__ticket-photo {
-    width: 6.5rem;
-    height: 6.5rem;
-    border-radius: 6px;
-    overflow: hidden;
-    position: relative;
-    background: #161616;
-    cursor: pointer;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-    transition: box-shadow 0.2s ease;
-    &:hover { box-shadow: inset 0 0 0 2px $accent; }
-  }
-
-  &__ticket-photo-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-    pointer-events: none;
-    svg { width: 1.1rem; height: 1.1rem; color: #fff; }
-  }
-
-  &__ticket-photo-wrap:hover &__ticket-photo-overlay { opacity: 1; }
-
-  &__ticket-photo-label {
-    font-family: $font-sans;
-    font-size: 0.5rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.4);
-  }
-
-  &__ticket-perf {
-    position: relative;
-    height: 0;
-    border-top: 1px dashed rgba(255, 255, 255, 0.07);
-    margin: 0;
-
-    &::before, &::after {
-      content: "";
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 1.2rem;
-      height: 1.2rem;
-      border-radius: 50%;
-      background: $bg-primary;
-      z-index: 2;
-    }
-    &::before { left: -0.6rem; }
-    &::after  { right: -0.6rem; }
-  }
-
-  &__ticket-body {
-    display: flex;
-    align-items: center;
-    padding: 1rem 1.5rem 1.1rem;
-    gap: 0;
-  }
-
-  &__ticket-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding-right: 1.5rem;
-  }
-
-  &__ticket-field-label {
-    font-family: $font-sans;
-    font-size: 0.5rem;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.45);
-  }
-
-  &__ticket-field-val {
-    font-family: $font-display;
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: $text-primary;
-    letter-spacing: -0.01em;
-    line-height: 1;
-  }
-
-  &__ticket-vdivider {
-    width: 1px;
-    height: 1.5rem;
-    background: rgba(255, 255, 255, 0.06);
-    margin-right: 1.5rem;
-    flex-shrink: 0;
-  }
-
-  &__ticket-barcode {
-    margin-left: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-  }
-
-  &__ticket-bars {
-    width: 4.5rem;
-    height: 2.5rem;
-    opacity: 0.75;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='40'%3E%3Crect x='0' width='3' height='40' fill='white'/%3E%3Crect x='5' width='1' height='40' fill='white'/%3E%3Crect x='8' width='2' height='40' fill='white'/%3E%3Crect x='12' width='3' height='40' fill='white'/%3E%3Crect x='17' width='1' height='40' fill='white'/%3E%3Crect x='20' width='2' height='40' fill='white'/%3E%3Crect x='24' width='1' height='40' fill='white'/%3E%3Crect x='27' width='3' height='40' fill='white'/%3E%3Crect x='32' width='1' height='40' fill='white'/%3E%3Crect x='35' width='2' height='40' fill='white'/%3E%3Crect x='39' width='3' height='40' fill='white'/%3E%3Crect x='44' width='1' height='40' fill='white'/%3E%3Crect x='47' width='2' height='40' fill='white'/%3E%3Crect x='51' width='1' height='40' fill='white'/%3E%3Crect x='54' width='3' height='40' fill='white'/%3E%3Crect x='59' width='1' height='40' fill='white'/%3E%3Crect x='62' width='2' height='40' fill='white'/%3E%3Crect x='66' width='3' height='40' fill='white'/%3E%3Crect x='71' width='1' height='40' fill='white'/%3E%3C/svg%3E");
-    background-size: contain;
-    background-repeat: no-repeat;
-  }
-
-  &__ticket-barcode-num {
-    font-family: $font-sans;
-    font-size: 0.45rem;
-    color: rgba(255, 255, 255, 0.45);
-    letter-spacing: 0.04em;
-  }
-
-  &__pcard {
-    background: rgba(#fff, 0.015);
-    border: 1px solid #1e1e1e;
-    border-radius: 14px;
-    padding: 2rem 2.25rem;
-    transition: border-color 0.25s;
-
-    &--form {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
-
-    &--danger {
-      border-color: rgba(#e05050, 0.12);
-      background: rgba(#e05050, 0.015);
-      &:hover { border-color: rgba(#e05050, 0.25); }
-    }
-  }
-
-  &__pgrid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-  &__pstack { display: flex; flex-direction: column; gap: 1.5rem; }
-  &__prow {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    align-items: start;
-
-    @media (max-width: 640px) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  &__pcard-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid #1a1a1a;
-    margin-bottom: 1.75rem;
-  }
-
-  &__pcard-idx {
-    font-family: $font-mono;
-    font-size: 0.6rem;
-    letter-spacing: 0.14em;
-    color: $accent;
-    padding: 0.2rem 0.5rem;
-    border: 1px solid rgba($accent, 0.2);
-    border-radius: 2px;
-    background: rgba($accent, 0.05);
-
-    &--danger {
-      color: #e05050;
-      border-color: rgba(#e05050, 0.2);
-      background: rgba(#e05050, 0.05);
-    }
-  }
-
-  &__pcard-title {
-    font-family: $font-mono;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: $text-primary;
-    margin: 0;
-  }
-
-  &__pfields { display: flex; flex-direction: column; gap: 1.25rem; }
-  &__pfield {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-
-    &--locked .db__pfield-input {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  &__pfield-pair {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.25rem;
-  }
-
-  &__pfield-label {
-    font-family: $font-mono;
-    font-size: 0.6rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: $text-secondary;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.15rem;
-  }
-
-  &__pfield-lock {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.42rem;
-    color: $text-secondary;
-    opacity: 0.8;
-    svg { width: 0.6rem; height: 0.6rem; }
-  }
-
-  &__pfield-input {
-    all: unset;
-    font-family: $font-mono;
-    font-size: 0.85rem;
-    color: $text-primary;
-    background: rgba(#fff, 0.02);
-    border: 1px solid #1e1e1e;
-    border-radius: 8px;
-    padding: 0.65rem 0.85rem;
-    width: 100%;
-    box-sizing: border-box;
-    transition: border-color 0.2s ease, background 0.2s ease;
-
-    &::placeholder { color: #555; }
-    &:focus {
-      border-color: rgba($accent, 0.4);
-      background: rgba($accent, 0.02);
-    }
-  }
-
-  &__pfield-textarea {
-    all: unset;
-    font-family: $font-mono;
-    font-size: 0.85rem;
-    color: $text-primary;
-    background: rgba(#fff, 0.02);
-    border: 1px solid #1e1e1e;
-    border-radius: 8px;
-    padding: 0.65rem 0.85rem;
-    width: 100%;
-    min-height: 5rem;
-    resize: vertical;
-    display: block;
-    box-sizing: border-box;
-    transition: border-color 0.2s ease, background 0.2s ease;
-
-    &::placeholder { color: #555; }
-    &:focus {
-      border-color: rgba($accent, 0.4);
-      background: rgba($accent, 0.02);
-    }
-  }
-
-  &__pfield-pre {
-    display: flex;
-    align-items: center;
-    background: rgba(#fff, 0.02);
-    border: 1px solid #1e1e1e;
-    border-radius: 8px;
-    padding: 0 0.85rem;
-    transition: border-color 0.2s ease, background 0.2s ease;
-
-    &:focus-within {
-      border-color: rgba($accent, 0.4);
-      background: rgba($accent, 0.02);
-    }
-
-    .db__pfield-input {
-      border: none;
-      background: transparent;
-      border-radius: 0;
-      padding-left: 0.35rem;
-      &:focus { border: none; background: transparent; }
-    }
-  }
-
-  &__pfield-pre-at {
-    font-family: $font-mono;
-    font-size: 0.78rem;
-    color: $text-muted;
-    flex-shrink: 0;
-  }
-
-  &__pfield-pre-icon {
-    display: flex;
-    align-items: center;
-    color: $text-muted;
-    flex-shrink: 0;
-    svg { width: 0.85rem; height: 0.85rem; }
-  }
-
-  &__pcard-actions {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid #1a1a1a;
-  }
-
-  &__pcard-danger-sub {
-    font-family: $font-mono;
-    font-size: 0.78rem;
-    color: $text-secondary;
-    line-height: 1.75;
-    margin-top: -0.5rem;
-    strong { color: rgba(#e05050, 0.8); font-weight: 500; }
-  }
-
-  &__profile-upload-input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 10;
-    border-radius: 0;
-  }
-
-  &__profile-initials {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    font-family: $font-display;
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: $accent;
-  }
-
-  &__profile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-  &__form-err {
-    display: block;
-    font-family: $font-mono;
-    font-size: 0.7rem;
-    color: #e05050;
-    margin: 0.75rem 0 0;
+  // ── Content shell ────────────────────────────────────────────────
+  &__content {
+    padding: 0 clamp(1.25rem, 4vw, 3rem) 0;
+    animation: db-page-in 0.4s ease both;
   }
 
-  // ── Buttons ───────────────────────────────────────────────────────
+  // ── Shared buttons ────────────────────────────────────────────────
   &__btn {
     all: unset;
     cursor: pointer;
@@ -1131,6 +161,7 @@
     padding: 0.75rem 2rem;
     border-radius: $radius-pill;
     transition: background 0.3s, border-color 0.3s, transform 0.3s, box-shadow 0.3s, opacity 0.3s;
+
     &--fill {
       color: #fff;
       background: $accent;
@@ -1165,7 +196,7 @@
   &__danger-label { font-family: $font-sans; font-size: 0.9rem; font-weight: 500; color: #e05050; }
   &__danger-sub { font-family: $font-sans; font-size: 0.8rem; color: $text-secondary; }
 
-  // ── Delete modal ──────────────────────────────────────────────────
+  // ── Account delete modal ──────────────────────────────────────────
   &__modal-overlay {
     position: fixed;
     inset: 0;
@@ -1186,15 +217,33 @@
     animation: modalSlide 0.3s ease;
   }
   &__modal-title { font-family: $font-sans; font-size: 1.25rem; font-weight: 600; color: #e05050; margin-bottom: 0.75rem; }
-  &__modal-desc {
-    font-family: $font-sans;
-    font-size: 0.85rem;
-    color: $text-secondary;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-  }
+  &__modal-desc { font-family: $font-sans; font-size: 0.85rem; color: $text-secondary; line-height: 1.6; margin-bottom: 1.5rem; }
   &__modal-btns { display: flex; gap: 1rem; margin-top: 1.5rem; }
-  &__modal form &__frow { margin-bottom: 0.5rem; }
+
+  // ── Form elements (modal password form) ───────────────────────────
+  &__frow {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+  &__finput {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.55rem 0;
+    background: transparent;
+    border-bottom: 1px solid rgba(#fff, 0.18);
+    font-family: $font-sans;
+    font-size: 0.9rem;
+    color: $text-primary;
+    caret-color: $accent;
+    transition: border-color 0.2s;
+    &::placeholder { color: $text-muted; }
+    &:focus { border-bottom-color: $accent; }
+  }
+  &__fline { height: 1px; background: rgba(#fff, 0.06); margin-top: 0.1rem; }
+  &__form-err { font-family: $font-mono; font-size: 0.7rem; letter-spacing: 0.08em; color: #ff7e7e; }
 
   // ── Project modals ────────────────────────────────────────────────
   &__pm-overlay {
@@ -1298,69 +347,31 @@
     }
   }
 
-  // ── Responsive ────────────────────────────────────────────────────
-  @media (max-width: 1024px) {
-    &__hero-avatar { width: clamp(5.5rem, 14vw, 8rem); height: clamp(5.5rem, 14vw, 8rem); }
-  }
+  // ── Mobile bottom nav ─────────────────────────────────────────────
+  &__mobile-nav { display: none; }
 
+  // ── Responsive ────────────────────────────────────────────────────
   @media (max-width: 768px) {
     &__bar { padding: 0 1.25rem; }
     &__nav { margin-left: 1.5rem; }
-    &__content { padding: 4.5rem 1.25rem 0; overflow-x: hidden; }
-    &__content--profile { padding-top: 5rem; }
-    &__hero { padding: 3rem 0 2rem; gap: 1.25rem; }
-    &__hero-avatar { width: clamp(4.5rem, 18vw, 6rem); height: clamp(4.5rem, 18vw, 6rem); }
-    &__hero-avatar-text { font-size: clamp(1.1rem, 4.5vw, 1.6rem); }
-    &__hero-char { font-size: clamp(2.5rem, 7.5vw, 4.6875rem); }
-    &__hero-script { font-size: clamp(2.5rem, 6vw, 4.375rem); }
-    &__stats { grid-template-columns: 1fr 1fr; border-left: none; }
-    &__stat {
-      border-right: none;
-      border-bottom: 1px solid $border;
-      padding: 1.5rem 1rem;
-      &:nth-child(odd) { border-right: 1px solid $border; }
-    }
-    &__ticket-head { flex-direction: column; }
-    &__ticket-name { font-size: clamp(1.5rem, 7vw, 2rem); }
-    &__ticket-body { flex-wrap: wrap; gap: 1.25rem; }
-    &__ticket-vdivider { display: none; }
-    &__ticket-field { padding-right: 0; min-width: calc(50% - 1rem); }
-    &__pfield-pair { grid-template-columns: 1fr; gap: 1rem; }
-    &__pcard { padding: 1.75rem 1.5rem; }
-    &__frow-pair { grid-template-columns: 1fr; gap: 1.25rem; }
+    &__content { padding: 0 1.25rem 0; overflow-x: hidden; }
     &__danger { flex-direction: column; align-items: flex-start; }
-    &__table-head,
-    &__table-row {
-      grid-template-columns: 2.5rem 1fr 4rem;
-      .db__th--key, .db__th--tracks, .db__th--time,
-      .db__td--key, .db__td--tracks, .db__td--time { display: none; }
-    }
     &__clock { display: none; }
-    &__brand { padding: 3rem 0 0.75rem; }
-  }
-
-  // ── Mobile bottom nav (hidden on desktop) ──────────────────────
-  &__mobile-nav {
-    display: none;
   }
 
   @media (max-width: 480px) {
     &__nav { display: none; }
-    &__hero-avatar { width: 3.5rem; height: 3.5rem; }
-    &__stat-num { font-size: 1.5rem; }
 
-    // Show mobile bottom nav
     &__mobile-nav {
       display: flex;
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       z-index: 120;
       background: rgba(3, 3, 3, 0.92);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border-top: 1px solid $border;
+      // env(safe-area-inset-bottom) pads above the iPhone home-indicator notch
       padding: 0.4rem 0 max(0.4rem, env(safe-area-inset-bottom));
     }
 
@@ -1375,606 +386,13 @@
       cursor: pointer;
       color: $text-muted;
       transition: color 0.15s;
-
       svg { width: 1.15rem; height: 1.15rem; }
       span { font-family: $font-mono; font-size: 0.42rem; letter-spacing: 0.1em; text-transform: uppercase; }
-
       &--active { color: $accent; }
     }
 
-    // Push scrollable content above the mobile nav
     &__content {
       padding-bottom: calc(4rem + env(safe-area-inset-bottom));
-    }
-    &__content--profile {
-      padding-bottom: calc(4rem + env(safe-area-inset-bottom));
-    }
-
-    // Library tab on mobile
-    &__content--library {
-      height: calc(100dvh - 4.5rem - 3.5rem - env(safe-area-inset-bottom));
-    }
-
-    &__lib-header {
-      padding: 1rem 0.25rem 0;
-    }
-
-    &__lib-header-top {
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-      gap: 0.65rem;
-    }
-
-    &__lib-title { font-size: 1.5rem; }
-
-    &__lib-header-actions {
-      width: 100%;
-    }
-
-    &__lib-search {
-      flex: 1;
-    }
-
-    &__lib-search-input { width: 100%; }
-
-    &__lib-new-btn {
-      padding: 0.42rem 0.65rem;
-      span { display: none; }
-    }
-
-    &__lib-tab-count { display: none; }
-
-    &__lib-tab {
-      padding: 0.55rem 0.7rem;
-      font-size: 0.75rem;
-    }
-
-    &__lib-body {
-      padding: 0.5rem 0;
-    }
-
-    &__lib-row {
-      padding: 0.6rem 0.25rem;
-      gap: 0.75rem;
-    }
-
-    &__lib-row-date {
-      display: none;
-    }
-
-    &__lib-row-tag {
-      display: none;
-    }
-    &__brand { padding: 2rem 0 0.75rem; }
-    &__brand-melo { font-size: clamp(3.5rem, 22vw, 7rem); }
-    &__brand-studio { font-size: clamp(2.8rem, 18vw, 5.5rem); }
-
-    // Ticket card — column layout, centered photo, mobile only
-    &__ticket-head {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.85rem;
-      padding: 0.75rem 1.25rem 0.65rem;
-    }
-    &__ticket-event {
-      width: 100%;
-      align-items: center;
-    }
-    &__ticket-tags { justify-content: center; }
-    &__ticket-photo {
-      width: 5.5rem;
-      height: 5.5rem;
-    }
-  }
-
-  // ── Library tab ──────────────────────────────────────────────────
-  &__content--library {
-    padding-top: 4.5rem;
-    display: flex;
-    flex-direction: column;
-    height: calc(100dvh - 4.5rem);
-    overflow: hidden;
-  }
-
-  // ── Library header (title + search + tabs) ─────────────────────
-  &__lib-header {
-    flex-shrink: 0;
-    padding: 2rem 0.25rem 0;
-    border-bottom: 1px solid $border;
-    background: rgba(#fff, 0.005);
-  }
-
-  &__lib-header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  &__lib-title {
-    font-family: $font-display;
-    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    color: $text-primary;
-    margin: 0;
-  }
-
-  &__lib-header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-  }
-
-  &__lib-new-btn {
-    all: unset;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: $font-sans;
-    font-size: 0.78rem;
-    font-weight: 600;
-    white-space: nowrap;
-    color: $accent;
-    background: rgba($accent, 0.1);
-    border: 1px solid rgba($accent, 0.25);
-    border-radius: 8px;
-    padding: 0.42rem 1rem;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
-
-    svg { width: 0.8rem; height: 0.8rem; flex-shrink: 0; }
-
-    &:hover {
-      background: rgba($accent, 0.18);
-      border-color: rgba($accent, 0.5);
-      box-shadow: 0 0 14px rgba($accent, 0.12);
-    }
-  }
-
-  &__lib-search {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid $border;
-    border-radius: 8px;
-    padding: 0.4rem 0.8rem;
-    transition: border-color 0.15s, background 0.15s;
-
-    svg { width: 0.8rem; height: 0.8rem; flex-shrink: 0; color: $text-muted; }
-
-    &:focus-within {
-      border-color: rgba($accent, 0.35);
-      background: rgba($accent, 0.03);
-    }
-  }
-
-  &__lib-search-input {
-    all: unset;
-    font-family: $font-sans;
-    font-size: 0.78rem;
-    color: $text-primary;
-    width: 170px;
-    &::placeholder { color: $text-muted; }
-  }
-
-  // ── Library category tabs ────────────────────────────────────────
-  &__lib-tabs {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    margin-bottom: -1px;
-    position: relative;
-  }
-
-  &__lib-tab {
-    all: unset;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.65rem 1.1rem;
-    font-family: $font-sans;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: $text-muted;
-    transition: color 0.2s;
-
-    svg { width: 0.85rem; height: 0.85rem; }
-
-    &:hover { color: $text-secondary; }
-
-    &--active {
-      color: $text-primary;
-      font-weight: 600;
-    }
-
-    &--trash {
-      margin-left: auto;
-      font-size: 0.75rem;
-      color: rgba(#ff5454, 0.4);
-      &:hover { color: rgba(#ff5454, 0.7); }
-      &.db__lib-tab--active { color: #ff5454; }
-    }
-  }
-
-  &__lib-tab-indicator {
-    position: absolute;
-    bottom: 0;
-    height: 2px;
-    background: $accent;
-    border-radius: 2px 2px 0 0;
-    pointer-events: none;
-    transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-                background 0.2s;
-  }
-
-  &__lib-tab-count {
-    font-family: $font-mono;
-    font-size: 0.65rem;
-    letter-spacing: 0.06em;
-    color: $text-secondary;
-    pointer-events: none;
-    user-select: none;
-    white-space: nowrap;
-  }
-
-  &__lib-tab-badge {
-    font-family: $font-mono;
-    font-size: 0.58rem;
-    letter-spacing: 0.04em;
-    color: $text-muted;
-    background: rgba(#fff, 0.06);
-    border-radius: 4px;
-    padding: 0.1em 0.4em;
-    line-height: 1.5;
-    pointer-events: none;
-    user-select: none;
-    transition: color 0.2s, background 0.2s;
-    .db__lib-tab--active & {
-      color: $accent;
-      background: rgba($accent, 0.12);
-    }
-  }
-
-  &__lib-tab-spacer {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding: 0 0.5rem;
-  }
-
-  // ── Library body (scrollable row container) ──────────────────────
-  &__lib-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0.75rem 0;
-  }
-
-  // List rows
-  // &__lib-body styles are above; this alias kept for safety
-  &__lib-list, &__lib-body-inner {
-    flex: 1;
-    overflow-y: auto;
-  }
-
-  &__lib-row {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.7rem 0.25rem;
-    border-radius: 10px;
-    border: 1px solid transparent;
-    transition: background 0.15s, border-color 0.15s;
-    cursor: pointer;
-    position: relative;
-
-    &:hover:not(&--locked) {
-      background: rgba(255,255,255,0.028);
-      border-color: rgba(255,255,255,0.06);
-
-      .db__lib-row-play { opacity: 1; }
-      .db__lib-row-thumb-icon { opacity: 0; }
-    }
-
-    &--locked { opacity: 0.4; }
-  }
-
-  &__lib-row-play {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.38);
-    border-radius: inherit;
-    opacity: 0;
-    transition: opacity 0.15s;
-    pointer-events: none;
-
-    svg { width: 1.1rem; height: 1.1rem; color: #fff; }
-  }
-
-  &__lib-row-thumb {
-    width: 2.6rem;
-    height: 2.6rem;
-    border-radius: 8px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--proj-color, #e05297), color-mix(in srgb, var(--proj-color, #e05297) 60%, #000));
-    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-    position: relative;
-    overflow: hidden;
-
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent 60%);
-      border-radius: inherit;
-    }
-  }
-
-  &__lib-row-thumb-icon {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    transition: opacity 0.15s;
-    svg { width: 1rem; height: 1rem; color: rgba(255,255,255,0.75); }
-  }
-
-  &__lib-row-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-  }
-
-  &__lib-row-name {
-    font-family: $font-sans;
-    font-size: 0.95rem;
-    font-weight: 500;
-    color: $text-primary;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  &__lib-row-meta {
-    font-family: $font-mono;
-    font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: $text-secondary;
-  }
-
-  &__lib-row-tag {
-    font-family: $font-mono;
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: $text-secondary;
-    border: 1px solid $border;
-    border-radius: 100px;
-    padding: 0.22rem 0.6rem;
-    flex-shrink: 0;
-
-    &--soon { color: $text-muted; border-color: transparent; }
-  }
-
-  &__lib-row-date {
-    font-family: $font-mono;
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    color: $text-secondary;
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-
-  &__lib-row-btn {
-    all: unset;
-    font-family: $font-mono;
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: $text-primary;
-    border: 1px solid $border-hover;
-    border-radius: 100px;
-    padding: 0.45rem 1.1rem;
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
-    flex-shrink: 0;
-
-    &:hover { border-color: $accent; color: $accent; }
-
-    &--danger {
-      color: #ff5454;
-      border-color: rgba(#ff5454, 0.4);
-      &:hover { border-color: #ff5454; color: #ff5454; }
-    }
-  }
-
-  &__lib-row-menu-wrap {
-    position: relative;
-    flex-shrink: 0;
-  }
-
-  &__lib-row-dots {
-    all: unset;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 6px;
-    color: $text-muted;
-    cursor: pointer;
-    transition: background 0.12s, color 0.12s, opacity 0.12s;
-    opacity: 0;
-
-    .db__lib-row:hover &,
-    .db__lib-row-menu-wrap:focus-within & { opacity: 1; }
-
-    &:hover { background: $border; color: $text-primary; }
-    &:focus-visible { opacity: 1; outline: none; background: $border; color: $text-primary; }
-
-    svg { width: 1.1rem; height: 1.1rem; pointer-events: none; }
-  }
-
-  &__lib-row-dropdown {
-    position: absolute;
-    top: calc(100% + 4px);
-    right: 0;
-    z-index: 200;
-    min-width: 175px;
-    background: #1a1a1a;
-    border: 1px solid $border-hover;
-    border-radius: 10px;
-    padding: 0.35rem;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.55);
-    animation: ddFadeIn 0.1s ease;
-  }
-
-  @keyframes ddFadeIn {
-    from { opacity: 0; transform: translateY(-4px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0)   scale(1); }
-  }
-
-  &__lib-row-dd-item {
-    all: unset;
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 0.55rem 0.75rem;
-    border-radius: 6px;
-    font-family: $font-sans;
-    font-size: 0.82rem;
-    color: $text-primary;
-    cursor: pointer;
-    transition: background 0.1s;
-
-    svg { width: 1rem; height: 1rem; flex-shrink: 0; color: $text-muted; }
-
-    &:hover {
-      background: $border-hover;
-      svg { color: $text-secondary; }
-    }
-
-    &--danger {
-      color: #ff5454;
-      svg { color: rgba(#ff5454, 0.7); }
-      &:hover { background: rgba(#ff5454, 0.08); svg { color: #ff5454; } }
-    }
-  }
-
-  &__lib-row-dd-sep {
-    height: 1px;
-    background: $border;
-    margin: 0.3rem 0.4rem;
-  }
-
-  &__lib-row--deleted {
-    opacity: 0.75;
-    &:hover { opacity: 1; }
-  }
-
-  &__lib-row-thumb--deleted {
-    svg { opacity: 0.5; }
-  }
-
-  &__lib-row-expiry {
-    font-family: $font-mono;
-    font-size: 0.62rem;
-    letter-spacing: 0.1em;
-    color: $text-muted;
-    flex-shrink: 0;
-    white-space: nowrap;
-  }
-
-  &__lib-row-trash-acts {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  &__lib-trash-note {
-    font-family: $font-mono;
-    font-size: 0.65rem;
-    letter-spacing: 0.06em;
-    color: $text-muted;
-    padding: 0.6rem 1.2rem;
-    border-bottom: 1px solid $border;
-
-    strong { color: $text-secondary; }
-  }
-
-  &__lib-trash-err {
-    display: block;
-    font-family: $font-mono;
-    font-size: 0.65rem;
-    color: #ff5454;
-    padding: 0.4rem 1.2rem;
-  }
-
-  &__lib-row-lock {
-    display: flex;
-    align-items: center;
-    color: $text-muted;
-    flex-shrink: 0;
-
-    svg { width: 0.95rem; height: 0.95rem; }
-  }
-
-  &__lib-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding: 5rem 2rem;
-    color: $text-secondary;
-    font-family: $font-sans;
-    font-size: 0.88rem;
-    text-align: center;
-
-    svg {
-      width: 2.5rem;
-      height: 2.5rem;
-      opacity: 0.18;
-      color: $accent;
-    }
-
-    span { color: $text-muted; font-family: $font-mono; font-size: 0.65rem; letter-spacing: 0.08em; }
-  }
-
-  &__lib-empty-cta {
-    all: unset;
-    margin-top: 0.25rem;
-    font-family: $font-sans;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: $accent;
-    background: rgba($accent, 0.1);
-    border: 1px solid rgba($accent, 0.3);
-    border-radius: 100px;
-    padding: 0.5rem 1.4rem;
-    cursor: pointer;
-    transition: background 0.15s, box-shadow 0.15s;
-
-    &:hover {
-      background: rgba($accent, 0.18);
-      box-shadow: 0 0 14px rgba($accent, 0.12);
     }
   }
 }
@@ -2003,4 +421,9 @@
 @keyframes dbPmIn {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes db-page-in {
+  from { opacity: 0; filter: blur(8px); }
+  to   { opacity: 1; filter: blur(0); }
 }

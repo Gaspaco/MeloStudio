@@ -1,9 +1,9 @@
 export default function PrivacyPage() {
   return (
-    <main style={{ "max-width": "780px", margin: "0 auto", padding: "4rem 2rem", "font-family": "system-ui, sans-serif", color: "#e8e8e8", background: "#0d0d0d", "min-height": "100vh", "line-height": "1.7" }}>
-      <a href="/" style={{ color: "#e040a0", "text-decoration": "none", "font-size": "0.875rem" }}>← melostudio.app</a>
+    <main style={{ "max-width": "780px", margin: "0 auto", padding: "4rem 2rem", "font-family": "system-ui, sans-serif", color: "var(--theme-text, #e8e8e8)", background: "var(--theme-page-bg, #0d0d0d)", "min-height": "100vh", "line-height": "1.7" }}>
+      <a href="/login" style={{ color: "#e040a0", "text-decoration": "none", "font-size": "0.875rem" }}>← Sign in</a>
       <h1 style={{ "font-size": "2rem", "font-weight": "700", margin: "2rem 0 0.5rem" }}>Privacy Policy</h1>
-      <p style={{ color: "#888", "font-size": "0.875rem", "margin-bottom": "2.5rem" }}>Last updated: May 6, 2026</p>
+      <p style={{ color: "var(--theme-text-muted, #888)", "font-size": "0.875rem", "margin-bottom": "2.5rem" }}>Last updated: May 6, 2026</p>
 
       <section style={{ "margin-bottom": "2rem" }}>
         <h2 style={{ "font-size": "1.15rem", "font-weight": "600", "margin-bottom": "0.75rem" }}>1. Information We Collect</h2>

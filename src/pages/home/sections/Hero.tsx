@@ -42,14 +42,12 @@ const Hero: Component<{
           <span class="hero__s-lbl">Latency Engine</span>
         </div>
       </div>
-      <div class="hero__actions">
-        <Show when={!props.isLoggedIn?.()} fallback={
-          <button class="hero__btn hero__btn--primary" onClick={props.onProfile}>Dashboard</button>
-        }>
+      <Show when={!props.isLoggedIn?.()}>
+        <div class="hero__actions">
           <button class="hero__btn hero__btn--primary" onClick={props.onSignup}>Sign up</button>
           <button class="hero__btn hero__btn--secondary" onClick={props.onLogin}>Sign in</button>
-        </Show>
-      </div>
+        </div>
+      </Show>
       <div ref={props.scrollIndRef} class="hero__scroll">
         <div class="hero__scroll-line" />
       </div>

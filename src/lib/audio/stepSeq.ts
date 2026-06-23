@@ -169,13 +169,20 @@ export class StepSequencer {
   }
 
   async start(): Promise<void> {
-    if (this.playing) return;
+    const transport = Tone.getTransport();
+    if (this.playing && transport.state === "started") return;
+    if (this.playing && transport.state !== "started") {
+      this.sequence?.stop();
+      this.sequence?.dispose();
+      this.sequence = null;
+      this.playing = false;
+    }
     try { await unlockAudioContext(); } catch { /* */ }
     const masterGain = this.ensureAudioGraph();
     if (!this.kit) this.kit = new DrumKit(masterGain);
 
     this.rebuildSequence();
-    Tone.getTransport().start("+0.05");
+    transport.start("+0.05");
     this.playing = true;
   }
 

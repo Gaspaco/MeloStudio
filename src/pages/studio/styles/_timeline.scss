@@ -17,18 +17,55 @@
 .bl__ruler {
   position: sticky;
   top: 0;
-  height: 3.2rem;
+  height: 3rem;
   display: flex;
   width: calc(450 * 5rem);
   background:
-    linear-gradient(180deg, rgba(#000, 0.55), rgba($bg-primary, 0.98));
+    linear-gradient(180deg, rgba(#000, 0.45), rgba($bg-primary, 0.96));
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(#fff, 0.12);
+  border-bottom: 1px solid rgba(#fff, 0.08);
   z-index: 5;
-  box-shadow: 0 1px 0 rgba(#fff, 0.04), 0 4px 12px rgba(#000, 0.35);
+  box-shadow: 0 1px 0 rgba(#fff, 0.03), 0 4px 12px rgba(#000, 0.25);
   cursor: col-resize;
   user-select: none;
 }
+.bl__cycle {
+  position: absolute;
+  top: 0.25rem;
+  height: 0.45rem;
+  min-width: 1rem;
+  display: flex;
+  align-items: stretch;
+  z-index: 7;
+  opacity: 0.4;
+  pointer-events: auto;
+  cursor: grab;
+  transition: opacity 0.15s ease;
+  border-radius: 0.2rem;
+  overflow: hidden;
+
+  &.is-active {
+    opacity: 1;
+  }
+  &:active { cursor: grabbing; }
+}
+.bl__cycle-fill {
+  flex: 1;
+  background: rgba(#e84040, 0.35);
+}
+.bl__cycle.is-active .bl__cycle-fill {
+  background: rgba(#e84040, 0.55);
+}
+.bl__cycle-locator {
+  position: relative;
+  width: 0.28rem;
+  flex-shrink: 0;
+  background: #e84040;
+  border: none;
+  cursor: ew-resize;
+}
+.bl__cycle-locator--left { border-radius: 0.2rem 0 0 0.2rem; }
+.bl__cycle-locator--right { border-radius: 0 0.2rem 0.2rem 0; }
 .bl__bar {
   width: 5rem;
   flex-shrink: 0;
@@ -40,8 +77,8 @@
     left: 0;
     bottom: 0;
     width: 1px;
-    height: 1.4rem;
-    background: rgba(#fff, 0.55);
+    height: 1.2rem;
+    background: rgba(#fff, 0.4);
   }
   /* mid (beat 3) tick */
   &::after {
@@ -50,26 +87,26 @@
     left: 50%;
     bottom: 0;
     width: 1px;
-    height: 0.85rem;
-    background: rgba(#fff, 0.32);
+    height: 0.7rem;
+    background: rgba(#fff, 0.22);
   }
 }
 /* extra quarter ticks via inline pseudo on a child wouldn’t work; use bg-image instead */
 .bl__bar {
   background-image:
-    linear-gradient(90deg, rgba(#fff, 0.22) 1px, transparent 1px);
-  background-size: 25% 0.55rem;
+    linear-gradient(90deg, rgba(#fff, 0.15) 1px, transparent 1px);
+  background-size: 25% 0.45rem;
   background-position: 0 100%;
   background-repeat: repeat-x;
 }
 .bl__bar-num {
   position: absolute;
-  top: 0.7rem;
+  top: 0.55rem;
   left: 0.6rem;
   font-family: $font-mono;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(#fff, 0.85);
   letter-spacing: 0.02em;
   font-variant-numeric: tabular-nums;
   display: none;
@@ -85,13 +122,24 @@
   width: calc(450 * 5rem); /* 450 bars × 5rem */
 }
 
+.bl__timeline-automix-spacer {
+  height: 5.5rem;
+  border-bottom: 1px solid rgba(#fff, 0.03);
+  background:
+    linear-gradient(90deg, rgba(#fff, 0.02) 1px, transparent 1px),
+    rgba(#fff, 0.006);
+  background-size: 5rem 100%;
+  pointer-events: none;
+}
+
 .bl__lane {
-  height: 5rem;
-  border-bottom: 1px solid rgba(#fff, 0.04);
+  height: 5.5rem;
+  border-bottom: 1px solid rgba(#fff, 0.03);
   position: relative;
+  overflow: hidden;
   background-image:
-    linear-gradient(90deg, rgba(#fff, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(#fff, 0.015) 1px, transparent 1px);
+    linear-gradient(90deg, rgba(#fff, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(#fff, 0.01) 1px, transparent 1px);
   background-size: 5rem 100%, 1.25rem 100%;
   transition: background-color 0.15s ease;
   &.is-sel { background-color: color-mix(in srgb, var(--tc) 8%, transparent); }
@@ -120,9 +168,79 @@
     justify-content: center;
     background-image: none;
   }
+  &.is-region-target {
+    background-color: color-mix(in srgb, var(--tc, #fff) 13%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tc, #fff) 55%, transparent);
+  }
+  &.is-drag-origin {
+    overflow: visible;
+    z-index: 4;
+  }
 }
 
 /* Imported media clip (audio / midi / video) */
+.bl__live-clip {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  min-width: 8px;
+  border-radius: $radius-sm;
+  pointer-events: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: #fff;
+    z-index: 1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 2px;
+    height: 100%;
+    background: #fff;
+  }
+}
+
+.bl__live-midi-clip {
+  position: absolute;
+  top: 0.72rem;
+  height: calc(100% - 1.44rem);
+  min-width: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5%;
+  padding: 0 0.5rem;
+  border-radius: 0.34rem;
+  border: 1px solid color-mix(in srgb, var(--tc) 65%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--tc) 22%, #101015), color-mix(in srgb, var(--tc) 10%, #08080b));
+  pointer-events: none;
+  z-index: 3;
+}
+.bl__live-midi-pulse {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tc) 80%, #fff);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--tc) 70%, transparent);
+}
+.bl__live-midi-bar {
+  width: 15%;
+  height: 5px;
+  min-width: 7px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--tc) 72%, #fff);
+  opacity: 0.7;
+}
+
 .bl__mclip {
   --tc: #888;
   position: absolute;
@@ -133,9 +251,14 @@
   flex-direction: column;
   cursor: grab;
   overflow: hidden;
-  background: color-mix(in srgb, var(--tc) 22%, #111);
-  border: 1px solid color-mix(in srgb, var(--tc) 55%, transparent);
+  background: color-mix(in srgb, var(--tc) 18%, #111);
+  border: 1px solid color-mix(in srgb, var(--tc) 40%, transparent);
   transition: box-shadow 0.13s, transform 0.13s;
+  contain: layout paint;
+  user-select: none;
+  will-change: left, transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
   &:hover {
     box-shadow: 0 2px 10px color-mix(in srgb, var(--tc) 35%, transparent);
     .bl__mclip-x { opacity: 1; }
@@ -144,17 +267,54 @@
   &.is-dragging {
     opacity: 0.75;
     box-shadow: 0 6px 20px color-mix(in srgb, var(--tc) 50%, transparent);
-    transform: translateY(-2px);
+    transform: translate3d(0, -2px, 0);
     z-index: 10;
     transition: none;
+    pointer-events: none;
   }
   &.is-midi {
-    background: repeating-linear-gradient(
-      45deg,
-      color-mix(in srgb, var(--tc) 30%, transparent) 0 6px,
-      color-mix(in srgb, var(--tc) 18%, transparent) 6px 12px
-    );
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--tc) 24%, #101318), color-mix(in srgb, var(--tc) 14%, #07090d));
   }
+}
+.bl__mclip-trim {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  z-index: 4;
+  cursor: ew-resize;
+  pointer-events: auto;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0.42rem;
+    bottom: 0.42rem;
+    width: 2px;
+    border-radius: 2px;
+    background: rgba(#fff, 0.2);
+    opacity: 0;
+    transition: opacity 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+  }
+
+  &:hover::after {
+    opacity: 1;
+    background: #fff;
+    box-shadow: 0 0 8px color-mix(in srgb, var(--tc) 70%, transparent);
+  }
+}
+.bl__mclip-trim--left {
+  left: 0;
+  &::after { left: 3px; }
+}
+.bl__mclip-trim--right {
+  right: 0;
+  &::after { right: 3px; }
+}
+.bl__mclip:hover .bl__mclip-trim::after,
+.bl__mclip.is-dragging .bl__mclip-trim::after {
+  opacity: 1;
 }
 .bl__mclip-head {
   display: flex;
@@ -205,6 +365,35 @@
   pointer-events: none;
   overflow: hidden;
   svg { display: block; width: 100%; height: 100%; }
+
+  // Peaks.js injects a canvas — force it transparent
+  canvas { background: transparent !important; display: block; }
+}
+.bl__midi-notes {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(#fff, 0.045) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(#fff, 0.018) 1px, transparent 1px);
+  background-size: 25% 100%, 100% 33.333%;
+}
+.bl__midi-note {
+  position: absolute;
+  min-width: 4px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--tc) 78%, #fff);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--tc) 20%, transparent);
+}
+.bl__midi-empty-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  background:
+    linear-gradient(90deg, rgba(#fff, 0.04) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(#fff, 0.03) 1px, transparent 1px);
+  background-size: 25% 100%, 100% 25%;
 }
 
 /* Drop position marker — vertical line where clip will land */
@@ -392,101 +581,98 @@
 
 .bl__clip {
   position: absolute;
-  top: 0.4rem;
-  height: calc(100% - 0.8rem);
-  border-radius: 6px;
+  top: 0;
+  height: 100%;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   cursor: grab;
   overflow: hidden;
-  background:
-    linear-gradient(180deg,
-      color-mix(in srgb, var(--tc, #{$accent}) 22%, #0a0a0a) 0%,
-      color-mix(in srgb, var(--tc, #{$accent}) 8%,  #0a0a0a) 100%);
-  border: 1px solid color-mix(in srgb, var(--tc, #{$accent}) 55%, transparent);
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--tc, #{$accent}) 40%, transparent),
-    0 2px 8px -2px color-mix(in srgb, var(--tc, #{$accent}) 30%, transparent);
-  transition: box-shadow 0.18s, border-color 0.18s, transform 0.18s;
+  background: color-mix(in srgb, var(--tc, #{$accent}) 55%, #0e0e12);
+  border-right: 1px solid rgba(#000, 0.25);
+  transition: background 0.15s;
+  contain: layout paint;
+  user-select: none;
+  will-change: left, transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+
   &:hover {
-    border-color: color-mix(in srgb, var(--tc, #{$accent}) 80%, transparent);
-    box-shadow:
-      inset 0 1px 0 color-mix(in srgb, var(--tc, #{$accent}) 60%, transparent),
-      0 4px 14px -2px color-mix(in srgb, var(--tc, #{$accent}) 50%, transparent);
-    transform: translateY(-1px);
+    background: color-mix(in srgb, var(--tc, #{$accent}) 62%, #0e0e12);
   }
   &:active { cursor: grabbing; }
+  &.is-dragging {
+    z-index: 10;
+    pointer-events: none;
+    transition: none;
+    box-shadow: 0 8px 22px color-mix(in srgb, var(--tc, #{$accent}) 38%, transparent);
+  }
 }
 
 .bl__clip-header {
   display: flex;
   align-items: center;
-  gap: 0.32rem;
-  padding: 0.3rem 0.45rem 0.25rem;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--tc, #{$accent}) 30%, transparent) 0%,
-    color-mix(in srgb, var(--tc, #{$accent}) 8%,  transparent) 100%);
-  border-bottom: 1px solid color-mix(in srgb, var(--tc, #{$accent}) 25%, transparent);
+  padding: 0.25rem 0.55rem;
+  background: rgba(#000, 0.18);
   flex-shrink: 0;
 }
 
-.bl__clip-dot-led {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--tc, #{$accent});
-  box-shadow:
-    0 0 5px var(--tc, #{$accent}),
-    inset 0 0 2px rgba(255, 255, 255, 0.5);
-  flex-shrink: 0;
-}
+.bl__clip-dot-led { display: none; }
 
 .bl__clip-name {
-  font-family: $font-mono;
-  font-size: 0.5rem;
-  color: rgba(#fff, 0.92);
-  font-weight: 700;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  text-shadow: 0 0 8px color-mix(in srgb, var(--tc, #{$accent}) 50%, transparent);
+  font-family: $font-sans;
+  font-size: 0.6rem;
+  color: color-mix(in srgb, var(--tc, #{$accent}) 85%, #fff);
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
-// 8 rows × 16 cells micro-grid
-.bl__clip-matrix {
+.bl__clip-body {
   flex: 1;
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 1px;
-  padding: 0.3rem 0.35rem;
+  align-items: center;
   justify-content: center;
 }
 
-.bl__clip-mrow {
+.bl__clip-beats {
+  position: absolute;
+  inset: 0;
   display: flex;
-  gap: 1px;
-  flex: 1;
-  min-height: 0;
+  justify-content: space-evenly;
+  pointer-events: none;
 }
 
-.bl__clip-cell {
-  flex: 1;
-  border-radius: 0.5px;
-  background: rgba(#fff, 0.06);
-  transition: background 0.1s, box-shadow 0.1s;
+.bl__clip-beat-line {
+  width: 1px;
+  height: 100%;
+  background: rgba(#000, 0.18);
+}
 
-  &.is-beat:not(.is-hit) {
-    background: rgba(#fff, 0.13);
-  }
+.bl__clip-center {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  z-index: 1;
+}
 
-  &.is-hit {
-    background: var(--tc, #{$accent});
-    box-shadow: 0 0 3px color-mix(in srgb, var(--tc, #{$accent}) 90%, transparent);
-  }
-  &.is-hit.is-soft {
-    background: color-mix(in srgb, var(--tc, #{$accent}) 60%, transparent);
-    box-shadow: none;
-  }
+.bl__clip-icon {
+  width: 1.55rem;
+  height: 1.55rem;
+  color: color-mix(in srgb, var(--tc, #{$accent}) 75%, #fff);
+  opacity: 0.65;
+}
+
+.bl__clip-matrix { display: none; }
+.bl__clip-mrow { display: none; }
+.bl__clip-cell { display: none; }
+
+.bl__clip-pattern-label {
+  font-family: $font-sans;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--tc, #{$accent}) 75%, #fff);
+  opacity: 0.6;
 }
 
 // legacy — hidden
@@ -508,18 +694,16 @@
   background: $accent;
   pointer-events: none;
   z-index: 6;
-  box-shadow: 0 0 10px rgba($accent, 0.6), 0 0 3px $accent;
   // Diamond "ball" at top — this is the drag handle
   &::before {
     content: "";
     position: absolute;
-    top: 2.55rem; // sits just below the ruler
+    top: 2.35rem; // sits just below the ruler
     left: -5px;
     width: 12px;
     height: 12px;
     background: $accent;
     transform: rotate(45deg);
-    box-shadow: 0 0 10px rgba($accent, 0.7);
     pointer-events: auto;
     cursor: col-resize;
     border-radius: 2px;
@@ -531,8 +715,7 @@
     top: 0;
     left: 0;
     width: 2px;
-    height: 2.6rem;
+    height: 2.2rem;
     background: rgba($accent, 0.55);
   }
 }
-

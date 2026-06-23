@@ -1,0 +1,1340 @@
+@use "../../../styles/variables" as *;
+
+.db {
+  // ── Profile tab layout ───────────────────────────────────────────
+  &__content--profile.db__content {
+    padding-top: 0.9rem;
+  }
+
+  // ── Profile card ─────────────────────────────────────────────────
+  &__pro-card {
+    border-radius: 1.25rem;
+    overflow: hidden;
+    background: #111;
+    border: 1px solid rgba(#fff, 0.06);
+  }
+
+  &__pro-card-banner {
+    position: relative;
+    width: 100%;
+    height: 18rem;
+    overflow: hidden;
+
+    &:hover &-upload { opacity: 1; }
+  }
+
+  &__pro-card-banner-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1e1e1e 0%, #141414 100%);
+  }
+
+  &__pro-card-banner-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  &__pro-card-banner-upload {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    display: grid;
+    place-items: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.5rem;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(#fff, 0.1);
+    color: rgba(#fff, 0.7);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
+    z-index: 1;
+    svg { width: 0.9rem; height: 0.9rem; }
+    input { display: none; }
+    &:hover { background: rgba(0, 0, 0, 0.8); color: #fff; }
+  }
+
+  &__pro-card-body {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding: 0 2rem 2.5rem;
+    @media (max-width: 480px) { flex-direction: column; align-items: flex-start; }
+  }
+
+  &__pro-card-info {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__pro-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+    margin-top: -4.5rem;
+    margin-left: -0.75rem;
+  }
+
+  &__pro-avatar {
+    width: 14rem;
+    height: 14rem;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #161616;
+    border: 4px solid #111;
+    transition: border-color 0.2s;
+    .db__pro-avatar-wrap:hover & { border-color: rgba($accent, 0.6); }
+  }
+
+  &__pro-avatar-badge {
+    position: absolute;
+    bottom: -0.4rem;
+    right: 0.1rem;
+    pointer-events: none;
+    filter: drop-shadow(0 1px 4px rgba($accent, 0.5));
+    svg { width: 1.1rem; height: 1.1rem; }
+  }
+
+  &__pro-identity { flex: 1; min-width: 0; align-self: flex-end; margin-bottom: 0.75rem; }
+
+  &__pro-follow-panel {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    flex-shrink: 0;
+    align-self: flex-end;
+    margin-bottom: -1.25rem;
+    @media (max-width: 480px) { margin-bottom: 0; width: 100%; }
+  }
+
+  &__pro-follow-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+    cursor: pointer;
+
+    &:hover &__pro-follow-avatar,
+    &:hover .db__pro-follow-avatar {
+      margin-left: -0.2rem;
+      border-color: rgba($accent, 0.4);
+    }
+
+    &:hover .db__pro-follow-count { color: $accent; }
+    &:hover .db__pro-follow-label { color: $text-secondary; }
+  }
+
+  &__pro-follow-avatars {
+    display: flex;
+    align-items: center;
+  }
+
+  &__pro-follow-avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 2px solid $bg-primary;
+    background: #1e1e1e;
+    margin-left: -0.6rem;
+    flex-shrink: 0;
+    transition: margin-left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                border-color 0.3s ease;
+
+    &:first-child { margin-left: 0; background: #2a2a2a; }
+    &:nth-child(2) { background: #222; }
+    &:nth-child(3) { background: #1a1a1a; }
+  }
+
+  &__pro-follow-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.3rem;
+  }
+
+  &__pro-follow-count {
+    font-family: $font-display;
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: $text-primary;
+    transition: color 0.2s ease;
+  }
+
+  &__pro-follow-label {
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $text-muted;
+    transition: color 0.2s ease;
+  }
+
+  &__pro-name-row { display: flex; align-items: center; gap: 0.5rem; }
+
+  &__pro-verified {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-bottom: 0.1rem;
+    svg { width: 1.75rem; height: 1.75rem; }
+  }
+
+  &__pro-name {
+    font-family: $font-display;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: $text-primary;
+    margin: 0;
+  }
+
+  &__pro-edit {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    color: $text-muted;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: color 0.15s, background 0.15s;
+    svg { width: 0.8rem; height: 0.8rem; }
+    &:hover { color: $accent; background: rgba($accent, 0.08); }
+  }
+
+  &__pro-handle {
+    font-family: $font-mono;
+    font-size: 0.9rem;
+    color: $text-muted;
+    letter-spacing: 0.01em;
+    margin-top: 0.15rem;
+    display: block;
+  }
+
+  &__pro-email {
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+    margin-top: 0.5rem;
+    display: block;
+  }
+
+  &__finput-prefix {
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+    padding-right: 0.25rem;
+  }
+
+  &__pro-tags {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+    @media (max-width: 480px) { justify-content: center; }
+  }
+
+  &__pro-tag {
+    font-family: $font-display;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba($accent, 0.7);
+    line-height: 1;
+  }
+
+  &__pro-tag-dot {
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 50%;
+    background: #4ade80;
+    flex-shrink: 0;
+  }
+
+  &__profile-upload-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  &__profile-initials {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-family: $font-display;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: $accent;
+  }
+
+  &__profile-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  // ── Feature grid below the card ──────────────────────────────────
+  &__pp-grid {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr) 280px;
+    gap: 1.25rem;
+    align-items: start;
+    margin-top: 1.25rem;
+
+    @media (max-width: 1180px) {
+      grid-template-columns: 260px minmax(0, 1fr);
+      .db__pp-rail { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  &__pp-side {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  &__pp-card {
+    background: $bg-card;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
+    padding: 1.25rem;
+  }
+
+  // ── Status ───────────────────────────────────────────────────────
+  &__pp-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: $radius-pill;
+    background: $bg-tertiary;
+    border: 1px solid $border;
+    color: $text-secondary;
+    font-family: $font-sans;
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    &:hover { border-color: $border-hover; color: $text-primary; }
+  }
+
+  &__pp-status-dot {
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    background: $accent-green;
+    flex-shrink: 0;
+  }
+
+  &__pp-status-empty { color: $text-muted; }
+
+  &__pp-status-input {
+    width: 100%;
+    padding: 0.4rem 0.8rem;
+    border-radius: $radius-pill;
+    background: $bg-tertiary;
+    border: 1px solid $border-hover;
+    color: $text-primary;
+    font-family: $font-sans;
+    font-size: 0.78rem;
+    outline: none;
+    &:focus { border-color: $accent; }
+    &::placeholder { color: $text-muted; }
+  }
+
+  // ── Chip groups (talents / genres / inspired by) ─────────────────
+  &__pp-group {
+    & + & { margin-top: 1.25rem; }
+  }
+
+  &__pp-group-title {
+    font-family: $font-sans;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: $text-primary;
+    margin: 0 0 0.65rem;
+  }
+
+  &__pp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  &__pp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.4rem 0.3rem 0.7rem;
+    border-radius: $radius-pill;
+    background: $bg-tertiary;
+    border: 1px solid $border;
+    color: $text-secondary;
+    font-family: $font-sans;
+    font-size: 0.75rem;
+
+    &:hover .db__pp-chip-x { opacity: 1; }
+  }
+
+  &__pp-chip-x {
+    display: grid;
+    place-items: center;
+    width: 1rem;
+    height: 1rem;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: $text-muted;
+    font-size: 0.8rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s, color 0.15s;
+    &:hover { color: $accent; }
+  }
+
+  &__pp-chip-add {
+    padding: 0.3rem 0.7rem;
+    border-radius: $radius-pill;
+    background: transparent;
+    border: 1px dashed $border-hover;
+    color: $text-muted;
+    font-family: $font-sans;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    &:hover { color: $text-primary; border-color: $accent; }
+  }
+
+  &__pp-chip-input {
+    width: 9rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: $radius-pill;
+    background: $bg-tertiary;
+    border: 1px solid $accent;
+    color: $text-primary;
+    font-family: $font-sans;
+    font-size: 0.75rem;
+    outline: none;
+    &::placeholder { color: $text-muted; }
+  }
+
+  // ── Center: tabs + feed ──────────────────────────────────────────
+  &__pp-tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid $border;
+    margin-bottom: 1rem;
+  }
+
+  &__pp-tab {
+    padding: 0.65rem 1rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    color: $text-muted;
+    font-family: $font-display;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.15s;
+    &:hover { color: $text-secondary; }
+
+    &--active {
+      color: $text-primary;
+      border-bottom-color: $accent;
+    }
+  }
+
+  &__pp-feed-wrap {
+    position: relative;
+    max-height: 38rem;
+    overflow-y: auto;
+
+    &::after {
+      content: "";
+      position: sticky;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: block;
+      height: 3.5rem;
+      background: linear-gradient(to top, $bg-primary, transparent);
+      pointer-events: none;
+    }
+  }
+
+  &__pp-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__pp-track {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: $bg-card;
+    border: 1px solid $border;
+    border-radius: $radius-lg;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: $border-hover;
+      .db__pp-track-tile { background: var(--c); color: $bg-primary; }
+      .db__pp-track-wave span { background: var(--c); opacity: 0.65; }
+    }
+  }
+
+  &__pp-track-tile {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: $radius-md;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--c) 16%, transparent);
+    color: var(--c);
+    flex-shrink: 0;
+    transition: background 0.2s ease, color 0.2s ease;
+    svg { width: 1.2rem; height: 1.2rem; }
+  }
+
+  &__pp-track-tile-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &__pp-track-tile-play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba($bg-primary, 0.55);
+    color: $text-primary;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    svg { width: 1.1rem; height: 1.1rem; }
+
+    .db__pp-track:hover & { opacity: 1; }
+  }
+
+  &__pp-track-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+    flex-shrink: 0;
+    width: 13rem;
+    @media (max-width: 640px) { width: auto; flex: 1; }
+  }
+
+  &__pp-track-name {
+    font-family: $font-display;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__pp-track-meta {
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    color: $text-muted;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__pp-track-wave {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 1.5px;
+    min-width: 0;
+    height: 4.5rem;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, #000 80%, transparent);
+
+    // canvas stretches to fill the full container when real audio is loaded
+    canvas {
+      display: block;
+      flex: 1;
+      align-self: stretch;
+      min-width: 0;
+    }
+
+    span {
+      flex: 1;
+      max-width: 8px;
+      min-height: 2px;
+      background: $text-muted;
+      opacity: 0.5;
+      border-radius: 1px;
+      transition: background 0.2s ease, opacity 0.2s ease;
+    }
+
+    .db__pp-track-wave-ghost { opacity: 0.18; }
+
+    @media (max-width: 640px) { display: none; }
+  }
+
+  &__pp-empty {
+    padding: 3rem 1.5rem;
+    border-radius: $radius-lg;
+    border: 1px dashed $border-hover;
+    font-family: $font-sans;
+    font-size: 0.85rem;
+    color: $text-muted;
+    text-align: center;
+  }
+
+  // ── About tab ────────────────────────────────────────────────────
+  &__pp-about {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__pp-bio {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border-radius: $radius-lg;
+    background: $bg-card;
+    border: 1px solid $border;
+    color: $text-primary;
+    font-family: $font-sans;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    &:focus { border-color: $border-hover; }
+    &::placeholder { color: $text-muted; }
+  }
+
+  &__pp-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+
+  &__pp-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1rem 1.25rem;
+    border-radius: $radius-lg;
+    background: $bg-card;
+    border: 1px solid $border;
+  }
+
+  &__pp-fact-label {
+    font-family: $font-mono;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $text-muted;
+  }
+
+  &__pp-fact-value {
+    font-family: $font-display;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: $text-primary;
+    white-space: nowrap;
+  }
+
+  // ── Right rail: links ────────────────────────────────────────────
+  &__pp-rail-hint {
+    font-family: $font-sans;
+    font-size: 0.78rem;
+    color: $text-muted;
+    margin: 0 0 0.75rem;
+    line-height: 1.5;
+  }
+
+  &__pp-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+  }
+
+  &__pp-link-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    &:hover .db__pp-link-x { opacity: 1; }
+  }
+
+  &__pp-link {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: $radius-md;
+    background: $bg-tertiary;
+    border: 1px solid $border;
+    text-decoration: none;
+    transition: border-color 0.15s;
+    &:hover { border-color: $border-hover; }
+  }
+
+  &__pp-link-host {
+    display: block;
+    font-family: $font-mono;
+    font-size: 0.75rem;
+    color: $text-secondary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__pp-link-x {
+    display: grid;
+    place-items: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    border: none;
+    border-radius: 50%;
+    background: transparent;
+    color: $text-muted;
+    font-size: 0.9rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    flex-shrink: 0;
+    transition: opacity 0.15s, color 0.15s;
+    &:hover { color: $accent; }
+  }
+
+  &__pp-link-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: $radius-md;
+    background: transparent;
+    border: 1px dashed $border-hover;
+    color: $text-primary;
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    outline: none;
+    transition: border-color 0.15s;
+    &:focus { border-color: $accent; border-style: solid; }
+    &::placeholder { color: $text-muted; }
+  }
+
+  &__pp-activity {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__pp-act-block {
+    width: 100%;
+    min-height: 24rem;
+    border-radius: $radius-lg;
+    background: rgba(#fff, 0.04);
+    border: 1px solid $border;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  &__pp-act-block-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  &__pp-act-block-inner {
+    width: 100%;
+    border-radius: 0.65rem;
+    background: rgba(#fff, 0.07);
+    border: 1px solid rgba(#fff, 0.1);
+    margin: 0.75rem 0;
+    overflow: hidden;
+  }
+
+  &__pp-act-block-top {
+    display: flex;
+    gap: 0.85rem;
+    padding: 0.85rem;
+  }
+
+  &__pp-act-block-cover {
+    position: relative;
+    width: 7rem;
+    height: 7rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: rgba(#fff, 0.06);
+    flex-shrink: 0;
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  }
+
+  &__pp-act-block-cover-init {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-family: $font-display;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: $accent;
+    background: rgba($accent, 0.08);
+  }
+
+  &__pp-act-block-play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transition: opacity 0.2s;
+    svg { width: 1.5rem; height: 1.5rem; color: #fff; }
+    .db__pp-act-block-inner:hover & { opacity: 1; }
+  }
+
+  &__pp-act-block-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    flex: 1;
+    min-width: 0;
+    padding-top: 0.1rem;
+  }
+
+  &__pp-act-block-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__pp-act-block-title {
+    font-family: $font-display;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__pp-act-block-tag {
+    font-family: $font-mono;
+    font-size: 0.58rem;
+    letter-spacing: 0.04em;
+    color: $text-secondary;
+    background: rgba(#fff, 0.08);
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  &__pp-act-block-plays {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    color: $text-muted;
+    flex-shrink: 0;
+    svg { width: 0.6rem; height: 0.6rem; }
+  }
+
+  &__pp-act-block-artist {
+    font-family: $font-sans;
+    font-size: 0.8rem;
+    color: $text-secondary;
+  }
+
+  &__pp-act-block-dur {
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+  }
+
+  &__pp-act-block-wave {
+    height: 2.5rem;
+    padding: 0 0.85rem 0.5rem;
+    position: relative;
+
+    canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+  }
+
+
+  &__pp-act-block-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.85rem;
+    border-top: 1px solid rgba(#fff, 0.06);
+  }
+
+  &__pp-act-block-foot-label {
+    font-family: $font-display;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $text-primary;
+  }
+
+  &__pp-act-block-foot-btn {
+    font-family: $font-display;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: $text-secondary;
+    background: rgba(#fff, 0.08);
+    border-radius: 999px;
+    padding: 0.35rem 1rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    &:hover { background: rgba($accent, 0.15); color: $accent; }
+  }
+
+  &__pp-act-block-header {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  &__pp-act-block-dots-wrap {
+    margin-left: auto;
+    position: relative;
+  }
+
+  &__pp-act-block-dots {
+    display: grid;
+    place-items: center;
+    background: none;
+    border: none;
+    color: $text-secondary;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 50%;
+    transition: color 0.15s, background 0.15s;
+    svg { width: 1.4rem; height: 1.4rem; }
+    &:hover { color: $text-primary; background: rgba(#fff, 0.08); }
+  }
+
+  &__pp-act-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 10;
+    min-width: 10rem;
+    background: rgba(20, 20, 20, 0.97);
+    border: 1px solid rgba(#fff, 0.1);
+    border-radius: 0.6rem;
+    padding: 0.3rem;
+    backdrop-filter: blur(16px);
+    animation: actMenuIn 0.15s ease-out;
+
+    button {
+      all: unset;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      width: 100%;
+      padding: 0.5rem 0.65rem;
+      border-radius: 0.4rem;
+      font-family: $font-sans;
+      font-size: 0.78rem;
+      color: $text-secondary;
+      transition: background 0.12s, color 0.12s;
+      svg { width: 0.85rem; height: 0.85rem; flex-shrink: 0; }
+      &:hover { background: rgba(#fff, 0.07); color: $text-primary; }
+    }
+  }
+
+  &__pp-act-menu-danger {
+    color: #ff5454 !important;
+    &:hover { background: rgba(#ff5454, 0.1) !important; color: #ff7e7e !important; }
+  }
+
+  @keyframes actMenuIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  &__pp-act-block-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    background: rgba(#fff, 0.05);
+    border: 1px solid rgba(#fff, 0.07);
+    border-radius: 999px;
+    color: $text-secondary;
+    cursor: pointer;
+    height: 2.2rem;
+    padding: 0 0.65rem;
+    transition: background 0.15s, color 0.15s;
+    svg { width: 1rem; height: 1rem; }
+    span { font-family: $font-sans; font-size: 0.72rem; }
+    &:hover { background: rgba(#fff, 0.1); color: $text-primary; }
+    &--liked {
+      color: $accent;
+      border-color: rgba($accent, 0.3);
+      &:hover { background: rgba($accent, 0.1); }
+    }
+  }
+
+  &__pp-act-block-avatar {
+    width: 2.8rem;
+    height: 2.8rem;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(#fff, 0.06);
+    flex-shrink: 0;
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  }
+
+  &__pp-act-block-init {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-family: $font-display;
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: $accent;
+  }
+
+  &__pp-act-block-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  &__pp-act-block-name {
+    font-family: $font-display;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $text-primary;
+    line-height: 1.2;
+  }
+
+  &__pp-act-block-date {
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+  }
+
+  // ── Stats tab ────────────────────────────────────────────────────
+  &__pp-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  &__pp-stat-hero {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+  }
+
+  &__pp-stat-hero-num {
+    font-family: $font-display;
+    font-size: 2.75rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: #fff;
+  }
+
+  &__pp-stat-hero-right {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  &__pp-stat-hero-unit {
+    font-family: $font-mono;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: $accent;
+  }
+
+  &__pp-stat-hero-sub {
+    font-family: $font-mono;
+    font-size: 0.62rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+  }
+
+  &__pp-chart-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    &--half { flex: 1; min-width: 0; }
+  }
+
+  &__pp-chart-label {
+    font-family: $font-mono;
+    font-size: 0.65rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: $text-muted;
+  }
+
+  &__pp-chart-canvas {
+    position: relative;
+    height: 11rem;
+    border-radius: $radius-md;
+    overflow: hidden;
+    background: rgba(#fff, 0.02);
+
+    > div {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    &--sm { height: 8rem; }
+  }
+
+  &__pp-chart-hover {
+    position: absolute;
+    top: 0.5rem;
+    pointer-events: none;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    z-index: 5;
+  }
+
+  &__pp-chart-hover-name {
+    font-family: $font-display;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: $text-primary;
+    white-space: nowrap;
+  }
+
+  &__pp-chart-hover-meta {
+    font-family: $font-mono;
+    font-size: 0.58rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+  }
+
+  &__pp-charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  &__pp-stat-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0 0.25rem;
+    font-family: $font-mono;
+    font-size: 0.7rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+
+    em {
+      font-style: normal;
+      color: $text-muted;
+    }
+
+    span:not(.db__pp-stat-sep) {
+      color: $text-secondary;
+      font-weight: 600;
+
+      em { font-weight: 400; color: $text-muted; }
+    }
+  }
+
+  &__pp-stat-sep { opacity: 0.3; }
+
+  // ── Placeholder / Coming Soon ────────────────────────────────────
+  &__pp-placeholder {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-radius: $radius-lg;
+    background: rgba(#fff, 0.02);
+    border: 1px solid $border;
+    overflow: hidden;
+  }
+
+  &__pp-placeholder-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  &__pp-placeholder-cat {
+    width: 4rem;
+    height: 0.55rem;
+    border-radius: 3px;
+    background: rgba(#fff, 0.06);
+    animation: ph-shimmer 1.8s ease-in-out infinite;
+  }
+
+  &__pp-placeholder-chips {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  &__pp-placeholder-chip {
+    height: 1.5rem;
+    border-radius: 999px;
+    background: rgba(#fff, 0.04);
+    animation: ph-shimmer 1.8s ease-in-out infinite;
+  }
+
+  &__pp-placeholder-collab {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
+  }
+
+  &__pp-placeholder-avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: rgba(#fff, 0.06);
+    flex-shrink: 0;
+    animation: ph-shimmer 1.8s ease-in-out infinite;
+  }
+
+  &__pp-placeholder-collab-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  &__pp-placeholder-bar {
+    height: 0.55rem;
+    border-radius: 3px;
+    background: rgba(#fff, 0.05);
+    animation: ph-shimmer 1.8s ease-in-out infinite;
+
+    &--sm { height: 0.4rem; background: rgba(#fff, 0.03); }
+  }
+
+  &__pp-placeholder-releases {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  &__pp-placeholder-release {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  &__pp-placeholder-cover {
+    width: 3rem;
+    height: 3rem;
+    border-radius: $radius-md;
+    background: rgba(#fff, 0.06);
+    animation: ph-shimmer 1.8s ease-in-out infinite;
+  }
+
+  &__pp-placeholder-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: $text-muted;
+    background: rgba($bg-primary, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid $border;
+    z-index: 2;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  &__pp-empty {
+    font-family: $font-mono;
+    font-size: 0.75rem;
+    color: $text-muted;
+    letter-spacing: 0.02em;
+    padding: 2rem 0;
+    text-align: center;
+  }
+
+  @keyframes ph-shimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  // ── Profile responsive ────────────────────────────────────────────
+  @media (max-width: 768px) {
+    &__content--profile.db__content { padding-top: 1rem; }
+  }
+
+  @media (max-width: 480px) {
+    &__content--profile.db__content {
+      padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+    }
+  }
+}

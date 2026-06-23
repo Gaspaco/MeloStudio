@@ -1,7 +1,7 @@
 import { type Component, createResource, createSignal, Show, onCleanup } from "solid-js";
-import { useParams, useNavigate } from "@solidjs/router";
-import { getAppSession } from "~/lib/app-auth";
-import { apiFetch, publishProjectApi } from "~/lib/api";
+import { useParams } from "@solidjs/router";
+import { publishProjectApi, getShareProjectApi, pfpUrl as buildPfpUrl } from "~/lib/api";
+import { ProtectedPage } from "~/lib/session";
 import "./publish.scss";
 
 interface ProjectInfo {
@@ -33,20 +33,11 @@ function nameToDiscColor(name: string): string {
   return `hsl(${hue},28%,16%)`;
 }
 
-const PublishPage: Component = () => {
+const PublishPageInner: Component = () => {
   const params = useParams<{ id: string }>();
-  const navigate = useNavigate();
-
-  const [session] = createResource(async () => {
-    const s = await getAppSession();
-    if (!s?.user) { navigate("/login", { replace: true }); return null; }
-    return s;
-  });
 
   const [project] = createResource(() => params.id, async (id) => {
-    const res = await apiFetch(`/api/share/${id}`);
-    if (!res.ok) return null;
-    return res.json() as Promise<ProjectInfo>;
+    return getShareProjectApi(id) as Promise<ProjectInfo | null>;
   });
 
   const [published, setPublished] = createSignal<boolean | null>(null);
@@ -91,21 +82,21 @@ const PublishPage: Component = () => {
   return (
     <div class="pub">
       <nav class="pub__nav">
-        <a class="pub__nav-logo" href="/">
+        <span class="pub__nav-logo" aria-label="MeloStudio">
           <span class="pub__nav-logo-melo">Melo</span><span class="pub__nav-logo-studio">Studio</span>
-        </a>
+        </span>
         <a class="pub__nav-back" href={`/studio/${params.id}`}>
           Back to Studio
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 3L16 8l-6 5"/></svg>
         </a>
       </nav>
 
-      <Show when={!project.loading && !session.loading} fallback={<div style="color:var(--text-secondary,#858078);margin-top:6rem;font-size:0.85rem;">Loading…</div>}>
+      <Show when={!project.loading} fallback={<div style="color:var(--text-secondary,#858078);margin-top:6rem;font-size:0.85rem;">Loading…</div>}>
         <Show when={project()}>
           {(p) => {
             const initials = nameInitials(p().name);
             const discColor = nameToDiscColor(p().name);
-            const pfpUrl = p().ownerId ? `/api/user/${p().ownerId}/pfp` : null;
+            const pfpUrl = p().ownerId ? buildPfpUrl(p().ownerId!) : null;
 
             return (
               <div class="pub__layout">
@@ -277,5 +268,11 @@ const PublishPage: Component = () => {
     </div>
   );
 };
+
+const PublishPage: Component = () => (
+  <ProtectedPage label="publish">
+    <PublishPageInner />
+  </ProtectedPage>
+);
 
 export default PublishPage;

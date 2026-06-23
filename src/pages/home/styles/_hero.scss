@@ -10,7 +10,9 @@
   justify-content: flex-end;
   padding: 0 3rem 5rem;
   overflow: hidden;
+  // `clip` wins over `hidden` above; unlike `hidden` it does NOT create a scroll container, preserving sticky children
   overflow: clip;
+  // New stacking context so hero z-index layers don't bleed into the parent document stacking context
   isolation: isolate;
 
   @supports (height: 100dvh) {
@@ -83,6 +85,7 @@
     white-space: nowrap;
     text-rendering: geometricPrecision;
     -webkit-font-smoothing: antialiased;
+    // Force GPU compositing layer so GSAP clip-path/transform animations never trigger a layout repaint
     backface-visibility: hidden;
     transform: translate3d(0, 0, 0);
     will-change: transform, clip-path;

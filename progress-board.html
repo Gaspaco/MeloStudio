@@ -527,8 +527,8 @@
     <a href="#schema-section" class="hd-schema-link">ERD ↓</a>
     <a href="#testplan-section" class="hd-schema-link" style="border-color:rgba(0,194,194,0.3);color:var(--cyan);background:rgba(0,194,194,0.06);">Testplan ↓</a>
     <span class="hd-badge">Niko Dima</span>
-    <span class="hd-badge active">Week 9 - Actief</span>
-    <span class="hd-date">27 mei 2026</span>
+    <span class="hd-badge active">Week 10 - Actief</span>
+      <span class="hd-date">12 juni 2026</span>
   </div>
 </header>
 <div class="progress-strip">
@@ -541,8 +541,8 @@
   <span class="prog-week done" data-col="col-w6">W6 ✓</span><div class="prog-sep"></div>
   <span class="prog-week done" data-col="col-w7">W7 ✓</span><div class="prog-sep"></div>
   <span class="prog-week done" data-col="col-w8">W8 ✓</span><div class="prog-sep"></div>
-  <span class="prog-week active" data-col="col-w9">W9 ●</span><div class="prog-sep"></div>
-  <span class="prog-week">W10</span><div class="prog-sep"></div>
+  <span class="prog-week done" data-col="col-w9">W9 ✓</span><div class="prog-sep"></div>
+  <span class="prog-week active" data-col="col-backlog">W10 ●</span><div class="prog-sep"></div>
   <span class="prog-week">W11</span>
   <div class="prog-right">
     <span class="prog-counter">9 / 11 <span>weken</span></span>
@@ -897,61 +897,6 @@
   </div>
 </div>
 
-<!-- BACKLOG -->
-<div class="col" id="col-backlog">
-  <div class="col-header" onclick="toggleCol(this)">
-    <div class="col-dot" style="background:#4e4c49"></div>
-    <span class="col-title">Backlog<span class="col-sub"> · W10 → W11</span></span>
-    <span class="col-count">7</span>
-    <span class="col-toggle">▾</span>
-  </div>
-  <div class="col-dates">Weken 10 – 11 · Gepland</div>
-  <div class="cards">
-    <div class="sep-label">Audio functies</div>
-    <div class="card">
-      <div class="card-title">Effects paneel</div>
-      <div class="card-desc">Per-track reverb, delay, EQ via Web Audio EffectNode keten. Knop in util bar bestaat al, gemarkeerd als "binnenkort".</div>
-      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W8+</span></div>
-    </div>
-    <div class="card">
-      <div class="card-title">AutoPitch engine</div>
-      <div class="card-desc">Toonhoogtecorrectie en -snapping voor het toetsenborddeel. Context-gevoelige knop al bedraad - dimt wanneer niet in toetsenborddmodus.</div>
-      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W8+</span></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Melo Sounds browser</div>
-      <div class="card-desc">Sample- en loop-browser paneel. Util-knop gestyled en klaar - paneel UI nog niet gebouwd.</div>
-      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W9+</span></div>
-    </div>
-    <div class="card">
-      <div class="card-title">MIDI controller ondersteuning</div>
-      <div class="card-desc">Web MIDI API integratie voor extern toetsenbord/controller. Stond in de originele scope; uitgesteld tijdens de scopingssessie van week 2.</div>
-      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W10+</span></div>
-    </div>
-    <div class="sep-label">Infrastructuur</div>
-    <div class="card">
-      <div class="card-title">Beat uploaden + opslaan in dashboard</div>
-      <div class="card-desc">Mogelijkheid om een beat vanuit de studio te exporteren en op te slaan in het dashboard. Beat wordt gekoppeld aan het project en zichtbaar als opgeslagen versie in de projectenlijst.</div>
-      <div class="tags"><span class="tag tag-purple">Studio</span><span class="tag tag-green">Neon DB</span><span class="tag tag-gray">W8+</span></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Projecten opslaan in de cloud (Neon)</div>
-      <div class="card-desc">Upgrade van localStorage naar Neon PostgreSQL. Gebruikersaccounts bestaan al in de database uit week 4 - alleen het projectschema moet nog worden toegevoegd.</div>
-      <div class="tags"><span class="tag tag-green">Neon DB</span><span class="tag tag-gray">W8+</span></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Social Login OAuth</div>
-      <div class="card-desc">Google + Twitter login uitgesteld vanuit week 4 vanwege redirect-complexiteit. Gemarkeerd als stretch goal.</div>
-      <div class="tags"><span class="tag tag-blue">Auth</span><span class="tag tag-gray">Stretch</span></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Audio exporteren (WAV / MP3)</div>
-      <div class="card-desc">De uiteindelijke mix exporteren als WAV of MP3 via OfflineAudioContext rendering pipeline.</div>
-      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W11</span></div>
-    </div>
-  </div>
-</div>
-
 <!-- WEEK 9 – TESTEN EN VERBETEREN -->
 <div class="col" id="col-w9" style="border-color:rgba(0,194,194,0.3);">
   <div class="col-header" onclick="toggleCol(this)">
@@ -1022,6 +967,62 @@
       <div class="card-title">Reflectie</div>
       <div class="card-note lesson"><b>Wat leerde ik?</b>Testen onthult details die je als bouwer vanzelfsprekend vindt. De timer-bug was pas zichtbaar na écht testen (pagina vernieuwen).</div>
       <div class="card-note challenge"><b>Wat was moeilijk?</b>Edge cases zoals offline gebruik zijn lastig te simuleren en worden snel vergeten in het testplan.</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- BACKLOG -->
+<div class="col" id="col-backlog">
+  <div class="col-header" onclick="toggleCol(this)">
+    <div class="col-dot" style="background:#4e4c49"></div>
+    <span class="col-title">Backlog<span class="col-sub"> · W10 → W11</span></span>
+    <span class="col-count">7</span>
+    <span class="col-toggle">▾</span>
+  </div>
+  <div class="col-dates">Weken 10 – 11 · Gepland</div>
+  <div class="cards">
+    <div class="sep-label">Audio functies</div>
+    <div class="card">
+      <div class="card-title">Effects paneel</div>
+      <div class="card-desc">Per-track reverb, delay, EQ via Web Audio EffectNode keten. Knop in util bar bestaat al, gemarkeerd als "binnenkort".</div>
+      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W8+</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">AutoPitch engine</div>
+      <div class="card-desc">Toonhoogtecorrectie en -snapping voor het toetsenborddeel. Context-gevoelige knop al bedraad - dimt wanneer niet in toetsenborddmodus.</div>
+      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W8+</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Melo Sounds browser</div>
+      <div class="card-desc">Sample- en loop-browser paneel. Util-knop gestyled en klaar - paneel UI nog niet gebouwd.</div>
+      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W9+</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">MIDI controller ondersteuning</div>
+      <div class="card-desc">Web MIDI API integratie voor extern toetsenbord/controller. Stond in de originele scope; uitgesteld tijdens de scopingssessie van week 2.</div>
+      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W10+</span></div>
+    </div>
+    <div class="sep-label">Infrastructuur</div>
+    <div class="card">
+      <div class="card-title">Beat uploaden + opslaan in dashboard</div>
+      <div class="card-desc">Mogelijkheid om een beat vanuit de studio te exporteren en op te slaan in het dashboard. Beat wordt gekoppeld aan het project en zichtbaar als opgeslagen versie in de projectenlijst.</div>
+      <div class="tags"><span class="tag tag-purple">Studio</span><span class="tag tag-green">Neon DB</span><span class="tag tag-gray">W8+</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Projecten opslaan in de cloud (Neon)</div>
+      <div class="card-desc">Upgrade van localStorage naar Neon PostgreSQL. Gebruikersaccounts bestaan al in de database uit week 4 - alleen het projectschema moet nog worden toegevoegd.</div>
+      <div class="tags"><span class="tag tag-green">Neon DB</span><span class="tag tag-gray">W8+</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Social Login OAuth</div>
+      <div class="card-desc">Google + Twitter login uitgesteld vanuit week 4 vanwege redirect-complexiteit. Gemarkeerd als stretch goal.</div>
+      <div class="tags"><span class="tag tag-blue">Auth</span><span class="tag tag-gray">Stretch</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Audio exporteren (WAV / MP3)</div>
+      <div class="card-desc">De uiteindelijke mix exporteren als WAV of MP3 via OfflineAudioContext rendering pipeline.</div>
+      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W11</span></div>
     </div>
   </div>
 </div>

@@ -4,14 +4,14 @@
 // into currently supported tracks. It's also fully async via `suspense` in SolidJS,
 // putting up a clean loading state until the studio is absolutely ready to play.
 import { createEffect, createSignal, onCleanup } from "solid-js";
-import { apiFetch } from "~/lib/api";
+import { apiFetch, getProjectDocApi, putProjectDocApi } from "~/lib/api";
 import { unlockAudioContext } from "~/lib/audio/context";
 import type { Accessor, Setter } from "solid-js";
 import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer } from "~/lib/audio/stepSeq";
 import { type SynthPreset } from "~/lib/audio/synth";
 import { loadClip, loadClipBlob, removeClip, storeClip } from "~/lib/clipStore";
 import { remoteClipUploadErrorMessage, uploadRemoteClip } from "~/lib/remoteClips";
-import { type MediaClip, type UITrack, TRACK_DEFS, hasStudioContent } from "../types";
+import { type MediaClip, type UITrack, TRACK_DEFS, hasStudioContent, isTrackAllowedForClip } from "../types";
 
 type Deps = {
   projectId: string;
@@ -45,13 +45,13 @@ export function useProject(deps: Deps) {
   let applyingDoc = false;
   let baselineJson = "";
   let draftTimer: ReturnType<typeof setTimeout> | undefined;
+  let autosaveTimer: ReturnType<typeof setTimeout> | undefined;
   let warnedRemoteStorageUnavailable = false;
   const DRAFT_VERSION = 1;
   const DRAFT_DEBOUNCE_MS = 600;
+  const AUTOSAVE_DEBOUNCE_MS = 5_000;
   const draftKey = `melostudio:studio-draft:${deps.projectId}`;
   const MAX_SAVE_PAYLOAD_BYTES = 4_500_000;
-  const MAX_INLINE_CLIP_BYTES = 2_000_000;
-  const MAX_INLINE_CLIP_DATA_URL_CHARS = 2_800_000;
 
   type StudioDraft = {
     version: typeof DRAFT_VERSION;
@@ -61,15 +61,10 @@ export function useProject(deps: Deps) {
     doc: any;
   };
 
-  const blobToDataUrl = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
-
   const clipBlob = async (clip: MediaClip): Promise<Blob | null> => {
-    let blob = await loadClipBlob(clip.id).catch(() => null);
+    const assetId = clip.assetId ?? clip.id;
+    let blob = await loadClipBlob(assetId).catch(() => null);
+    if (!blob && assetId !== clip.id) blob = await loadClipBlob(clip.id).catch(() => null);
     if (!blob && clip.url) blob = await fetch(clip.url).then((res) => res.blob()).catch(() => null);
     return blob;
   };
@@ -85,30 +80,12 @@ export function useProject(deps: Deps) {
     return null;
   };
 
-  const persistedClipFields = async (clip: MediaClip): Promise<Pick<MediaClip, "dataUrl" | "remoteUrl">> => {
-    if (clip.kind === "midi") return { dataUrl: undefined, remoteUrl: undefined };
-    if (clip.dataUrl && clip.dataUrl.length <= MAX_INLINE_CLIP_DATA_URL_CHARS) {
-      return { dataUrl: clip.dataUrl, remoteUrl: clip.remoteUrl };
-    }
-    const blob = await clipBlob(clip);
-
-    if (!blob) {
-      if (!clip.remoteUrl) return { dataUrl: undefined, remoteUrl: undefined };
-      const exists = await remoteClipExists(clip.remoteUrl);
-      return { dataUrl: undefined, remoteUrl: exists === false ? undefined : clip.remoteUrl };
-    }
-    if (blob.size <= MAX_INLINE_CLIP_BYTES) {
-      return { dataUrl: await blobToDataUrl(blob), remoteUrl: clip.remoteUrl };
-    }
-    if (clip.remoteUrl) {
-      const exists = await remoteClipExists(clip.remoteUrl);
-      if (exists !== false) return { dataUrl: undefined, remoteUrl: clip.remoteUrl };
-    }
-
+  const tryRemoteUpload = async (clip: MediaClip, blob: Blob): Promise<string | undefined> => {
+    const assetId = clip.assetId ?? clip.id;
     try {
-      const result = await uploadRemoteClip(deps.projectId, clip.id, blob, blob.type || "audio/mpeg");
-      if (result.remoteUrl) return { dataUrl: undefined, remoteUrl: result.remoteUrl };
-      console.warn(`[useProject] server clip upload not stored (${result.status}) for ${clip.id}`);
+      const result = await uploadRemoteClip(deps.projectId, assetId, blob, blob.type || "audio/mpeg");
+      if (result.remoteUrl) return result.remoteUrl;
+      console.warn(`[useProject] server clip upload not stored (${result.status}) for ${assetId}`);
       if (!warnedRemoteStorageUnavailable) {
         warnedRemoteStorageUnavailable = true;
         deps.setError(remoteClipUploadErrorMessage(result));
@@ -118,18 +95,34 @@ export function useProject(deps: Deps) {
       console.warn("[useProject] server clip upload error:", err);
       if (!warnedRemoteStorageUnavailable) {
         warnedRemoteStorageUnavailable = true;
-        deps.setError("Large audio upload failed. It will only play from this browser for now.");
+        deps.setError("Audio upload failed. It will only play from this browser for now.");
         setTimeout(() => deps.setError(""), 3600);
       }
     }
-    return { dataUrl: undefined, remoteUrl: undefined };
+    return undefined;
   };
 
-  const jsonByteLength = (value: unknown) => new TextEncoder().encode(JSON.stringify(value)).length;
+  const persistedClipFields = async (clip: MediaClip): Promise<Pick<MediaClip, "dataUrl" | "remoteUrl">> => {
+    if (clip.kind === "midi") return { dataUrl: undefined, remoteUrl: undefined };
+
+    const blob = await clipBlob(clip);
+    let remoteUrl = clip.remoteUrl;
+
+    if (!remoteUrl && blob) {
+      remoteUrl = await tryRemoteUpload(clip, blob);
+    } else if (remoteUrl) {
+      const exists = await remoteClipExists(remoteUrl);
+      if (exists === false) {
+        remoteUrl = blob ? await tryRemoteUpload(clip, blob) : undefined;
+      }
+    }
+
+    return { dataUrl: undefined, remoteUrl };
+  };
 
   const cleanTracksForDraft = (tracks: UITrack[]): UITrack[] => tracks.map((track) => ({
     ...track,
-    clips: track.clips?.map((clip) => ({ ...clip, url: undefined })),
+    clips: track.clips?.filter((clip) => isTrackAllowedForClip(track, clip)).map((clip) => ({ ...clip, url: undefined })),
   }));
 
   const currentDraftDoc = () => {
@@ -221,29 +214,8 @@ export function useProject(deps: Deps) {
   };
 
   const fitProjectSavePayload = <T extends { uiTracks?: UITrack[] }>(doc: T): { payload: T; json: string } => {
-    let json = JSON.stringify(doc);
-    if (new TextEncoder().encode(json).length <= MAX_SAVE_PAYLOAD_BYTES) return { payload: doc, json };
-
-    const payload = {
-      ...doc,
-      uiTracks: doc.uiTracks?.map((track) => ({
-        ...track,
-        clips: track.clips?.map((clip) => ({ ...clip })),
-      })),
-    } as T;
-
-    const clips = payload.uiTracks?.flatMap((track) => track.clips ?? []) ?? [];
-    const clipsWithData = clips
-      .filter((clip) => clip.kind !== "midi" && clip.dataUrl)
-      .sort((a, b) => (b.dataUrl?.length ?? 0) - (a.dataUrl?.length ?? 0));
-
-    for (const clip of clipsWithData) {
-      delete clip.dataUrl;
-      if (jsonByteLength(payload) <= MAX_SAVE_PAYLOAD_BYTES) break;
-    }
-
-    json = JSON.stringify(payload);
-    return { payload, json };
+    const json = JSON.stringify(doc);
+    return { payload: doc, json };
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -272,29 +244,31 @@ export function useProject(deps: Deps) {
           if (!TRACK_DEFS.find(d => d.type === t.type)) continue;
           const restoredClips = [];
           for (const clip of t.clips ?? []) {
+            if (!isTrackAllowedForClip(t, clip)) continue;
             if (clip.kind !== "midi") {
               let remoteUrl = clip.remoteUrl;
               // 1. Try IndexedDB (fast, local)
-              let url = await loadClip(clip.id).catch(() => null);
+              const assetId = clip.assetId ?? clip.id;
+              let url = await loadClip(assetId).catch(() => null);
+              if (!url && assetId !== clip.id) url = await loadClip(clip.id).catch(() => null);
               // 2. Fall back to inline dataUrl (small clips only)
               if (!url && clip.dataUrl) {
                 const blob = await fetch(clip.dataUrl).then((res) => res.blob()).catch(() => null);
                 if (blob) {
-                  await storeClip(clip.id, blob).catch(() => {});
+                  await storeClip(assetId, blob).catch(() => {});
                   url = URL.createObjectURL(blob);
                 }
               }
               // 3. Fall back to server-side storage (large clips, cross-device)
               if (!url && remoteUrl) {
-                const res = await apiFetch(optionalRemoteClipUrl(remoteUrl)).catch(() => null);
+                let res = await apiFetch(optionalRemoteClipUrl(remoteUrl)).catch(() => null);
+                if (!res) res = await apiFetch(optionalRemoteClipUrl(remoteUrl)).catch(() => null);
                 if (res && res.status === 204) {
-                  // Blob confirmed absent; clear remoteUrl from in-memory state so
-                  // playback doesn't hammer the server with repeated 404 requests.
                   remoteUrl = undefined;
                 } else if (res && res.ok) {
                   const blob = await res.blob().catch(() => null);
-                  if (blob) {
-                    await storeClip(clip.id, blob).catch(() => {});
+                  if (blob && blob.size > 0) {
+                    await storeClip(assetId, blob).catch(() => {});
                     url = URL.createObjectURL(blob);
                   }
                 }
@@ -364,17 +338,14 @@ export function useProject(deps: Deps) {
     pendingDoc = null;
     pendingDocSource = null;
     removeLocalDraft();
-    const res = await apiFetch(`/api/projects/${deps.projectId}`);
-    if (!res.ok) {
+    const docResult = await getProjectDocApi(deps.projectId);
+    if (!docResult) {
       setInitialized(true);
       return;
     }
-    const doc = await res.json();
+    const doc = docResult.doc;
     const clearedDoc = { ...doc, uiTracks: [], beat: { pattern: DEFAULT_PATTERN() } };
-    await apiFetch(`/api/projects/${deps.projectId}`, {
-      method: "PUT",
-      body: JSON.stringify(clearedDoc),
-    });
+    await putProjectDocApi(deps.projectId, JSON.stringify(clearedDoc)).catch(() => {});
     const cleanPattern = DEFAULT_PATTERN();
     deps.setTracks([]);
     deps.setSelectedTrack(null);
@@ -391,12 +362,12 @@ export function useProject(deps: Deps) {
     if (!hasStudioContent(deps.tracks(), seq.getPattern(), deps.lyricsText?.())) return;
     deps.setSaveState("saving");
     try {
-      const res = await apiFetch(`/api/projects/${deps.projectId}`);
-      if (!res.ok) throw new Error(`load failed: ${res.status}`);
-      const doc = await res.json();
+      const docResult = await getProjectDocApi(deps.projectId);
+      if (!docResult) throw new Error("load failed: could not fetch project doc");
+      const doc = docResult.doc;
       const uiTracksForSave = await Promise.all(deps.tracks().map(async t => ({
         ...t,
-        clips: await Promise.all((t.clips ?? []).map(async c => ({
+        clips: await Promise.all((t.clips ?? []).filter(c => isTrackAllowedForClip(t, c)).map(async c => ({
           ...c,
           url: undefined,
           ...(await persistedClipFields(c)),
@@ -408,14 +379,10 @@ export function useProject(deps: Deps) {
         transport: { ...(doc.transport ?? {}), bpm: deps.bpm(), timeSig: deps.timeSig() },
         musicalKey: deps.musicalKey(),
         uiTracks: uiTracksForSave,
-        lyrics: deps.lyricsText?.() ?? doc.lyrics ?? "",
+        lyrics: deps.lyricsText?.() ?? (doc.lyrics as string | undefined) ?? "",
       };
-      const { json } = fitProjectSavePayload(updated);
-      const put = await apiFetch(`/api/projects/${deps.projectId}`, {
-        method: "PUT",
-        body: json,
-      });
-      if (!put.ok) throw new Error(`save failed: ${put.status}`);
+      const { json } = fitProjectSavePayload(updated as typeof updated & { uiTracks?: UITrack[] });
+      await putProjectDocApi(deps.projectId, json);
       const savedClips = new Map(
         uiTracksForSave.flatMap((track) => (track.clips ?? []).map((clip) => [clip.id, clip] as const)),
       );
@@ -450,13 +417,11 @@ export function useProject(deps: Deps) {
   const init = async () => {
     try {
       setInitialized(false);
-      const res = await apiFetch(`/api/projects/${deps.projectId}`);
-      if (!res.ok) { deps.setError(`Couldn't load (${res.status})`); return; }
+      const docResult = await getProjectDocApi(deps.projectId);
+      if (!docResult) { deps.setError("Couldn't load project"); return; }
+      deps.setPublished?.(docResult.published);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const data: any = await res.json();
-      deps.setPublished?.(data._published ?? false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const doc: any = data;
+      const doc: any = docResult.doc;
       loadedProjectDoc = doc;
 
       const savedTracks = (doc.uiTracks as UITrack[] | undefined) ?? [];
@@ -506,16 +471,24 @@ export function useProject(deps: Deps) {
     const draftJson = normalizedProjectJson(doc);
     if (draftJson === baselineJson) {
       removeLocalDraft();
+      clearTimeout(autosaveTimer);
       return;
     }
 
     clearTimeout(draftTimer);
     draftTimer = setTimeout(() => writeLocalDraft(doc), DRAFT_DEBOUNCE_MS);
+
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => {
+      if (deps.saveState() === "saving") return;
+      save();
+    }, AUTOSAVE_DEBOUNCE_MS);
   });
 
   if (typeof window !== "undefined") {
     const flushDraft = () => {
       clearTimeout(draftTimer);
+      clearTimeout(autosaveTimer);
       writeDraftIfChanged();
     };
     window.addEventListener("pagehide", flushDraft);
@@ -528,6 +501,7 @@ export function useProject(deps: Deps) {
 
   onCleanup(() => {
     clearTimeout(draftTimer);
+    clearTimeout(autosaveTimer);
   });
 
   return { save, restoreSession, discardSession, init };

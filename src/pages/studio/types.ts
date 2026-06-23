@@ -2,12 +2,28 @@ export type TrackType = "drum" | "voice" | "instrument" | "sampler" | "bass" | "
 
 export type ClipKind = "audio" | "midi" | "video";
 
+export interface MidiNoteEvent {
+  midi: number;
+  startBars: number;
+  durationBars: number;
+  velocity: number;
+}
+
 export interface MediaClip {
   id: string;
+  assetId?: string;
   kind: ClipKind;
   name: string;
   barStart: number;
   bars: number;
+  sourceOffsetBars?: number;
+  widthPx?: number;
+  leftPx?: number;
+  pitch?: number;       // semitones, default 0
+  playbackRate?: number; // speed multiplier, default 1
+  gain?: number;        // dB, default 0
+  midiNotes?: MidiNoteEvent[];
+  reversed?: boolean;
   url?: string;
   dataUrl?: string;
   remoteUrl?: string;
@@ -25,6 +41,21 @@ export interface UITrack {
   clips?: MediaClip[];
 }
 
+export const isAudioTrackType = (type: TrackType): boolean =>
+  type === "voice";
+
+export const isInstrumentTrackType = (type: TrackType): boolean =>
+  type === "instrument" || type === "bass" || type === "guitar";
+
+export const isTrackTypeAllowedForClipKind = (trackType: TrackType, clipKind: ClipKind): boolean => {
+  if (clipKind === "audio" || clipKind === "video") return isAudioTrackType(trackType);
+  if (clipKind === "midi") return isInstrumentTrackType(trackType);
+  return false;
+};
+
+export const isTrackAllowedForClip = (track: UITrack, clip: MediaClip): boolean =>
+  isTrackTypeAllowedForClipKind(track.type, clip.kind);
+
 export const hasPatternContent = (pattern: { rows?: Array<{ velocities?: number[] }> } | null | undefined): boolean =>
   Boolean(pattern?.rows?.some(row => row.velocities?.some(velocity => velocity > 0)));
 
@@ -41,10 +72,10 @@ export const TRACK_DEFS: {
   type: TrackType; label: string; sub?: string;
   tag: string; ready: boolean; icon: string; color: string;
 }[] = [
-  { type: "instrument", label: "Instrument",    sub: "Piano, lead, pad, plucks — playable from your keyboard", tag: "MIDI",   ready: true,  icon: "instrument", color: "#3ee08b" },
+  { type: "instrument", label: "Instrument",    sub: "Piano, lead, pad, bell, plucks — playable from your keyboard", tag: "MIDI",   ready: true,  icon: "instrument", color: "#3ee08b" },
   { type: "drum",       label: "Drum Machine",  sub: "Step-sequenced kit · ready in seconds",                  tag: "RHYTHM", ready: true,  icon: "drum",       color: "#f5b53e" },
   { type: "bass",       label: "Bass Synth",    sub: "Deep monophonic bass — keyboard playable",               tag: "MIDI",   ready: true,  icon: "bass",       color: "#1d87f5" },
-  { type: "voice",      label: "Voice / Audio", sub: "Capture vocals or any external sound source",            tag: "AUDIO",  ready: false, icon: "voice",      color: "#f53e3e" },
+  { type: "voice",      label: "Voice / Audio", sub: "Capture vocals or any external sound source",            tag: "AUDIO",  ready: true,  icon: "voice",      color: "#f53e3e" },
   { type: "sampler",    label: "Sampler",       sub: "Turn any audio clip into a playable instrument",         tag: "MIDI",   ready: false, icon: "sampler",    color: "#a93ef5" },
   { type: "guitar",     label: "Guitar",        sub: "Acoustic & Electric Guitars — keyboard playable",        tag: "MIDI",   ready: true,  icon: "guitar",     color: "#f53ee0" },
 ];

@@ -1,5 +1,6 @@
 import { type Component, createSignal, onMount, For } from "solid-js";
 import { gsap } from "gsap";
+import { socialAuthClient } from "../../lib/social-auth";
 import "./forgot-password.scss";
 
 const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (props) => {
@@ -7,6 +8,8 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
 
   const [email, setEmail] = createSignal("");
   const [sent, setSent] = createSignal(false);
+  const [isSubmitting, setIsSubmitting] = createSignal(false);
+  const [errorMsg, setErrorMsg] = createSignal<string | null>(null);
 
   onMount(() => {
     if (!pageRef) return;
@@ -48,18 +51,47 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
     m.fromTo(".forgot__meta", { y: -10, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.35);
   });
 
-  const handleSubmit = (e: Event) => {
+  const handleSubmit = async (e: Event) => {
     e.preventDefault();
-    if (!email()) return;
-    setSent(true);
+    if (!email() || isSubmitting()) return;
+    setErrorMsg(null);
+    setIsSubmitting(true);
 
-    gsap.timeline()
-      .to(".forgot__form", { opacity: 0, y: -20, duration: 0.4, ease: "power2.in" })
-      .fromTo(".forgot__success",
-        { opacity: 0, y: 40 },
-        { opacity: 1, y: 0, duration: 0.8, ease: "expo.out", display: "flex" },
-        0.3
-      );
+    try {
+      const check = await fetch("/api/auth/check-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email() }),
+      });
+      const { exists } = await check.json() as { exists: boolean };
+      if (!exists) {
+        setErrorMsg("No account found with that email address.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const { error } = await socialAuthClient.requestPasswordReset({
+        email: email(),
+        redirectTo: "/reset-password",
+      });
+
+      if (error) {
+        setErrorMsg(error.message ?? "Something went wrong. Please try again.");
+        return;
+      }
+
+      setSent(true);
+      gsap.set(".forgot__success", { display: "flex", autoAlpha: 0, y: 50 });
+      gsap.timeline()
+        .to(".forgot__hero", { autoAlpha: 0, y: -30, duration: 0.5, ease: "power3.in" })
+        .to(".forgot__subtitle", { autoAlpha: 0, y: -20, duration: 0.35, ease: "power2.in" }, "<0.05")
+        .to(".forgot__form", { autoAlpha: 0, y: -20, duration: 0.35, ease: "power2.in" }, "<0.05")
+        .to(".forgot__success", { autoAlpha: 1, y: 0, duration: 0.9, ease: "expo.out" }, "-=0.1");
+    } catch {
+      setErrorMsg("Network error. Check your connection and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -109,9 +141,13 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
             <div class="forgot__line" />
           </div>
 
+          {errorMsg() && (
+            <p class="forgot__error">{errorMsg()}</p>
+          )}
+
           <div class="forgot__form-footer">
-            <button type="submit" class="forgot__submit">
-              <span>Send Reset Link</span>
+            <button type="submit" class="forgot__submit" disabled={isSubmitting()}>
+              <span>{isSubmitting() ? "Sending..." : "Send Reset Link"}</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                 <path d="M7 17L17 7M17 7H7M17 7V17" />
               </svg>
@@ -126,15 +162,21 @@ const ForgotPassword: Component<{ onBack: () => void; onLogin: () => void }> = (
 
         {/* Success state */}
         <div class="forgot__success">
-          <div class="forgot__success-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M9 12l2 2 4-4" />
-              <circle cx="12" cy="12" r="10" />
-            </svg>
+          <div class="forgot__success-hero">
+            <div class="forgot__title-row">
+              <span class="forgot__success-script">Check</span>
+            </div>
+            <div class="forgot__title-row">
+              <div class="forgot__display-clip">
+                <For each={"Inbox".split("")}>{(ch) =>
+                  <span class="forgot__success-char">{ch}</span>
+                }</For>
+              </div>
+            </div>
           </div>
-          <h3 class="forgot__success-title">Check your inbox</h3>
           <p class="forgot__success-text">
-            We've sent a reset link to <strong>{email()}</strong>
+            Link sent to <strong>{email()}</strong><br />
+            Expires in 1 hour — check your spam if it doesn't show up.
           </p>
           <button type="button" class="forgot__submit" onClick={props.onLogin}>
             <span>Back to Sign In</span>

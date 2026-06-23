@@ -17,7 +17,6 @@ export default function LoginPage() {
     <>
       <Suspense fallback={<RouteVeil label="Loading" />}>
         <Login
-          onBack={() => navigate("/")}
           onSignup={() => navigate("/signup")}
           onForgot={() => navigate("/forgot")}
           onSuccess={finishLogin}

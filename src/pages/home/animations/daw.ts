@@ -97,7 +97,8 @@ export function animateDaw(refs: {
         if (!state) continue;
 
         let dist = Math.abs(norm - swellCenter);
-      dist = Math.min(dist, 1 - dist); // wraps so bars at edges connect to the other side
+      // Wrap distance so a swell near position 0 can also reach bars near position 1, making it feel circular
+      dist = Math.min(dist, 1 - dist);
         if (dist < swellWidth) {
           const swellPos = dist / swellWidth;
           const moundShape = cubicBezier(1 - swellPos, 0.8, 0.2);

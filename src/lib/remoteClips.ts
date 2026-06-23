@@ -1,4 +1,4 @@
-import { apiFetch } from "./api";
+import { apiFetch, clipUrl } from "./api";
 
 export type RemoteClipUploadResult = {
   remoteUrl?: string;
@@ -10,8 +10,8 @@ export type RemoteClipUploadResult = {
 export const MAX_REMOTE_CLIP_UPLOAD_BYTES = 50 * 1024 * 1024;
 export const CHUNK_SIZE = 3 * 1024 * 1024;
 
-export const remoteClipUrl = (projectId: string, clipId: string) =>
-  `/api/clips/${encodeURIComponent(clipId)}?projectId=${encodeURIComponent(projectId)}`;
+// Re-export the canonical URL builder from api.ts — the single source of truth for clip URL shapes
+export { clipUrl as remoteClipUrl } from "./api";
 
 export async function uploadRemoteClip(
   projectId: string,
@@ -27,8 +27,9 @@ export async function uploadRemoteClip(
     };
   }
 
-  const remoteUrl = remoteClipUrl(projectId, clipId);
+  const remoteUrl = clipUrl(projectId, clipId);
 
+  // Single PUT for small clips; chunked PUT + commit for larger ones to stay under serverless function body limits
   if (blob.size <= CHUNK_SIZE) {
     const res = await apiFetch(remoteUrl, {
       method: "PUT",
@@ -101,5 +102,5 @@ export function remoteClipUploadErrorMessage(result: RemoteClipUploadResult): st
 }
 
 export async function deleteRemoteClip(projectId: string, clipId: string): Promise<void> {
-  await apiFetch(remoteClipUrl(projectId, clipId), { method: "DELETE" });
+  await apiFetch(clipUrl(projectId, clipId), { method: "DELETE" });
 }

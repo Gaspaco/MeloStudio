@@ -1,0 +1,199 @@
+import type { MediaClip } from "../types";
+
+export const STUDIO_BAR_PX = 240;
+export const BEATS_PER_BAR = 4;
+export const STUDIO_BEAT_PX = STUDIO_BAR_PX / BEATS_PER_BAR;
+export const REGION_EDGE_EPS_PX = 0.5;
+export const MIN_REGION_PX = 2;
+
+export type RegionEdge = "left" | "right";
+
+export const barsToPx = (bars: number) => bars * STUDIO_BAR_PX;
+export const pxToBars = (px: number) => px / STUDIO_BAR_PX;
+
+export const clipLeftPx = (clip: MediaClip): number => clip.leftPx ?? barsToPx(clip.barStart);
+export const clipWidthPx = (clip: MediaClip): number => clip.widthPx ?? barsToPx(clip.bars);
+export const clipRightPx = (clip: MediaClip): number => clipLeftPx(clip) + clipWidthPx(clip);
+
+export const placeClip = (
+  clip: MediaClip,
+  leftPx: number,
+  widthPx: number,
+  sourceOffsetBars = clip.sourceOffsetBars ?? 0,
+): MediaClip => {
+  const normalizedLeftPx = Math.max(0, leftPx);
+  const normalizedWidthPx = Math.max(MIN_REGION_PX, widthPx);
+  return {
+    ...clip,
+    leftPx: normalizedLeftPx,
+    widthPx: normalizedWidthPx,
+    barStart: pxToBars(normalizedLeftPx),
+    bars: pxToBars(normalizedWidthPx),
+    sourceOffsetBars: Math.max(0, sourceOffsetBars),
+  };
+};
+
+export const sortClipsByTimeline = (clips: MediaClip[]): MediaClip[] =>
+  [...clips].sort((a, b) => clipLeftPx(a) - clipLeftPx(b));
+
+export const rangesOverlap = (leftA: number, rightA: number, leftB: number, rightB: number): boolean =>
+  leftA < rightB - REGION_EDGE_EPS_PX && rightA > leftB + REGION_EDGE_EPS_PX;
+
+export const resolveRegionOverwrite = (clips: MediaClip[], placedClip: MediaClip, createId: () => string): MediaClip[] => {
+  const movedLeftPx = clipLeftPx(placedClip);
+  const movedWidthPx = clipWidthPx(placedClip);
+  const movedRightPx = movedLeftPx + movedWidthPx;
+  const resolved: MediaClip[] = [];
+
+  for (const clip of clips) {
+    if (clip.id === placedClip.id) continue;
+
+    const leftPx = clipLeftPx(clip);
+    const widthPx = clipWidthPx(clip);
+    const rightPx = leftPx + widthPx;
+
+    if (!rangesOverlap(leftPx, rightPx, movedLeftPx, movedRightPx)) {
+      resolved.push(clip);
+      continue;
+    }
+
+    const sourceOffsetBars = clip.sourceOffsetBars ?? 0;
+    const leftRemainderPx = Math.max(0, movedLeftPx - leftPx);
+    const rightRemainderPx = Math.max(0, rightPx - movedRightPx);
+
+    if (leftRemainderPx >= MIN_REGION_PX) {
+      resolved.push(placeClip(clip, leftPx, leftRemainderPx, sourceOffsetBars));
+    }
+
+    if (rightRemainderPx >= MIN_REGION_PX) {
+      const cutFromStartPx = Math.max(0, movedRightPx - leftPx);
+      resolved.push(placeClip(
+        { ...clip, id: createId() },
+        movedRightPx,
+        rightRemainderPx,
+        sourceOffsetBars + pxToBars(cutFromStartPx),
+      ));
+    }
+  }
+
+  resolved.push(placedClip);
+  return sortClipsByTimeline(resolved);
+};
+
+export const moveRegionToPx = (clips: MediaClip[], clipId: string, leftPx: number, createId: () => string): MediaClip[] => {
+  const movingClip = clips.find((clip) => clip.id === clipId);
+  if (!movingClip) return clips;
+  const placedClip = placeClip(movingClip, leftPx, clipWidthPx(movingClip));
+  return resolveRegionOverwrite(clips, placedClip, createId);
+};
+
+export const splitRegionAtPx = (clips: MediaClip[], clipId: string, splitPx: number, createId: () => string): MediaClip[] => {
+  const clip = clips.find((item) => item.id === clipId);
+  if (!clip) return clips;
+
+  const leftPx = clipLeftPx(clip);
+  const rightPx = clipRightPx(clip);
+  const normalizedSplitPx = Math.max(leftPx, Math.min(rightPx, splitPx));
+  if (normalizedSplitPx <= leftPx + REGION_EDGE_EPS_PX || normalizedSplitPx >= rightPx - REGION_EDGE_EPS_PX) {
+    return clips;
+  }
+
+  const sourceOffsetBars = clip.sourceOffsetBars ?? 0;
+  const leftWidthPx = normalizedSplitPx - leftPx;
+  const rightWidthPx = rightPx - normalizedSplitPx;
+  const leftClip = placeClip(clip, leftPx, leftWidthPx, sourceOffsetBars);
+  const rightClip = placeClip(
+    {
+      ...clip,
+      id: createId(),
+      name: `${clip.name} Split`,
+    },
+    normalizedSplitPx,
+    rightWidthPx,
+    sourceOffsetBars + pxToBars(leftWidthPx),
+  );
+
+  return sortClipsByTimeline(clips.flatMap((item) => item.id === clipId ? [leftClip, rightClip] : [item]));
+};
+
+export const trimRegionEdge = (
+  clips: MediaClip[],
+  clipId: string,
+  edge: RegionEdge,
+  targetPx: number,
+  createId: () => string,
+): MediaClip[] => {
+  const clip = clips.find((item) => item.id === clipId);
+  if (!clip) return clips;
+
+  const originalLeftPx = clipLeftPx(clip);
+  const originalRightPx = clipRightPx(clip);
+  const sourceOffsetPx = barsToPx(clip.sourceOffsetBars ?? 0);
+
+  if (edge === "left") {
+    const earliestLeftPx = Math.max(0, originalLeftPx - sourceOffsetPx);
+    const newLeftPx = Math.max(earliestLeftPx, Math.min(targetPx, originalRightPx - MIN_REGION_PX));
+    const newWidthPx = originalRightPx - newLeftPx;
+    const newSourceOffsetBars = (clip.sourceOffsetBars ?? 0) + pxToBars(newLeftPx - originalLeftPx);
+    const placedClip = placeClip(clip, newLeftPx, newWidthPx, newSourceOffsetBars);
+    return resolveRegionOverwrite(clips, placedClip, createId);
+  }
+
+  const newRightPx = Math.max(originalLeftPx + MIN_REGION_PX, targetPx);
+  const placedClip = placeClip(clip, originalLeftPx, newRightPx - originalLeftPx);
+  return resolveRegionOverwrite(clips, placedClip, createId);
+};
+
+export const snapMoveLeftPx = (
+  clips: MediaClip[],
+  movingClipId: string,
+  desiredLeftPx: number,
+  widthPx: number,
+  gridPx = STUDIO_BEAT_PX,
+  edgeSnapPx = 12,
+): number => {
+  const gridLeftPx = Math.max(0, Math.round(desiredLeftPx / gridPx) * gridPx);
+  let bestLeftPx = gridLeftPx;
+  let bestDistance = Math.abs(desiredLeftPx - gridLeftPx);
+
+  for (const clip of clips) {
+    if (clip.id === movingClipId) continue;
+    const leftPx = clipLeftPx(clip);
+    const rightPx = clipRightPx(clip);
+    for (const candidate of [leftPx - widthPx, rightPx]) {
+      const normalized = Math.max(0, candidate);
+      const distance = Math.abs(desiredLeftPx - normalized);
+      if (distance <= edgeSnapPx && distance < bestDistance) {
+        bestLeftPx = normalized;
+        bestDistance = distance;
+      }
+    }
+  }
+
+  return bestLeftPx;
+};
+
+export const snapRegionEdgePx = (
+  clips: MediaClip[],
+  movingClipId: string,
+  desiredEdgePx: number,
+  gridPx = STUDIO_BEAT_PX,
+  edgeSnapPx = 12,
+): number => {
+  const gridEdgePx = Math.max(0, Math.round(desiredEdgePx / gridPx) * gridPx);
+  let bestEdgePx = gridEdgePx;
+  let bestDistance = Math.abs(desiredEdgePx - gridEdgePx);
+
+  for (const clip of clips) {
+    if (clip.id === movingClipId) continue;
+    for (const candidate of [clipLeftPx(clip), clipRightPx(clip)]) {
+      const distance = Math.abs(desiredEdgePx - candidate);
+      if (distance <= edgeSnapPx && distance < bestDistance) {
+        bestEdgePx = candidate;
+        bestDistance = distance;
+      }
+    }
+  }
+
+  return bestEdgePx;
+};

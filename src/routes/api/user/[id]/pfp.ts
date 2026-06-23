@@ -3,12 +3,15 @@
 // Serves data: URLs as image bytes, redirects http URLs.
 import type { APIEvent } from "@solidjs/start/server";
 import { sql } from "~/lib/db/client";
+import { rateLimit } from "~/lib/server/rateLimit";
 import { isSafeRemoteUrl, textResponse } from "../../_utils";
 
 const MAX_DATA_IMAGE_BYTES = 2 * 1024 * 1024;
 const IMAGE_MIME_RE = /^image\/(avif|gif|jpeg|jpg|png|webp)$/i;
 
 export async function GET(event: APIEvent) {
+  const rl = rateLimit(event.request, "pfp", "relaxed");
+  if (rl) return rl;
   const id = event.params.id;
   if (!id || id.length > 128) return textResponse("invalid id", 400);
 

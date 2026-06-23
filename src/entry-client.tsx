@@ -29,6 +29,7 @@ function revealApp() {
 mount(() => <StartClient />, appRoot());
 
 document.addEventListener("app:content-ready", revealApp, { once: true });
+// Hard-timeout fallback: if the app:content-ready event never fires (SSR mismatch, script error) the veil still lifts
 window.setTimeout(revealApp, 5000);
 
 export default function() {}

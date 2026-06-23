@@ -5,8 +5,8 @@ import type { APIEvent } from "@solidjs/start/server";
 import { getStore } from "@netlify/blobs";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { requireUserId } from "~/lib/auth-server";
-import { sql } from "~/lib/db/client";
+import { getReadAccess, getOwnerAccess } from "~/lib/server/projectAccess";
+import { rateLimit } from "~/lib/server/rateLimit";
 import { isUuid, textResponse } from "../_utils";
 
 const MAX_CLIP_BYTES = 4_000_000; // Netlify buffered functions allow ~4.5 MB binary request bodies.
@@ -88,12 +88,40 @@ async function getLocalClip(projectId: string, clipId: string): Promise<{ data: 
   }
 }
 
-function localClipResponse(local: { data: Uint8Array; mime: string }): Response {
-  const body = new ArrayBuffer(local.data.byteLength);
+function parseRange(header: string | null, total: number): { start: number; end: number } | null {
+  if (!header) return null;
+  const match = header.match(/^bytes=(\d+)-(\d*)$/);
+  if (!match) return null;
+  const start = parseInt(match[1], 10);
+  const end = match[2] ? parseInt(match[2], 10) : total - 1;
+  if (start >= total || end >= total || start > end) return null;
+  return { start, end };
+}
+
+function localClipResponse(local: { data: Uint8Array; mime: string }, rangeHeader?: string | null): Response {
+  const total = local.data.byteLength;
+  const range = parseRange(rangeHeader ?? null, total);
+
+  if (range) {
+    const slice = local.data.slice(range.start, range.end + 1);
+    return new Response(slice.buffer, {
+      status: 206,
+      headers: {
+        "Content-Type": local.mime,
+        "Content-Range": `bytes ${range.start}-${range.end}/${total}`,
+        "Content-Length": String(slice.byteLength),
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "private, max-age=3600",
+      },
+    });
+  }
+
+  const body = new ArrayBuffer(total);
   new Uint8Array(body).set(local.data);
   return new Response(body, {
     headers: {
       "Content-Type": local.mime,
+      "Content-Length": String(total),
       "Cache-Control": "private, max-age=3600",
       "Accept-Ranges": "bytes",
     },
@@ -119,18 +147,9 @@ async function deleteLocalClip(projectId: string, clipId: string): Promise<void>
   }
 }
 
-async function getProjectOwner(projectId: string): Promise<{ userId: string; published: boolean } | null> {
-  const rows = await sql`
-    SELECT user_id, published FROM projects
-    WHERE id = ${projectId} AND deleted_at IS NULL
-    LIMIT 1
-  ` as Array<{ user_id: string; published: boolean }>;
-  if (!rows[0]) return null;
-  return { userId: rows[0].user_id, published: rows[0].published };
-}
-
-
 export async function PUT(event: APIEvent) {
+  const rl = rateLimit(event.request, "clips:put", "strict");
+  if (rl) return rl;
   const clipId = event.params.clipId;
   const searchParams = new URL(event.request.url).searchParams;
   const projectId = searchParams.get("projectId") ?? "";
@@ -139,18 +158,19 @@ export async function PUT(event: APIEvent) {
 
   if (!isUuid(clipId) || !isUuid(projectId)) return textResponse("invalid id", 400);
 
-  const userId = await requireUserId(event.request);
-  if (!userId) return textResponse("unauthorized", 401);
-
-  let project: { userId: string; published: boolean } | null = null;
+  let access: Awaited<ReturnType<typeof getOwnerAccess>>;
   try {
-    project = await getProjectOwner(projectId);
+    access = await getOwnerAccess(event.request, projectId);
   } catch (err) {
     console.error("[PUT /api/clips/:clipId] DB error:", err);
     return textResponse("internal error", 500);
   }
-  if (!project) return textResponse("not found", 404);
-  if (project.userId !== userId) return textResponse("forbidden", 403);
+  if (!access.ok) {
+    if (access.reason === "unauthorized") return textResponse("unauthorized", 401);
+    if (access.reason === "not-found") return textResponse("not found", 404);
+    return textResponse("forbidden", 403);
+  }
+  const userId = access.userId;
 
   const contentLength = parseInt(event.request.headers.get("content-length") ?? "0", 10);
   if (contentLength > MAX_CLIP_BYTES) return textResponse("file too large", 413);
@@ -229,25 +249,24 @@ export async function PUT(event: APIEvent) {
 
 
 export async function GET(event: APIEvent) {
+  const rl = rateLimit(event.request, "clips:get", "relaxed");
+  if (rl) return rl;
   const clipId = event.params.clipId;
   const searchParams = new URL(event.request.url).searchParams;
   const projectId = searchParams.get("projectId") ?? "";
 
   if (!isUuid(clipId) || !isUuid(projectId)) return textResponse("invalid id", 400);
 
-  let project: { userId: string; published: boolean } | null = null;
+  let access: Awaited<ReturnType<typeof getReadAccess>>;
   try {
-    project = await getProjectOwner(projectId);
+    access = await getReadAccess(event.request, projectId);
   } catch (err) {
     console.error("[GET /api/clips/:clipId] DB error:", err);
     return textResponse("internal error", 500);
   }
-  if (!project) return textResponse("not found", 404);
+  if (!access.ok) return textResponse("not found", 404);
 
-  if (!project.published) {
-    const userId = await requireUserId(event.request);
-    if (userId !== project.userId) return textResponse("not found", 404);
-  }
+  const rangeHeader = event.request.headers.get("range");
 
   const store = getClipsStore();
   if (!store) {
@@ -256,39 +275,61 @@ export async function GET(event: APIEvent) {
       if (canUseLocalClipStore()) return new Response(null, { status: 204 });
       return textResponse("storage not available", 503);
     }
-    return localClipResponse(local);
+    return localClipResponse(local, rangeHeader);
   }
 
   try {
     const key = `${projectId}/${clipId}`;
-    const result = await store.getWithMetadata(key, { type: "stream" });
+    const result = await store.getWithMetadata(key, { type: "arrayBuffer" });
     if (!result) {
       return new Response(null, { status: 204 });
     }
 
     const metadata = result.metadata as Record<string, string> | null;
     const mime = metadata?.mime ?? "audio/mpeg";
-    
-    let streamBody: BodyInit = result.data as BodyInit;
+
+    let fullBuffer: Uint8Array;
 
     if (metadata?.chunks) {
       const chunks = parseInt(metadata.chunks as string, 10);
-      streamBody = new ReadableStream({
-        async start(controller) {
-          try {
-            for (let i = 0; i < chunks; i++) {
-              const c = await store.get(`${projectId}/${clipId}_${i}`, { type: "arrayBuffer" });
-              if (c) controller.enqueue(new Uint8Array(c as ArrayBuffer));
-            }
-            controller.close();
-          } catch(e) { controller.error(e); }
+      const buffers: Uint8Array[] = [];
+      let totalSize = 0;
+      for (let i = 0; i < chunks; i++) {
+        const c = await store.get(`${projectId}/${clipId}_${i}`, { type: "arrayBuffer" });
+        if (c) {
+          const arr = new Uint8Array(c as ArrayBuffer);
+          buffers.push(arr);
+          totalSize += arr.byteLength;
         }
+      }
+      fullBuffer = new Uint8Array(totalSize);
+      let offset = 0;
+      for (const b of buffers) { fullBuffer.set(b, offset); offset += b.byteLength; }
+    } else {
+      fullBuffer = new Uint8Array(result.data as ArrayBuffer);
+    }
+
+    const total = fullBuffer.byteLength;
+    const range = parseRange(rangeHeader, total);
+
+    if (range) {
+      const slice = fullBuffer.slice(range.start, range.end + 1);
+      return new Response(slice.buffer, {
+        status: 206,
+        headers: {
+          "Content-Type": mime,
+          "Content-Range": `bytes ${range.start}-${range.end}/${total}`,
+          "Content-Length": String(slice.byteLength),
+          "Accept-Ranges": "bytes",
+          "Cache-Control": "private, max-age=3600",
+        },
       });
     }
 
-    return new Response(streamBody, {
+    return new Response(fullBuffer.buffer, {
       headers: {
         "Content-Type": mime,
+        "Content-Length": String(total),
         "Cache-Control": "private, max-age=3600",
         "Accept-Ranges": "bytes",
       },
@@ -296,7 +337,7 @@ export async function GET(event: APIEvent) {
   } catch (err) {
     warnStorageFallback("GET", err);
     const local = await getLocalClip(projectId, clipId);
-    if (local) return localClipResponse(local);
+    if (local) return localClipResponse(local, rangeHeader);
     if (canUseLocalClipStore()) return new Response(null, { status: 204 });
     console.error("[GET /api/clips/:clipId] storage error:", err);
     return textResponse("storage unavailable", 503);
@@ -311,19 +352,14 @@ export async function HEAD(event: APIEvent) {
 
   if (!isUuid(clipId) || !isUuid(projectId)) return new Response(null, { status: 400 });
 
-  let project: { userId: string; published: boolean } | null = null;
+  let access: Awaited<ReturnType<typeof getReadAccess>>;
   try {
-    project = await getProjectOwner(projectId);
+    access = await getReadAccess(event.request, projectId);
   } catch (err) {
     console.error("[HEAD /api/clips/:clipId] DB error:", err);
     return new Response(null, { status: 500 });
   }
-  if (!project) return new Response(null, { status: 404 });
-
-  if (!project.published) {
-    const userId = await requireUserId(event.request);
-    if (userId !== project.userId) return new Response(null, { status: 404 });
-  }
+  if (!access.ok) return new Response(null, { status: 404 });
 
   const store = getClipsStore();
   if (!store) {
@@ -361,23 +397,25 @@ export async function HEAD(event: APIEvent) {
 
 
 export async function DELETE(event: APIEvent) {
+  const rl = rateLimit(event.request, "clips:delete", "strict");
+  if (rl) return rl;
   const clipId = event.params.clipId;
   const projectId = new URL(event.request.url).searchParams.get("projectId") ?? "";
 
   if (!isUuid(clipId) || !isUuid(projectId)) return textResponse("invalid id", 400);
 
-  const userId = await requireUserId(event.request);
-  if (!userId) return textResponse("unauthorized", 401);
-
-  let project: { userId: string; published: boolean } | null = null;
+  let access: Awaited<ReturnType<typeof getOwnerAccess>>;
   try {
-    project = await getProjectOwner(projectId);
+    access = await getOwnerAccess(event.request, projectId);
   } catch (err) {
     console.error("[DELETE /api/clips/:clipId] DB error:", err);
     return textResponse("internal error", 500);
   }
-  if (!project) return textResponse("not found", 404);
-  if (project.userId !== userId) return textResponse("forbidden", 403);
+  if (!access.ok) {
+    if (access.reason === "unauthorized") return textResponse("unauthorized", 401);
+    if (access.reason === "not-found") return textResponse("not found", 404);
+    return textResponse("forbidden", 403);
+  }
 
   const store = getClipsStore();
   if (!store) {

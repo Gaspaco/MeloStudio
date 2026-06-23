@@ -13,12 +13,13 @@ import { getMasterBus } from "~/lib/audio/masterBus";
 import { unlockAudioContext } from "~/lib/audio/context";
 import { updateProjectApi, sendHeartbeat } from "~/lib/api";
 import { getAppSession } from "~/lib/app-auth";
-import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES, hasStudioContent } from "./types";
+import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES, hasStudioContent, isAudioTrackType, isInstrumentTrackType } from "./types";
 import { useProject }   from "./hooks/useProject";
 import { useTransport } from "./hooks/useTransport";
 import { useDrum }      from "./hooks/useDrum";
 import { useSynth }     from "./hooks/useSynth";
 import { useTracks }    from "./hooks/useTracks";
+import { STUDIO_BAR_PX } from "./lib/regionMath";
 import TopBar           from "./components/TopBar";
 import TracksSidebar    from "./components/TracksSidebar";
 import TimelineArea     from "./components/TimelineArea";
@@ -27,8 +28,10 @@ import LyricsPanel      from "./components/LyricsPanel";
 import RestoreDialog    from "./components/RestoreDialog";
 import DrumPanel        from "./components/DrumPanel";
 import KeyboardPanel    from "./components/KeyboardPanel";
+import AudioClipEditor  from "./components/AudioClipEditor";
 import NavDrawer, { type NavCategory } from "./components/NavDrawer";
 import NewTrackModal    from "./components/NewTrackModal";
+import PublishModal     from "./components/PublishModal";
 
 import "./studio.scss";
 
@@ -39,6 +42,7 @@ const Studio: Component = () => {
   let seq: StepSequencer | null = null;
   let timelineElRef: HTMLDivElement | undefined;
   let titleInputEl: HTMLInputElement | undefined;
+  let studioImportInputEl: HTMLInputElement | undefined;
 
   const [name,               setName]               = createSignal("New Project");
   const [tracks,             setTracks]             = createSignal<UITrack[]>([]);
@@ -64,7 +68,8 @@ const Studio: Component = () => {
   const [lyricsText,         setLyricsText]         = createSignal("");
   const [titleEditing,       setTitleEditing]       = createSignal(false);
   const [drumPanelOpen,      setDrumPanelOpen]      = createSignal(true);
-  const [activePanel,        setActivePanel]        = createSignal<"drum" | "keys" | null>(null);
+  const [activePanel,        setActivePanel]        = createSignal<"drum" | "keys" | "voice" | null>(null);
+  const [selectedClipId,     setSelectedClipId]     = createSignal<string | null>(null);
   const [drumSwing,          setDrumSwing]          = createSignal(0);
   const [drumSteps,          setDrumSteps]          = createSignal(16);
   const [synthPreset,        setSynthPreset]        = createSignal<SynthPreset>("piano");
@@ -79,7 +84,11 @@ const Studio: Component = () => {
   const [enhance,            setEnhance]            = createSignal(true);
   const [metronomeOn,        setMetronomeOn]        = createSignal(false);
   const [loopOn,             setLoopOn]             = createSignal(false);
+  const [cycleStartPx,       setCycleStartPx]       = createSignal(0);
+  const [cycleEndPx,         setCycleEndPx]         = createSignal(4 * STUDIO_BAR_PX);
   const [published,          setPublished]          = createSignal(false);
+  const [showPublishModal,   setShowPublishModal]   = createSignal(false);
+  const [showPublishToast,   setShowPublishToast]   = createSignal(false);
 
   const [userImage,          setUserImage]          = createSignal<string | null>(null);
 
@@ -132,20 +141,25 @@ const Studio: Component = () => {
     if (snap) applySnap(snap);
   };
 
+  let trk!: ReturnType<typeof useTracks>;
+
   const sth = useSynth({
     tracks, selectedTrack, masterVol,
     synthPreset, setSynthPreset, octave, setOctave,
     activeNotes, setActiveNotes,
     setSynthAttack, setSynthDecay, setSynthSustain, setSynthRelease,
     setSynthFilterFreq, setActivePanel,
+    onMidiNoteOn: (midi, velocity) => trk?.captureMidiNoteOn(midi, velocity),
+    onMidiNoteOff: (midi) => trk?.captureMidiNoteOff(midi),
   });
 
   const transport = useTransport({
-    getSeq: () => seq, getSynth: sth.getSynth,
+    getSeq: () => seq, getSynth: sth.getSynth, ensureSynth: sth.ensureSynth,
     tracks, bpm, setBpm, playing, setPlaying,
     elapsed, setElapsed, masterVol, setMasterVol,
     playheadPx, setPlayheadPx, pattern, setPattern,
     loopEnabled: loopOn,
+    cycleStartPx, cycleEndPx,
   });
 
   const drum = useDrum({
@@ -166,10 +180,10 @@ const Studio: Component = () => {
     lyricsText, setLyricsText,
   });
 
-  const trk = useTracks({
+  trk = useTracks({
     projectId: () => params.id,
     tracks, setTracks, selectedTrack, setSelectedTrack,
-    bpm, setError, setShowNewTrack,
+    bpm, playheadPx, setError, setShowNewTrack,
     ensureSynth: sth.ensureSynth, setSynthPreset,
     setActivePanel, setDrumPanelOpen,
     getSeq: () => seq, getSynth: sth.getSynth,
@@ -179,6 +193,68 @@ const Studio: Component = () => {
   });
 
   const canSaveProject = () => hasStudioContent(tracks(), pattern(), lyricsText());
+
+  const selectedClipTrack = () => {
+    const clipId = selectedClipId();
+    if (!clipId) return null;
+    for (const track of tracks()) {
+      if ((track.clips ?? []).some((clip) => clip.id === clipId)) return track;
+    }
+    return null;
+  };
+
+  const selectedClip = () => {
+    const clipId = selectedClipId();
+    if (!clipId) return null;
+    for (const track of tracks()) {
+      const clip = (track.clips ?? []).find((item) => item.id === clipId);
+      if (clip) return clip;
+    }
+    return null;
+  };
+
+  const isTextEntryTarget = (target: EventTarget | null) => {
+    const el = target as HTMLElement | null;
+    if (!el) return false;
+    const tag = el.tagName.toLowerCase();
+    return el.isContentEditable || tag === "input" || tag === "textarea" || tag === "select";
+  };
+
+  const togglePlayback = async () => {
+    await transport.togglePlay();
+    if (!playing() && trk.recordingTrackId()) {
+      if (trk.recordingMode() === "midi") trk.stopMidiRecording();
+      else trk.stopRecording();
+    }
+    if (metronomeOn()) {
+      if (!playing()) stopMetronome();
+      else { await unlockAudioContext(); startMetronome(); }
+    }
+  };
+
+  const toggleRecordOnSelectedTrack = async () => {
+    const activeRecordingId = trk.recordingTrackId();
+    if (activeRecordingId) {
+      if (trk.recordingMode() === "midi") trk.stopMidiRecording();
+      else trk.stopRecording();
+      return;
+    }
+
+    const track = tracks().find(t => t.id === selectedTrack());
+    if (!track || (!isAudioTrackType(track.type) && !isInstrumentTrackType(track.type))) {
+      setError("Select an audio or instrument track before recording.");
+      setTimeout(() => setError(""), 2600);
+      return;
+    }
+
+    if (loopOn() && (playheadPx() < cycleStartPx() || playheadPx() >= cycleEndPx())) {
+      setPlayheadPx(cycleStartPx());
+    }
+
+    if (isInstrumentTrackType(track.type)) trk.startMidiRecording(track.id);
+    else trk.startRecording(track.id);
+    if (!playing()) await transport.togglePlay();
+  };
 
   onMount(async () => {
     seq = new StepSequencer();
@@ -194,7 +270,14 @@ const Studio: Component = () => {
     snapHistory();
 
     const handleGlobalKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+      if (isTextEntryTarget(e.target)) return;
+      if (e.code === "Space" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        void togglePlayback();
+      } else if (e.key.toLowerCase() === "r" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        void toggleRecordOnSelectedTrack();
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
         void handleSave();
       } else if ((e.metaKey || e.ctrlKey) && (e.shiftKey && e.key === "z" || e.key === "y")) {
@@ -203,10 +286,34 @@ const Studio: Component = () => {
       } else if ((e.metaKey || e.ctrlKey) && e.key === "z") {
         e.preventDefault();
         undo();
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "e") {
+        const track = selectedClipTrack();
+        const clipId = selectedClipId();
+        if (!track || !clipId) return;
+        e.preventDefault();
+        trk.splitClipAtPlayhead(track.id, clipId, playheadPx());
       }
     };
     window.addEventListener("keydown", handleGlobalKey);
     onCleanup(() => window.removeEventListener("keydown", handleGlobalKey));
+
+    const stopCachedPlayback = () => {
+      seq?.stop();
+      sth.allNotesOff();
+      transport.stopAudioPlayback();
+      setPlaying(false);
+      stopMetronome();
+    };
+    const handlePageHide = () => stopCachedPlayback();
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) stopCachedPlayback();
+    };
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("pageshow", handlePageShow);
+    onCleanup(() => {
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pageshow", handlePageShow);
+    });
 
   });
 
@@ -375,6 +482,36 @@ const Studio: Component = () => {
     navigate(path);
   };
 
+  const pickImportFiles = () => studioImportInputEl?.click();
+
+  const setCycleToSelectedClip = () => {
+    const clip = selectedClip();
+    if (!clip) {
+      setError("Select a region before setting the cycle area.");
+      setTimeout(() => setError(""), 2400);
+      return;
+    }
+    const startPx = clip.leftPx ?? clip.barStart * STUDIO_BAR_PX;
+    const widthPx = clip.widthPx ?? clip.bars * STUDIO_BAR_PX;
+    setCycleStartPx(startPx);
+    setCycleEndPx(Math.max(startPx + STUDIO_BAR_PX / 16, startPx + widthPx));
+    setLoopOn(true);
+  };
+
+  const showShortcutHelp = () => {
+    window.alert([
+      "MeloStudio shortcuts",
+      "",
+      "Space: Play / pause",
+      "R: Record selected track",
+      "Cmd/Ctrl+S: Save",
+      "Cmd/Ctrl+Z: Undo",
+      "Cmd/Ctrl+Shift+Z: Redo",
+      "Cmd/Ctrl+E: Split selected region at playhead",
+      ".: Stop from menu",
+    ].join("\n"));
+  };
+
   const buildNavCats = (): NavCategory[] => {
     const close = () => setNavOpen(false);
     const run = (fn: () => void) => () => { fn(); close(); };
@@ -383,47 +520,103 @@ const Studio: Component = () => {
         id: "project", num: "01", label: "Project",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V4l6-1.2v7"/><circle cx="5" cy="11.5" r="1.4"/><circle cx="11" cy="9.8" r="1.4"/></svg>,
         items: [
-          { label: "New Project",    kbd: "⌘N", action: run(() => { void saveAndNavigate("/dashboard?new=1"); }) },
-          { label: "Save",           kbd: "⌘S", action: run(() => { void handleSave(); }), disabled: () => saveState() === "saving" || !canSaveProject() },
-          { label: "Rename\u2026",   kbd: "",   action: run(() => startEditingTitle()) },
-          { label: "Open Dashboard", kbd: "⌘D", action: run(() => { void saveAndNavigate("/dashboard"); }) },
+          { label: "Save project", desc: () => saveState() === "saving" ? "Saving changes now" : "Store the current arrangement", kbd: "⌘S", action: run(() => { void handleSave(); }), disabled: () => saveState() === "saving" || !canSaveProject(), tone: "primary" },
+          { label: "Rename project", desc: "Edit the title in the top bar", kbd: "", action: run(() => startEditingTitle()) },
+          { label: "Publish / share", desc: published() ? "Update the public project page" : "Create a shareable version", kbd: "", action: run(() => setShowPublishModal(true)), disabled: () => !canSaveProject() },
+          { label: "Open Dashboard", desc: "Go back to your projects", kbd: "⌘D", action: run(() => { void saveAndNavigate("/dashboard"); }) },
+          { label: "New Project", desc: "Save and start another idea", kbd: "⌘N", action: run(() => { void saveAndNavigate("/dashboard?new=1"); }) },
         ],
       },
       {
         id: "edit", num: "02", label: "Edit",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9-3 1 1-3 9-9z"/><path d="M9 4l3 3"/></svg>,
         items: [
-          { label: "Undo",          kbd: "⌘Z",  action: run(() => undo()),  disabled: () => !canUndo() },
-          { label: "Redo",          kbd: "⌘⇧Z", action: run(() => redo()),  disabled: () => !canRedo() },
-          { label: "Delete Track",  kbd: "⌫",   action: run(() => { const id = selectedTrack(); if (id) trk.deleteTrack(id); }), disabled: () => !selectedTrack() },
-          { label: "Clear Pattern", kbd: "",    action: run(() => drum.clearPattern()) },
+          { label: "Undo", desc: "Step back through arrangement edits", kbd: "⌘Z", action: run(() => undo()), disabled: () => !canUndo() },
+          { label: "Redo", desc: "Restore the next edit", kbd: "⌘⇧Z", action: run(() => redo()), disabled: () => !canRedo() },
+          { label: "Split selected region", desc: "Cut exactly at the playhead", kbd: "⌘E", action: run(() => {
+              const track = selectedClipTrack();
+              const clip = selectedClipId();
+              if (track && clip) trk.splitClipAtPlayhead(track.id, clip, playheadPx());
+            }), disabled: () => !selectedClipTrack() || !selectedClipId() },
+          { label: "Duplicate selected region", desc: "Copy it right after itself", kbd: "⌘D", action: run(() => {
+              const track = selectedClipTrack();
+              const clip = selectedClipId();
+              if (track && clip) trk.duplicateClip(track.id, clip);
+            }), disabled: () => !selectedClipTrack() || !selectedClipId() },
+          { label: "Delete selected region", desc: "Remove the highlighted clip", kbd: "⌫", action: run(() => {
+              const track = selectedClipTrack();
+              const clip = selectedClipId();
+              if (track && clip) {
+                trk.deleteClip(track.id, clip);
+                setSelectedClipId(null);
+              }
+            }), disabled: () => !selectedClipTrack() || !selectedClipId(), tone: "danger" },
+          { label: "Delete selected track", desc: "Remove the whole lane", kbd: "", action: run(() => { const id = selectedTrack(); if (id) trk.deleteTrack(id); }), disabled: () => !selectedTrack(), tone: "danger" },
+          { label: "Clear drum pattern", desc: "Reset the step sequencer", kbd: "", action: run(() => drum.clearPattern()), disabled: () => !tracks().some(t => t.type === "drum") },
         ],
       },
       {
         id: "insert", num: "03", label: "Insert",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v10M3 8h10"/></svg>,
         items: [
-          { label: "Add Track\u2026",    kbd: "T", action: run(() => setShowNewTrack(true)) },
-          { label: "Import Audio\u2026", kbd: "",  disabled: () => true },
-          { label: "Insert Pattern",     kbd: "",  disabled: () => true },
+          { label: "Add track", desc: "Choose audio, MIDI, drum, bass, or guitar", kbd: "T", action: run(() => setShowNewTrack(true)), tone: "primary" },
+          { label: "Import audio / MIDI", desc: "Drop in wav, mp3, m4a, ogg, mp4, or MIDI", kbd: "", action: run(pickImportFiles) },
+          { label: "Add Voice / Audio track", desc: "Record vocals or imported audio", kbd: "", action: run(() => trk.addTrack("voice", false)) },
+          { label: "Add Instrument track", desc: "Record MIDI notes with keys", kbd: "", action: run(() => trk.addTrack("instrument", false)) },
+          { label: "Add Drum Machine", desc: "Open the step sequencer", kbd: "", action: run(() => trk.addTrack("drum", false)) },
+          { label: "Add Bass Synth", desc: "Create a bass MIDI lane", kbd: "", action: run(() => trk.addTrack("bass", false)) },
+          { label: "Create MIDI region", desc: "Insert a blank region at the playhead", kbd: "", action: run(() => {
+              const track = tracks().find(t => t.id === selectedTrack());
+              if (!track) return;
+              trk.createRegion(track.id, Math.max(0, Math.floor(playheadPx() / STUDIO_BAR_PX)));
+            }), disabled: () => {
+              const track = tracks().find(t => t.id === selectedTrack());
+              return !track || !isInstrumentTrackType(track.type);
+            } },
         ],
       },
       {
         id: "view", num: "04", label: "View",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2.2"/></svg>,
         items: [
-          { label: "Toggle Drum Panel", kbd: "", action: run(() => setDrumPanelOpen(!drumPanelOpen())) },
-          { label: "Toggle Mixer",      kbd: "", disabled: () => true },
-          { label: "Fullscreen",        kbd: "F", action: run(() => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.(); }) },
+          { label: "Show instrument keys", desc: "Open the playable keyboard/synth panel", kbd: "", action: run(() => setActivePanel("keys")), disabled: () => {
+              const track = tracks().find(t => t.id === selectedTrack());
+              return !track || !isInstrumentTrackType(track.type);
+            } },
+          { label: () => drumPanelOpen() ? "Hide drum machine" : "Show drum machine", desc: "Open or collapse the beat sequencer", kbd: "", action: run(() => {
+              setDrumPanelOpen(!drumPanelOpen());
+              setActivePanel(drumPanelOpen() ? "drum" : null);
+            }), disabled: () => !tracks().some(t => t.type === "drum") },
+          { label: "Show voice editor", desc: "Edit the selected audio region", kbd: "", action: run(() => setActivePanel("voice")), disabled: () => !tracks().some(t => t.type === "voice") },
+          { label: () => enhance() ? "Turn master enhance off" : "Turn master enhance on", desc: "Toggle the master bus polish", kbd: "", action: run(() => {
+              const next = !enhance();
+              setEnhance(next);
+              getMasterBus().setEnhanced(next);
+            }) },
+          { label: "Fullscreen studio", desc: "Use the whole display", kbd: "F", action: run(() => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.(); }) },
         ],
       },
       {
         id: "transport", num: "05", label: "Transport",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l7 5-7 5z"/></svg>,
         items: [
-          { label: () => playing() ? "Pause" : "Play", kbd: "Space", action: run(() => { void transport.togglePlay(); }) },
-          { label: "Stop",          kbd: ".", action: run(transport.stopAll) },
-          { label: "Set BPM\u2026", kbd: "", action: run(() => {
+          { label: () => playing() ? "Pause" : "Play", desc: "Start or pause playback", kbd: "Space", action: run(() => { void togglePlayback(); }), tone: "primary" },
+          { label: "Record selected track", desc: "Audio on voice tracks, MIDI on instruments", kbd: "R", action: run(() => { void toggleRecordOnSelectedTrack(); }), disabled: () => {
+              const track = tracks().find(t => t.id === selectedTrack());
+              return !track || (!isAudioTrackType(track.type) && !isInstrumentTrackType(track.type));
+            } },
+          { label: "Stop and return", desc: "Stop transport at the beginning", kbd: ".", action: run(() => {
+              if (trk.recordingTrackId()) {
+                if (trk.recordingMode() === "midi") trk.stopMidiRecording();
+                else trk.stopRecording();
+              }
+              transport.stopAll();
+            }) },
+          { label: () => metronomeOn() ? "Metronome off" : "Metronome on", desc: "Hear a click while playing", kbd: "", action: run(() => { void toggleMetronome(); }) },
+          { label: () => loopOn() ? "Cycle area off" : "Cycle area on", desc: "Loop between the red locators", kbd: "", action: run(() => setLoopOn(v => !v)) },
+          { label: "Cycle selected region", desc: "Set red locators to the selected clip", kbd: "", action: run(setCycleToSelectedClip), disabled: () => !selectedClip() },
+          { label: "Set playhead to start", desc: "Jump back to bar 1", kbd: "", action: run(() => setPlayheadPx(0)) },
+          { label: "Set BPM", desc: "Tempo range 40-240", kbd: "", action: run(() => {
               const next = window.prompt("Set BPM (40–240)", String(bpm()));
               const n = Number(next);
               if (Number.isFinite(n) && n >= 40 && n <= 240) transport.updateBpm(Math.round(n));
@@ -435,8 +628,9 @@ const Studio: Component = () => {
         id: "help", num: "06", label: "Help",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M6 6.5a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6 1V10"/><circle cx="8" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg>,
         items: [
-          { label: "Keyboard Shortcuts", kbd: "?", disabled: () => true },
-          { label: "About MeloStudio",   kbd: "",  disabled: () => true },
+          { label: "Keyboard shortcuts", desc: "Show the main studio commands", kbd: "?", action: run(showShortcutHelp) },
+          { label: "BandLab-style workflow", desc: "Import, record, loop, publish, repeat", kbd: "", action: run(() => window.alert("Useful flow: import or add a track, record with R, loop with Cycle, edit with split/duplicate, then publish or share from Project.")) },
+          { label: "About MeloStudio", desc: "Online music creation studio", kbd: "", action: run(() => window.alert("MeloStudio is a browser-based studio for audio, MIDI, drums, synths, writing, publishing, and sharing.")) },
         ],
       },
     ];
@@ -444,6 +638,18 @@ const Studio: Component = () => {
 
   return (
     <div class="bl">
+      <input
+        ref={(el) => (studioImportInputEl = el)}
+        type="file"
+        accept="audio/*,video/*,.mid,.midi"
+        multiple
+        style={{ display: "none" }}
+        onChange={async (e) => {
+          const files = Array.from(e.currentTarget.files ?? []);
+          e.currentTarget.value = "";
+          if (files.length) await trk.importFiles(files);
+        }}
+      />
       <TopBar
         name={name} titleEditing={titleEditing} saveState={saveState} lastSaved={lastSaved}
         bpm={bpm} meter={timeSig} musicalKey={musicalKey}
@@ -461,14 +667,18 @@ const Studio: Component = () => {
         metronomeOn={metronomeOn} onToggleMetronome={toggleMetronome}
         loopOn={loopOn} onToggleLoop={() => setLoopOn(v => !v)}
         onTogglePlay={async () => {
-          await transport.togglePlay();
-          // Start/stop metronome to stay in sync with playback
-          if (metronomeOn()) {
-            if (!playing()) stopMetronome();
-            else { await unlockAudioContext(); startMetronome(); }
-          }
+          await togglePlayback();
         }}
-        onStopAll={transport.stopAll}
+        onStopAll={() => {
+          if (trk.recordingTrackId()) {
+            if (trk.recordingMode() === "midi") trk.stopMidiRecording();
+            else trk.stopRecording();
+          }
+          transport.stopAll();
+        }}
+        recording={() => trk.recordingTrackId() !== null}
+        recordingStartTime={trk.recordingStartTime}
+        onToggleRecord={toggleRecordOnSelectedTrack}
         onUpdateBpm={transport.updateBpm}
         onUpdateMeter={setTimeSig}
         onUpdateKey={setMusicalKey}
@@ -481,7 +691,7 @@ const Studio: Component = () => {
           getMasterBus().setEnhanced(next);
         }}
         published={published}
-        onPublish={() => navigate(`/publish/${params.id}`)}
+        onPublish={() => setShowPublishModal(true)}
       />
 
       <Show when={error()}>
@@ -517,6 +727,23 @@ const Studio: Component = () => {
         </div>
       </Show>
 
+      <Show when={showPublishToast()}>
+        <div class="bl__save-toast bl__save-toast--publish">
+          <div class="bl__save-toast-thumb">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12l5 5L20 7" />
+            </svg>
+          </div>
+          <div class="bl__save-toast-body">
+            <span class="bl__save-toast-title">Project published</span>
+            <a class="bl__save-toast-link" href={`/share/${params.id}`}>View Project</a>
+          </div>
+          <button class="bl__save-toast-close" onClick={() => setShowPublishToast(false)} aria-label="Dismiss">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+        </div>
+      </Show>
+
       <div class="bl__main">
         <TracksSidebar
           tracks={tracks} selectedTrack={selectedTrack} showAddMenu={showAddMenu}
@@ -526,6 +753,9 @@ const Studio: Component = () => {
           onAddTrack={trk.addTrack}
           onSetShowAddMenu={setShowAddMenu}
           onShowNewTrack={() => setShowNewTrack(true)}
+          recordingTrackId={trk.recordingTrackId}
+          onStartRecording={trk.startRecording}
+          onStopRecording={trk.stopRecording}
         />
         <TimelineArea
           tracks={tracks} selectedTrack={selectedTrack}
@@ -536,12 +766,32 @@ const Studio: Component = () => {
           onLanesDragOver={trk.onLanesDragOver} onLanesDragLeave={trk.onLanesDragLeave} onLanesDrop={trk.onLanesDrop}
           onDeleteClip={trk.deleteClip}
           onMoveClip={trk.moveClip}
+          onMoveClipToTrack={trk.moveClipToTrack}
+          onTrimClip={trk.trimClip}
+          onSplitClip={trk.splitClipAtPlayhead}
           onRenameClip={trk.renameClip}
           onDuplicateClip={trk.duplicateClip}
           onCreateRegion={trk.createRegion}
           onApplyTemplate={applyTemplate}
           onImportFiles={trk.importFiles}
           onAddTrack={trk.addTrack} onShowNewTrack={() => setShowNewTrack(true)}
+          recordingTrackId={trk.recordingTrackId}
+          recordingStartPx={trk.recordingStartPx}
+          recordingMode={trk.recordingMode}
+          cycleEnabled={loopOn}
+          cycleStartPx={cycleStartPx}
+          cycleEndPx={cycleEndPx}
+          onSetCycle={(startPx, endPx, activate) => {
+            setCycleStartPx(startPx);
+            setCycleEndPx(endPx);
+            if (activate) setLoopOn(true);
+          }}
+          onToggleCycle={() => setLoopOn(v => !v)}
+          onSelectClip={(trackId, clipId) => {
+            const t = tracks().find(t => t.id === trackId);
+            if (t?.type === "voice") { setSelectedClipId(clipId); setActivePanel("voice"); }
+            else setSelectedClipId(clipId);
+          }}
         />
       </div>
 
@@ -587,6 +837,29 @@ const Studio: Component = () => {
         />
       </Show>
 
+
+
+      <Show when={activePanel() === "voice" && tracks().some(t => t.type === "voice")}>
+        <AudioClipEditor
+          clip={() => {
+            const vt = tracks().find(t => t.type === "voice");
+            return vt?.clips?.find(c => c.id === selectedClipId()) ?? vt?.clips?.[0] ?? null;
+          }}
+          track={() => tracks().find(t => t.type === "voice") ?? null}
+          tracks={tracks}
+          playheadPx={playheadPx}
+          onPatch={(patch) => {
+            const vt = tracks().find(t => t.type === "voice");
+            const cid = selectedClipId() ?? vt?.clips?.[0]?.id;
+            if (!vt || !cid) return;
+            trk.patchTrack(vt.id, {
+              clips: vt.clips?.map(c => c.id === cid ? { ...c, ...patch } : c),
+            });
+          }}
+          onCollapse={() => setActivePanel(null)}
+        />
+      </Show>
+
       <BottomBar
         tracks={tracks} selectedTrack={selectedTrack}
         activePanel={activePanel} onSetActivePanel={setActivePanel}
@@ -612,9 +885,30 @@ const Studio: Component = () => {
       </Show>
 
       <Show when={showNewTrack()}>
-        <NewTrackModal onAddTrack={trk.addTrack} onClose={() => setShowNewTrack(false)} />
+        <NewTrackModal
+          onAddTrack={(type) => {
+            if (type === "voice") { setShowNewTrack(false); trk.addTrack("voice"); }
+            else trk.addTrack(type);
+          }}
+          onClose={() => setShowNewTrack(false)}
+        />
       </Show>
 
+      <Show when={showPublishModal()}>
+        <PublishModal
+          projectId={params.id}
+          projectName={name}
+          published={published}
+          onClose={() => setShowPublishModal(false)}
+          onPublished={(v) => {
+            setPublished(v);
+            if (v) {
+              setShowPublishToast(true);
+              setTimeout(() => setShowPublishToast(false), 8000);
+            }
+          }}
+        />
+      </Show>
 
     </div>
   );
