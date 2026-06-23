@@ -14,34 +14,15 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
-  background: $bg-primary;
-  min-height: 100%;
-  min-height: 100dvh;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: clip;
 }
 
 body {
   font-family: $font-sans;
-  background: $bg-primary;
+  background-color: $bg-primary;
   color: $text-primary;
   line-height: 1.5;
-  width: 100%;
-  max-width: 100%;
-  overflow-x: clip;
+  overflow-x: hidden;
   overscroll-behavior: none;
-  min-height: 100vh;
-  min-height: 100dvh;
-}
-
-#app {
-  width: 100%;
-  max-width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
-  background: $bg-primary;
-  overflow-x: clip;
 }
 
 a {
@@ -58,7 +39,6 @@ button {
   color: inherit;
   touch-action: manipulation;
 }
-
 
 ::selection {
   background: $accent;
