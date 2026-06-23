@@ -12,8 +12,10 @@ export default createHandler(() => (
           <style>{`
             html, body, #app {
               width: 100%;
+              max-width: 100%;
               min-height: 100%;
               background: #07070a;
+              overflow-x: clip;
             }
             html {
               min-height: 100vh;

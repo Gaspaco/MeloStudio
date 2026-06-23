@@ -24424,13 +24424,6 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-client.tsx:13"
     },
     {
-      "id": "file::entry_server",
-      "label": "entry-server.tsx",
-      "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-server.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-server.tsx:1"
-    },
-    {
       "id": "file::i18n",
       "label": "i18n.ts",
       "fileType": "code",
@@ -24541,6 +24534,13 @@
       "fileType": "code",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/lib/i18n.ts",
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/lib/i18n.ts:262"
+    },
+    {
+      "id": "file::entry_server",
+      "label": "entry-server.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/entry-server.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/entry-server.tsx:1"
     }
   ],
   "edges": [
@@ -54762,6 +54762,6 @@
     "files": 164,
     "nodes": 3506,
     "edges": 3357,
-    "builtAt": "2026-06-23T20:29:21.162Z"
+    "builtAt": "2026-06-23T20:37:43.420Z"
   }
 }
