@@ -45,6 +45,7 @@ export interface ProjectPatch {
   genre?: string | null;
   description?: string | null;
   explicit?: boolean;
+  unlisted?: boolean;
   lyrics?: string | null;
   published?: boolean;
   restore?: boolean;
@@ -292,6 +293,7 @@ export interface ShareProjectView {
   isOwnerPreview?: boolean;
   ownerId?: string;
   mixUrl?: string;
+  coverUrl?: string | null;
   durationSec?: number;
   genre?: string;
   description?: string;
@@ -301,9 +303,26 @@ export interface ShareProjectView {
 }
 
 export interface SharePlayback {
-  tracks: Array<{ id: string; name: string; color: string; clips: Array<{ id: string; startSec: number; durationSec: number; gainDb: number }> }>;
   bpm: number;
-  projectId: string;
+  durationSec?: number;
+  pattern?: unknown | null;
+  tracks: Array<{
+    id: string;
+    name: string;
+    type: string;
+    volume: number;
+    muted: boolean;
+    instrumentPreset?: string;
+    clips: Array<{
+      id: string;
+      kind: "audio" | "video" | "midi";
+      startSec: number;
+      durationSec: number;
+      dataUrl?: string;
+      remoteUrl?: string;
+      midiNotes?: Array<{ midi: number; startSec: number; durationSec: number; velocity: number }>;
+    }>;
+  }>;
 }
 
 export async function getShareProjectApi(id: string): Promise<ShareProjectView | null> {

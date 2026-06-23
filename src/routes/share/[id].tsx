@@ -17,6 +17,7 @@ interface PublicProject {
   isOwnerPreview?: boolean;
   ownerId?: string;
   mixUrl?: string | null;
+  coverUrl?: string | null;
   durationSec?: number;
   genre?: string;
   description?: string;
@@ -304,7 +305,8 @@ const SharePage: Component = () => {
           const accentColor = nameToAccent(p().name);
           const initials   = nameInitials(p().name);
           const pfpUrl = p().ownerId ? buildPfpUrl(p().ownerId!) : null;
-          const extractedColor = useImageColorExt(pfpUrl);
+          const coverImageUrl = p().coverUrl || pfpUrl;
+          const extractedColor = useImageColorExt(coverImageUrl);
 
           const [menuOpen, setMenuOpen] = createSignal(false);
           const [menuRect, setMenuRect] = createSignal({ top: 0, right: 0 });
@@ -436,8 +438,16 @@ const SharePage: Component = () => {
           // before play is pressed, and reused by togglePlayback.
           type ClipsData = {
             bpm: number;
-            tracks: Array<{ id: string; name: string; volume: number; muted: boolean;
-              clips: Array<{ id: string; startSec: number; durationSec: number; dataUrl?: string; remoteUrl?: string }>;
+            tracks: Array<{ id: string; name: string; type: string; volume: number; muted: boolean; instrumentPreset?: string;
+              clips: Array<{
+                id: string;
+                kind?: "audio" | "video" | "midi";
+                startSec: number;
+                durationSec: number;
+                dataUrl?: string;
+                remoteUrl?: string;
+                midiNotes?: Array<{ midi: number; startSec: number; durationSec: number; velocity: number }>;
+              }>;
             }>;
             durationSec?: number;
             pattern: unknown | null;
@@ -489,6 +499,8 @@ const SharePage: Component = () => {
           let audioCtx: AudioContext | undefined;
           let activeSources: AudioBufferSourceNode[] = [];
           let drumSeq: { start(): Promise<void>; stop(): void; dispose(): void } | undefined;
+          let midiSynth: { noteOn(midi: number, velocity?: number): void; noteOff(midi: number): void; allNotesOff(): void; dispose(): void } | undefined;
+          let midiTimers: ReturnType<typeof setTimeout>[] = [];
           let pausedAt = 0;   // seconds into the timeline where we paused
           let startedAt = 0;  // AudioContext time when play started (minus pausedAt offset)
 
@@ -509,12 +521,35 @@ const SharePage: Component = () => {
             drumSeq = undefined;
           };
 
+          const stopMidi = () => {
+            for (const timer of midiTimers) clearTimeout(timer);
+            midiTimers = [];
+            midiSynth?.allNotesOff();
+          };
+
+          const stopSharedPlayback = (resetPosition = false) => {
+            cancelAnimationFrame(rafId);
+            stopSources();
+            stopDrums();
+            stopMidi();
+            setIsPlaying(false);
+            if (resetPosition) {
+              pausedAt = 0;
+              setPlayheadSec(0);
+              wsRef?.seekTo(0);
+            }
+          };
+
           const tickPlayhead = () => {
             if (!audioCtx || !isPlaying()) return;
             const elapsed = audioCtx.currentTime - startedAt;
             setPlayheadSec(Math.max(0, elapsed));
             const dur = totalSec();
             if (dur > 0) wsRef?.seekTo(Math.min(1, elapsed / dur));
+            if (dur > 0 && elapsed >= dur) {
+              stopSharedPlayback(true);
+              return;
+            }
             rafId = requestAnimationFrame(tickPlayhead);
           };
 
@@ -524,9 +559,7 @@ const SharePage: Component = () => {
               cancelAnimationFrame(rafId);
               if (audioCtx) pausedAt = audioCtx.currentTime - startedAt;
               setPlayheadSec(pausedAt);
-              stopSources();
-              stopDrums();
-              setIsPlaying(false);
+              stopSharedPlayback(false);
               return;
             }
 
@@ -572,9 +605,42 @@ const SharePage: Component = () => {
                 scheduled++;
               }
 
+              const scheduleMidiTrack = async (track: ClipsData["tracks"][number]) => {
+                const midiClips = track.clips.filter((clip) => (clip.kind ?? "audio") === "midi" && clip.midiNotes?.length);
+                if (!midiClips.length) return;
+                const { PolySynth } = await import("~/lib/audio/synth");
+                type SynthPreset = import("~/lib/audio/synth").SynthPreset;
+                const { unlockAudioContext } = await import("~/lib/audio/context");
+                await unlockAudioContext();
+                midiSynth ??= new PolySynth((track.instrumentPreset ?? "piano") as SynthPreset);
+                midiSynth.allNotesOff();
+                for (const clip of midiClips) {
+                  const clipStartSec = clip.startSec ?? 0;
+                  const clipEndSec = clipStartSec + (clip.durationSec ?? 0);
+                  if (pausedAt > clipEndSec) continue;
+                  if (clipEndSec > maxEndSec) maxEndSec = clipEndSec;
+                  for (const note of clip.midiNotes ?? []) {
+                    const noteStartSec = clipStartSec + note.startSec;
+                    const noteEndSec = noteStartSec + note.durationSec;
+                    if (pausedAt > noteEndSec) continue;
+                    const delayMs = Math.max(0, (noteStartSec - pausedAt) * 1000);
+                    const durationMs = Math.max(20, (noteEndSec - Math.max(pausedAt, noteStartSec)) * 1000);
+                    const onTimer = setTimeout(() => {
+                      midiSynth?.noteOn(note.midi, note.velocity * Math.max(0, Math.min(2, track.volume ?? 1)));
+                      const offTimer = setTimeout(() => midiSynth?.noteOff(note.midi), durationMs);
+                      midiTimers.push(offTimer);
+                    }, delayMs);
+                    midiTimers.push(onTimer);
+                    scheduled++;
+                  }
+                }
+              };
+
               for (const track of tracks) {
                 if (track.muted) continue;
+                await scheduleMidiTrack(track);
                 for (const clip of track.clips) {
+                  if ((clip.kind ?? "audio") === "midi") continue;
                   const blobUrl = clip.dataUrl ?? clip.remoteUrl ?? await loadClip(clip.id).catch(() => null);
                   if (!blobUrl) continue;
 
@@ -611,8 +677,7 @@ const SharePage: Component = () => {
                   src.onended = () => {
                     activeSources = activeSources.filter((s) => s !== src);
                     if (activeSources.length === 0 && !drumSeq && isPlaying()) {
-                      setIsPlaying(false);
-                      pausedAt = 0;
+                      stopSharedPlayback(true);
                     }
                   };
                 }
@@ -639,6 +704,8 @@ const SharePage: Component = () => {
             cancelAnimationFrame(rafId);
             stopSources();
             stopDrums();
+            stopMidi();
+            midiSynth?.dispose();
             audioCtx?.close().catch(() => {});
           });
 
@@ -657,6 +724,7 @@ const SharePage: Component = () => {
                 cancelAnimationFrame(rafId);
                 stopSources();
                 stopDrums();
+                stopMidi();
                 setIsPlaying(false);
                 void togglePlayback();
               }
@@ -664,21 +732,22 @@ const SharePage: Component = () => {
           };
 
           return (
+            <>
+            <Show when={lyricsOpen()}>
+              <Portal mount={document.body}>
+                <div class="sp__lyrics-backdrop" style={{ "background-image": `url(${coverImageUrl})` }} />
+                <div class="sp__lyrics-backdrop-overlay" />
+                <button class="sp__lyrics-overlay-close" onClick={() => setLyricsOpen(false)} aria-label="Close lyrics">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </Portal>
+            </Show>
             <div class={`sp__layout ${lyricsOpen() ? "sp__layout--lyrics" : ""}`}>
-              {/* ── Main Lyrics Panel (when open) ── */}
+              {/* ── Lyrics Panel ── */}
               <Show when={lyricsOpen()}>
                 <div
-                  ref={(el) => {
-                    gsap.from(el, {
-                      x: -48,
-                      opacity: 0,
-                      duration: 0.65,
-                      ease: "expo.out",
-                      clearProps: "x,opacity",
-                    });
-                  }}
                   class="sp__lyrics-page"
-                  style={{ 
+                  style={{
                     "--card-accent": extractedColor() || accentColor
                   }}
                 >
@@ -715,6 +784,7 @@ const SharePage: Component = () => {
                               cancelAnimationFrame(rafId);
                               stopSources();
                               stopDrums();
+                              stopMidi();
                               setIsPlaying(false);
                               void togglePlayback();
                             }
@@ -742,14 +812,14 @@ const SharePage: Component = () => {
 
                 {/* Vinyl disc cover */}
                 <div class="sp__cover">
-                  {pfpUrl ? (
+                  {coverImageUrl ? (
                     <div class="sp__disc-wrap sp__disc-wrap--img">
                       <div 
                         class="sp__disc-bgblur" 
-                        style={{ "background-image": `url(${pfpUrl})` }} 
+                        style={{ "background-image": `url(${coverImageUrl})` }}
                       />
                       <div class="sp__disc sp__disc--img-pfp" style={{ "animation-play-state": isPlaying() ? "running" : "paused" }}>
-                        <img src={pfpUrl} alt="Cover" class="sp__disc-img" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                        <img src={coverImageUrl} alt="Cover" class="sp__disc-img" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                         <div class="sp__disc-r sp__disc-r--a" />
                         <div class="sp__disc-r sp__disc-r--b" />
                         <div class="sp__disc-hole" />
@@ -869,12 +939,12 @@ const SharePage: Component = () => {
                   <div class="sp__actions">
                     <div class="sp__actions-left">
                       <button class={`sp__btn sp__btn--like${likeData().liked ? " sp__btn--liked" : ""}`} onClick={toggleLike}>
-                        <svg viewBox="0 0 24 24" fill={likeData().liked ? "currentColor" : "none"} stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                        <span class="sp__btn-label">{likeData().count || ""}</span>
+                        <svg viewBox="0 0 24 24" fill={likeData().liked ? "currentColor" : "none"} stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                        <Show when={likeData().count}><span class="sp__btn-label">{likeData().count}</span></Show>
                       </button>
                       <button class="sp__btn" onClick={() => setCommentsOpen(!commentsOpen())}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                        <span class="sp__btn-label">{comments().length || ""}</span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                        <Show when={comments().length}><span class="sp__btn-label">{comments().length}</span></Show>
                       </button>
                       <button class="sp__btn" onClick={copyLink}>
                         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12">
@@ -978,8 +1048,8 @@ const SharePage: Component = () => {
 
                       <div class="sp__modal-project-row">
                         <div class="sp__modal-thumb">
-                          {pfpUrl
-                            ? <img src={pfpUrl} alt={p().name} />
+                          {coverImageUrl
+                            ? <img src={coverImageUrl} alt={p().name} />
                             : <div class="sp__modal-thumb-placeholder" style={{ background: discColor }}>{initials}</div>
                           }
                         </div>
@@ -1027,8 +1097,8 @@ const SharePage: Component = () => {
                         <div class="sp__modal-version-card">
                         <div class="sp__modal-version-row">
                           <div class="sp__modal-version-thumb">
-                            {pfpUrl
-                              ? <img src={pfpUrl} alt="" />
+                            {coverImageUrl
+                              ? <img src={coverImageUrl} alt="" />
                               : <div class="sp__modal-thumb-placeholder" style={{ background: discColor }}>{initials}</div>
                             }
                             <div class="sp__modal-version-play">
@@ -1182,6 +1252,7 @@ const SharePage: Component = () => {
                 </Portal>
               </Show>
             </div>
+            </>
           );
         }}
       </Show>

@@ -408,11 +408,13 @@ export function useTracks(deps: Deps) {
       if (type === "bass") deps.setSynthPreset("bass");
       else if (type === "guitar") deps.setSynthPreset("guitar");
     }
+    const initPreset: SynthPreset | undefined =
+      type === "instrument" ? "piano" : type === "bass" ? "bass" : type === "guitar" ? "guitar" : undefined;
     const t: UITrack = {
       id: crypto.randomUUID(), name: def.label, type,
       muted: false, solo: false, volume: 0.8, pan: 0,
       color: type === "drum" ? def.color : randomTrackColor(),
-      ...(type === "instrument" ? { instrumentPreset: "piano" as SynthPreset } : {}),
+      instrumentPreset: initPreset,
     };
     deps.setTracks([...deps.tracks(), t]);
     deps.setSelectedTrack(t.id);
@@ -630,7 +632,7 @@ export function useTracks(deps: Deps) {
           id: crypto.randomUUID(), name, type,
           muted: false, solo: false, volume: 0.8, pan: 0,
           color: type === "drum" ? def.color : randomTrackColor(),
-          ...(type === "instrument" ? { instrumentPreset: "piano" as SynthPreset } : {}),
+          instrumentPreset: type === "instrument" ? "piano" : type === "bass" ? "bass" : type === "guitar" ? "guitar" : undefined,
         };
       });
       deps.setTracks(newTracks);

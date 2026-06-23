@@ -91,10 +91,13 @@ export interface ProjectDoc {
   musicalKey?: string;
   // optional pre-rendered stereo mix URL (set after export)
   mixUrl?: string;
+  // optional public cover art data URL
+  coverUrl?: string;
   // track metadata
   genre?: string;
   description?: string;
   explicit?: boolean;
+  unlisted?: boolean;
   // lyrics (plain text or LRC format with [MM:SS.xx] timestamps)
   lyrics?: string;
 }

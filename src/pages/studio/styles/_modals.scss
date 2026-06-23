@@ -727,6 +727,59 @@
   margin: 0;
 }
 
+.bl__pub-share {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.75rem;
+  border-radius: 0.7rem;
+  background: rgba($accent, 0.09);
+  border: 1px solid rgba($accent, 0.22);
+}
+
+.bl__pub-share-label {
+  font-family: $font-display;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: $text-primary;
+}
+
+.bl__pub-share-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.bl__pub-share-input {
+  min-width: 0;
+  flex: 1;
+  height: 2.35rem;
+  padding: 0 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(#fff, 0.08);
+  background: rgba(#000, 0.22);
+  color: $text-secondary;
+  font-family: $font-mono;
+  font-size: 0.72rem;
+  outline: none;
+
+  &:focus { border-color: rgba($accent, 0.65); }
+}
+
+.bl__pub-share-copy {
+  height: 2.35rem;
+  padding: 0 0.9rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: rgba(#fff, 0.12);
+  color: $text-primary;
+  font-family: $font-display;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+
+  &:hover { background: rgba(#fff, 0.17); }
+}
+
 .bl__pub-actions {
   display: flex;
   gap: 0.75rem;
@@ -756,5 +809,12 @@
     &:hover { opacity: 0.9; }
     &:disabled { opacity: 0.5; cursor: not-allowed; }
   }
-}
 
+  &--view {
+    background: rgba($accent, 0.16);
+    color: $accent;
+    text-align: center;
+    text-decoration: none;
+    &:hover { background: rgba($accent, 0.22); }
+  }
+}

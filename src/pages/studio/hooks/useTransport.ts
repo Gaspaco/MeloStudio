@@ -65,7 +65,7 @@ export function useTransport(deps: Deps) {
     deps.tracks().filter(track => isInstrumentTrackType(track.type));
 
   const synthPresetForTrack = (track: UITrack): SynthPreset =>
-    track.type === "bass" ? "bass" : track.type === "guitar" ? "guitar" : track.instrumentPreset ?? "piano";
+    track.instrumentPreset ?? (track.type === "bass" ? "bass" : track.type === "guitar" ? "guitar" : "piano");
 
   const isPlaybackRunActive = (runId: number) =>
     runId === playbackRunId && deps.playing();

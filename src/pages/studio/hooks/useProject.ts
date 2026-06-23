@@ -282,12 +282,16 @@ export function useProject(deps: Deps) {
               restoredClips.push(clip);
             }
           }
-          restoredTracks.push({ ...t, clips: restoredClips });
-          if (t.type === "bass") deps.setSynthPreset("bass");
-          else if (t.type === "guitar") deps.setSynthPreset("guitar");
+          const instrumentPreset: SynthPreset | undefined =
+            t.instrumentPreset ?? (t.type === "instrument" ? "piano" : t.type === "bass" ? "bass" : t.type === "guitar" ? "guitar" : undefined);
+          restoredTracks.push({ ...t, instrumentPreset, clips: restoredClips });
         }
         deps.setTracks(restoredTracks);
         deps.setSelectedTrack(restoredTracks[0]?.id ?? null);
+        const firstInstrument = restoredTracks.find(t => t.type === "instrument" || t.type === "bass" || t.type === "guitar");
+        if (firstInstrument?.instrumentPreset) {
+          deps.setSynthPreset(firstInstrument.instrumentPreset);
+        }
         const hasDrum = restoredTracks.some(t => t.type === "drum");
         const seq = deps.getSeq();
         if (hasDrum && pat?.rows?.length && seq) seq.setPattern(sanitizePattern(pat));

@@ -38,7 +38,11 @@ export async function GET(event: APIEvent) {
           isOwnerPreview: true,
           ownerId: userId,
           mixUrl: doc.mixUrl ?? null,
+          coverUrl: doc.coverUrl ?? null,
           durationSec: getProjectDurationSec(doc, bpm),
+          genre: doc.genre,
+          description: doc.description,
+          explicit: doc.explicit,
           lyrics: doc.lyrics ?? null,
         });
       }

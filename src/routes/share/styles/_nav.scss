@@ -13,13 +13,7 @@
   animation: fadeIn 0.5s ease both;
 
   &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: rgba($bg-primary, 0.75);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    content: none;
   }
 
   > * { position: relative; }
@@ -128,4 +122,3 @@
     color: $text-secondary;
   }
 }
-
