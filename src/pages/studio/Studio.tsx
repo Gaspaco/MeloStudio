@@ -42,6 +42,7 @@ const Studio: Component = () => {
   let seq: StepSequencer | null = null;
   let timelineElRef: HTMLDivElement | undefined;
   let titleInputEl: HTMLInputElement | undefined;
+  let studioImportInputEl: HTMLInputElement | undefined;
 
   const [name,               setName]               = createSignal("New Project");
   const [tracks,             setTracks]             = createSignal<UITrack[]>([]);
@@ -198,6 +199,16 @@ const Studio: Component = () => {
     if (!clipId) return null;
     for (const track of tracks()) {
       if ((track.clips ?? []).some((clip) => clip.id === clipId)) return track;
+    }
+    return null;
+  };
+
+  const selectedClip = () => {
+    const clipId = selectedClipId();
+    if (!clipId) return null;
+    for (const track of tracks()) {
+      const clip = (track.clips ?? []).find((item) => item.id === clipId);
+      if (clip) return clip;
     }
     return null;
   };
@@ -453,6 +464,36 @@ const Studio: Component = () => {
     navigate(path);
   };
 
+  const pickImportFiles = () => studioImportInputEl?.click();
+
+  const setCycleToSelectedClip = () => {
+    const clip = selectedClip();
+    if (!clip) {
+      setError("Select a region before setting the cycle area.");
+      setTimeout(() => setError(""), 2400);
+      return;
+    }
+    const startPx = clip.leftPx ?? clip.barStart * STUDIO_BAR_PX;
+    const widthPx = clip.widthPx ?? clip.bars * STUDIO_BAR_PX;
+    setCycleStartPx(startPx);
+    setCycleEndPx(Math.max(startPx + STUDIO_BAR_PX / 16, startPx + widthPx));
+    setLoopOn(true);
+  };
+
+  const showShortcutHelp = () => {
+    window.alert([
+      "MeloStudio shortcuts",
+      "",
+      "Space: Play / pause",
+      "R: Record selected track",
+      "Cmd/Ctrl+S: Save",
+      "Cmd/Ctrl+Z: Undo",
+      "Cmd/Ctrl+Shift+Z: Redo",
+      "Cmd/Ctrl+E: Split selected region at playhead",
+      ".: Stop from menu",
+    ].join("\n"));
+  };
+
   const buildNavCats = (): NavCategory[] => {
     const close = () => setNavOpen(false);
     const run = (fn: () => void) => () => { fn(); close(); };
@@ -461,47 +502,103 @@ const Studio: Component = () => {
         id: "project", num: "01", label: "Project",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V4l6-1.2v7"/><circle cx="5" cy="11.5" r="1.4"/><circle cx="11" cy="9.8" r="1.4"/></svg>,
         items: [
-          { label: "New Project",    kbd: "⌘N", action: run(() => { void saveAndNavigate("/dashboard?new=1"); }) },
-          { label: "Save",           kbd: "⌘S", action: run(() => { void handleSave(); }), disabled: () => saveState() === "saving" || !canSaveProject() },
-          { label: "Rename\u2026",   kbd: "",   action: run(() => startEditingTitle()) },
-          { label: "Open Dashboard", kbd: "⌘D", action: run(() => { void saveAndNavigate("/dashboard"); }) },
+          { label: "Save project", desc: () => saveState() === "saving" ? "Saving changes now" : "Store the current arrangement", kbd: "⌘S", action: run(() => { void handleSave(); }), disabled: () => saveState() === "saving" || !canSaveProject(), tone: "primary" },
+          { label: "Rename project", desc: "Edit the title in the top bar", kbd: "", action: run(() => startEditingTitle()) },
+          { label: "Publish / share", desc: published() ? "Update the public project page" : "Create a shareable version", kbd: "", action: run(() => setShowPublishModal(true)), disabled: () => !canSaveProject() },
+          { label: "Open Dashboard", desc: "Go back to your projects", kbd: "⌘D", action: run(() => { void saveAndNavigate("/dashboard"); }) },
+          { label: "New Project", desc: "Save and start another idea", kbd: "⌘N", action: run(() => { void saveAndNavigate("/dashboard?new=1"); }) },
         ],
       },
       {
         id: "edit", num: "02", label: "Edit",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9-3 1 1-3 9-9z"/><path d="M9 4l3 3"/></svg>,
         items: [
-          { label: "Undo",          kbd: "⌘Z",  action: run(() => undo()),  disabled: () => !canUndo() },
-          { label: "Redo",          kbd: "⌘⇧Z", action: run(() => redo()),  disabled: () => !canRedo() },
-          { label: "Delete Track",  kbd: "⌫",   action: run(() => { const id = selectedTrack(); if (id) trk.deleteTrack(id); }), disabled: () => !selectedTrack() },
-          { label: "Clear Pattern", kbd: "",    action: run(() => drum.clearPattern()) },
+          { label: "Undo", desc: "Step back through arrangement edits", kbd: "⌘Z", action: run(() => undo()), disabled: () => !canUndo() },
+          { label: "Redo", desc: "Restore the next edit", kbd: "⌘⇧Z", action: run(() => redo()), disabled: () => !canRedo() },
+          { label: "Split selected region", desc: "Cut exactly at the playhead", kbd: "⌘E", action: run(() => {
+              const track = selectedClipTrack();
+              const clip = selectedClipId();
+              if (track && clip) trk.splitClipAtPlayhead(track.id, clip, playheadPx());
+            }), disabled: () => !selectedClipTrack() || !selectedClipId() },
+          { label: "Duplicate selected region", desc: "Copy it right after itself", kbd: "⌘D", action: run(() => {
+              const track = selectedClipTrack();
+              const clip = selectedClipId();
+              if (track && clip) trk.duplicateClip(track.id, clip);
+            }), disabled: () => !selectedClipTrack() || !selectedClipId() },
+          { label: "Delete selected region", desc: "Remove the highlighted clip", kbd: "⌫", action: run(() => {
+              const track = selectedClipTrack();
+              const clip = selectedClipId();
+              if (track && clip) {
+                trk.deleteClip(track.id, clip);
+                setSelectedClipId(null);
+              }
+            }), disabled: () => !selectedClipTrack() || !selectedClipId(), tone: "danger" },
+          { label: "Delete selected track", desc: "Remove the whole lane", kbd: "", action: run(() => { const id = selectedTrack(); if (id) trk.deleteTrack(id); }), disabled: () => !selectedTrack(), tone: "danger" },
+          { label: "Clear drum pattern", desc: "Reset the step sequencer", kbd: "", action: run(() => drum.clearPattern()), disabled: () => !tracks().some(t => t.type === "drum") },
         ],
       },
       {
         id: "insert", num: "03", label: "Insert",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v10M3 8h10"/></svg>,
         items: [
-          { label: "Add Track\u2026",    kbd: "T", action: run(() => setShowNewTrack(true)) },
-          { label: "Import Audio\u2026", kbd: "",  disabled: () => true },
-          { label: "Insert Pattern",     kbd: "",  disabled: () => true },
+          { label: "Add track", desc: "Choose audio, MIDI, drum, bass, or guitar", kbd: "T", action: run(() => setShowNewTrack(true)), tone: "primary" },
+          { label: "Import audio / MIDI", desc: "Drop in wav, mp3, m4a, ogg, mp4, or MIDI", kbd: "", action: run(pickImportFiles) },
+          { label: "Add Voice / Audio track", desc: "Record vocals or imported audio", kbd: "", action: run(() => trk.addTrack("voice", false)) },
+          { label: "Add Instrument track", desc: "Record MIDI notes with keys", kbd: "", action: run(() => trk.addTrack("instrument", false)) },
+          { label: "Add Drum Machine", desc: "Open the step sequencer", kbd: "", action: run(() => trk.addTrack("drum", false)) },
+          { label: "Add Bass Synth", desc: "Create a bass MIDI lane", kbd: "", action: run(() => trk.addTrack("bass", false)) },
+          { label: "Create MIDI region", desc: "Insert a blank region at the playhead", kbd: "", action: run(() => {
+              const track = tracks().find(t => t.id === selectedTrack());
+              if (!track) return;
+              trk.createRegion(track.id, Math.max(0, Math.floor(playheadPx() / STUDIO_BAR_PX)));
+            }), disabled: () => {
+              const track = tracks().find(t => t.id === selectedTrack());
+              return !track || !isInstrumentTrackType(track.type);
+            } },
         ],
       },
       {
         id: "view", num: "04", label: "View",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 8s2.5-5 7-5 7 5 7 5-2.5 5-7 5-7-5-7-5z"/><circle cx="8" cy="8" r="2.2"/></svg>,
         items: [
-          { label: "Toggle Drum Panel", kbd: "", action: run(() => setDrumPanelOpen(!drumPanelOpen())) },
-          { label: "Toggle Mixer",      kbd: "", disabled: () => true },
-          { label: "Fullscreen",        kbd: "F", action: run(() => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.(); }) },
+          { label: "Show instrument keys", desc: "Open the playable keyboard/synth panel", kbd: "", action: run(() => setActivePanel("keys")), disabled: () => {
+              const track = tracks().find(t => t.id === selectedTrack());
+              return !track || !isInstrumentTrackType(track.type);
+            } },
+          { label: () => drumPanelOpen() ? "Hide drum machine" : "Show drum machine", desc: "Open or collapse the beat sequencer", kbd: "", action: run(() => {
+              setDrumPanelOpen(!drumPanelOpen());
+              setActivePanel(drumPanelOpen() ? "drum" : null);
+            }), disabled: () => !tracks().some(t => t.type === "drum") },
+          { label: "Show voice editor", desc: "Edit the selected audio region", kbd: "", action: run(() => setActivePanel("voice")), disabled: () => !tracks().some(t => t.type === "voice") },
+          { label: () => enhance() ? "Turn master enhance off" : "Turn master enhance on", desc: "Toggle the master bus polish", kbd: "", action: run(() => {
+              const next = !enhance();
+              setEnhance(next);
+              getMasterBus().setEnhanced(next);
+            }) },
+          { label: "Fullscreen studio", desc: "Use the whole display", kbd: "F", action: run(() => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen?.(); }) },
         ],
       },
       {
         id: "transport", num: "05", label: "Transport",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l7 5-7 5z"/></svg>,
         items: [
-          { label: () => playing() ? "Pause" : "Play", kbd: "Space", action: run(() => { void transport.togglePlay(); }) },
-          { label: "Stop",          kbd: ".", action: run(transport.stopAll) },
-          { label: "Set BPM\u2026", kbd: "", action: run(() => {
+          { label: () => playing() ? "Pause" : "Play", desc: "Start or pause playback", kbd: "Space", action: run(() => { void togglePlayback(); }), tone: "primary" },
+          { label: "Record selected track", desc: "Audio on voice tracks, MIDI on instruments", kbd: "R", action: run(() => { void toggleRecordOnSelectedTrack(); }), disabled: () => {
+              const track = tracks().find(t => t.id === selectedTrack());
+              return !track || (!isAudioTrackType(track.type) && !isInstrumentTrackType(track.type));
+            } },
+          { label: "Stop and return", desc: "Stop transport at the beginning", kbd: ".", action: run(() => {
+              if (trk.recordingTrackId()) {
+                if (trk.recordingMode() === "midi") trk.stopMidiRecording();
+                else trk.stopRecording();
+              }
+              transport.stopAll();
+            }) },
+          { label: () => metronomeOn() ? "Metronome off" : "Metronome on", desc: "Hear a click while playing", kbd: "", action: run(() => { void toggleMetronome(); }) },
+          { label: () => loopOn() ? "Cycle area off" : "Cycle area on", desc: "Loop between the red locators", kbd: "", action: run(() => setLoopOn(v => !v)) },
+          { label: "Cycle selected region", desc: "Set red locators to the selected clip", kbd: "", action: run(setCycleToSelectedClip), disabled: () => !selectedClip() },
+          { label: "Set playhead to start", desc: "Jump back to bar 1", kbd: "", action: run(() => setPlayheadPx(0)) },
+          { label: "Set BPM", desc: "Tempo range 40-240", kbd: "", action: run(() => {
               const next = window.prompt("Set BPM (40–240)", String(bpm()));
               const n = Number(next);
               if (Number.isFinite(n) && n >= 40 && n <= 240) transport.updateBpm(Math.round(n));
@@ -513,8 +610,9 @@ const Studio: Component = () => {
         id: "help", num: "06", label: "Help",
         ico: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6.2"/><path d="M6 6.5a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6 1V10"/><circle cx="8" cy="12" r="0.6" fill="currentColor" stroke="none"/></svg>,
         items: [
-          { label: "Keyboard Shortcuts", kbd: "?", disabled: () => true },
-          { label: "About MeloStudio",   kbd: "",  disabled: () => true },
+          { label: "Keyboard shortcuts", desc: "Show the main studio commands", kbd: "?", action: run(showShortcutHelp) },
+          { label: "BandLab-style workflow", desc: "Import, record, loop, publish, repeat", kbd: "", action: run(() => window.alert("Useful flow: import or add a track, record with R, loop with Cycle, edit with split/duplicate, then publish or share from Project.")) },
+          { label: "About MeloStudio", desc: "Online music creation studio", kbd: "", action: run(() => window.alert("MeloStudio is a browser-based studio for audio, MIDI, drums, synths, writing, publishing, and sharing.")) },
         ],
       },
     ];
@@ -522,6 +620,18 @@ const Studio: Component = () => {
 
   return (
     <div class="bl">
+      <input
+        ref={(el) => (studioImportInputEl = el)}
+        type="file"
+        accept="audio/*,video/*,.mid,.midi"
+        multiple
+        style={{ display: "none" }}
+        onChange={async (e) => {
+          const files = Array.from(e.currentTarget.files ?? []);
+          e.currentTarget.value = "";
+          if (files.length) await trk.importFiles(files);
+        }}
+      />
       <TopBar
         name={name} titleEditing={titleEditing} saveState={saveState} lastSaved={lastSaved}
         bpm={bpm} meter={timeSig} musicalKey={musicalKey}
