@@ -11,15 +11,15 @@ export default createHandler(() => (
           <meta name="theme-color" content="#030303" />
           <style>{`
             html, body, #app { min-height: 100%; }
-            body { margin: 0; background: #030303; color: #f4f1ea; }
+            body { margin: 0; background: #07070a; color: #f4f1ea; }
             html[data-app-booting] #app { visibility: hidden; opacity: 0; }
             html:not([data-app-booting]) #boot-veil,
             html[data-skip-boot-veil] #boot-veil { display: none !important; }
             #boot-veil {
               position: fixed;
-              inset: -1px 0 0 0;
+              inset: 0;
               z-index: 2147483647;
-              background: #030303;
+              background: #07070a;
               transform: translateZ(0);
               backface-visibility: hidden;
               transition: opacity 220ms ease, visibility 0s linear 220ms;
@@ -28,7 +28,7 @@ export default createHandler(() => (
             #boot-veil .loader {
               position: fixed;
               inset: 0;
-              background: #030303;
+              background: #07070a;
               display: flex;
               flex-direction: column;
               align-items: center;
