@@ -297,10 +297,14 @@
 .bl__track-list {
   flex: 1;
   overflow-y: auto;
+  overflow-anchor: none;
+  scrollbar-width: none;
   display: flex;
   flex-direction: column;
   gap: 0;
   padding: 0;
+
+  &::-webkit-scrollbar { display: none; }
 }
 
 .bl__track {
@@ -459,6 +463,11 @@
     color: $accent-green;
     border-color: rgba($accent-green, 0.5);
     box-shadow: 0 0 6px rgba($accent-green, 0.2);
+  }
+  &.is-on-record {
+    background: rgba(#ff5656, 0.16);
+    color: #ff7777;
+    border-color: rgba(#ff5656, 0.48);
   }
   &--rec {
     color: #ff4444;

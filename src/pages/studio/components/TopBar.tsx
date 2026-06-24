@@ -46,6 +46,7 @@ type Props = {
   elapsed: Accessor<number>;
   masterVol: Accessor<number>;
   horizontalZoom: Accessor<number>;
+  verticalZoom: Accessor<number>;
   titleInputRef: (el: HTMLInputElement) => void;
   onNavToggle: () => void;
   onDashboard: () => void;
@@ -75,6 +76,7 @@ type Props = {
   onUpdateKey: (v: string) => void;
   onSetMasterVol: (v: number) => void;
   onHorizontalZoom: (v: number) => void;
+  onVerticalZoom: (v: number) => void;
   onElapsedReset: () => void;
   enhance: Accessor<boolean>;
   onToggleEnhance: () => void;
@@ -344,17 +346,35 @@ const TopBar: Component<Props> = (props) => {
           <span class={`bl__enhance-led${props.enhance() ? " is-on" : ""}`} />
         </button>
         <span class="bl__field-sep" />
-        <div class="bl__zoom-slider" title={`Timeline zoom: ${Math.round(props.horizontalZoom())}px/bar`}>
-          <svg class="bl__zoom-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/><path d="M7 5v4M5 7h4"/>
-          </svg>
-          <input
-            class="bl__zoom-range"
-            type="range"
-            min="80" max="480" step="10"
-            value={props.horizontalZoom()}
-            onInput={(e) => props.onHorizontalZoom(parseInt(e.currentTarget.value, 10))}
-          />
+        <div class="bl__zoom-slider" role="group" aria-label="Timeline zoom">
+          <label class="bl__zoom-control" title={`Horizontal zoom: ${Math.round(props.horizontalZoom())}px/bar`}>
+            <svg class="bl__zoom-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M2 8h12M2 8l2-2M2 8l2 2M14 8l-2-2M14 8l-2 2"/>
+            </svg>
+            <input
+              class="bl__zoom-range"
+              type="range"
+              min="80" max="480" step="10"
+              value={props.horizontalZoom()}
+              aria-label="Horizontal timeline zoom"
+              onInput={(e) => props.onHorizontalZoom(parseInt(e.currentTarget.value, 10))}
+            />
+          </label>
+          <span class="bl__zoom-separator" aria-hidden="true" />
+          <label class="bl__zoom-control" title={`Track height: ${Math.round(props.verticalZoom())}px`}>
+            <svg class="bl__zoom-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 3.5h10M3 8h10M3 12.5h10"/>
+              <path d="M8 2v12M8 2L6.5 3.5M8 2l1.5 1.5M8 14l-1.5-1.5M8 14l1.5-1.5"/>
+            </svg>
+            <input
+              class="bl__zoom-range"
+              type="range"
+              min="56" max="160" step="4"
+              value={props.verticalZoom()}
+              aria-label="Vertical timeline zoom"
+              onInput={(e) => props.onVerticalZoom(parseInt(e.currentTarget.value, 10))}
+            />
+          </label>
         </div>
         <span class="bl__field-sep" />
         <div class={`bl__master-vol${props.enhance() ? " bl__master-vol--enhanced" : ""}`} title="Master volume" style={{ "--vol": `${Math.round(props.masterVol() * 100)}%` }}>

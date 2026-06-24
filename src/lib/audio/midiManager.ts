@@ -5,7 +5,8 @@ import type { PolySynth } from "./synth";
 class MidiHardwareManager {
   private midiAccess: MIDIAccess | null = null;
   private activeSynth: PolySynth | null = null;
-  private noteListener: ((event: { type: "on" | "off"; midi: number; velocity: number }) => void) | null = null;
+  private enabled = true;
+  private noteListener: ((event: { type: "on" | "off"; midi: number; velocity: number; receivedAt: number }) => void) | null = null;
 
   /**
    * Initializes the browser Web MIDI API subsystem and subscribes to hardware inputs.
@@ -37,10 +38,17 @@ class MidiHardwareManager {
    * Call this whenever the user switches active tracks in the DAW timeline.
    */
   bindTargetSynth(synth: PolySynth | null): void {
+    if (this.activeSynth && this.activeSynth !== synth) this.activeSynth.allNotesOff();
     this.activeSynth = synth;
   }
 
-  bindNoteListener(listener: ((event: { type: "on" | "off"; midi: number; velocity: number }) => void) | null): void {
+  setEnabled(enabled: boolean): void {
+    if (this.enabled === enabled) return;
+    this.enabled = enabled;
+    if (!enabled) this.activeSynth?.allNotesOff();
+  }
+
+  bindNoteListener(listener: ((event: { type: "on" | "off"; midi: number; velocity: number; receivedAt: number }) => void) | null): void {
     this.noteListener = listener;
   }
 
@@ -76,11 +84,12 @@ class MidiHardwareManager {
    * Parses standard 3-byte hardware MIDI message packets down to frequencies.
    */
   private handleMidiMessage(event: MIDIMessageEvent): void {
-    if (!event.data || event.data.length < 3 || !this.activeSynth) return;
+    if (!this.enabled || !event.data || event.data.length < 3 || !this.activeSynth) return;
 
     const [status, data1, data2] = event.data;
     if (status === undefined || data1 === undefined || data2 === undefined) return;
     const command = status & 0xf0; // Extract command byte type
+    const receivedAt = event.timeStamp || performance.now();
     // const channel = status & 0x0f; // Extract MIDI channel (0-15) if needed later
 
     // Ensure the browser AudioContext has been physically unlocked by a gesture
@@ -94,17 +103,17 @@ class MidiHardwareManager {
         const velocity = data2 / 127;
         if (velocity > 0) {
           this.activeSynth.noteOn(data1, velocity);
-          this.noteListener?.({ type: "on", midi: data1, velocity });
+          this.noteListener?.({ type: "on", midi: data1, velocity, receivedAt });
         } else {
           // Note On with velocity 0 is the MIDI spec's way of sending Note Off
           this.activeSynth.noteOff(data1);
-          this.noteListener?.({ type: "off", midi: data1, velocity: 0 });
+          this.noteListener?.({ type: "off", midi: data1, velocity: 0, receivedAt });
         }
         break;
       }
       case 0x80: { // Note Off
         this.activeSynth.noteOff(data1);
-        this.noteListener?.({ type: "off", midi: data1, velocity: 0 });
+        this.noteListener?.({ type: "off", midi: data1, velocity: 0, receivedAt });
         break;
       }
       case 0xe0: { // Pitch Bend — 14-bit value split across data1 (LSB) and data2 (MSB)

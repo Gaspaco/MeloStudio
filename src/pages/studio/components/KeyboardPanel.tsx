@@ -1,6 +1,7 @@
 import { type Component, For, Show } from "solid-js";
 import type { Accessor } from "solid-js";
 import type { SynthPreset } from "~/lib/audio/synth";
+import { connectedMidiDevices } from "~/lib/state/transportStore";
 import { getInstrumentCategoryForPreset, INSTRUMENT_CATEGORIES } from "../data/instrumentPresets";
 import type { UITrack } from "../types";
 
@@ -17,6 +18,7 @@ interface KeyboardPanelProps {
   synthSustain:    Accessor<number>;
   synthRelease:    Accessor<number>;
   synthFilterFreq: Accessor<number>;
+  midiInputEnabled: Accessor<boolean>;
   adsrPath:        Accessor<AdsrPath>;
   onPressKey:       (midi: number) => void;
   onReleaseKey:     (midi: number) => void;
@@ -25,6 +27,7 @@ interface KeyboardPanelProps {
   onUpdateFilter:   (freq: number) => void;
   onSetOctave:      (oct: number) => void;
   onSetVolume:      (v: number) => void;
+  onToggleMidiInput: () => void;
   onCollapse:       () => void;
 }
 
@@ -67,7 +70,7 @@ const KeyboardPanel: Component<KeyboardPanelProps> = (props) => {
   // Helper to determine the descriptive slider/label behavior for non-subtractive synthesis
   const hasFilterControls = () => {
     const p = props.synthPreset();
-    return p === "lead" || p === "pad" || p === "fm-bell" || p === "physical-pluck";
+    return p !== "piano" && p !== "bright-piano" && p !== "bass" && p !== "guitar";
   };
 
   const filterParamLabel = () => {
@@ -93,7 +96,7 @@ const KeyboardPanel: Component<KeyboardPanelProps> = (props) => {
 
   const hasEnvelopeControls = () => {
     const p = props.synthPreset();
-    return p === "lead" || p === "pad" || p === "fm-bell";
+    return p !== "piano" && p !== "bright-piano" && p !== "bass" && p !== "guitar";
   };
 
   const renderFretboard = () => {
@@ -250,6 +253,19 @@ const KeyboardPanel: Component<KeyboardPanelProps> = (props) => {
         </div>
 
         <div class="bl__dp-actions">
+          <Show when={connectedMidiDevices().length > 0}>
+            <button
+              class={`bl__midi-input-toggle${props.midiInputEnabled() ? " is-on" : ""}`}
+              type="button"
+              role="switch"
+              aria-checked={props.midiInputEnabled()}
+              onClick={props.onToggleMidiInput}
+              title={`${connectedMidiDevices()[0]?.name ?? "MIDI controller"}: ${props.midiInputEnabled() ? "enabled" : "disabled"}`}
+            >
+              <span class="bl__midi-input-status" aria-hidden="true" />
+              <span>MIDI in</span>
+            </button>
+          </Show>
           <div class="bl__dp-ctrl-group">
             <span class="bl__dp-ctrl-label">
               Vol <span class="bl__dp-ctrl-val">{Math.round((selectedTrackData()?.volume ?? 0.8) * 100)}%</span>

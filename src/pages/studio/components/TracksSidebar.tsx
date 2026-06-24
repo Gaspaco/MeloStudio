@@ -1,4 +1,4 @@
-import { type Component, Index, Show, For, onMount, onCleanup } from "solid-js";
+import { type Component, Index, Show, For, createEffect, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { KeyboardMusic, Drum, AudioWaveform, MicVocal, Disc2, Guitar } from "lucide-solid";
 import { type TrackType, type UITrack, TRACK_DEFS } from "../types";
@@ -48,16 +48,29 @@ type Props = {
   onSelectTrack: Setter<string | null>;
   onPatchTrack: (id: string, patch: Partial<UITrack>) => void;
   onDeleteTrack: (id: string) => void;
+  onToggleRecordArm: (id: string) => void;
   onAddTrack: (type: TrackType, openModal?: boolean) => void;
   onSetShowAddMenu: (v: boolean | ((prev: boolean) => boolean)) => void;
   onShowNewTrack: () => void;
   recordingTrackId: Accessor<string | null>;
   onStartRecording: (trackId: string) => void;
   onStopRecording: () => void;
+  verticalScrollTop: Accessor<number>;
+  onVerticalScroll: (scrollTop: number) => void;
 };
 
-const TracksSidebar: Component<Props> = (props) => (
-  <aside class="bl__tracks-side">
+const TracksSidebar: Component<Props> = (props) => {
+  let trackListEl: HTMLDivElement | undefined;
+
+  createEffect(() => {
+    const scrollTop = props.verticalScrollTop();
+    if (trackListEl && Math.abs(trackListEl.scrollTop - scrollTop) > 0.5) {
+      trackListEl.scrollTop = scrollTop;
+    }
+  });
+
+  return (
+    <aside class="bl__tracks-side">
     <div class="bl__add-row">
       <div class="bl__add-wrap">
         <button class="bl__add-track" onClick={() => props.onSetShowAddMenu(v => !v)}>
@@ -122,7 +135,11 @@ const TracksSidebar: Component<Props> = (props) => (
       <svg class="bl__automix-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
     </button>
 
-    <div class="bl__track-list">
+    <div
+      class="bl__track-list"
+      ref={trackListEl}
+      onScroll={(event) => props.onVerticalScroll(event.currentTarget.scrollTop)}
+    >
       <Index each={props.tracks()}>
         {(t) => (
           <div
@@ -154,6 +171,16 @@ const TracksSidebar: Component<Props> = (props) => (
                   onClick={() => props.onPatchTrack(t().id, { muted: !t().muted })}>M</button>
                 <button class={`bl__chip-btn ${t().solo ? "is-on-solo" : ""}`} title="Solo"
                   onClick={() => props.onPatchTrack(t().id, { solo: !t().solo })}>S</button>
+                <Show when={t().type === "instrument" || t().type === "bass" || t().type === "guitar"}>
+                  <button
+                    class={`bl__chip-btn${t().recordArmed ? " is-on-record" : ""}`}
+                    title={t().recordArmed ? "Disarm MIDI input" : "Arm for MIDI input"}
+                    aria-pressed={Boolean(t().recordArmed)}
+                    onClick={() => props.onToggleRecordArm(t().id)}
+                  >
+                    R
+                  </button>
+                </Show>
                 <Show when={t().type !== "voice"}>
                   <input class="bl__slider" type="range" min="0" max="1" step="0.01"
                     value={t().volume}
@@ -171,7 +198,8 @@ const TracksSidebar: Component<Props> = (props) => (
         <div class="bl__sidebar-hint" />
       </Show>
     </div>
-  </aside>
-);
+    </aside>
+  );
+};
 
 export default TracksSidebar;
