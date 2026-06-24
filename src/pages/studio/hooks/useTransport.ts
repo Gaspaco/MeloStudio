@@ -1,16 +1,10 @@
-// The `useTransport` hook orchestrates playback across all audio sub-systems.
-// In a DAW, the "Transport" refers to the global play/pause/record controls and timeline playhead.
-// This hook bridges the Web Audio API, Tone.js (for drums), the PolySynth (for MIDI), 
-// and raw AudioBuffers (for audio clips). When the user clicks play, it schedules 
-// all upcoming clips to play at precisely the right moment on the audio context thread,
-// and starts a visual `requestAnimationFrame` loop to animate the playhead smoothly.
 import { createEffect, onCleanup, untrack } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { apiFetch } from "~/lib/api";
 import { unlockAudioContext, getAudioContext } from "~/lib/audio/context";
 import { getMasterBus } from "~/lib/audio/masterBus";
 import type { StepPattern, StepSequencer } from "~/lib/audio/stepSeq";
-import type { PolySynth, SynthPreset } from "~/lib/audio/synth";
+import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
 import { hasPatternContent, isAudioTrackType, isInstrumentTrackType, type UITrack } from "../types";
 import { STUDIO_BAR_PX } from "../lib/regionMath";
 
@@ -20,6 +14,8 @@ type Deps = {
   ensureSynth?: (preset: SynthPreset) => void;
   tracks: Accessor<UITrack[]>;
   bpm: Accessor<number>; setBpm: Setter<number>;
+  timeSignature: Accessor<[number, number]>;
+  metronomeEnabled: Accessor<boolean>;
   playing: Accessor<boolean>; setPlaying: Setter<boolean>;
   elapsed: Accessor<number>; setElapsed: Setter<number>;
   masterVol: Accessor<number>; setMasterVol: Setter<number>;
@@ -30,45 +26,56 @@ type Deps = {
   cycleEndPx: Accessor<number>;
 };
 
+type PlaybackSynth = { preset: SynthPreset; synth: PolySynth };
+
 export function useTransport(deps: Deps) {
   let audioSources: AudioBufferSourceNode[] = [];
+  let metronomeNodes: AudioScheduledSourceNode[] = [];
   let playbackRaf: number | null = null;
   let playbackStartCtxTime = 0;
   let playbackStartTimelineSecs = 0;
-  const audioBufferCache = new Map<string, AudioBuffer>();
-  // URLs that returned a non-OK response — skip them for the rest of the session
-  // so a missing remote clip doesn't cause repeated 404s on every play press.
-  const failedSrcCache = new Set<string>();
+  let cycleBoundaryTimer: ReturnType<typeof setTimeout> | null = null;
+  let countInTimer: ReturnType<typeof setTimeout> | null = null;
+  let playbackRunId = 0;
+  let countInRunId = 0;
   let masterGainNode: GainNode | null = null;
   const trackGainNodes = new Map<string, GainNode>();
-  let elapsedTimer: ReturnType<typeof setInterval> | null = null;
-  let midiTimers: ReturnType<typeof setTimeout>[] = [];
-  let cycleBoundaryTimer: ReturnType<typeof setTimeout> | null = null;
-  let startTime = 0;
-  let playbackRunId = 0;
+  const audioBufferCache = new Map<string, AudioBuffer>();
+  const audioBufferPromises = new Map<string, Promise<AudioBuffer | null>>();
+  const failedSrcCache = new Set<string>();
+  const playbackSynths = new Map<string, PlaybackSynth>();
 
-  // One bar = 4 beats; one beat = 60 / bpm seconds.
-  const barsToSecs = (bars: number) => bars * 4 * (60 / deps.bpm());
-  const pxToSecs   = (px: number)   => (px / STUDIO_BAR_PX) * 4 * (60 / deps.bpm());
-  const secsToPx   = (secs: number) => secs * (deps.bpm() / 60) * (STUDIO_BAR_PX / 4);
-  // `optional=1` tells the server to return 204 instead of 404 for a missing clip, so the scheduler can silently skip it
+  const quarterNoteSecs = () => 60 / deps.bpm();
+  const beatSecs = () => quarterNoteSecs() * (4 / deps.timeSignature()[1]);
+  const barSecs = () => deps.timeSignature()[0] * beatSecs();
+  const barsToSecs = (bars: number) => bars * barSecs();
+  const pxToSecs = (px: number) => barsToSecs(px / STUDIO_BAR_PX);
+  const secsToPx = (secs: number) => (secs / barSecs()) * STUDIO_BAR_PX;
   const optionalRemoteUrl = (src: string) =>
     src.includes("optional=") ? src : `${src}${src.includes("?") ? "&" : "?"}optional=1`;
 
+  const anySoloed = () => deps.tracks().some(track => track.solo);
+  const isTrackAudible = (track: UITrack) => !track.muted && (!anySoloed() || track.solo);
+  const audioTracks = () => deps.tracks().filter(track => isAudioTrackType(track.type));
+  const instrumentTracks = () => deps.tracks().filter(track => isInstrumentTrackType(track.type));
   const shouldRunDrumSequencer = () =>
-    deps.tracks().some(track => track.type === "drum" && !track.muted) && hasPatternContent(deps.pattern());
-
-  const audioTracks = () =>
-    deps.tracks().filter(track => isAudioTrackType(track.type));
-
-  const instrumentTracks = () =>
-    deps.tracks().filter(track => isInstrumentTrackType(track.type));
+    deps.tracks().some(track => track.type === "drum" && isTrackAudible(track)) &&
+    hasPatternContent(deps.pattern());
 
   const synthPresetForTrack = (track: UITrack): SynthPreset =>
     track.instrumentPreset ?? (track.type === "bass" ? "bass" : track.type === "guitar" ? "guitar" : "piano");
 
-  const isPlaybackRunActive = (runId: number) =>
-    runId === playbackRunId && deps.playing();
+  const playbackSynthForTrack = (track: UITrack) => {
+    const preset = synthPresetForTrack(track);
+    const existing = playbackSynths.get(track.id);
+    if (existing?.preset === preset) return existing.synth;
+    existing?.synth.dispose();
+    const synth = new PolySynth(preset);
+    playbackSynths.set(track.id, { preset, synth });
+    return synth;
+  };
+
+  const isPlaybackRunActive = (runId: number) => runId === playbackRunId && deps.playing();
 
   const cycleBounds = () => {
     const rawStartPx = Math.max(0, Math.min(deps.cycleStartPx(), deps.cycleEndPx()));
@@ -90,254 +97,377 @@ export function useTransport(deps: Deps) {
     return px >= bounds.startPx && px < bounds.endPx ? px : bounds.startPx;
   };
 
-  const stopAudioPlayback = () => {
-    playbackRunId++;
-    for (const src of audioSources) { try { src.stop(); } catch { /* already ended */ } }
+  const stopScheduledNodes = () => {
+    for (const node of [...audioSources, ...metronomeNodes]) {
+      try { node.stop(); } catch { /* already ended */ }
+      try { node.disconnect(); } catch { /* already disconnected */ }
+    }
     audioSources = [];
-    if (playbackRaf) { cancelAnimationFrame(playbackRaf); playbackRaf = null; }
-    if (cycleBoundaryTimer) { clearTimeout(cycleBoundaryTimer); cycleBoundaryTimer = null; }
-    for (const timer of midiTimers) clearTimeout(timer);
-    midiTimers = [];
-    deps.getSynth()?.allNotesOff();
-    trackGainNodes.forEach((n) => { try { n.disconnect(); } catch { /* */ } });
-    trackGainNodes.clear();
-    if (masterGainNode) { try { masterGainNode.disconnect(); } catch { /* */ } masterGainNode = null; }
+    metronomeNodes = [];
   };
 
-  const scheduleMidiPlayback = (timelineStartSecs: number, segmentEndSecs: number, runId: number) => {
-    let synth = deps.getSynth();
-    if (!synth) {
-      const firstPlayableMidiTrack = instrumentTracks().find(track =>
-        !track.muted && (track.clips ?? []).some(clip =>
-          clip.kind === "midi" &&
-          Boolean(clip.midiNotes?.length) &&
-          barsToSecs(clip.barStart + clip.bars) > timelineStartSecs &&
-          barsToSecs(clip.barStart) < segmentEndSecs
-        )
-      );
-      if (firstPlayableMidiTrack) {
-        deps.ensureSynth?.(synthPresetForTrack(firstPlayableMidiTrack));
-        synth = deps.getSynth();
+  const stopAudioPlayback = () => {
+    playbackRunId++;
+    countInRunId++;
+    stopScheduledNodes();
+    if (playbackRaf !== null) {
+      cancelAnimationFrame(playbackRaf);
+      playbackRaf = null;
+    }
+    if (cycleBoundaryTimer) {
+      clearTimeout(cycleBoundaryTimer);
+      cycleBoundaryTimer = null;
+    }
+    if (countInTimer) {
+      clearTimeout(countInTimer);
+      countInTimer = null;
+    }
+    deps.getSynth()?.allNotesOff();
+    playbackSynths.forEach(({ synth }) => synth.allNotesOff());
+    trackGainNodes.forEach(node => {
+      try { node.disconnect(); } catch { /* already disconnected */ }
+    });
+    trackGainNodes.clear();
+    if (masterGainNode) {
+      try { masterGainNode.disconnect(); } catch { /* already disconnected */ }
+      masterGainNode = null;
+    }
+  };
+
+  const fetchAudioBuffer = (src: string): Promise<AudioBuffer | null> => {
+    const cached = audioBufferCache.get(src);
+    if (cached) return Promise.resolve(cached);
+    if (failedSrcCache.has(src)) return Promise.resolve(null);
+    const pending = audioBufferPromises.get(src);
+    if (pending) return pending;
+
+    const promise = (async () => {
+      try {
+        const requestSrc = src.startsWith("/api/") ? optionalRemoteUrl(src) : src;
+        const response = src.startsWith("/api/") ? await apiFetch(requestSrc) : await fetch(requestSrc);
+        if (response.status === 204 || !response.ok) {
+          failedSrcCache.add(src);
+          return null;
+        }
+        const buffer = await getAudioContext().decodeAudioData(await response.arrayBuffer());
+        audioBufferCache.set(src, buffer);
+        return buffer;
+      } catch {
+        failedSrcCache.add(src);
+        return null;
+      } finally {
+        audioBufferPromises.delete(src);
+      }
+    })();
+    audioBufferPromises.set(src, promise);
+    return promise;
+  };
+
+  const preloadAudioBuffers = async () => {
+    const sources = new Set<string>();
+    for (const track of audioTracks()) {
+      for (const clip of track.clips ?? []) {
+        const src = clip.url || clip.remoteUrl;
+        if ((clip.kind === "audio" || clip.kind === "video") && src) sources.add(src);
       }
     }
-    if (!synth) return;
+    await Promise.all([...sources].map(fetchAudioBuffer));
+  };
 
+  const scheduleClick = (atTime: number, downbeat: boolean) => {
+    const ctx = getAudioContext();
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.frequency.setValueAtTime(downbeat ? 1760 : 1180, atTime);
+    gain.gain.setValueAtTime(0.0001, Math.max(ctx.currentTime, atTime - 0.002));
+    gain.gain.exponentialRampToValueAtTime(downbeat ? 0.34 : 0.2, atTime);
+    gain.gain.exponentialRampToValueAtTime(0.0001, atTime + 0.045);
+    oscillator.connect(gain);
+    gain.connect(getMasterBus().input);
+    oscillator.start(atTime);
+    oscillator.stop(atTime + 0.05);
+    metronomeNodes.push(oscillator);
+  };
+
+  const scheduleMetronome = (
+    timelineStartSecs: number,
+    timelineEndSecs: number,
+    scheduleAt: number,
+  ) => {
+    if (!deps.metronomeEnabled()) return;
+    const beatDuration = beatSecs();
+    const beatsPerBar = deps.timeSignature()[0];
+    const firstBeat = Math.ceil((timelineStartSecs - 0.0001) / beatDuration);
+    const lastBeat = Math.ceil(timelineEndSecs / beatDuration);
+    for (let beatIndex = firstBeat; beatIndex < lastBeat; beatIndex++) {
+      const beatTimelineSecs = beatIndex * beatDuration;
+      const atTime = scheduleAt + Math.max(0, beatTimelineSecs - timelineStartSecs);
+      scheduleClick(atTime, ((beatIndex % beatsPerBar) + beatsPerBar) % beatsPerBar === 0);
+    }
+  };
+
+  const scheduleMidiPlayback = (
+    timelineStartSecs: number,
+    segmentEndSecs: number,
+    scheduleAt: number,
+  ) => {
     for (const track of instrumentTracks()) {
-      if (track.muted) continue;
-      const trackPreset = synthPresetForTrack(track);
+      if (!isTrackAudible(track)) continue;
+      const synth = playbackSynthForTrack(track);
+      synth.setMasterGainDb(track.volume <= 0.001 ? -60 : 20 * Math.log10(track.volume ?? 1));
       for (const clip of track.clips ?? []) {
         if (clip.kind !== "midi" || !clip.midiNotes?.length) continue;
         const clipStartSecs = barsToSecs(clip.barStart);
         const clipEndSecs = barsToSecs(clip.barStart + clip.bars);
-        if (clipEndSecs <= timelineStartSecs) continue;
-        if (clipStartSecs >= segmentEndSecs) continue;
+        if (clipEndSecs <= timelineStartSecs || clipStartSecs >= segmentEndSecs) continue;
 
         for (const note of clip.midiNotes) {
           const noteStartSecs = clipStartSecs + barsToSecs(note.startBars);
-          const noteDurationSecs = barsToSecs(note.durationBars);
-          const noteEndSecs = noteStartSecs + noteDurationSecs;
-          if (noteEndSecs <= timelineStartSecs) continue;
-          if (noteStartSecs >= segmentEndSecs) continue;
-
-          const delayMs = Math.max(0, (noteStartSecs - timelineStartSecs) * 1000);
-          const clippedEndSecs = Math.min(noteEndSecs, segmentEndSecs);
-          const durationMs = Math.max(20, (clippedEndSecs - Math.max(noteStartSecs, timelineStartSecs)) * 1000);
-          const midi = Math.max(0, Math.min(127, Math.round(note.midi)));
-          const velocity = Math.max(0.05, Math.min(1, note.velocity));
-
-          const onTimer = setTimeout(() => {
-            if (!isPlaybackRunActive(runId)) return;
-            if (synthPresetForTrack(track) === trackPreset) synth.setPreset(trackPreset);
-            synth.noteOn(midi, velocity * (track.volume ?? 1));
-            const offTimer = setTimeout(() => {
-              if (isPlaybackRunActive(runId)) synth.noteOff(midi);
-            }, durationMs);
-            midiTimers.push(offTimer);
-          }, delayMs);
-          midiTimers.push(onTimer);
+          const noteEndSecs = noteStartSecs + barsToSecs(note.durationBars);
+          if (noteEndSecs <= timelineStartSecs || noteStartSecs >= segmentEndSecs) continue;
+          const audibleStartSecs = Math.max(noteStartSecs, timelineStartSecs);
+          const audibleEndSecs = Math.min(noteEndSecs, segmentEndSecs);
+          synth.scheduleNote(
+            Math.max(0, Math.min(127, Math.round(note.midi))),
+            Math.max(0.05, Math.min(1, note.velocity)),
+            scheduleAt + (audibleStartSecs - timelineStartSecs),
+            audibleEndSecs - audibleStartSecs,
+          );
         }
       }
     }
   };
 
-  const setTrackVolume = (trackId: string, v: number) => {
-    const node = trackGainNodes.get(trackId);
-    if (node) node.gain.setTargetAtTime(Math.max(0, v), getAudioContext().currentTime, 0.01);
+  const arrangementEndPx = () => {
+    const audioEnds = audioTracks().flatMap(track =>
+      (track.clips ?? []).filter(clip => clip.url || clip.remoteUrl)
+        .map(clip => (clip.barStart + clip.bars) * STUDIO_BAR_PX)
+    );
+    const midiEnds = instrumentTracks().flatMap(track =>
+      (track.clips ?? []).filter(clip => clip.kind === "midi")
+        .map(clip => (clip.barStart + clip.bars) * STUDIO_BAR_PX)
+    );
+    const patternBars = (deps.pattern().steps ?? 16) / 16;
+    return [...audioEnds, ...midiEnds].length
+      ? Math.max(...audioEnds, ...midiEnds)
+      : patternBars * STUDIO_BAR_PX;
   };
 
   const startAudioPlayback = async (requestedStartPx = deps.playheadPx()) => {
     stopAudioPlayback();
     const runId = playbackRunId;
+    await preloadAudioBuffers();
+    if (!isPlaybackRunActive(runId)) return;
+
     const ctx = getAudioContext();
     const playbackStartPx = normalizedPlaybackStartPx(requestedStartPx);
-    if (Math.abs(playbackStartPx - deps.playheadPx()) > 0.5) deps.setPlayheadPx(playbackStartPx);
     const timelineStartSecs = pxToSecs(playbackStartPx);
-    playbackStartCtxTime    = ctx.currentTime;
+    const scheduleAt = ctx.currentTime + 0.05;
+    playbackStartCtxTime = scheduleAt;
     playbackStartTimelineSecs = timelineStartSecs;
+    deps.setPlayheadPx(playbackStartPx);
+    deps.setElapsed(timelineStartSecs);
 
-    // Loop end: cycle locator when enabled, otherwise last audio/MIDI clip end or sequencer length.
-    const audioEnds = audioTracks().flatMap(t =>
-      (t.clips ?? []).filter(c => c.url || c.remoteUrl).map(c => (c.barStart + c.bars) * STUDIO_BAR_PX)
-    );
-    const midiEnds = instrumentTracks().flatMap(t =>
-      (t.clips ?? []).filter(c => c.kind === "midi").map(c => (c.barStart + c.bars) * STUDIO_BAR_PX)
-    );
-    const patternBars = (deps.pattern().steps ?? 16) / 16; // 16 steps = 1 bar
-    const arrangementEndPx = [...audioEnds, ...midiEnds].length > 0 ? Math.max(...audioEnds, ...midiEnds) : patternBars * STUDIO_BAR_PX;
     const bounds = cycleBounds();
-    const segmentEndSecs = bounds.enabled ? bounds.endSecs : pxToSecs(arrangementEndPx);
-
-    const doLoop = () => {
-      deps.setPlayheadPx(bounds.startPx);
-      startTime = performance.now();
-      deps.setElapsed(bounds.startSecs);
-      stopAudioPlayback();
-      void startAudioPlayback(bounds.startPx);
-    };
-
-    const tickPlayhead = () => {
-      const el = getAudioContext().currentTime - playbackStartCtxTime;
-      const currentSecs = playbackStartTimelineSecs + el;
-      const liveBounds = cycleBounds();
-      if (!isPlaybackRunActive(runId)) return;
-      if (liveBounds.enabled && currentSecs >= liveBounds.endSecs) {
-        doLoop();
-        return;
-      }
-      const newPx = secsToPx(currentSecs);
-      deps.setPlayheadPx(newPx);
-      deps.setElapsed(currentSecs);
-      playbackRaf = requestAnimationFrame(tickPlayhead);
-    };
-    playbackRaf = requestAnimationFrame(tickPlayhead);
-
-    if (bounds.enabled) {
-      const boundaryDelayMs = Math.max(0, (bounds.endSecs - timelineStartSecs) * 1000);
-      cycleBoundaryTimer = setTimeout(() => {
-        if (!deps.playing()) return;
-        if (!isPlaybackRunActive(runId)) return;
-        doLoop();
-      }, boundaryDelayMs);
-    }
+    const endPx = Math.max(arrangementEndPx(), playbackStartPx + STUDIO_BAR_PX);
+    const segmentEndSecs = bounds.enabled ? bounds.endSecs : pxToSecs(endPx);
 
     masterGainNode = ctx.createGain();
     masterGainNode.gain.value = deps.masterVol();
     masterGainNode.connect(getMasterBus().input);
 
     for (const track of audioTracks()) {
-      const hasAudioClips = (track.clips ?? []).some(c => (c.kind === "audio" || c.kind === "video") && (!!c.url || !!c.remoteUrl));
-      if (!hasAudioClips) continue;
-
-      // Per-track gain node so each track's volume slider works independently
+      if (!isTrackAudible(track)) continue;
       const trackGain = ctx.createGain();
-      trackGain.gain.value = track.muted ? 0 : (track.volume ?? 1);
-      trackGain.connect(masterGainNode!);
+      trackGain.gain.value = track.volume ?? 1;
+      trackGain.connect(masterGainNode);
       trackGainNodes.set(track.id, trackGain);
 
       for (const clip of track.clips ?? []) {
         if (clip.kind !== "audio" && clip.kind !== "video") continue;
-        // Use local blob URL if available, fall back to server URL for cross-session clips
         const audioSrc = clip.url || clip.remoteUrl;
-        if (!audioSrc) continue;
-        if (failedSrcCache.has(audioSrc)) continue;
-        let buffer = audioBufferCache.get(audioSrc);
-        if (!buffer) {
-          try {
-            const requestSrc = audioSrc.startsWith("/api/") ? optionalRemoteUrl(audioSrc) : audioSrc;
-            const res = audioSrc.startsWith("/api/") ? await apiFetch(requestSrc) : await fetch(requestSrc);
-            if (res.status === 204 || !res.ok) { failedSrcCache.add(audioSrc); continue; }
-            const ab = await res.arrayBuffer();
-            if (!isPlaybackRunActive(runId)) return;
-            buffer = await ctx.decodeAudioData(ab);
-            if (!isPlaybackRunActive(runId)) return;
-            audioBufferCache.set(audioSrc, buffer);
-          } catch { failedSrcCache.add(audioSrc); continue; }
-        }
-        if (!isPlaybackRunActive(runId)) return;
+        const buffer = audioSrc ? audioBufferCache.get(audioSrc) : undefined;
+        if (!buffer) continue;
         const clipStartSecs = barsToSecs(clip.barStart);
-        const clipDurationSecs = barsToSecs(clip.bars);
-        const clipEndSecs   = clipStartSecs + clipDurationSecs;
-        if (clipEndSecs <= timelineStartSecs) continue;
-        if (clipStartSecs >= segmentEndSecs) continue;
+        const clipEndSecs = clipStartSecs + barsToSecs(clip.bars);
+        if (clipEndSecs <= timelineStartSecs || clipStartSecs >= segmentEndSecs) continue;
         const playStartSecs = Math.max(clipStartSecs, timelineStartSecs);
         const playEndSecs = Math.min(clipEndSecs, segmentEndSecs);
-        const offsetInClip = Math.max(0, playStartSecs - clipStartSecs);
-        const delayFromNow = Math.max(0, playStartSecs - timelineStartSecs);
-        const sourceOffsetSecs = barsToSecs(clip.sourceOffsetBars ?? 0);
-        const playableSecs = Math.max(0, playEndSecs - playStartSecs);
+        const playableSecs = playEndSecs - playStartSecs;
         if (playableSecs <= 0) continue;
-        const src = ctx.createBufferSource();
-        src.buffer = buffer;
-        src.connect(trackGain);
-        src.start(ctx.currentTime + delayFromNow, sourceOffsetSecs + offsetInClip, playableSecs);
-        audioSources.push(src);
+        const source = ctx.createBufferSource();
+        source.buffer = buffer;
+        source.playbackRate.value = Math.max(0.25, Math.min(4, clip.playbackRate ?? 1));
+        source.connect(trackGain);
+        source.start(
+          scheduleAt + (playStartSecs - timelineStartSecs),
+          barsToSecs(clip.sourceOffsetBars ?? 0) + (playStartSecs - clipStartSecs),
+          playableSecs,
+        );
+        audioSources.push(source);
       }
     }
 
-    if (!isPlaybackRunActive(runId)) return;
-    scheduleMidiPlayback(timelineStartSecs, segmentEndSecs, runId);
-  };
+    scheduleMidiPlayback(timelineStartSecs, segmentEndSecs, scheduleAt);
+    scheduleMetronome(timelineStartSecs, segmentEndSecs, scheduleAt);
 
-  const togglePlay = async () => {
-    const seq = deps.getSeq();
-    await unlockAudioContext();
-    if (deps.playing()) {
-      seq?.stop();
-      deps.setPlaying(false);
-      if (elapsedTimer) clearInterval(elapsedTimer);
-      elapsedTimer = null;
-      stopAudioPlayback();
-    } else {
-      if (shouldRunDrumSequencer()) await seq?.start();
-      else seq?.stop();
-      deps.setPlaying(true);
-      startTime = performance.now();
-      await startAudioPlayback();
+    const doLoop = () => {
+      if (!isPlaybackRunActive(runId)) return;
+      deps.setPlayheadPx(bounds.startPx);
+      deps.setElapsed(bounds.startSecs);
+      void startAudioPlayback(bounds.startPx).then(() => {
+        if (shouldRunDrumSequencer()) void deps.getSeq()?.start(bounds.startSecs);
+      });
+    };
+
+    const tickPlayhead = () => {
+      if (!isPlaybackRunActive(runId)) return;
+      const elapsedSinceSchedule = Math.max(0, ctx.currentTime - playbackStartCtxTime);
+      const currentSecs = playbackStartTimelineSecs + elapsedSinceSchedule;
+      const liveBounds = cycleBounds();
+      if (liveBounds.enabled && currentSecs >= liveBounds.endSecs) {
+        doLoop();
+        return;
+      }
+      deps.setPlayheadPx(secsToPx(currentSecs));
+      deps.setElapsed(currentSecs);
+      playbackRaf = requestAnimationFrame(tickPlayhead);
+    };
+    playbackRaf = requestAnimationFrame(tickPlayhead);
+
+    if (bounds.enabled) {
+      cycleBoundaryTimer = setTimeout(
+        doLoop,
+        Math.max(0, (scheduleAt - ctx.currentTime + bounds.endSecs - timelineStartSecs) * 1000),
+      );
     }
   };
 
-  const stopAll = () => {
+  const seek = async (requestedPx: number) => {
+    const nextPx = normalizedPlaybackStartPx(requestedPx);
+    deps.setPlayheadPx(nextPx);
+    deps.setElapsed(pxToSecs(nextPx));
+    if (!deps.playing()) return;
+    deps.getSeq()?.stop();
+    await startAudioPlayback(nextPx);
+    if (deps.playing() && shouldRunDrumSequencer()) await deps.getSeq()?.start(pxToSecs(nextPx));
+  };
+
+  const togglePlay = async () => {
+    await unlockAudioContext();
     const seq = deps.getSeq();
-    seq?.stop();
+    if (deps.playing()) {
+      seq?.stop();
+      deps.setPlaying(false);
+      stopAudioPlayback();
+      return;
+    }
+    deps.setPlaying(true);
+    await startAudioPlayback();
+    if (!deps.playing()) return;
+    if (shouldRunDrumSequencer()) await seq?.start(pxToSecs(deps.playheadPx()));
+    else seq?.stop();
+  };
+
+  const stopAll = () => {
+    deps.getSeq()?.stop();
     deps.setPlaying(false);
     deps.setElapsed(0);
-    if (elapsedTimer) clearInterval(elapsedTimer);
-    elapsedTimer = null;
     stopAudioPlayback();
     deps.setPlayheadPx(0);
   };
 
-  const updateBpm = (v: number) => {
-    const seq = deps.getSeq();
-    const clamped = Math.max(40, Math.min(240, Number.isFinite(v) ? v : 100));
+  const countIn = async (bars = 1): Promise<boolean> => {
+    await unlockAudioContext();
+    const runId = ++countInRunId;
+    if (countInTimer) clearTimeout(countInTimer);
+    for (const node of metronomeNodes) {
+      try { node.stop(); } catch { /* already ended */ }
+    }
+    metronomeNodes = [];
+    const ctx = getAudioContext();
+    const startAt = ctx.currentTime + 0.05;
+    const totalBeats = Math.max(1, Math.round(bars)) * deps.timeSignature()[0];
+    const duration = totalBeats * beatSecs();
+    for (let beat = 0; beat < totalBeats; beat++) {
+      scheduleClick(startAt + beat * beatSecs(), beat % deps.timeSignature()[0] === 0);
+    }
+    return new Promise(resolve => {
+      countInTimer = setTimeout(() => {
+        countInTimer = null;
+        resolve(runId === countInRunId);
+      }, Math.max(0, (startAt - ctx.currentTime + duration) * 1000));
+    });
+  };
+
+  const cancelCountIn = () => {
+    countInRunId++;
+    if (countInTimer) clearTimeout(countInTimer);
+    countInTimer = null;
+    for (const node of metronomeNodes) {
+      try { node.stop(); } catch { /* already ended */ }
+    }
+    metronomeNodes = [];
+  };
+
+  const updateBpm = (value: number) => {
+    const clamped = Math.max(40, Math.min(240, Number.isFinite(value) ? value : 100));
     deps.setBpm(clamped);
+    const seq = deps.getSeq();
     if (seq) {
       seq.setBpm(clamped);
       deps.setPattern({ ...seq.getPattern() });
     }
   };
 
-  const setMasterVolume = (v: number) => {
-    deps.setMasterVol(v);
-    const db = v <= 0.001 ? -60 : 20 * Math.log10(v);
-    const seq = deps.getSeq();
-    if (seq) seq.setMasterGainDb(db);
-    const synth = deps.getSynth();
-    if (synth) synth.setMasterGainDb(db);
-    if (masterGainNode) masterGainNode.gain.setTargetAtTime(v, getAudioContext().currentTime, 0.01);
+  const setMasterVolume = (value: number) => {
+    deps.setMasterVol(value);
+    const db = value <= 0.001 ? -60 : 20 * Math.log10(value);
+    deps.getSeq()?.setMasterGainDb(db);
+    deps.getSynth()?.setMasterGainDb(db);
+    if (masterGainNode) {
+      masterGainNode.gain.setTargetAtTime(value, getAudioContext().currentTime, 0.01);
+    }
+  };
+
+  const setTrackVolume = (trackId: string, value: number) => {
+    const node = trackGainNodes.get(trackId);
+    if (node) node.gain.setTargetAtTime(Math.max(0, value), getAudioContext().currentTime, 0.01);
+    const synth = playbackSynths.get(trackId)?.synth;
+    if (synth) synth.setMasterGainDb(value <= 0.001 ? -60 : 20 * Math.log10(value));
   };
 
   onCleanup(() => {
     stopAudioPlayback();
-    if (elapsedTimer) clearInterval(elapsedTimer);
+    playbackSynths.forEach(({ synth }) => synth.dispose());
+    playbackSynths.clear();
   });
 
-  let lastCycleSignature = "";
+  let lastPlaybackSignature = "";
   createEffect(() => {
-    const signature = `${deps.loopEnabled()}|${deps.cycleStartPx()}|${deps.cycleEndPx()}|${deps.bpm()}`;
-    if (lastCycleSignature && deps.playing()) untrack(() => { void startAudioPlayback(); });
-    lastCycleSignature = signature;
+    const signature = [
+      deps.loopEnabled(),
+      deps.cycleStartPx(),
+      deps.cycleEndPx(),
+      deps.bpm(),
+      deps.timeSignature().join("/"),
+      deps.metronomeEnabled(),
+    ].join("|");
+    if (lastPlaybackSignature && deps.playing()) {
+      untrack(() => { void seek(deps.playheadPx()); });
+    }
+    lastPlaybackSignature = signature;
   });
 
-  return { togglePlay, stopAll, updateBpm, setMasterVolume, stopAudioPlayback, setTrackVolume };
+  return {
+    togglePlay,
+    stopAll,
+    seek,
+    countIn,
+    cancelCountIn,
+    updateBpm,
+    setMasterVolume,
+    stopAudioPlayback,
+    setTrackVolume,
+  };
 }

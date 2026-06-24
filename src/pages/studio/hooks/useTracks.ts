@@ -86,6 +86,7 @@ type Deps = {
   tracks: Accessor<UITrack[]>; setTracks: Setter<UITrack[]>;
   selectedTrack: Accessor<string | null>; setSelectedTrack: Setter<string | null>;
   bpm: Accessor<number>;
+  timelineScale: Accessor<number>;
   playheadPx: Accessor<number>;
   setError: Setter<string>;
   setShowNewTrack: Setter<boolean>;
@@ -97,7 +98,6 @@ type Deps = {
   getSynth: () => PolySynth | null;
   setTrackVolume: (id: string, v: number) => void;
   save: () => Promise<void>;
-  timelineEl: () => HTMLDivElement | undefined;
 };
 
 export function useTracks(deps: Deps) {
@@ -464,8 +464,7 @@ export function useTracks(deps: Deps) {
     e.preventDefault();
     e.dataTransfer.dropEffect = "copy";
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const scrollLeft = deps.timelineEl()?.scrollLeft ?? 0;
-    const x = e.clientX - rect.left + scrollLeft;
+    const x = (e.clientX - rect.left) / Math.max(0.001, deps.timelineScale());
     setDropTarget({ trackId, bar: Math.max(0, Math.floor(x / BAR_PX)) });
   };
 
@@ -495,8 +494,7 @@ export function useTracks(deps: Deps) {
       return;
     }
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const scrollLeft = deps.timelineEl()?.scrollLeft ?? 0;
-    const x = e.clientX - rect.left + scrollLeft;
+    const x = (e.clientX - rect.left) / Math.max(0.001, deps.timelineScale());
     let cursor = Math.max(0, Math.floor(x / BAR_PX));
     for (const f of files) {
       await addClip(trackId, f, cursor);

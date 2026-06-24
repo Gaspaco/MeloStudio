@@ -221,7 +221,8 @@
   }
 
   /* metronome — separate toggle chip */
-  .bl__icon-btn:nth-child(3) {
+  .bl__icon-btn:nth-child(3),
+  .bl__icon-btn:nth-child(4) {
     all: unset;
     cursor: pointer;
     display: inline-flex;
@@ -241,6 +242,13 @@
       border-color: rgba($accent, 0.25);
     }
   }
+}
+
+.bl__count-in span {
+  font-family: $font-mono;
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0;
 }
 
 /* ─── Session strip — unified glass card ─── */
@@ -403,10 +411,19 @@
     background: rgba(#ff4444, 0.12);
     animation: rec-blink 1s step-start infinite;
   }
+  &.is-counting {
+    color: #ff8a8a;
+    background: rgba(#ff4444, 0.1);
+    animation: count-in-pulse 0.5s ease-in-out infinite alternate;
+  }
 }
 @keyframes rec-blink {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.35; }
+}
+@keyframes count-in-pulse {
+  from { opacity: 0.45; }
+  to { opacity: 1; }
 }
 .bl__rec-timer {
   font-family: $font-mono;
@@ -466,6 +483,64 @@
 .bl__mastering-pulse { display: none; }
 .bl__enhance-led { display: none; }
 .bl__field-sep { display: none; }
+
+/* ─── Timeline zoom slider ─── */
+.bl__zoom-slider {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0 0.75rem;
+  height: 2.4rem;
+  border-radius: $radius-pill;
+  background: rgba(#fff, 0.03);
+  border: 1px solid rgba(#fff, 0.045);
+  min-width: 9rem;
+  transition: border-color 0.15s;
+  &:focus-within { border-color: rgba(#fff, 0.09); }
+}
+
+.bl__zoom-icon {
+  display: grid;
+  place-items: center;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: rgba(#fff, 0.38);
+  flex-shrink: 0;
+  svg { width: 0.85rem; height: 0.85rem; display: block; }
+}
+
+.bl__zoom-range {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 0.28rem;
+  border-radius: 1rem;
+  background: rgba(#fff, 0.12);
+  cursor: ew-resize;
+  outline: none;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    cursor: ew-resize;
+    transition: transform 0.12s, box-shadow 0.12s;
+    &:hover { transform: scale(1.15); }
+  }
+
+  &::-moz-range-thumb {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background: #fff;
+    border: none;
+    cursor: ew-resize;
+  }
+}
 
 /* ─── Master volume — standalone, full right slot ─── */
 .bl__master-vol {

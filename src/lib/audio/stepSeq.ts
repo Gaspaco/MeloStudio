@@ -168,7 +168,7 @@ export class StepSequencer {
     voice.trigger(Tone.now(), vel);
   }
 
-  async start(): Promise<void> {
+  async start(startSeconds = 0): Promise<void> {
     const transport = Tone.getTransport();
     if (this.playing && transport.state === "started") return;
     if (this.playing && transport.state !== "started") {
@@ -182,8 +182,13 @@ export class StepSequencer {
     if (!this.kit) this.kit = new DrumKit(masterGain);
 
     this.rebuildSequence();
+    transport.seconds = Math.max(0, startSeconds);
     transport.start("+0.05");
     this.playing = true;
+  }
+
+  seek(seconds: number): void {
+    Tone.getTransport().seconds = Math.max(0, seconds);
   }
 
   stop(): void {

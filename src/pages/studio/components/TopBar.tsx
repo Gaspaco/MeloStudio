@@ -45,6 +45,7 @@ type Props = {
   playing: Accessor<boolean>;
   elapsed: Accessor<number>;
   masterVol: Accessor<number>;
+  horizontalZoom: Accessor<number>;
   titleInputRef: (el: HTMLInputElement) => void;
   onNavToggle: () => void;
   onDashboard: () => void;
@@ -59,6 +60,9 @@ type Props = {
   onRedo: () => void;
   metronomeOn: Accessor<boolean>;
   onToggleMetronome: () => void;
+  countInEnabled: Accessor<boolean>;
+  countingIn: Accessor<boolean>;
+  onToggleCountIn: () => void;
   loopOn: Accessor<boolean>;
   onToggleLoop: () => void;
   onTogglePlay: () => void;
@@ -70,6 +74,7 @@ type Props = {
   onUpdateMeter: (v: [number, number]) => void;
   onUpdateKey: (v: string) => void;
   onSetMasterVol: (v: number) => void;
+  onHorizontalZoom: (v: number) => void;
   onElapsedReset: () => void;
   enhance: Accessor<boolean>;
   onToggleEnhance: () => void;
@@ -189,6 +194,14 @@ const TopBar: Component<Props> = (props) => {
           >
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l-2 10h10L11 3z"/><path d="M8 6v5"/></svg>
           </button>
+          <button
+            class={`bl__icon-btn bl__count-in${props.countInEnabled() ? " is-active" : ""}`}
+            title={props.countInEnabled() ? "Count-in: one bar" : "Enable one-bar count-in"}
+            aria-pressed={props.countInEnabled()}
+            onClick={props.onToggleCountIn}
+          >
+            <span aria-hidden="true">1234</span>
+          </button>
         </div>
 
         <div class="bl__session" role="group" aria-label="Session settings">
@@ -291,7 +304,11 @@ const TopBar: Component<Props> = (props) => {
             ? <svg viewBox="0 0 16 16" fill="currentColor"><rect x="4" y="3" width="3" height="10" rx="0.5"/><rect x="9" y="3" width="3" height="10" rx="0.5"/></svg>
             : <svg viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.5v9l8-4.5z"/></svg>}
         </button>
-        <button class={`bl__t-btn bl__t-rec${props.recording() ? " is-recording" : ""}`} title={props.recording() ? "Stop recording" : "Record"} onClick={props.onToggleRecord}>
+        <button
+          class={`bl__t-btn bl__t-rec${props.recording() ? " is-recording" : ""}${props.countingIn() ? " is-counting" : ""}`}
+          title={props.countingIn() ? "Cancel count-in" : props.recording() ? "Stop recording" : "Record"}
+          onClick={props.onToggleRecord}
+        >
           <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="6"/></svg>
         </button>
         <Show when={props.recording()}>
@@ -326,6 +343,19 @@ const TopBar: Component<Props> = (props) => {
           <span class="bl__mastering-name">{props.enhance() ? "Enhanced" : "Studio"}</span>
           <span class={`bl__enhance-led${props.enhance() ? " is-on" : ""}`} />
         </button>
+        <span class="bl__field-sep" />
+        <div class="bl__zoom-slider" title={`Timeline zoom: ${Math.round(props.horizontalZoom())}px/bar`}>
+          <svg class="bl__zoom-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/><path d="M7 5v4M5 7h4"/>
+          </svg>
+          <input
+            class="bl__zoom-range"
+            type="range"
+            min="80" max="480" step="10"
+            value={props.horizontalZoom()}
+            onInput={(e) => props.onHorizontalZoom(parseInt(e.currentTarget.value, 10))}
+          />
+        </div>
         <span class="bl__field-sep" />
         <div class={`bl__master-vol${props.enhance() ? " bl__master-vol--enhanced" : ""}`} title="Master volume" style={{ "--vol": `${Math.round(props.masterVol() * 100)}%` }}>
           <span class="bl__master-vol-head">
