@@ -242,7 +242,14 @@ const TimelineArea: Component<Props> = (props) => {
       );
       return Math.max(max, trackEnd);
     }, 0);
-    const drumEndBars = props.drumClipBars().reduce((max, bar) => Math.max(max, bar + 1), 0);
+    const drumEndBars = props.tracks().reduce((max, track) => {
+      if (track.type !== "drum") return max;
+      const trackEnd = (track.clips ?? []).reduce(
+        (clipMax, clip) => clip.drumPattern ? Math.max(clipMax, Math.ceil(clipRightPx(clip) / BAR_PX)) : clipMax,
+        0,
+      );
+      return Math.max(max, trackEnd);
+    }, 0);
     const playheadEndBars = Math.ceil(props.playheadPx() / BAR_PX);
     const cycleEndBars = Math.ceil(props.cycleEndPx() / BAR_PX);
     const requiredBars = Math.max(24, clipEndBars, drumEndBars, playheadEndBars, cycleEndBars) + 8;
