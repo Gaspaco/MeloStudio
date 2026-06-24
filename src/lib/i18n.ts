@@ -37,6 +37,16 @@ const GOOGLE_LANG: Record<Lang, string> = {
 let currentLang: Lang = "en";
 let scriptPromise: Promise<void> | undefined;
 let applyTimer: number | undefined;
+let cleanupObserver: MutationObserver | undefined;
+
+const GOOGLE_BANNER_SELECTORS = [
+  "iframe.goog-te-banner-frame",
+  ".goog-te-banner-frame",
+  ".goog-te-balloon-frame",
+  ".VIpgJd-ZVi9od-ORHb-OEVmcd",
+  ".VIpgJd-ZVi9od-aZ2wEe-wOHMyf",
+  'iframe[title*="Language Translate Widget"]',
+].join(",");
 
 function getSavedLanguage(): Lang {
   const saved = localStorage.getItem("ms_lang");
@@ -70,14 +80,22 @@ function injectGoogleCleanupStyles() {
     .goog-te-gadget,
     .goog-tooltip,
     .goog-tooltip:hover,
-    iframe.skiptranslate {
+    iframe.skiptranslate,
+    .VIpgJd-ZVi9od-ORHb-OEVmcd,
+    .VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+    iframe[title*="Language Translate Widget"] {
       display: none !important;
       visibility: hidden !important;
       opacity: 0 !important;
+      width: 0 !important;
+      height: 0 !important;
+      border: 0 !important;
     }
 
+    html,
     body {
       top: 0 !important;
+      margin-top: 0 !important;
     }
 
     body > .skiptranslate,
@@ -88,6 +106,28 @@ function injectGoogleCleanupStyles() {
     }
   `;
   document.head.appendChild(style);
+}
+
+function removeGoogleBannerLayers() {
+  document.querySelectorAll<HTMLElement>(GOOGLE_BANNER_SELECTORS).forEach((element) => {
+    element.remove();
+  });
+
+  document.documentElement.style.setProperty("top", "0px", "important");
+  document.documentElement.style.setProperty("margin-top", "0px", "important");
+  document.body.style.setProperty("top", "0px", "important");
+  document.body.style.setProperty("margin-top", "0px", "important");
+}
+
+function watchGoogleBannerLayers() {
+  removeGoogleBannerLayers();
+  if (cleanupObserver) return;
+
+  cleanupObserver = new MutationObserver(removeGoogleBannerLayers);
+  cleanupObserver.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
 }
 
 function setCookie(name: string, value: string, days: number) {
@@ -120,6 +160,7 @@ function loadGoogleTranslate() {
   scriptPromise = new Promise<void>((resolve) => {
     ensureGoogleContainer();
     injectGoogleCleanupStyles();
+    watchGoogleBannerLayers();
 
     window.googleTranslateElementInit = () => {
       if (!window.google?.translate?.TranslateElement) {
@@ -135,6 +176,7 @@ function loadGoogleTranslate() {
         },
         GOOGLE_ELEMENT_ID,
       );
+      removeGoogleBannerLayers();
       resolve();
     };
 
@@ -191,6 +233,18 @@ export async function applyLanguage(lang = getSavedLanguage()) {
   document.documentElement.classList.toggle("ms-translated", currentLang !== "en");
   primeGoogleCookie(currentLang);
 
+  // Do not inject Google's banner/iframe machinery for the original language.
+  // It is unnecessary on English pages and can leave a stale compositor strip
+  // after opening a shared project in a new tab.
+  if (
+    currentLang === "en"
+    && !document.getElementById(GOOGLE_SCRIPT_ID)
+    && !window.google?.translate?.TranslateElement
+  ) {
+    removeGoogleBannerLayers();
+    return;
+  }
+
   await loadGoogleTranslate();
 
   for (let attempt = 0; attempt < 12; attempt++) {
@@ -217,6 +271,8 @@ export function installI18n() {
 
   return () => {
     window.clearTimeout(applyTimer);
+    cleanupObserver?.disconnect();
+    cleanupObserver = undefined;
     window.removeEventListener("ms:language-change", onLanguageChange);
   };
 }

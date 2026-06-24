@@ -1,6 +1,5 @@
 @use "reset";
 
-html:not([data-app-booting]) #boot-veil,
 html[data-skip-boot-veil] #boot-veil {
   display: none !important;
 }
@@ -30,7 +29,7 @@ html[data-skip-boot-veil] #boot-veil {
 }
 
 .route-veil .loader {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 2147483001;
   background: #07070a;
@@ -133,6 +132,25 @@ html.lenis body {
 html.ms-translated {
   overflow-wrap: break-word;
   hyphens: auto;
+}
+
+html,
+body {
+  top: 0 !important;
+  margin-top: 0 !important;
+}
+
+iframe.goog-te-banner-frame,
+.goog-te-banner-frame,
+.goog-te-balloon-frame,
+.VIpgJd-ZVi9od-ORHb-OEVmcd,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,
+iframe[title*="Language Translate Widget"] {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  border: 0 !important;
 }
 
 html.ms-translated button,

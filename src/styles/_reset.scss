@@ -14,18 +14,15 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
-  background: $bg-primary;
 }
 
 body {
   font-family: $font-sans;
-  background: $bg-primary;
+  background-color: $bg-primary;
   color: $text-primary;
   line-height: 1.5;
   overflow-x: hidden;
   overscroll-behavior: none;
-  min-height: 100vh;
-  min-height: 100dvh;
 }
 
 a {
@@ -42,7 +39,6 @@ button {
   color: inherit;
   touch-action: manipulation;
 }
-
 
 ::selection {
   background: $accent;
