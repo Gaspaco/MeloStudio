@@ -1,9 +1,11 @@
 import { type Component, createSignal, onMount, onCleanup, createEffect } from "solid-js";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type Lenis from "lenis";
 import { getAppSession } from "../../lib/app-auth";
 import "./home.scss";
 
+import Loader from "./sections/Loader";
 import Grain from "./sections/Grain";
 import Nav from "./sections/Nav";
 import Hero from "./sections/Hero";
@@ -25,6 +27,10 @@ import { setupOrb } from "./animations/orb";
 gsap.registerPlugin(ScrollTrigger);
 
 const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?: () => void }> = (props) => {
+  let lenisRef: InstanceType<typeof Lenis> | undefined;
+  let loaderRef: HTMLDivElement | undefined;
+  let loaderMeloRef: HTMLDivElement | undefined;
+  let loaderStudioRef: HTMLDivElement | undefined;
   let heroRef: HTMLElement | undefined;
   let heroTitleRef: HTMLDivElement | undefined;
   let heroLine1Ref: HTMLDivElement | undefined;
@@ -50,10 +56,25 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
       .then((session) => setIsLoggedIn(!!session))
       .catch(() => {});
 
-    if (!heroRef || !heroLine1Ref || !heroLine2Ref || !scrollIndRef || !reelRef || !dawWrapRef || !manifestoRef || !hScrollRef || !hScrollTrackRef || !footerRef || !orbRef) {
+    const { default: LenisClass } = await import("lenis");
+    lenisRef = new LenisClass({
+      duration: 0.9,
+      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+    lenisRef.on("scroll", ScrollTrigger.update);
+    const lenisTick = (time: number) => lenisRef?.raf(time * 1000);
+    gsap.ticker.add(lenisTick);
+    gsap.ticker.lagSmoothing(0);
+
+    if (!loaderRef || !loaderMeloRef || !loaderStudioRef || !heroRef || !heroLine1Ref || !heroLine2Ref || !scrollIndRef || !reelRef || !dawWrapRef || !manifestoRef || !hScrollRef || !hScrollTrackRef || !footerRef || !orbRef) {
+      gsap.ticker.remove(lenisTick);
       return;
     }
 
+    const loader = loaderRef;
+    const loaderMelo = loaderMeloRef;
+    const loaderStudio = loaderStudioRef;
     const hero = heroRef;
     const heroLine1 = heroLine1Ref;
     const heroLine2 = heroLine2Ref;
@@ -67,6 +88,7 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
     const orb = orbRef;
 
     animateIntro({
+      loaderRef: loader, loaderMeloRef: loaderMelo, loaderStudioRef: loaderStudio,
       heroLine1Ref: heroLine1, heroLine2Ref: heroLine2, scrollIndRef: scrollIndicator,
     });
 
@@ -147,20 +169,29 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
 
     createEffect(() => {
       if (menuOpen()) {
+        lenisRef?.stop();
         document.body.style.overflow = "hidden";
       } else {
+        lenisRef?.start();
         document.body.style.overflow = "";
       }
     });
+
+    onCleanup(() => gsap.ticker.remove(lenisTick));
   });
 
   onCleanup(() => {
-    document.body.style.overflow = "";
+    lenisRef?.destroy();
     ScrollTrigger.getAll().forEach((t) => t.kill());
   });
 
   return (
     <div class="page">
+      <Loader
+        ref={(el) => (loaderRef = el)}
+        meloRef={(el) => (loaderMeloRef = el)}
+        studioRef={(el) => (loaderStudioRef = el)}
+      />
       <Grain />
       <Nav
         menuOpen={menuOpen}
