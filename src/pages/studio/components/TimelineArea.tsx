@@ -44,7 +44,7 @@ const MidiNotesOverview: Component<{ clip: MediaClip }> = (props) => {
   const noteWidth = (durationBars: number) => `${Math.max(0.35, (durationBars / Math.max(0.001, props.clip.bars)) * 100)}%`;
 
   return (
-    <div class="bl__midi-notes">
+    <div class="bl__midi-notes" style={{ "--mbars": `${Math.max(1, Math.round(props.clip.bars))}` }}>
       <Show when={notes().length > 0} fallback={<div class="bl__midi-empty-grid" />}>
         <For each={notes()}>
           {(note) => (

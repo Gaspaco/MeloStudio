@@ -404,17 +404,23 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  // One faint vertical line per bar (aligns to the clip), evenly spaced
+  // horizontal rows — no heavy banding.
   background:
-    linear-gradient(90deg, rgba(#fff, 0.045) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(#fff, 0.018) 1px, transparent 1px);
-  background-size: 25% 100%, 100% 33.333%;
+    linear-gradient(90deg, rgba(#fff, 0.05) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(#fff, 0.025) 1px, transparent 1px);
+  background-size:
+    calc(100% / var(--mbars, 4)) 100%,
+    100% 25%;
 }
 .bl__midi-note {
   position: absolute;
-  min-width: 4px;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--tc) 78%, #fff);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--tc) 20%, transparent);
+  min-width: 3px;
+  border-radius: 1.5px;
+  background: color-mix(in srgb, var(--tc) 82%, #fff);
+  // Crisp note blocks — no glow/blur (was box-shadow: 0 0 6px, which smeared
+  // the notes together and looked stretched).
+  box-shadow: none;
 }
 .bl__midi-empty-grid {
   position: absolute;
@@ -422,8 +428,10 @@
   opacity: 0.55;
   background:
     linear-gradient(90deg, rgba(#fff, 0.04) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(#fff, 0.03) 1px, transparent 1px);
-  background-size: 25% 100%, 100% 25%;
+    linear-gradient(0deg, rgba(#fff, 0.025) 1px, transparent 1px);
+  background-size:
+    calc(100% / var(--mbars, 4)) 100%,
+    100% 25%;
 }
 
 /* Drop position marker — vertical line where clip will land */
