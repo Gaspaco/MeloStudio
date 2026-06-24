@@ -80,14 +80,41 @@ class MidiHardwareManager {
     setConnectedMidiDevices(devices);
   }
 
+  /** Last channel-voice status byte, for decoding running-status messages. */
+  private lastStatus = 0;
+
   /**
-   * Parses standard 3-byte hardware MIDI message packets down to frequencies.
+   * Parses hardware MIDI message packets. Handles running status (keyboards omit
+   * the status byte on consecutive same-command messages during fast playing,
+   * sending 2-byte packets) so those notes aren't dropped, and ignores system
+   * real-time bytes (clock/active-sensing) without clobbering running status.
    */
   private handleMidiMessage(event: MIDIMessageEvent): void {
-    if (!this.enabled || !event.data || event.data.length < 3 || !this.activeSynth) return;
+    if (!this.enabled || !event.data || event.data.length === 0 || !this.activeSynth) return;
 
-    const [status, data1, data2] = event.data;
-    if (status === undefined || data1 === undefined || data2 === undefined) return;
+    const bytes = event.data;
+    const first = bytes[0]!;
+
+    // System real-time (0xF8–0xFF: clock, active sensing, etc.) — ignore.
+    if (first >= 0xf8) return;
+
+    let status: number;
+    let data1: number;
+    let data2: number;
+    if (first >= 0x80) {
+      // Explicit status byte present.
+      status = first;
+      if (status < 0xf0) this.lastStatus = status; // only channel messages set running status
+      data1 = bytes[1] ?? 0;
+      data2 = bytes[2] ?? 0;
+    } else {
+      // Running status: status omitted, reuse the previous channel-voice status.
+      if (this.lastStatus === 0) return;
+      status = this.lastStatus;
+      data1 = first;
+      data2 = bytes[1] ?? 0;
+    }
+
     const command = status & 0xf0; // Extract command byte type
     const receivedAt = event.timeStamp || performance.now();
     // const channel = status & 0x0f; // Extract MIDI channel (0-15) if needed later
