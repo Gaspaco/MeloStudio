@@ -123,10 +123,12 @@ function watchGoogleBannerLayers() {
   removeGoogleBannerLayers();
   if (cleanupObserver) return;
 
+  // Google appends its banner/iframe as a direct child of <body>, so watch only
+  // body's child list — NOT the whole document subtree, which would fire this on
+  // every DOM mutation in the app (a constant drain, especially in the studio).
   cleanupObserver = new MutationObserver(removeGoogleBannerLayers);
-  cleanupObserver.observe(document.documentElement, {
+  cleanupObserver.observe(document.body, {
     childList: true,
-    subtree: true,
   });
 }
 

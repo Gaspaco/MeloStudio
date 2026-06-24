@@ -14,30 +14,19 @@ function revealApp() {
 	if (revealed) return;
 	revealed = true;
 
-	// On a fresh visit the boot veil plays a ~1.4s intro animation; hold it on
-	// screen until that finishes so it never gets cut off mid-animation.
-	// Repeat visits skip the veil entirely, so reveal immediately.
-	const skip = document.documentElement.hasAttribute("data-skip-boot-veil");
-	const minVeilMs = skip ? 0 : 1700;
-
+	// The boot veil is just a plain anti-FOUC cover — the actual MELO Studio
+	// splash animation is owned by the home loader (GSAP). So reveal the app as
+	// soon as it's ready and fade the cover out; no artificial hold.
 	waitForVisualReady({ frames: 2, stylesheetsMaxWait: 2800, totalMaxWait: 3000 })
 		.then(() => waitForAllStylesheets(1500, 60))
 		.then(() => {
-			// performance.now() ≈ ms since navigation start, so this keeps the veil
-			// up for at least minVeilMs total regardless of how fast content loaded.
-			const wait = Math.max(0, minVeilMs - performance.now());
-			window.setTimeout(() => {
-				const bootVeil = document.getElementById("boot-veil");
-				// Reveal the app underneath first, then fade the veil out over it.
-				document.documentElement.removeAttribute("data-app-booting");
-				document.documentElement.removeAttribute("data-skip-boot-veil");
-				try { sessionStorage.setItem("melostudio_loaded", "1"); }
-				catch {}
-				if (bootVeil) {
-					bootVeil.setAttribute("data-hiding", "true");
-					window.setTimeout(() => bootVeil.remove(), 600);
-				}
-			}, wait);
+			const bootVeil = document.getElementById("boot-veil");
+			document.documentElement.removeAttribute("data-app-booting");
+			document.documentElement.removeAttribute("data-skip-boot-veil");
+			if (bootVeil) {
+				bootVeil.setAttribute("data-hiding", "true");
+				window.setTimeout(() => bootVeil.remove(), 400);
+			}
 		});
 }
 
