@@ -45,9 +45,6 @@
   padding: 0 clamp(1rem, 5vw, 2rem) 6rem;
   padding-top: 4.5rem; // reduced space to move the card higher
   overflow-x: hidden;
-  // Contain backdrop-filter compositing so it doesn't leave a 1px seam at the
-  // bottom of the viewport (Chrome/macOS bug — line vanishes on forced repaint)
-  isolation: isolate;
 }
 
 
