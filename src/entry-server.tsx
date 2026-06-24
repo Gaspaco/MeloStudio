@@ -28,29 +28,40 @@ export default createHandler(() => (
               color: #f4f1ea;
             }
             html[data-app-booting] #app { visibility: hidden; opacity: 0; }
-            html[data-skip-boot-veil] #boot-veil { display: none !important; }
-            /* Plain anti-FOUC cover. The animated splash lives in the home loader
-               (GSAP) — the veil must NOT duplicate it, just fade out once ready. */
             #boot-veil {
               position: fixed;
               inset: 0;
               z-index: 2147483647;
               background: #07070a;
+              display: grid;
+              place-items: center;
               transition: opacity 0.35s ease;
+            }
+            #boot-veil-logo {
+              display: flex;
+              align-items: baseline;
+              gap: 0.55rem;
+              color: #f4f1ea;
+              opacity: 1;
+            }
+            #boot-veil-melo {
+              color: #e05297;
+              font-family: "Syne", system-ui, sans-serif;
+              font-size: clamp(2.5rem, 8vw, 7rem);
+              font-weight: 800;
+              line-height: 0.85;
+              letter-spacing: -0.04em;
+            }
+            #boot-veil-studio {
+              font-family: "Great Vibes", cursive;
+              font-size: clamp(1.45rem, 4vw, 3.5rem);
+              line-height: 1;
             }
             #boot-veil[data-hiding="true"] {
               opacity: 0;
               pointer-events: none;
             }
           `}</style>
-          <script>{`
-            try {
-              if (sessionStorage.getItem("melostudio_loaded")) {
-                document.documentElement.removeAttribute("data-app-booting");
-                document.documentElement.setAttribute("data-skip-boot-veil", "");
-              }
-            } catch {}
-          `}</script>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
           <link
@@ -62,7 +73,12 @@ export default createHandler(() => (
           {assets}
         </head>
         <body>
-          <div id="boot-veil" aria-hidden="true"></div>
+          <div id="boot-veil" aria-hidden="true">
+            <div id="boot-veil-logo">
+              <span id="boot-veil-melo">MELO</span>
+              <span id="boot-veil-studio">Studio</span>
+            </div>
+          </div>
           <div id="app">{children}</div>
           {scripts}
         </body>

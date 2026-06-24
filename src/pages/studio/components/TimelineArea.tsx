@@ -1,4 +1,4 @@
-import { type Component, For, Show, createSignal, onMount, onCleanup } from "solid-js";
+import { type Component, For, Show, createMemo, createSignal, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { MicVocal, FileMusic, ZoomIn, ZoomOut, Rows3 } from "lucide-solid";
 import { type ClipKind, type TrackType, type UITrack, TEMPLATES, isTrackAllowedForClip, isTrackTypeAllowedForClipKind } from "../types";
@@ -27,34 +27,97 @@ const MediaClipIcon: Component<{ kind: string }> = (props) => {
   return Icon ? <Icon size={11} stroke-width={1.6} aria-hidden="true" /> : null;
 };
 
-const MIDI_OVERVIEW_MIN = 36;
-const MIDI_OVERVIEW_MAX = 84;
+const MIDI_OVERVIEW_MIN_ROWS = 12;
+const MIDI_NOTE_ROW_FILL = 0.68;
 
 const MidiNotesOverview: Component<{ clip: MediaClip }> = (props) => {
   const notes = () => props.clip.midiNotes ?? [];
-  const minMidi = () => Math.max(0, Math.min(...notes().map(note => note.midi), MIDI_OVERVIEW_MIN));
-  const maxMidi = () => Math.min(127, Math.max(...notes().map(note => note.midi), MIDI_OVERVIEW_MAX));
-  const pitchRows = () => Math.max(12, maxMidi() - minMidi() + 1);
-  const noteHeightPx = () => Math.max(4, Math.min(7, 88 / pitchRows()));
+  const displayNotes = createMemo(() => {
+    const sorted = notes()
+      .filter((note) =>
+        Number.isFinite(note.midi)
+        && Number.isFinite(note.startBars)
+        && Number.isFinite(note.durationBars)
+        && note.durationBars > 0
+      )
+      .map((note) => ({
+        ...note,
+        midi: Math.max(0, Math.min(127, Math.round(note.midi))),
+        startBars: Math.max(0, note.startBars),
+        durationBars: Math.max(0.001, note.durationBars),
+      }))
+      .sort((a, b) => a.midi - b.midi || a.startBars - b.startBars);
+
+    const merged: typeof sorted = [];
+    for (const note of sorted) {
+      const previous = merged.at(-1);
+      const previousEnd = previous ? previous.startBars + previous.durationBars : -1;
+      if (previous?.midi === note.midi && note.startBars <= previousEnd + 0.001) {
+        previous.durationBars = Math.max(previousEnd, note.startBars + note.durationBars) - previous.startBars;
+        previous.velocity = Math.max(previous.velocity, note.velocity);
+      } else {
+        merged.push({ ...note });
+      }
+    }
+    return merged;
+  });
+  const displaySpanBars = createMemo(() =>
+    Math.max(
+      0.001,
+      ...displayNotes().map((note) => note.startBars + note.durationBars),
+    )
+  );
+  const pitchBounds = createMemo(() => {
+    const values = displayNotes().map((note) => note.midi);
+    if (values.length === 0) return { min: 54, max: 65, rows: MIDI_OVERVIEW_MIN_ROWS };
+
+    let min = Math.max(0, Math.min(...values) - 1);
+    let max = Math.min(127, Math.max(...values) + 1);
+    const missingRows = MIDI_OVERVIEW_MIN_ROWS - (max - min + 1);
+
+    if (missingRows > 0) {
+      min -= Math.floor(missingRows / 2);
+      max += Math.ceil(missingRows / 2);
+      if (min < 0) {
+        max = Math.min(127, max - min);
+        min = 0;
+      }
+      if (max > 127) {
+        min = Math.max(0, min - (max - 127));
+        max = 127;
+      }
+    }
+
+    return { min, max, rows: max - min + 1 };
+  });
   const noteTop = (midi: number) => {
-    const normalized = (Math.max(minMidi(), Math.min(maxMidi(), midi)) - minMidi()) / Math.max(1, maxMidi() - minMidi());
-    return `${4 + (1 - normalized) * 88}%`;
+    const bounds = pitchBounds();
+    const clamped = Math.max(bounds.min, Math.min(bounds.max, midi));
+    const row = bounds.max - clamped;
+    const inset = (1 - MIDI_NOTE_ROW_FILL) / 2;
+    return `${((row + inset) / bounds.rows) * 100}%`;
   };
-  const noteLeft = (startBars: number) => `${Math.max(0, (startBars / Math.max(0.001, props.clip.bars)) * 100)}%`;
-  const noteWidth = (durationBars: number) => `${Math.max(0.35, (durationBars / Math.max(0.001, props.clip.bars)) * 100)}%`;
+  const noteHeight = () => `${(MIDI_NOTE_ROW_FILL / pitchBounds().rows) * 100}%`;
+  const noteLeftPercent = (startBars: number) =>
+    Math.max(0, Math.min(100, (startBars / displaySpanBars()) * 100));
+  const noteWidthPercent = (startBars: number, durationBars: number) => {
+    const left = noteLeftPercent(startBars);
+    const requested = (Math.max(0, durationBars) / displaySpanBars()) * 100;
+    return Math.max(0, Math.min(requested, 100 - left));
+  };
 
   return (
     <div class="bl__midi-notes" style={{ "--mbars": `${Math.max(1, Math.round(props.clip.bars))}` }}>
-      <Show when={notes().length > 0} fallback={<div class="bl__midi-empty-grid" />}>
-        <For each={notes()}>
+      <Show when={displayNotes().length > 0} fallback={<div class="bl__midi-empty-grid" />}>
+        <For each={displayNotes()}>
           {(note) => (
             <span
               class="bl__midi-note"
               style={{
-                left: noteLeft(note.startBars),
-                width: noteWidth(note.durationBars),
+                left: `${noteLeftPercent(note.startBars)}%`,
+                width: `${noteWidthPercent(note.startBars, note.durationBars)}%`,
                 top: noteTop(note.midi),
-                height: `${noteHeightPx()}px`,
+                height: noteHeight(),
                 opacity: `${0.55 + Math.max(0, Math.min(1, note.velocity)) * 0.4}`,
               }}
             />
@@ -144,8 +207,6 @@ type Props = {
   onSelectClip: (trackId: string, clipId: string) => void;
 };
 
-const BARS = Array.from({ length: 128 }, (_, i) => i + 1);
-
 const TimelineArea: Component<Props> = (props) => {
   let timelineEl: HTMLDivElement | undefined;
   let dragState: { x: number; scroll: number } | null = null;
@@ -153,6 +214,24 @@ const TimelineArea: Component<Props> = (props) => {
   let playheadDragState: { startX: number; startPx: number } | null = null;
   let cycleDragState: { mode: "move" | "left" | "right"; startX: number; startPx: number; endPx: number; moved: boolean } | null = null;
   let importInputEl: HTMLInputElement | undefined;
+
+  const timelineBarCount = createMemo(() => {
+    const clipEndBars = props.tracks().reduce((max, track) => {
+      const trackEnd = (track.clips ?? []).reduce(
+        (clipMax, clip) => Math.max(clipMax, Math.ceil(clipRightPx(clip) / BAR_PX)),
+        0,
+      );
+      return Math.max(max, trackEnd);
+    }, 0);
+    const drumEndBars = props.drumClipBars().reduce((max, bar) => Math.max(max, bar + 1), 0);
+    const playheadEndBars = Math.ceil(props.playheadPx() / BAR_PX);
+    const cycleEndBars = Math.ceil(props.cycleEndPx() / BAR_PX);
+    const requiredBars = Math.max(24, clipEndBars, drumEndBars, playheadEndBars, cycleEndBars) + 8;
+    return Math.min(128, Math.ceil(requiredBars / 8) * 8);
+  });
+  const timelineBars = createMemo(() =>
+    Array.from({ length: timelineBarCount() }, (_, index) => index + 1),
+  );
 
   // clip drag state
   let clipDrag: {
@@ -401,10 +480,14 @@ const TimelineArea: Component<Props> = (props) => {
   };
 
   onMount(() => {
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeCtx();
+    };
     window.addEventListener("mousemove", onWinMouseMove);
     window.addEventListener("mouseup", onWinMouseUp);
     window.addEventListener("click", closeCtx);
-    window.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCtx(); });
+    window.addEventListener("keydown", onEscape);
+    onCleanup(() => window.removeEventListener("keydown", onEscape));
   });
   onCleanup(() => {
     if (clipDragRaf !== undefined) cancelAnimationFrame(clipDragRaf);
@@ -417,6 +500,7 @@ const TimelineArea: Component<Props> = (props) => {
     <section
       class="bl__timeline"
       ref={timelineEl}
+      style={{ "--timeline-bars": `${timelineBarCount()}` }}
       onWheel={onTimelineWheel}
       onMouseDown={onTimelineMouseDown}
     >
@@ -461,7 +545,7 @@ const TimelineArea: Component<Props> = (props) => {
             }}
           />
         </div>
-        <For each={BARS}>
+        <For each={timelineBars()}>
           {(bar) => (
             <div class="bl__bar">
               <span class="bl__bar-num">{bar}</span>
@@ -636,7 +720,7 @@ const TimelineArea: Component<Props> = (props) => {
                       "--tc": t.color,
                       transform: dragTransform(c.id, baseLeftPx),
                     }}
-                    title={`${c.name} · ${c.bars} bar${c.bars > 1 ? "s" : ""}`}
+                    aria-label={`${c.name}, ${c.bars} bar${c.bars > 1 ? "s" : ""}`}
                     onMouseDown={(e) => {
                       if (e.button !== 0) return;
                       e.stopPropagation();
