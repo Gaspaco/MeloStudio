@@ -253,9 +253,6 @@ export function useTracks(deps: Deps) {
     setRecordingMode("midi");
   };
 
-  const captureMidiNoteOn = (midi: number, velocity = 0.85) => {
-    if (!midiRecordTrackId) return;
-    if (activeMidiNotes.has(midi)) captureMidiNoteOff(midi);
   const captureMidiNoteOn = (midi: number, velocity = 0.85, receivedAt = performance.now()) => {
     if (!midiRecordTrackId || activeMidiNotes.has(midi)) return;
     const eventPx = deps.timelinePxAtPerformanceTime(receivedAt);

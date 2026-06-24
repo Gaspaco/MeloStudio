@@ -1,5 +1,4 @@
-import { type Component, For, Show, createMemo, createSignal, onMount, onCleanup } from "solid-js";
-import { type Component, For, Show, createEffect, createSignal, onMount, onCleanup } from "solid-js";
+import { type Component, For, Show, createMemo, createEffect, createSignal, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { MicVocal, FileMusic } from "lucide-solid";
 import { type ClipKind, type TrackType, type UITrack, TEMPLATES, isTrackAllowedForClip, isTrackTypeAllowedForClipKind } from "../types";
