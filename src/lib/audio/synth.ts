@@ -13,7 +13,13 @@ import * as Tone from "tone";
 import { bindToneToContext } from "./context";
 import { getMasterBus } from "./masterBus";
 
-export type SynthPreset = "piano" | "lead" | "pad" | "bass" | "guitar" | "fm-bell" | "physical-pluck";
+export type SynthPreset =
+  | "piano" | "bright-piano"
+  | "electric-piano" | "organ"
+  | "lead" | "analog-lead" | "pulse-lead" | "fm-bell" | "physical-pluck"
+  | "pad" | "glass-pad" | "string-ensemble"
+  | "bass" | "synth-bass" | "sub-bass"
+  | "guitar";
 
 interface SynthPresetOptions {
   oscillator: Partial<Tone.OmniOscillatorOptions>;
@@ -30,7 +36,7 @@ interface SynthPresetOptions {
   volume: number; // dB
 }
 
-const SYNTH_PRESETS: Record<"lead" | "pad" | "fallback" | "bassFallback", SynthPresetOptions> = {
+const SYNTH_PRESETS: Record<string, SynthPresetOptions> = {
   lead: {
     oscillator: { type: "sawtooth" },
     envelope: { attack: 0.005, decay: 0.2, sustain: 0.7, release: 0.25 },
@@ -49,6 +55,76 @@ const SYNTH_PRESETS: Record<"lead" | "pad" | "fallback" | "bassFallback", SynthP
       attack: 0.8, decay: 0.4, sustain: 0.6, release: 1.0,
       baseFrequency: 800, octaves: 1,
     },
+    volume: 0,
+  },
+  "electric-piano": {
+    oscillator: { type: "sine" },
+    envelope: { attack: 0.008, decay: 0.75, sustain: 0.18, release: 1.1 },
+    filter: { frequency: 5200, Q: 0.7 },
+    filterEnvelope: { attack: 0.005, decay: 0.55, sustain: 0.1, release: 0.8, baseFrequency: 1800, octaves: 1.6 },
+    volume: -2,
+  },
+  organ: {
+    oscillator: { type: "fatsine", count: 3, spread: 9 },
+    envelope: { attack: 0.025, decay: 0.08, sustain: 0.92, release: 0.22 },
+    filter: { frequency: 6200, Q: 0.4 },
+    filterEnvelope: { attack: 0.02, decay: 0.1, sustain: 0.8, release: 0.2, baseFrequency: 2200, octaves: 1.2 },
+    volume: -4,
+  },
+  "analog-lead": {
+    oscillator: { type: "fatsquare", count: 2, spread: 12 },
+    envelope: { attack: 0.012, decay: 0.16, sustain: 0.72, release: 0.32 },
+    filter: { frequency: 1900, Q: 5 },
+    filterEnvelope: { attack: 0.01, decay: 0.22, sustain: 0.35, release: 0.3, baseFrequency: 700, octaves: 2.1 },
+    volume: -3,
+  },
+  "pulse-lead": {
+    oscillator: { type: "pulse", width: 0.32 },
+    envelope: { attack: 0.004, decay: 0.12, sustain: 0.64, release: 0.18 },
+    filter: { frequency: 2500, Q: 3.2 },
+    filterEnvelope: { attack: 0.005, decay: 0.14, sustain: 0.42, release: 0.18, baseFrequency: 900, octaves: 1.8 },
+    volume: -4,
+  },
+  "fm-bell": {
+    oscillator: { type: "sine" },
+    envelope: { attack: 0.001, decay: 1.4, sustain: 0, release: 1.8 },
+    filter: { frequency: 7600, Q: 1.1 },
+    filterEnvelope: { attack: 0.001, decay: 1.1, sustain: 0, release: 1.2, baseFrequency: 2600, octaves: 1.7 },
+    volume: -5,
+  },
+  "physical-pluck": {
+    oscillator: { type: "triangle" },
+    envelope: { attack: 0.001, decay: 0.38, sustain: 0.04, release: 0.42 },
+    filter: { frequency: 3600, Q: 2.4 },
+    filterEnvelope: { attack: 0.001, decay: 0.24, sustain: 0, release: 0.3, baseFrequency: 700, octaves: 2.4 },
+    volume: -2,
+  },
+  "glass-pad": {
+    oscillator: { type: "fatsine", count: 4, spread: 24 },
+    envelope: { attack: 0.85, decay: 0.5, sustain: 0.74, release: 1.8 },
+    filter: { frequency: 3400, Q: 1.8 },
+    filterEnvelope: { attack: 1.1, decay: 0.6, sustain: 0.55, release: 1.5, baseFrequency: 1100, octaves: 1.4 },
+    volume: -7,
+  },
+  "string-ensemble": {
+    oscillator: { type: "fatsawtooth", count: 4, spread: 18 },
+    envelope: { attack: 0.42, decay: 0.3, sustain: 0.82, release: 1.35 },
+    filter: { frequency: 2100, Q: 0.8 },
+    filterEnvelope: { attack: 0.55, decay: 0.4, sustain: 0.65, release: 1.1, baseFrequency: 650, octaves: 1.5 },
+    volume: -8,
+  },
+  "synth-bass": {
+    oscillator: { type: "sawtooth" },
+    envelope: { attack: 0.004, decay: 0.3, sustain: 0.5, release: 0.22 },
+    filter: { frequency: 620, Q: 4.5 },
+    filterEnvelope: { attack: 0.004, decay: 0.24, sustain: 0.18, release: 0.2, baseFrequency: 110, octaves: 3.1 },
+    volume: -2,
+  },
+  "sub-bass": {
+    oscillator: { type: "sine" },
+    envelope: { attack: 0.008, decay: 0.18, sustain: 0.88, release: 0.28 },
+    filter: { frequency: 280, Q: 0.5 },
+    filterEnvelope: { attack: 0.01, decay: 0.2, sustain: 0.8, release: 0.25, baseFrequency: 80, octaves: 1.1 },
     volume: 0,
   },
   // Used as the silent-period fallback while samples are downloading.
@@ -141,26 +217,27 @@ function buildSynthOpts(cfg: SynthPresetOptions) {
   };
 }
 
-// Tiny module-level cache so swapping presets doesn't re-download samples.
-const samplerCache = new Map<string, Tone.Sampler>();
+type SampleSource = keyof typeof SAMPLER_PRESETS;
+const SAMPLE_SOURCE: Partial<Record<SynthPreset, SampleSource>> = {
+  piano: "piano",
+  "bright-piano": "piano",
+  bass: "bass",
+  guitar: "guitar",
+};
 
-function getSampler(preset: "piano" | "bass" | "guitar" | "fm-bell" | "physical-pluck"): Tone.Sampler {
-  const cached = samplerCache.get(preset);
-  if (cached) return cached;
-  const samplerCfg = SAMPLER_PRESETS[preset as keyof typeof SAMPLER_PRESETS];
+function getSampler(preset: SampleSource): Tone.Sampler {
+  const samplerCfg = SAMPLER_PRESETS[preset];
   // If it's a new preset without sampler configs like "fm-bell", fallback to piano configs for now if not defined or throw an error.
   if(!samplerCfg) throw new Error(`Missing sampler preset for ${preset}`);
   
   const baseUrl = `${SAMPLE_BASE}/${samplerCfg.folder}/`;
-  const sampler = new Tone.Sampler({
+  return new Tone.Sampler({
     urls: samplerCfg.urls,
     baseUrl,
     release: samplerCfg.release,
     attack: samplerCfg.attack ?? 0,
     volume: samplerCfg.volume,
   });
-  samplerCache.set(preset, sampler);
-  return sampler;
 }
 
 export class PolySynth {
@@ -186,7 +263,7 @@ export class PolySynth {
 
     this.master = new Tone.Gain(1);
     this.master.connect(getMasterBus().input);
-    this.synth = new Tone.PolySynth(Tone.MonoSynth, buildSynthOpts(SYNTH_PRESETS.fallback))
+    this.synth = new Tone.PolySynth(Tone.MonoSynth, buildSynthOpts(SYNTH_PRESETS.fallback!))
       .connect(this.master);
     this.synth.maxPolyphony = 16;
 
@@ -194,26 +271,26 @@ export class PolySynth {
   }
 
   private applyPreset(p: SynthPreset): void {
-    if (p === "lead" || p === "pad" || p === "fm-bell" || p === "physical-pluck") {
-      // Pure synth — detach any sampler.
+    const synthConfig = SYNTH_PRESETS[p];
+    if (synthConfig) {
       this.detachSampler();
-      // For fm-bell and physical-pluck, fall back to "pad" and "lead" respectively until they have their own config
-      const presetKey = p === "fm-bell" ? "pad" : (p === "physical-pluck" ? "lead" : p);
-      this.filterQ = SYNTH_PRESETS[presetKey].filter.Q;
-      this.synth.set(buildSynthOpts(SYNTH_PRESETS[presetKey]));
+      this.filterQ = synthConfig.filter.Q;
+      this.synth.set(buildSynthOpts(synthConfig));
       return;
     }
 
-    // Sample-backed preset. Use the cached/shared Sampler.
+    // Sample-backed presets use an instance-owned sampler. Region playback can
+    // then be disposed independently without cutting notes on another track.
     this.detachSampler();
-    const s = getSampler(p);
+    const sampleSource = SAMPLE_SOURCE[p] ?? "piano";
+    const s = getSampler(sampleSource);
     s.connect(this.master);
     this.sampler = s;
     this.samplerReady = s.loaded;
 
     // While we wait for samples, use a preset-appropriate fallback so bass
     // doesn't sound like piano during the download window.
-    const fallbackCfg = p === "bass" ? SYNTH_PRESETS.bassFallback : SYNTH_PRESETS.fallback;
+    const fallbackCfg = p === "bass" ? SYNTH_PRESETS.bassFallback! : SYNTH_PRESETS.fallback!;
     this.synth.set(buildSynthOpts(fallbackCfg));
 
     if (!s.loaded) {
@@ -229,6 +306,7 @@ export class PolySynth {
   private detachSampler(): void {
     if (this.sampler) {
       try { this.sampler.disconnect(this.master); } catch { /* */ }
+      this.sampler.dispose();
       this.sampler = null;
     }
     this.samplerReady = false;
@@ -321,7 +399,7 @@ export class PolySynth {
 
   /** Live-tweak ADSR envelope — only effective for lead/pad presets. */
   setEnvelope(attack: number, decay: number, sustain: number, release: number): void {
-    if (this.preset !== "lead" && this.preset !== "pad") return;
+    if (!SYNTH_PRESETS[this.preset]) return;
     this.synth.set({
       envelope: { attack, decay, sustain, release },
       filterEnvelope: { attack: attack * 0.9, decay, sustain, release: release * 0.85 },
@@ -330,14 +408,13 @@ export class PolySynth {
 
   /** Live-tweak filter cutoff — only effective for lead/pad presets. */
   setFilterFreq(freq: number): void {
-    if (this.preset !== "lead" && this.preset !== "pad") return;
+    if (!SYNTH_PRESETS[this.preset]) return;
     this.synth.set({ filter: { type: "lowpass" as const, frequency: freq, Q: this.filterQ } });
   }
 
   dispose(): void {
     this.allNotesOff();
     this.synth.dispose();
-    // Don't dispose cached samplers — they're shared across instances.
     this.detachSampler();
     this.master.dispose();
   }

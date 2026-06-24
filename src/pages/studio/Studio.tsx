@@ -85,6 +85,9 @@ const Studio: Component = () => {
   const [showPublishToast,   setShowPublishToast]   = createSignal(false);
   const [horizontalZoom,     setHorizontalZoom]     = createSignal(STUDIO_BAR_PX);
   const [verticalZoom,       setVerticalZoom]       = createSignal(88);
+  const [midiInputEnabled,   setMidiInputEnabled]   = createSignal(true);
+  const [midiArmedTrackId,   setMidiArmedTrackId]   = createSignal<string | null>(null);
+  const [timelineScrollTop,  setTimelineScrollTop]  = createSignal(0);
 
   const [userImage,          setUserImage]          = createSignal<string | null>(null);
 
@@ -180,13 +183,13 @@ const Studio: Component = () => {
   onCleanup(stopPanelResize);
 
   const sth = useSynth({
-    tracks, selectedTrack, masterVol,
+    tracks, selectedTrack, midiArmedTrackId, midiInputEnabled, masterVol,
     synthPreset, setSynthPreset, octave, setOctave,
     activeNotes, setActiveNotes,
     setSynthAttack, setSynthDecay, setSynthSustain, setSynthRelease,
     setSynthFilterFreq, setActivePanel,
-    onMidiNoteOn: (midi, velocity) => trk?.captureMidiNoteOn(midi, velocity),
-    onMidiNoteOff: (midi) => trk?.captureMidiNoteOff(midi),
+    onMidiNoteOn: (midi, velocity, receivedAt) => trk?.captureMidiNoteOn(midi, velocity, receivedAt),
+    onMidiNoteOff: (midi, receivedAt) => trk?.captureMidiNoteOff(midi, receivedAt),
   });
 
   const transport = useTransport({
@@ -205,6 +208,17 @@ const Studio: Component = () => {
     drumSwing, setDrumSwing, drumSteps, setDrumSteps,
   });
 
+  let lastDrumMeter = "";
+  createEffect(() => {
+    const signature = timeSig();
+    const key = signature.join("/");
+    if (lastDrumMeter && key !== lastDrumMeter && seq && tracks().some(track => track.type === "drum")) {
+      const stepsPerBar = Math.max(1, Math.round(signature[0] * (16 / signature[1])));
+      drum.updateDrumSteps(stepsPerBar);
+    }
+    lastDrumMeter = key;
+  });
+
   const project = useProject({
     projectId: params.id, navigate,
     getSeq: () => seq, ensureSynth: sth.ensureSynth,
@@ -221,12 +235,18 @@ const Studio: Component = () => {
   trk = useTracks({
     projectId: () => params.id,
     tracks, setTracks, selectedTrack, setSelectedTrack,
-    bpm, timelineScale: () => horizontalZoom() / STUDIO_BAR_PX,
+    bpm, timeSignature: timeSig,
+    loopEnabled: loopOn, cycleStartPx, cycleEndPx,
+    timelineScale: () => horizontalZoom() / STUDIO_BAR_PX,
     playheadPx, setError, setShowNewTrack,
     ensureSynth: sth.ensureSynth, setSynthPreset,
     setActivePanel, setDrumPanelOpen,
     getSeq: () => seq, getSynth: sth.getSynth,
     setTrackVolume: transport.setTrackVolume,
+    cancelClipPlayback: transport.cancelClipPlayback,
+    cancelTrackPlayback: transport.cancelTrackPlayback,
+    setMidiArmedTrackId,
+    timelinePxAtPerformanceTime: transport.timelinePxAtPerformanceTime,
     save: project.save,
   });
 
@@ -284,16 +304,16 @@ const Studio: Component = () => {
       return;
     }
 
-    const track = tracks().find(t => t.id === selectedTrack());
+    const track = tracks().find(t => t.id === selectedTrack())
+      ?? tracks().find(t => t.recordArmed && isInstrumentTrackType(t.type));
     if (!track || (!isAudioTrackType(track.type) && !isInstrumentTrackType(track.type))) {
       setError("Select an audio or instrument track before recording.");
       setTimeout(() => setError(""), 2600);
       return;
     }
 
-    if (loopOn() && (playheadPx() < cycleStartPx() || playheadPx() >= cycleEndPx())) {
-      setPlayheadPx(cycleStartPx());
-    }
+    const punchInPx = loopOn() ? cycleStartPx() : playheadPx();
+    if (loopOn()) await transport.seek(punchInPx);
 
     if (countInEnabled() && !playing()) {
       setCountingIn(true);
@@ -302,8 +322,8 @@ const Studio: Component = () => {
       if (!completed) return;
     }
 
-    if (isInstrumentTrackType(track.type)) trk.startMidiRecording(track.id);
-    else trk.startRecording(track.id);
+    if (isInstrumentTrackType(track.type)) trk.startMidiRecording(track.id, punchInPx);
+    else trk.startRecording(track.id, punchInPx);
     if (!playing()) await transport.togglePlay();
   };
 
@@ -484,8 +504,6 @@ const Studio: Component = () => {
     const stroke = `M0,${H} L${aw.toFixed(1)},2 L${(aw+dw).toFixed(1)},${sy.toFixed(1)} L${(aw+dw+sw).toFixed(1)},${sy.toFixed(1)} L${W},${H}`;
     return { stroke, fill: `${stroke} Z` };
   });
-
-  const drumClipBars = createMemo(() => Array.from({ length: 4 }, (_, i) => i));
 
   const saveAndNavigate = async (path: string) => {
     if (canSaveProject()) await handleSave();
@@ -672,7 +690,7 @@ const Studio: Component = () => {
         name={name} titleEditing={titleEditing} saveState={saveState} lastSaved={lastSaved}
         bpm={bpm} meter={timeSig} musicalKey={musicalKey}
         playing={playing} elapsed={elapsed} masterVol={masterVol}
-        horizontalZoom={horizontalZoom}
+        horizontalZoom={horizontalZoom} verticalZoom={verticalZoom}
         titleInputRef={(el) => (titleInputEl = el)}
         onNavToggle={() => setNavOpen(!navOpen())}
         onDashboard={() => { void saveAndNavigate("/dashboard"); }}
@@ -707,6 +725,7 @@ const Studio: Component = () => {
         onUpdateKey={setMusicalKey}
         onSetMasterVol={transport.setMasterVolume}
         onHorizontalZoom={setHorizontalZoom}
+        onVerticalZoom={setVerticalZoom}
         onElapsedReset={() => setElapsed(0)}
         enhance={enhance}
         onToggleEnhance={() => {
@@ -774,12 +793,20 @@ const Studio: Component = () => {
           onSelectTrack={setSelectedTrack}
           onPatchTrack={trk.patchTrack}
           onDeleteTrack={trk.deleteTrack}
+          onToggleRecordArm={(trackId) => {
+            setTracks(current => current.map(track => ({
+              ...track,
+              recordArmed: track.id === trackId ? !track.recordArmed : false,
+            })));
+          }}
           onAddTrack={trk.addTrack}
           onSetShowAddMenu={setShowAddMenu}
           onShowNewTrack={() => setShowNewTrack(true)}
           recordingTrackId={trk.recordingTrackId}
           onStartRecording={trk.startRecording}
           onStopRecording={trk.stopRecording}
+          verticalScrollTop={timelineScrollTop}
+          onVerticalScroll={setTimelineScrollTop}
         />
         <TimelineArea
           tracks={tracks} selectedTrack={selectedTrack}
@@ -791,7 +818,6 @@ const Studio: Component = () => {
           onHorizontalZoom={setHorizontalZoom}
           onVerticalZoom={setVerticalZoom}
           onSeek={transport.seek}
-          drumClipBars={drumClipBars}
           dropTarget={trk.dropTarget} globalDragOver={trk.globalDragOver}
           onLaneDragOver={trk.onLaneDragOver} onLaneDragLeave={trk.onLaneDragLeave} onLaneDrop={trk.onLaneDrop}
           onLanesDragOver={trk.onLanesDragOver} onLanesDragLeave={trk.onLanesDragLeave} onLanesDrop={trk.onLanesDrop}
@@ -811,7 +837,9 @@ const Studio: Component = () => {
           onAddTrack={trk.addTrack} onShowNewTrack={() => setShowNewTrack(true)}
           recordingTrackId={trk.recordingTrackId}
           recordingStartPx={trk.recordingStartPx}
+          recordingEndPx={trk.recordingEndPx}
           recordingMode={trk.recordingMode}
+          liveMidiNotes={trk.liveMidiNotes}
           cycleEnabled={loopOn}
           cycleStartPx={cycleStartPx}
           cycleEndPx={cycleEndPx}
@@ -826,6 +854,8 @@ const Studio: Component = () => {
             if (t?.type === "voice") { setSelectedClipId(clipId); setActivePanel("voice"); }
             else setSelectedClipId(clipId);
           }}
+          verticalScrollTop={timelineScrollTop}
+          onVerticalScroll={setTimelineScrollTop}
         />
       </div>
 
@@ -843,6 +873,7 @@ const Studio: Component = () => {
           <DrumPanel
             pattern={pattern} currentStep={currentStep}
             drumSteps={drumSteps} drumSwing={drumSwing}
+            timeSignature={timeSig}
             drumVolume={() => tracks().find(t => t.type === "drum")?.volume ?? 0.8}
             onToggleStep={drum.toggleStep}
             onCycleStepVelocity={drum.cycleStepVelocity}
@@ -877,6 +908,7 @@ const Studio: Component = () => {
           <KeyboardPanel
             tracks={tracks} selectedTrack={selectedTrack}
             synthPreset={synthPreset} octave={octave} activeNotes={activeNotes}
+            midiInputEnabled={midiInputEnabled}
             synthAttack={synthAttack} synthDecay={synthDecay}
             synthSustain={synthSustain} synthRelease={synthRelease}
             synthFilterFreq={synthFilterFreq} adsrPath={adsrPath}
@@ -896,6 +928,7 @@ const Studio: Component = () => {
               const id = selectedTrack();
               if (id) trk.patchTrack(id, { volume: v });
             }}
+            onToggleMidiInput={() => setMidiInputEnabled(enabled => !enabled)}
             onCollapse={() => setActivePanel(null)}
           />
         </div>

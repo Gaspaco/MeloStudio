@@ -9,6 +9,7 @@ interface DrumPanelProps {
   drumSteps:   Accessor<number>;
   drumSwing:   Accessor<number>;
   drumVolume:  Accessor<number>;
+  timeSignature: Accessor<[number, number]>;
   onToggleStep:        (rowIdx: number, stepIdx: number) => void;
   onCycleStepVelocity: (rowIdx: number, stepIdx: number) => void;
   onToggleRowMute:     (rowIdx: number) => void;
@@ -21,6 +22,8 @@ interface DrumPanelProps {
 }
 
 const DrumPanel: Component<DrumPanelProps> = (props) => {
+  const stepsPerBeat = () => Math.max(1, Math.round(16 / props.timeSignature()[1]));
+  const stepsPerBar = () => Math.max(1, props.timeSignature()[0] * stepsPerBeat());
   return (
     <section class="bl__drum-panel">
       <div class="bl__dp-head">
@@ -42,8 +45,8 @@ const DrumPanel: Component<DrumPanelProps> = (props) => {
           <div class="bl__dp-ctrl-group">
             <span class="bl__dp-ctrl-label">Steps</span>
             <div class="bl__dp-steps-toggle">
-              <button class={`bl__dp-steps-btn ${props.drumSteps() === 16 ? "is-on" : ""}`} onClick={() => props.onUpdateDrumSteps(16)}>16</button>
-              <button class={`bl__dp-steps-btn ${props.drumSteps() === 32 ? "is-on" : ""}`} onClick={() => props.onUpdateDrumSteps(32)}>32</button>
+              <button class={`bl__dp-steps-btn ${props.drumSteps() === stepsPerBar() ? "is-on" : ""}`} onClick={() => props.onUpdateDrumSteps(stepsPerBar())}>1 bar</button>
+              <button class={`bl__dp-steps-btn ${props.drumSteps() === stepsPerBar() * 2 ? "is-on" : ""}`} onClick={() => props.onUpdateDrumSteps(stepsPerBar() * 2)}>2 bars</button>
             </div>
           </div>
 
@@ -114,7 +117,7 @@ const DrumPanel: Component<DrumPanelProps> = (props) => {
                         "bl__dp-cell",
                         v >= 0.9 ? "is-vel-hi" : v >= 0.5 ? "is-vel-med" : v > 0 ? "is-vel-lo" : "",
                         props.currentStep() === stepIdx() ? "is-cursor" : "",
-                        stepIdx() % 4 === 0 ? "is-down" : "",
+                        stepIdx() % stepsPerBar() === 0 ? "is-bar" : stepIdx() % stepsPerBeat() === 0 ? "is-down" : "",
                       ].filter(Boolean).join(" ")}
                       onClick={() => props.onToggleStep(rowIdx(), stepIdx())}
                       onContextMenu={(e) => { e.preventDefault(); props.onCycleStepVelocity(rowIdx(), stepIdx()); }}

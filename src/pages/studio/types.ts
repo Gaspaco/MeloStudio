@@ -25,6 +25,7 @@ export interface MediaClip {
   playbackRate?: number; // speed multiplier, default 1
   gain?: number;        // dB, default 0
   midiNotes?: MidiNoteEvent[];
+  drumPattern?: boolean;
   reversed?: boolean;
   url?: string;
   dataUrl?: string;
@@ -38,6 +39,7 @@ export interface UITrack {
   instrumentPreset?: SynthPreset;
   muted: boolean;
   solo: boolean;
+  recordArmed?: boolean;
   volume: number; // 0..1
   pan: number;    // -1..1
   color: string;
@@ -57,7 +59,21 @@ export const isTrackTypeAllowedForClipKind = (trackType: TrackType, clipKind: Cl
 };
 
 export const isTrackAllowedForClip = (track: UITrack, clip: MediaClip): boolean =>
-  isTrackTypeAllowedForClipKind(track.type, clip.kind);
+  clip.drumPattern
+    ? track.type === "drum"
+    : isTrackTypeAllowedForClipKind(track.type, clip.kind);
+
+export const createDrumPatternRegions = (bars = 4): MediaClip[] =>
+  Array.from({ length: Math.max(1, Math.round(bars)) }, (_, bar) => ({
+    id: crypto.randomUUID(),
+    kind: "midi",
+    drumPattern: true,
+    name: `Drum Pattern ${String.fromCharCode(65 + (bar % 26))}`,
+    barStart: bar,
+    bars: 1,
+    leftPx: bar * 240,
+    widthPx: 240,
+  }));
 
 export const hasPatternContent = (pattern: { rows?: Array<{ velocities?: number[] }> } | null | undefined): boolean =>
   Boolean(pattern?.rows?.some(row => row.velocities?.some(velocity => velocity > 0)));

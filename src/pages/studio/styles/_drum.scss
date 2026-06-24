@@ -350,6 +350,8 @@
   border: 1px solid rgba(#fff, 0.1);
   background: rgba(#fff, 0.06);
   transition: background 0.08s, border-color 0.08s, transform 0.06s;
+  &.is-down { border-left-color: rgba(#fff, 0.28); }
+  &.is-bar { border-left-color: rgba($accent, 0.75); }
   &:hover { background: rgba(#fff, 0.14); border-color: rgba(#fff, 0.22); }
   // Velocity levels — only these actually trigger sound
   &.is-vel-lo {

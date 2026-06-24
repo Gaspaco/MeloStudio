@@ -18,7 +18,9 @@ import {
   TRACK_DEFS,
   isAudioTrackType,
   isInstrumentTrackType,
+  isTrackAllowedForClip,
   isTrackTypeAllowedForClipKind,
+  createDrumPatternRegions,
   randomTrackColor,
 } from "../types";
 import type { PolySynth, SynthPreset } from "~/lib/audio/synth";
@@ -86,6 +88,10 @@ type Deps = {
   tracks: Accessor<UITrack[]>; setTracks: Setter<UITrack[]>;
   selectedTrack: Accessor<string | null>; setSelectedTrack: Setter<string | null>;
   bpm: Accessor<number>;
+  timeSignature: Accessor<[number, number]>;
+  loopEnabled: Accessor<boolean>;
+  cycleStartPx: Accessor<number>;
+  cycleEndPx: Accessor<number>;
   timelineScale: Accessor<number>;
   playheadPx: Accessor<number>;
   setError: Setter<string>;
@@ -97,6 +103,10 @@ type Deps = {
   getSeq: () => StepSequencer | null;
   getSynth: () => PolySynth | null;
   setTrackVolume: (id: string, v: number) => void;
+  cancelClipPlayback: (trackId: string, clipId: string) => void;
+  cancelTrackPlayback: (trackId: string) => void;
+  setMidiArmedTrackId: Setter<string | null>;
+  timelinePxAtPerformanceTime: (performanceTime: number) => number;
   save: () => Promise<void>;
 };
 
@@ -105,19 +115,62 @@ export function useTracks(deps: Deps) {
   const [globalDragOver, setGlobalDragOver] = createSignal(false);
   const [recordingTrackId, setRecordingTrackId] = createSignal<string | null>(null);
   const [recordingStartPx, setRecordingStartPx] = createSignal(0);
+  const [recordingEndPx, setRecordingEndPx] = createSignal(0);
   const [recordingStartTime, setRecordingStartTime] = createSignal(0);
   const [recordingMode, setRecordingMode] = createSignal<"audio" | "midi" | null>(null);
+  const [liveMidiNotes, setLiveMidiNotes] = createSignal<Array<MidiNoteEvent & { active?: boolean }>>([]);
   let mediaRecorder: MediaRecorder | null = null;
   let recordChunks: BlobPart[] = [];
   let recEndPx = 0;
   let warnedRemoteStorageUnavailable = false;
   let midiRecordTrackId: string | null = null;
+  let recordingRaf: number | null = null;
+  let recordingStartedAtContextTime = 0;
+  let recordingAnchorPx = 0;
   let midiRecordedNotes: MidiNoteEvent[] = [];
-  const activeMidiNotes = new Map<number, { startPx: number; velocity: number }>();
+  const activeMidiNotes = new Map<number, { startPx: number; startedAt: number; velocity: number }>();
 
   const trackById = (trackId: string) => deps.tracks().find(t => t.id === trackId);
+  const syncDrumPlaybackRegions = (nextTracks = deps.tracks()) => {
+    const bars = nextTracks
+      .filter(track => track.type === "drum" && !track.muted)
+      .flatMap(track => (track.clips ?? []).filter(clip => clip.drumPattern).map(clip => clip.barStart));
+    deps.getSeq()?.setActiveBars(bars, deps.timeSignature());
+  };
 
   const clipKindLabel = (kind: ClipKind) => kind === "midi" ? "MIDI" : "audio";
+  const beatSecs = () => (60 / deps.bpm()) * (4 / deps.timeSignature()[1]);
+  const barSecs = () => deps.timeSignature()[0] * beatSecs();
+  const elapsedSecsToPx = (seconds: number) => (seconds / Math.max(0.001, barSecs())) * BAR_PX;
+  const recordingLimitPx = () => deps.loopEnabled()
+    ? Math.max(recordingAnchorPx + 1, deps.cycleEndPx())
+    : Number.POSITIVE_INFINITY;
+  const stopRecordingVisualClock = () => {
+    if (recordingRaf !== null) cancelAnimationFrame(recordingRaf);
+    recordingRaf = null;
+  };
+  const startRecordingVisualClock = () => {
+    stopRecordingVisualClock();
+    recordingStartedAtContextTime = getAudioContext().currentTime;
+    const tick = () => {
+      const elapsed = Math.max(0, getAudioContext().currentTime - recordingStartedAtContextTime);
+      const endPx = Math.min(recordingLimitPx(), recordingAnchorPx + elapsedSecsToPx(elapsed));
+      setRecordingEndPx(endPx);
+      if (midiRecordTrackId && activeMidiNotes.size) {
+        setLiveMidiNotes(notes => notes.map(note => {
+          if (!note.active) return note;
+          const active = activeMidiNotes.get(note.midi);
+          if (!active) return { ...note, active: false };
+          return {
+            ...note,
+            durationBars: Math.max(STUDIO_BEAT_PX / 8 / BAR_PX, (endPx - active.startPx) / BAR_PX),
+          };
+        }));
+      }
+      recordingRaf = requestAnimationFrame(tick);
+    };
+    recordingRaf = requestAnimationFrame(tick);
+  };
 
   const rejectIncompatibleClip = (track: UITrack | undefined, kind: ClipKind) => {
     const trackName = track?.name ?? "this track";
@@ -125,7 +178,7 @@ export function useTracks(deps: Deps) {
     setTimeout(() => deps.setError(""), 2800);
   };
 
-  const startRecording = (trackId: string) => {
+  const startRecording = (trackId: string, punchInPx = deps.playheadPx()) => {
     const track = trackById(trackId);
     if (!track || !isAudioTrackType(track.type)) {
       deps.setError("Recording is only available on Voice / Audio tracks.");
@@ -135,17 +188,18 @@ export function useTracks(deps: Deps) {
     const entry = getMicEntry(trackId);
     // Stream tracks can end after MediaRecorder.stop() in Chrome — reconnect silently
     if (!entry || entry.stream.getTracks().some(t => t.readyState === "ended")) {
-      void connectMicToTrack(trackId, deps.setError).then(() => startRecording(trackId));
+      void connectMicToTrack(trackId, deps.setError).then(() => startRecording(trackId, punchInPx));
       return;
     }
     if (mediaRecorder) stopRecording();
     stopMidiRecording();
     recordChunks = [];
-    const startPx = deps.playheadPx();
+    const startPx = Math.max(0, punchInPx);
     const recStartTime = performance.now();
     const mr = new MediaRecorder(entry.stream);
     mr.ondataavailable = (e) => { if (e.data.size > 0) recordChunks.push(e.data); };
     mr.onstop = async () => {
+      stopRecordingVisualClock();
       const widthPx = Math.max(1, recEndPx - startPx);
       const bars = widthPx / BAR_PX;
       const blob = new Blob(recordChunks, { type: mr.mimeType });
@@ -158,7 +212,10 @@ export function useTracks(deps: Deps) {
     };
     mr.start(100);
     mediaRecorder = mr;
+    recordingAnchorPx = startPx;
     setRecordingStartPx(startPx);
+    setRecordingEndPx(startPx);
+    startRecordingVisualClock();
     setRecordingStartTime(recStartTime);
     setRecordingTrackId(trackId);
     setRecordingMode("audio");
@@ -166,13 +223,14 @@ export function useTracks(deps: Deps) {
 
   const stopRecording = () => {
     if (mediaRecorder?.state === "recording") {
-      recEndPx = deps.playheadPx();
+      recEndPx = Math.max(recordingAnchorPx + 1, recordingEndPx());
       mediaRecorder.stop();
     }
+    stopRecordingVisualClock();
     mediaRecorder = null;
   };
 
-  const startMidiRecording = (trackId: string) => {
+  const startMidiRecording = (trackId: string, punchInPx = deps.playheadPx()) => {
     const track = trackById(trackId);
     if (!track || !isInstrumentTrackType(track.type)) {
       deps.setError("MIDI recording is only available on instrument tracks.");
@@ -182,10 +240,15 @@ export function useTracks(deps: Deps) {
     if (mediaRecorder) stopRecording();
     if (midiRecordTrackId) stopMidiRecording();
     midiRecordTrackId = trackId;
+    deps.setMidiArmedTrackId(trackId);
     midiRecordedNotes = [];
     activeMidiNotes.clear();
+    setLiveMidiNotes([]);
+    recordingAnchorPx = Math.max(0, punchInPx);
     setRecordingTrackId(trackId);
-    setRecordingStartPx(Math.max(0, deps.playheadPx()));
+    setRecordingStartPx(recordingAnchorPx);
+    setRecordingEndPx(recordingAnchorPx);
+    startRecordingVisualClock();
     setRecordingStartTime(performance.now());
     setRecordingMode("midi");
   };
@@ -193,40 +256,65 @@ export function useTracks(deps: Deps) {
   const captureMidiNoteOn = (midi: number, velocity = 0.85) => {
     if (!midiRecordTrackId) return;
     if (activeMidiNotes.has(midi)) captureMidiNoteOff(midi);
+  const captureMidiNoteOn = (midi: number, velocity = 0.85, receivedAt = performance.now()) => {
+    if (!midiRecordTrackId || activeMidiNotes.has(midi)) return;
+    const eventPx = deps.timelinePxAtPerformanceTime(receivedAt);
     activeMidiNotes.set(midi, {
-      startPx: Math.max(0, deps.playheadPx()),
+      startPx: Math.max(recordingAnchorPx, eventPx),
+      startedAt: receivedAt,
       velocity: Math.max(0, Math.min(1, velocity)),
     });
+    setLiveMidiNotes(notes => [
+      ...notes,
+      {
+        midi,
+        startBars: Math.max(0, (eventPx - recordingAnchorPx) / BAR_PX),
+        durationBars: STUDIO_BEAT_PX / 8 / BAR_PX,
+        velocity: Math.max(0, Math.min(1, velocity)),
+        active: true,
+      },
+    ]);
   };
 
-  const captureMidiNoteOff = (midi: number) => {
+  const captureMidiNoteOff = (midi: number, receivedAt = performance.now()) => {
     if (!midiRecordTrackId) return;
     const active = activeMidiNotes.get(midi);
     if (!active) return;
     activeMidiNotes.delete(midi);
-    const endPx = Math.max(active.startPx + STUDIO_BEAT_PX / 8, deps.playheadPx());
+    const durationPx = elapsedSecsToPx(Math.max(0, (receivedAt - active.startedAt) / 1000));
+    const rawEndPx = Math.max(active.startPx + STUDIO_BEAT_PX / 8, active.startPx + durationPx);
+    const endPx = deps.loopEnabled() ? Math.min(deps.cycleEndPx(), rawEndPx) : rawEndPx;
     midiRecordedNotes.push({
       midi,
       startBars: active.startPx / BAR_PX,
       durationBars: (endPx - active.startPx) / BAR_PX,
       velocity: active.velocity,
     });
+    setLiveMidiNotes(notes => notes.map(note =>
+      note.midi === midi && note.active
+        ? { ...note, durationBars: Math.max(STUDIO_BEAT_PX / 8 / BAR_PX, (endPx - active.startPx) / BAR_PX), active: false }
+        : note
+    ));
   };
 
   const stopMidiRecording = () => {
     if (!midiRecordTrackId) return;
-    for (const midi of [...activeMidiNotes.keys()]) captureMidiNoteOff(midi);
+    const stoppedAt = performance.now();
+    for (const midi of [...activeMidiNotes.keys()]) captureMidiNoteOff(midi, stoppedAt);
     const trackId = midiRecordTrackId;
     const notes = midiRecordedNotes.filter(note => note.durationBars > 0);
     midiRecordTrackId = null;
+    deps.setMidiArmedTrackId(null);
     midiRecordedNotes = [];
     activeMidiNotes.clear();
+    stopRecordingVisualClock();
     setRecordingTrackId(null);
     setRecordingMode(null);
     if (!notes.length) return;
 
-    const startBar = Math.min(...notes.map(note => note.startBars));
-    const endBar = Math.max(...notes.map(note => note.startBars + note.durationBars));
+    const startBar = recordingAnchorPx / BAR_PX;
+    const rawEndBar = Math.max(startBar + STUDIO_BEAT_PX / BAR_PX, ...notes.map(note => note.startBars + note.durationBars));
+    const endBar = deps.loopEnabled() ? Math.min(deps.cycleEndPx() / BAR_PX, rawEndBar) : rawEndBar;
     const clipStartPx = startBar * BAR_PX;
     const clipWidthPx = Math.max(STUDIO_BEAT_PX / 4, (endBar - startBar) * BAR_PX);
     const clip = placeClip({
@@ -235,7 +323,7 @@ export function useTracks(deps: Deps) {
       name: `MIDI Take ${Date.now()}`,
       barStart: startBar,
       bars: clipWidthPx / BAR_PX,
-      midiNotes: notes.map(note => ({ ...note, startBars: note.startBars - startBar })),
+      midiNotes: notes.map(note => ({ ...note, startBars: Math.max(0, note.startBars - startBar) })),
     }, clipStartPx, clipWidthPx);
 
     deps.setTracks(deps.tracks().map(t =>
@@ -350,7 +438,8 @@ export function useTracks(deps: Deps) {
   };
 
   const deleteClip = (trackId: string, clipId: string) => {
-    deps.setTracks(deps.tracks().map(t => {
+    deps.cancelClipPlayback(trackId, clipId);
+    const nextTracks = deps.tracks().map(t => {
       if (t.id !== trackId) return t;
       const target = (t.clips ?? []).find(c => c.id === clipId);
       const targetAssetId = target?.assetId ?? target?.id;
@@ -365,7 +454,9 @@ export function useTracks(deps: Deps) {
         void deleteRemoteClip(pid, targetAssetId).catch(() => {});
       }
       return { ...t, clips: (t.clips ?? []).filter(c => c.id !== clipId) };
-    }));
+    });
+    deps.setTracks(nextTracks);
+    syncDrumPlaybackRegions(nextTracks);
   };
 
   const importFiles = async (files: File[]) => {
@@ -416,6 +507,7 @@ export function useTracks(deps: Deps) {
       muted: false, solo: false, volume: 0.8, pan: 0,
       color: type === "drum" ? def.color : randomTrackColor(),
       instrumentPreset: initPreset,
+      clips: type === "drum" ? createDrumPatternRegions(4) : undefined,
     };
     deps.setTracks([...deps.tracks(), t]);
     deps.setSelectedTrack(t.id);
@@ -426,6 +518,10 @@ export function useTracks(deps: Deps) {
   };
 
   const deleteTrack = (id: string) => {
+    const track = trackById(id);
+    deps.cancelTrackPlayback(id);
+    if (midiRecordTrackId === id) stopMidiRecording();
+    if (track?.type === "drum") deps.getSeq()?.stop();
     disconnectMicFromTrack(id);
     deps.setTracks(deps.tracks().filter(t => t.id !== id));
     if (deps.selectedTrack() === id) deps.setSelectedTrack(null);
@@ -529,7 +625,7 @@ export function useTracks(deps: Deps) {
 
   return {
     dropTarget, globalDragOver,
-    recordingTrackId, recordingStartPx, recordingStartTime, recordingMode,
+    recordingTrackId, recordingStartPx, recordingEndPx, recordingStartTime, recordingMode, liveMidiNotes,
     startRecording, stopRecording, startMidiRecording, stopMidiRecording, captureMidiNoteOn, captureMidiNoteOff,
     addTrack, deleteTrack, patchTrack, addClip, deleteClip, importFiles,
     onLaneDragOver, onLaneDragLeave, onLaneDrop,
@@ -538,12 +634,14 @@ export function useTracks(deps: Deps) {
     moveClip(trackId: string, clipId: string, newBarStart: number) {
       const snapped = Math.max(0, newBarStart);
       const movedLeftPx = snapped * BAR_PX;
-      deps.setTracks(deps.tracks().map(t =>
+      const nextTracks = deps.tracks().map(t =>
         t.id !== trackId ? t : {
           ...t,
           clips: moveRegionToPx(t.clips ?? [], clipId, movedLeftPx, createRegionId),
         }
-      ));
+      );
+      deps.setTracks(nextTracks);
+      syncDrumPlaybackRegions(nextTracks);
       void deps.save();
     },
 
@@ -552,25 +650,27 @@ export function useTracks(deps: Deps) {
       const targetTrack = deps.tracks().find(t => t.id === targetTrackId);
       const clip = sourceTrack?.clips?.find(c => c.id === clipId);
       if (!sourceTrack || !targetTrack || !clip) return;
-      if (!isTrackTypeAllowedForClipKind(targetTrack.type, clip.kind)) {
+      if (!isTrackAllowedForClip(targetTrack, clip)) {
         rejectIncompatibleClip(targetTrack, clip.kind);
         return;
       }
 
       if (sourceTrackId === targetTrackId) {
         const movedLeftPx = Math.max(0, newBarStart) * BAR_PX;
-        deps.setTracks(deps.tracks().map(t =>
+        const nextTracks = deps.tracks().map(t =>
           t.id !== sourceTrackId ? t : {
             ...t,
             clips: moveRegionToPx(t.clips ?? [], clipId, movedLeftPx, createRegionId),
           }
-        ));
+        );
+        deps.setTracks(nextTracks);
+        syncDrumPlaybackRegions(nextTracks);
         void deps.save();
         return;
       }
 
       const movedClip = placeClip(clip, Math.max(0, newBarStart) * BAR_PX, clipWidthPx(clip));
-      deps.setTracks(deps.tracks().map(t => {
+      const nextTracks = deps.tracks().map(t => {
         if (t.id === sourceTrackId) {
           return { ...t, clips: (t.clips ?? []).filter(c => c.id !== clipId) };
         }
@@ -581,18 +681,22 @@ export function useTracks(deps: Deps) {
           };
         }
         return t;
-      }));
+      });
+      deps.setTracks(nextTracks);
+      syncDrumPlaybackRegions(nextTracks);
       deps.setSelectedTrack(targetTrackId);
       void deps.save();
     },
 
     trimClip(trackId: string, clipId: string, edge: RegionEdge, targetPx: number) {
-      deps.setTracks(deps.tracks().map(t =>
+      const nextTracks = deps.tracks().map(t =>
         t.id !== trackId ? t : {
           ...t,
           clips: trimRegionEdge(t.clips ?? [], clipId, edge, Math.max(0, targetPx), createRegionId),
         }
-      ));
+      );
+      deps.setTracks(nextTracks);
+      syncDrumPlaybackRegions(nextTracks);
       void deps.save();
     },
 
@@ -635,9 +739,11 @@ export function useTracks(deps: Deps) {
           muted: false, solo: false, volume: 0.8, pan: 0,
           color: type === "drum" ? def.color : randomTrackColor(),
           instrumentPreset: type === "instrument" ? "piano" : type === "bass" ? "bass" : type === "guitar" ? "guitar" : undefined,
+          clips: type === "drum" ? createDrumPatternRegions(4) : undefined,
         };
       });
       deps.setTracks(newTracks);
+      syncDrumPlaybackRegions(newTracks);
       deps.setSelectedTrack(newTracks[0]?.id ?? null);
       const hasDrum = newTracks.some(t => t.type === "drum");
       if (hasDrum) { deps.setDrumPanelOpen(true); deps.setActivePanel("drum"); }

@@ -26,10 +26,16 @@ type Deps = {
   cycleEndPx: Accessor<number>;
 };
 
-type PlaybackSynth = { preset: SynthPreset; synth: PolySynth };
+type PlaybackSynth = { trackId: string; preset: SynthPreset; synth: PolySynth };
+type ScheduledAudioVoice = {
+  trackId: string;
+  clipId: string;
+  source: AudioBufferSourceNode;
+  gain: GainNode;
+};
 
 export function useTransport(deps: Deps) {
-  let audioSources: AudioBufferSourceNode[] = [];
+  let audioVoices: ScheduledAudioVoice[] = [];
   let metronomeNodes: AudioScheduledSourceNode[] = [];
   let playbackRaf: number | null = null;
   let playbackStartCtxTime = 0;
@@ -51,6 +57,23 @@ export function useTransport(deps: Deps) {
   const barsToSecs = (bars: number) => bars * barSecs();
   const pxToSecs = (px: number) => barsToSecs(px / STUDIO_BAR_PX);
   const secsToPx = (secs: number) => (secs / barSecs()) * STUDIO_BAR_PX;
+  const timelinePxAtPerformanceTime = (performanceTime: number) => {
+    if (!deps.playing()) return deps.playheadPx();
+    const ctx = getAudioContext();
+    const timestamp = typeof ctx.getOutputTimestamp === "function"
+      ? ctx.getOutputTimestamp()
+      : { contextTime: ctx.currentTime, performanceTime: performance.now() };
+    const timestampContextTime = timestamp.contextTime ?? ctx.currentTime;
+    const timestampPerformanceTime = timestamp.performanceTime ?? performance.now();
+    const eventContextTime = timestampContextTime + (performanceTime - timestampPerformanceTime) / 1000;
+    const eventTimelineSecs = playbackStartTimelineSecs + Math.max(0, eventContextTime - playbackStartCtxTime);
+    const bounds = cycleBounds();
+    if (!bounds.enabled) return secsToPx(eventTimelineSecs);
+    const cycleDuration = Math.max(0.001, bounds.endSecs - bounds.startSecs);
+    const wrappedSecs = bounds.startSecs
+      + ((eventTimelineSecs - bounds.startSecs) % cycleDuration + cycleDuration) % cycleDuration;
+    return secsToPx(wrappedSecs);
+  };
   const optionalRemoteUrl = (src: string) =>
     src.includes("optional=") ? src : `${src}${src.includes("?") ? "&" : "?"}optional=1`;
 
@@ -59,19 +82,29 @@ export function useTransport(deps: Deps) {
   const audioTracks = () => deps.tracks().filter(track => isAudioTrackType(track.type));
   const instrumentTracks = () => deps.tracks().filter(track => isInstrumentTrackType(track.type));
   const shouldRunDrumSequencer = () =>
-    deps.tracks().some(track => track.type === "drum" && isTrackAudible(track)) &&
+    deps.tracks().some(track =>
+      track.type === "drum"
+      && isTrackAudible(track)
+      && (track.clips ?? []).some(clip => clip.drumPattern)
+    ) &&
     hasPatternContent(deps.pattern());
+  const configureDrumSequencer = () => {
+    const activeBars = deps.tracks()
+      .filter(track => track.type === "drum" && isTrackAudible(track))
+      .flatMap(track => (track.clips ?? []).filter(clip => clip.drumPattern).map(clip => clip.barStart));
+    deps.getSeq()?.setActiveBars(activeBars, deps.timeSignature());
+  };
 
   const synthPresetForTrack = (track: UITrack): SynthPreset =>
     track.instrumentPreset ?? (track.type === "bass" ? "bass" : track.type === "guitar" ? "guitar" : "piano");
 
-  const playbackSynthForTrack = (track: UITrack) => {
+  const playbackSynthForClip = (track: UITrack, clipId: string) => {
     const preset = synthPresetForTrack(track);
-    const existing = playbackSynths.get(track.id);
+    const existing = playbackSynths.get(clipId);
     if (existing?.preset === preset) return existing.synth;
     existing?.synth.dispose();
     const synth = new PolySynth(preset);
-    playbackSynths.set(track.id, { preset, synth });
+    playbackSynths.set(clipId, { trackId: track.id, preset, synth });
     return synth;
   };
 
@@ -98,12 +131,65 @@ export function useTransport(deps: Deps) {
   };
 
   const stopScheduledNodes = () => {
-    for (const node of [...audioSources, ...metronomeNodes]) {
+    for (const voice of audioVoices) {
+      try { voice.source.stop(); } catch { /* already ended */ }
+      try { voice.source.disconnect(); } catch { /* already disconnected */ }
+      try { voice.gain.disconnect(); } catch { /* already disconnected */ }
+    }
+    for (const node of metronomeNodes) {
       try { node.stop(); } catch { /* already ended */ }
       try { node.disconnect(); } catch { /* already disconnected */ }
     }
-    audioSources = [];
+    audioVoices = [];
     metronomeNodes = [];
+  };
+
+  const stopAudioVoices = (matches: (voice: ScheduledAudioVoice) => boolean) => {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    const remaining: ScheduledAudioVoice[] = [];
+    for (const voice of audioVoices) {
+      if (!matches(voice)) {
+        remaining.push(voice);
+        continue;
+      }
+      try {
+        voice.gain.gain.cancelScheduledValues(now);
+        voice.gain.gain.setValueAtTime(voice.gain.gain.value, now);
+        voice.gain.gain.linearRampToValueAtTime(0, now + 0.006);
+        voice.source.stop(now + 0.008);
+      } catch { /* source may already have ended */ }
+    }
+    audioVoices = remaining;
+  };
+
+  const cancelClipPlayback = (trackId: string, clipId: string) => {
+    stopAudioVoices(voice => voice.trackId === trackId && voice.clipId === clipId);
+    const playback = playbackSynths.get(clipId);
+    if (playback?.trackId === trackId) {
+      playback.synth.dispose();
+      playbackSynths.delete(clipId);
+    }
+  };
+
+  const cancelTrackPlayback = (trackId: string) => {
+    stopAudioVoices(voice => voice.trackId === trackId);
+    for (const [clipId, playback] of playbackSynths) {
+      if (playback.trackId !== trackId) continue;
+      playback.synth.dispose();
+      playbackSynths.delete(clipId);
+    }
+    const trackGain = trackGainNodes.get(trackId);
+    if (trackGain) {
+      const now = getAudioContext().currentTime;
+      trackGain.gain.cancelScheduledValues(now);
+      trackGain.gain.setValueAtTime(trackGain.gain.value, now);
+      trackGain.gain.linearRampToValueAtTime(0, now + 0.006);
+      setTimeout(() => {
+        try { trackGain.disconnect(); } catch { /* already disconnected */ }
+      }, 12);
+      trackGainNodes.delete(trackId);
+    }
   };
 
   const stopAudioPlayback = () => {
@@ -123,7 +209,8 @@ export function useTransport(deps: Deps) {
       countInTimer = null;
     }
     deps.getSynth()?.allNotesOff();
-    playbackSynths.forEach(({ synth }) => synth.allNotesOff());
+    playbackSynths.forEach(({ synth }) => synth.dispose());
+    playbackSynths.clear();
     trackGainNodes.forEach(node => {
       try { node.disconnect(); } catch { /* already disconnected */ }
     });
@@ -184,6 +271,11 @@ export function useTransport(deps: Deps) {
     gain.gain.exponentialRampToValueAtTime(0.0001, atTime + 0.045);
     oscillator.connect(gain);
     gain.connect(getMasterBus().input);
+    oscillator.onended = () => {
+      try { oscillator.disconnect(); } catch { /* already disconnected */ }
+      try { gain.disconnect(); } catch { /* already disconnected */ }
+      metronomeNodes = metronomeNodes.filter(node => node !== oscillator);
+    };
     oscillator.start(atTime);
     oscillator.stop(atTime + 0.05);
     metronomeNodes.push(oscillator);
@@ -213,13 +305,13 @@ export function useTransport(deps: Deps) {
   ) => {
     for (const track of instrumentTracks()) {
       if (!isTrackAudible(track)) continue;
-      const synth = playbackSynthForTrack(track);
-      synth.setMasterGainDb(track.volume <= 0.001 ? -60 : 20 * Math.log10(track.volume ?? 1));
       for (const clip of track.clips ?? []) {
         if (clip.kind !== "midi" || !clip.midiNotes?.length) continue;
         const clipStartSecs = barsToSecs(clip.barStart);
         const clipEndSecs = barsToSecs(clip.barStart + clip.bars);
         if (clipEndSecs <= timelineStartSecs || clipStartSecs >= segmentEndSecs) continue;
+        const synth = playbackSynthForClip(track, clip.id);
+        synth.setMasterGainDb(track.volume <= 0.001 ? -60 : 20 * Math.log10(track.volume ?? 1));
 
         for (const note of clip.midiNotes) {
           const noteStartSecs = clipStartSecs + barsToSecs(note.startBars);
@@ -262,7 +354,7 @@ export function useTransport(deps: Deps) {
     const ctx = getAudioContext();
     const playbackStartPx = normalizedPlaybackStartPx(requestedStartPx);
     const timelineStartSecs = pxToSecs(playbackStartPx);
-    const scheduleAt = ctx.currentTime + 0.05;
+    const scheduleAt = ctx.currentTime + 0.03;
     playbackStartCtxTime = scheduleAt;
     playbackStartTimelineSecs = timelineStartSecs;
     deps.setPlayheadPx(playbackStartPx);
@@ -296,15 +388,28 @@ export function useTransport(deps: Deps) {
         const playableSecs = playEndSecs - playStartSecs;
         if (playableSecs <= 0) continue;
         const source = ctx.createBufferSource();
+        const sourceGain = ctx.createGain();
         source.buffer = buffer;
         source.playbackRate.value = Math.max(0.25, Math.min(4, clip.playbackRate ?? 1));
-        source.connect(trackGain);
+        source.connect(sourceGain);
+        sourceGain.connect(trackGain);
+        const voice: ScheduledAudioVoice = {
+          trackId: track.id,
+          clipId: clip.id,
+          source,
+          gain: sourceGain,
+        };
+        source.onended = () => {
+          try { source.disconnect(); } catch { /* already disconnected */ }
+          try { sourceGain.disconnect(); } catch { /* already disconnected */ }
+          audioVoices = audioVoices.filter(item => item !== voice);
+        };
         source.start(
           scheduleAt + (playStartSecs - timelineStartSecs),
           barsToSecs(clip.sourceOffsetBars ?? 0) + (playStartSecs - clipStartSecs),
           playableSecs,
         );
-        audioSources.push(source);
+        audioVoices.push(voice);
       }
     }
 
@@ -315,14 +420,21 @@ export function useTransport(deps: Deps) {
       if (!isPlaybackRunActive(runId)) return;
       deps.setPlayheadPx(bounds.startPx);
       deps.setElapsed(bounds.startSecs);
-      void startAudioPlayback(bounds.startPx).then(() => {
-        if (shouldRunDrumSequencer()) void deps.getSeq()?.start(bounds.startSecs);
+      void startAudioPlayback(bounds.startPx).then((scheduleAt) => {
+        if (shouldRunDrumSequencer()) {
+          configureDrumSequencer();
+          void deps.getSeq()?.start(bounds.startSecs, scheduleAt);
+        }
       });
     };
 
     const tickPlayhead = () => {
       if (!isPlaybackRunActive(runId)) return;
-      const elapsedSinceSchedule = Math.max(0, ctx.currentTime - playbackStartCtxTime);
+      const outputLatency = Math.max(
+        0,
+        Math.min(0.1, ctx.baseLatency + ("outputLatency" in ctx ? ctx.outputLatency : 0)),
+      );
+      const elapsedSinceSchedule = Math.max(0, ctx.currentTime - outputLatency - playbackStartCtxTime);
       const currentSecs = playbackStartTimelineSecs + elapsedSinceSchedule;
       const liveBounds = cycleBounds();
       if (liveBounds.enabled && currentSecs >= liveBounds.endSecs) {
@@ -341,6 +453,7 @@ export function useTransport(deps: Deps) {
         Math.max(0, (scheduleAt - ctx.currentTime + bounds.endSecs - timelineStartSecs) * 1000),
       );
     }
+    return scheduleAt;
   };
 
   const seek = async (requestedPx: number) => {
@@ -349,8 +462,11 @@ export function useTransport(deps: Deps) {
     deps.setElapsed(pxToSecs(nextPx));
     if (!deps.playing()) return;
     deps.getSeq()?.stop();
-    await startAudioPlayback(nextPx);
-    if (deps.playing() && shouldRunDrumSequencer()) await deps.getSeq()?.start(pxToSecs(nextPx));
+    const scheduleAt = await startAudioPlayback(nextPx);
+    if (deps.playing() && shouldRunDrumSequencer()) {
+      configureDrumSequencer();
+      await deps.getSeq()?.start(pxToSecs(nextPx), scheduleAt);
+    }
   };
 
   const togglePlay = async () => {
@@ -363,9 +479,12 @@ export function useTransport(deps: Deps) {
       return;
     }
     deps.setPlaying(true);
-    await startAudioPlayback();
+    const scheduleAt = await startAudioPlayback();
     if (!deps.playing()) return;
-    if (shouldRunDrumSequencer()) await seq?.start(pxToSecs(deps.playheadPx()));
+    if (shouldRunDrumSequencer()) {
+      configureDrumSequencer();
+      await seq?.start(pxToSecs(deps.playheadPx()), scheduleAt);
+    }
     else seq?.stop();
   };
 
@@ -433,14 +552,15 @@ export function useTransport(deps: Deps) {
   const setTrackVolume = (trackId: string, value: number) => {
     const node = trackGainNodes.get(trackId);
     if (node) node.gain.setTargetAtTime(Math.max(0, value), getAudioContext().currentTime, 0.01);
-    const synth = playbackSynths.get(trackId)?.synth;
-    if (synth) synth.setMasterGainDb(value <= 0.001 ? -60 : 20 * Math.log10(value));
+    for (const playback of playbackSynths.values()) {
+      if (playback.trackId === trackId) {
+        playback.synth.setMasterGainDb(value <= 0.001 ? -60 : 20 * Math.log10(value));
+      }
+    }
   };
 
   onCleanup(() => {
     stopAudioPlayback();
-    playbackSynths.forEach(({ synth }) => synth.dispose());
-    playbackSynths.clear();
   });
 
   let lastPlaybackSignature = "";
@@ -469,5 +589,8 @@ export function useTransport(deps: Deps) {
     setMasterVolume,
     stopAudioPlayback,
     setTrackVolume,
+    cancelClipPlayback,
+    cancelTrackPlayback,
+    timelinePxAtPerformanceTime,
   };
 }

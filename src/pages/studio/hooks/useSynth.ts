@@ -15,6 +15,8 @@ import type { UITrack } from "../types";
 type Deps = {
   tracks: Accessor<UITrack[]>;
   selectedTrack: Accessor<string | null>;
+  midiArmedTrackId: Accessor<string | null>;
+  midiInputEnabled: Accessor<boolean>;
   masterVol: Accessor<number>;
   synthPreset: Accessor<SynthPreset>; setSynthPreset: Setter<SynthPreset>;
   octave: Accessor<number>; setOctave: Setter<number>;
@@ -25,8 +27,8 @@ type Deps = {
   setSynthRelease: Setter<number>;
   setSynthFilterFreq: Setter<number>;
   setActivePanel: Setter<"drum" | "keys" | "voice" | null>;
-  onMidiNoteOn?: (midi: number, velocity: number) => void;
-  onMidiNoteOff?: (midi: number) => void;
+  onMidiNoteOn?: (midi: number, velocity: number, receivedAt: number) => void;
+  onMidiNoteOff?: (midi: number, receivedAt: number) => void;
 };
 
 export function useSynth(deps: Deps) {
@@ -46,7 +48,6 @@ export function useSynth(deps: Deps) {
     } else {
       synth.setPreset(preset);
     }
-    MidiManager.bindTargetSynth(synth);
   };
 
   const getSynth = () => synth;
@@ -54,8 +55,8 @@ export function useSynth(deps: Deps) {
   createEffect(() => {
     const trackId = deps.selectedTrack();
     const t = deps.tracks().find(tr => tr.id === trackId);
-    if (!t) return;
-    if (lastSelectedTrack !== trackId) {
+    if (!t) lastSelectedTrack = null;
+    if (t && lastSelectedTrack !== trackId) {
       lastSelectedTrack = trackId;
       if (t.type === "bass") {
         const preset = t.instrumentPreset ?? "bass";
@@ -80,6 +81,31 @@ export function useSynth(deps: Deps) {
         deps.setActivePanel(null);
       }
     }
+
+    const armedTrack = deps.tracks().find(track =>
+      track.id === deps.midiArmedTrackId() || track.recordArmed
+    );
+    const selectedInstrument = t && (t.type === "instrument" || t.type === "bass" || t.type === "guitar") ? t : null;
+    const armedInstrument = armedTrack && (armedTrack.type === "instrument" || armedTrack.type === "bass" || armedTrack.type === "guitar")
+      ? armedTrack
+      : null;
+    const target = armedInstrument ?? selectedInstrument;
+    MidiManager.setEnabled(deps.midiInputEnabled());
+    if (!deps.midiInputEnabled() || !target) {
+      synth?.allNotesOff();
+      MidiManager.bindTargetSynth(null);
+      deps.setActiveNotes(new Set<number>());
+      return;
+    }
+    const preset = target.type === "bass"
+      ? (target.instrumentPreset ?? "bass")
+      : target.type === "guitar"
+        ? (target.instrumentPreset ?? "guitar")
+        : (target.instrumentPreset ?? deps.synthPreset());
+    ensureSynth(preset);
+    const volume = target.volume ?? deps.masterVol();
+    synth?.setMasterGainDb(volume <= 0.001 ? -60 : 20 * Math.log10(volume));
+    MidiManager.bindTargetSynth(synth);
   });
 
   const KEY_MAP: Record<string, number> = {
@@ -106,14 +132,14 @@ export function useSynth(deps: Deps) {
     heldKeys.add(k);
     e.preventDefault();
     await unlockAudioContext();
-    const activePreset: SynthPreset = sel.type === "bass" ? "bass"
-      : sel.type === "guitar" ? "guitar" : (sel.instrumentPreset ?? deps.synthPreset());
+    const activePreset: SynthPreset = sel.instrumentPreset
+      ?? (sel.type === "bass" ? "bass" : sel.type === "guitar" ? "guitar" : deps.synthPreset());
     ensureSynth(activePreset);
     if (!synth) return;
     // MIDI note formula: (octave+1)*12 + semitone; the +1 is because MIDI octave 0 starts at note 12, not 0
     const midi = 12 * (deps.octave() + 1) + keyVal;
     synth.noteOn(midi, 0.85);
-    deps.onMidiNoteOn?.(midi, 0.85);
+    deps.onMidiNoteOn?.(midi, 0.85, performance.now());
     const next = new Set(deps.activeNotes());
     next.add(midi);
     deps.setActiveNotes(next);
@@ -126,7 +152,7 @@ export function useSynth(deps: Deps) {
     heldKeys.delete(k);
     const midi = 12 * (deps.octave() + 1) + keyVal;
     synth?.noteOff(midi);
-    deps.onMidiNoteOff?.(midi);
+    deps.onMidiNoteOff?.(midi, performance.now());
     const next = new Set(deps.activeNotes());
     next.delete(midi);
     deps.setActiveNotes(next);
@@ -135,12 +161,13 @@ export function useSynth(deps: Deps) {
   const pressKey = async (midi: number) => {
     await unlockAudioContext();
     const sel = deps.tracks().find(t => t.id === deps.selectedTrack());
-    const activePreset: SynthPreset = sel?.type === "bass" ? "bass"
-      : sel?.type === "guitar" ? "guitar" : (sel?.instrumentPreset ?? deps.synthPreset());
+    if (!sel || (sel.type !== "instrument" && sel.type !== "bass" && sel.type !== "guitar")) return;
+    const activePreset: SynthPreset = sel.instrumentPreset
+      ?? (sel.type === "bass" ? "bass" : sel.type === "guitar" ? "guitar" : deps.synthPreset());
     ensureSynth(activePreset);
     if (!synth) return;
     synth.noteOn(midi, 0.85);
-    deps.onMidiNoteOn?.(midi, 0.85);
+    deps.onMidiNoteOn?.(midi, 0.85, performance.now());
     const next = new Set(deps.activeNotes());
     next.add(midi);
     deps.setActiveNotes(next);
@@ -148,7 +175,7 @@ export function useSynth(deps: Deps) {
 
   const releaseKey = (midi: number) => {
     synth?.noteOff(midi);
-    deps.onMidiNoteOff?.(midi);
+    deps.onMidiNoteOff?.(midi, performance.now());
     const next = new Set(deps.activeNotes());
     next.delete(midi);
     deps.setActiveNotes(next);
@@ -157,14 +184,14 @@ export function useSynth(deps: Deps) {
   const updatePreset = (p: SynthPreset) => {
     deps.setSynthPreset(p);
     if (synth) synth.setPreset(p);
-    if (p === "lead" || p === "pad") {
-      const d = PRESET_ADSR[p];
+    const d = PRESET_ADSR[p as keyof typeof PRESET_ADSR];
+    if (d) {
       deps.setSynthAttack(d.attack); deps.setSynthDecay(d.decay);
       deps.setSynthSustain(d.sustain); deps.setSynthRelease(d.release);
       deps.setSynthFilterFreq(d.filterFreq);
     }
-    if (p === "bass") deps.setOctave(2);
-    else if (p !== deps.synthPreset()) deps.setOctave(4);
+    if (p === "bass" || p === "synth-bass" || p === "sub-bass") deps.setOctave(2);
+    else deps.setOctave(4);
   };
 
   const updateEnvelope = (a: number, d: number, s: number, r: number) => {
@@ -181,10 +208,17 @@ export function useSynth(deps: Deps) {
   const allNotesOff = () => synth?.allNotesOff();
 
   onMount(() => {
-    void MidiManager.initialize().then(() => MidiManager.bindTargetSynth(synth));
+    void MidiManager.initialize();
     MidiManager.bindNoteListener((event) => {
-      if (event.type === "on") deps.onMidiNoteOn?.(event.midi, event.velocity);
-      else deps.onMidiNoteOff?.(event.midi);
+      const next = new Set(deps.activeNotes());
+      if (event.type === "on") {
+        next.add(event.midi);
+        deps.onMidiNoteOn?.(event.midi, event.velocity, event.receivedAt);
+      } else {
+        next.delete(event.midi);
+        deps.onMidiNoteOff?.(event.midi, event.receivedAt);
+      }
+      deps.setActiveNotes(next);
     });
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);

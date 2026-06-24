@@ -1,6 +1,6 @@
 import type { SynthPreset } from "~/lib/audio/synth";
 
-export type InstrumentCategoryId = "piano" | "lead" | "pad" | "guitar" | "bass";
+export type InstrumentCategoryId = "acoustic-piano" | "electric-keys" | "lead" | "pad-strings" | "guitar" | "bass";
 
 export type InstrumentSound = {
   id: SynthPreset;
@@ -17,11 +17,21 @@ export type InstrumentCategory = {
 
 export const INSTRUMENT_CATEGORIES: InstrumentCategory[] = [
   {
-    id: "piano",
-    label: "Piano",
-    description: "Keys and sampled piano sounds.",
+    id: "acoustic-piano",
+    label: "Acoustic Pianos",
+    description: "Velocity-sensitive multisampled acoustic pianos.",
     sounds: [
       { id: "piano", label: "Studio Piano", description: "Clean sampled piano" },
+      { id: "bright-piano", label: "Bright Grand", description: "Present concert piano" },
+    ],
+  },
+  {
+    id: "electric-keys",
+    label: "Electric Keys",
+    description: "Electric piano and organ patches.",
+    sounds: [
+      { id: "electric-piano", label: "Stage EP", description: "Rounded tine-style keys" },
+      { id: "organ", label: "Tonewheel Organ", description: "Sustained drawbar-style organ" },
     ],
   },
   {
@@ -30,16 +40,20 @@ export const INSTRUMENT_CATEGORIES: InstrumentCategory[] = [
     description: "Melodic synth voices and plucked leads.",
     sounds: [
       { id: "lead", label: "Classic Lead", description: "Bright saw lead" },
-      { id: "fm-bell", label: "FM Bell", description: "Bell-like digital lead" },
-      { id: "physical-pluck", label: "Pluck", description: "Short plucked lead" },
+      { id: "analog-lead", label: "Analog Lead", description: "Wide square lead" },
+      { id: "pulse-lead", label: "Pulse Lead", description: "Focused pulse-wave lead" },
+      { id: "fm-bell", label: "Digital Bell", description: "Clear percussive bell" },
+      { id: "physical-pluck", label: "Plucked String", description: "Fast articulated pluck" },
     ],
   },
   {
-    id: "pad",
-    label: "Pad",
-    description: "Wide sustained synth layers.",
+    id: "pad-strings",
+    label: "Pads & Strings",
+    description: "Sustained layers for harmony and atmosphere.",
     sounds: [
       { id: "pad", label: "Warm Pad", description: "Soft sustained layer" },
+      { id: "glass-pad", label: "Glass Pad", description: "Airy harmonic layer" },
+      { id: "string-ensemble", label: "String Ensemble", description: "Slow orchestral-style strings" },
     ],
   },
   {
@@ -56,6 +70,8 @@ export const INSTRUMENT_CATEGORIES: InstrumentCategory[] = [
     description: "Low-end keyboard instruments.",
     sounds: [
       { id: "bass", label: "Electric Bass", description: "Sampled electric bass" },
+      { id: "synth-bass", label: "Analog Bass", description: "Filtered saw bass" },
+      { id: "sub-bass", label: "Sub Bass", description: "Clean sine low end" },
     ],
   },
 ];

@@ -16,8 +16,10 @@ export function getAudioContext(): AudioContext {
       window.AudioContext ??
       (window as unknown as { webkitAudioContext: typeof AudioContext })
         .webkitAudioContext;
+    // Numeric latencyHint requests roughly one 128-sample render quantum at
+    // 48 kHz. Browsers may choose a different supported device buffer size.
     ctx = new Ctor({
-      latencyHint: "interactive",
+      latencyHint: 128 / 48000,
       sampleRate: 48000,
     });
     // When the browser automatically resumes the context after an interruption
