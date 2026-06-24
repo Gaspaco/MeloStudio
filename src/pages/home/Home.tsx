@@ -87,10 +87,25 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
     const footer = footerRef;
     const orb = orbRef;
 
-    animateIntro({
+    // Start the splash exactly when the boot veil lifts (data-app-booting
+    // removed). Running it on raw onMount lets the timeline advance while #app
+    // is still hidden, so on slower loads it pops in mid-animation ("tripping").
+    const runIntro = () => animateIntro({
       loaderRef: loader, loaderMeloRef: loaderMelo, loaderStudioRef: loaderStudio,
       heroLine1Ref: heroLine1, heroLine2Ref: heroLine2, scrollIndRef: scrollIndicator,
     });
+    if (document.documentElement.hasAttribute("data-app-booting")) {
+      const bootObs = new MutationObserver(() => {
+        if (!document.documentElement.hasAttribute("data-app-booting")) {
+          bootObs.disconnect();
+          runIntro();
+        }
+      });
+      bootObs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-app-booting"] });
+      onCleanup(() => bootObs.disconnect());
+    } else {
+      runIntro();
+    }
 
     animateHeroExit({
       heroRef: hero, heroLine1Ref: heroLine1, heroLine2Ref: heroLine2, scrollIndRef: scrollIndicator,
