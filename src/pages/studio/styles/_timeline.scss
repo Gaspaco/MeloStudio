@@ -294,20 +294,34 @@
   }
 }
 
+// Compact preview of the drum pattern: one thin lane per active drum, each a
+// strip of step cells (lit = hit). Reads like a real drum region.
 .bl__drum-region-grid {
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
+  justify-content: center;
   gap: 2px;
-  padding: 0.42rem;
+  padding: 0.34rem 0.42rem;
+  overflow: hidden;
+}
+
+.bl__drum-region-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 1px;
+  height: 6px;
+  flex: 0 0 auto;
 
   span {
-    flex: 1;
-    border-radius: 2px;
-    background:
-      linear-gradient(180deg, color-mix(in srgb, var(--tc) 72%, #fff), color-mix(in srgb, var(--tc) 42%, transparent));
-    opacity: 0.7;
+    border-radius: 1px;
+    background: color-mix(in srgb, var(--tc) 16%, transparent);
+
+    &.is-on {
+      background: color-mix(in srgb, var(--tc) 80%, #fff);
+    }
   }
 }
 

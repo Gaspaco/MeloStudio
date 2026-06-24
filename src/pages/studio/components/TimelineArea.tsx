@@ -751,8 +751,14 @@ const TimelineArea: Component<Props> = (props) => {
                         </Show>
                       }>
                         <div class="bl__drum-region-grid" aria-hidden="true">
-                          <For each={Array.from({ length: props.timeSignature()[0] })}>
-                            {() => <span />}
+                          <For each={props.pattern().rows.filter(r => !r.muted && r.velocities.some(v => v > 0))}>
+                            {(row) => (
+                              <div class="bl__drum-region-row">
+                                <For each={row.velocities}>
+                                  {(v) => <span classList={{ "is-on": v > 0 }} />}
+                                </For>
+                              </div>
+                            )}
                           </For>
                         </div>
                       </Show>
