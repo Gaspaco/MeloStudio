@@ -1,16 +1,8 @@
 import { type Component, createSignal, createMemo, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
-import type * as ToneNs from "tone";
-
-let Tone: typeof ToneNs | undefined;
-const getTone = async () => {
-  if (!Tone) Tone = await import("tone");
-  return Tone;
-};
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
 import { type SynthPreset } from "~/lib/audio/synth";
 import { getMasterBus } from "~/lib/audio/masterBus";
-import { unlockAudioContext } from "~/lib/audio/context";
 import { updateProjectApi, sendHeartbeat } from "~/lib/api";
 import { getAppSession } from "~/lib/app-auth";
 import { type TrackType, type UITrack, PRESET_ADSR, TEMPLATES, hasStudioContent, isAudioTrackType, isInstrumentTrackType } from "./types";
@@ -40,7 +32,6 @@ const Studio: Component = () => {
   const navigate = useNavigate();
 
   let seq: StepSequencer | null = null;
-  let timelineElRef: HTMLDivElement | undefined;
   let titleInputEl: HTMLInputElement | undefined;
   let studioImportInputEl: HTMLInputElement | undefined;
 
@@ -84,12 +75,16 @@ const Studio: Component = () => {
   const [playheadPx,         setPlayheadPx]         = createSignal(0);
   const [enhance,            setEnhance]            = createSignal(true);
   const [metronomeOn,        setMetronomeOn]        = createSignal(false);
+  const [countInEnabled,     setCountInEnabled]     = createSignal(false);
+  const [countingIn,         setCountingIn]         = createSignal(false);
   const [loopOn,             setLoopOn]             = createSignal(false);
   const [cycleStartPx,       setCycleStartPx]       = createSignal(0);
   const [cycleEndPx,         setCycleEndPx]         = createSignal(4 * STUDIO_BAR_PX);
   const [published,          setPublished]          = createSignal(false);
   const [showPublishModal,   setShowPublishModal]   = createSignal(false);
   const [showPublishToast,   setShowPublishToast]   = createSignal(false);
+  const [horizontalZoom,     setHorizontalZoom]     = createSignal(STUDIO_BAR_PX);
+  const [verticalZoom,       setVerticalZoom]       = createSignal(88);
 
   const [userImage,          setUserImage]          = createSignal<string | null>(null);
 
@@ -199,6 +194,8 @@ const Studio: Component = () => {
     tracks, bpm, setBpm, playing, setPlaying,
     elapsed, setElapsed, masterVol, setMasterVol,
     playheadPx, setPlayheadPx, pattern, setPattern,
+    timeSignature: timeSig,
+    metronomeEnabled: metronomeOn,
     loopEnabled: loopOn,
     cycleStartPx, cycleEndPx,
   });
@@ -224,13 +221,13 @@ const Studio: Component = () => {
   trk = useTracks({
     projectId: () => params.id,
     tracks, setTracks, selectedTrack, setSelectedTrack,
-    bpm, playheadPx, setError, setShowNewTrack,
+    bpm, timelineScale: () => horizontalZoom() / STUDIO_BAR_PX,
+    playheadPx, setError, setShowNewTrack,
     ensureSynth: sth.ensureSynth, setSynthPreset,
     setActivePanel, setDrumPanelOpen,
     getSeq: () => seq, getSynth: sth.getSynth,
     setTrackVolume: transport.setTrackVolume,
     save: project.save,
-    timelineEl: () => timelineElRef,
   });
 
   const canSaveProject = () => hasStudioContent(tracks(), pattern(), lyricsText());
@@ -262,18 +259,24 @@ const Studio: Component = () => {
   };
 
   const togglePlayback = async () => {
+    if (countingIn()) {
+      transport.cancelCountIn();
+      setCountingIn(false);
+      return;
+    }
     await transport.togglePlay();
     if (!playing() && trk.recordingTrackId()) {
       if (trk.recordingMode() === "midi") trk.stopMidiRecording();
       else trk.stopRecording();
     }
-    if (metronomeOn()) {
-      if (!playing()) stopMetronome();
-      else { await unlockAudioContext(); startMetronome(); }
-    }
   };
 
   const toggleRecordOnSelectedTrack = async () => {
+    if (countingIn()) {
+      transport.cancelCountIn();
+      setCountingIn(false);
+      return;
+    }
     const activeRecordingId = trk.recordingTrackId();
     if (activeRecordingId) {
       if (trk.recordingMode() === "midi") trk.stopMidiRecording();
@@ -290,6 +293,13 @@ const Studio: Component = () => {
 
     if (loopOn() && (playheadPx() < cycleStartPx() || playheadPx() >= cycleEndPx())) {
       setPlayheadPx(cycleStartPx());
+    }
+
+    if (countInEnabled() && !playing()) {
+      setCountingIn(true);
+      const completed = await transport.countIn(1);
+      setCountingIn(false);
+      if (!completed) return;
     }
 
     if (isInstrumentTrackType(track.type)) trk.startMidiRecording(track.id);
@@ -327,6 +337,13 @@ const Studio: Component = () => {
       } else if ((e.metaKey || e.ctrlKey) && e.key === "z") {
         e.preventDefault();
         undo();
+      } else if ((e.key === "Backspace" || e.key === "Delete") && selectedClipId()) {
+        const track = selectedClipTrack();
+        const clipId = selectedClipId();
+        if (!track || !clipId) return;
+        e.preventDefault();
+        trk.deleteClip(track.id, clipId);
+        setSelectedClipId(null);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "e") {
         const track = selectedClipTrack();
         const clipId = selectedClipId();
@@ -343,7 +360,7 @@ const Studio: Component = () => {
       sth.allNotesOff();
       transport.stopAudioPlayback();
       setPlaying(false);
-      stopMetronome();
+      setCountingIn(false);
     };
     const handlePageHide = () => stopCachedPlayback();
     const handlePageShow = (event: PageTransitionEvent) => {
@@ -361,7 +378,6 @@ const Studio: Component = () => {
   onCleanup(() => {
     seq?.stop();
     sth.allNotesOff();
-    metronomePart?.dispose();
     if (canSaveProject() && Date.now() - lastSavedAt > 5_000) {
       project.save().catch(() => {});
     }
@@ -388,53 +404,6 @@ const Studio: Component = () => {
       document.removeEventListener("visibilitychange", onVis);
     });
   }
-
-  // ── Metronome ─────────────────────────────────────────────────────────────
-  let metronomePart: ToneNs.Part | null = null;
-
-  const playMetronomeClick = async (time: number, isDownbeat: boolean) => {
-    const T = await getTone();
-    const ac = T.getContext().rawContext as AudioContext;
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.connect(gain);
-    gain.connect(ac.destination);
-    osc.frequency.value = isDownbeat ? 1800 : 1200;
-    gain.gain.setValueAtTime(0.35, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.04);
-    osc.start(time);
-    osc.stop(time + 0.05);
-  };
-
-  const startMetronome = async () => {
-    const T = await getTone();
-    metronomePart?.dispose();
-    const [num] = timeSig();
-    metronomePart = new T.Part((time: number, ev: unknown) => {
-      const beat = (ev as { beat: number }).beat;
-      playMetronomeClick(time, beat === 0);
-    }, Array.from({ length: num }, (_, i) => [`${i}*4n`, { beat: i }]));
-    metronomePart.loop = true;
-    metronomePart.loopEnd = `${timeSig()[0]}*4n`;
-    metronomePart.start(0);
-  };
-
-  const stopMetronome = () => {
-    metronomePart?.stop();
-    metronomePart?.dispose();
-    metronomePart = null;
-  };
-
-  const toggleMetronome = async () => {
-    const next = !metronomeOn();
-    setMetronomeOn(next);
-    if (next && playing()) {
-      await unlockAudioContext();
-      startMetronome();
-    } else {
-      stopMetronome();
-    }
-  };
 
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
   onCleanup(() => clearTimeout(toastTimer));
@@ -545,6 +514,7 @@ const Studio: Component = () => {
       "",
       "Space: Play / pause",
       "R: Record selected track",
+      "Delete / Backspace: Delete selected region",
       "Cmd/Ctrl+S: Save",
       "Cmd/Ctrl+Z: Undo",
       "Cmd/Ctrl+Shift+Z: Redo",
@@ -653,7 +623,8 @@ const Studio: Component = () => {
               }
               transport.stopAll();
             }) },
-          { label: () => metronomeOn() ? "Metronome off" : "Metronome on", desc: "Hear a click while playing", kbd: "", action: run(() => { void toggleMetronome(); }) },
+          { label: () => metronomeOn() ? "Metronome off" : "Metronome on", desc: "Hear a click while playing", kbd: "", action: run(() => setMetronomeOn(v => !v)) },
+          { label: () => countInEnabled() ? "Count-in off" : "Count-in on", desc: "Play one bar of clicks before recording", kbd: "", action: run(() => setCountInEnabled(v => !v)) },
           { label: () => loopOn() ? "Cycle area off" : "Cycle area on", desc: "Loop between the red locators", kbd: "", action: run(() => setLoopOn(v => !v)) },
           { label: "Cycle selected region", desc: "Set red locators to the selected clip", kbd: "", action: run(setCycleToSelectedClip), disabled: () => !selectedClip() },
           { label: "Set playhead to start", desc: "Jump back to bar 1", kbd: "", action: run(() => setPlayheadPx(0)) },
@@ -678,7 +649,13 @@ const Studio: Component = () => {
   };
 
   return (
-    <div class="bl">
+    <div
+      class="bl"
+      style={{
+        "--timeline-bar-px": `${horizontalZoom()}px`,
+        "--track-lane-height": `${verticalZoom()}px`,
+      }}
+    >
       <input
         ref={(el) => (studioImportInputEl = el)}
         type="file"
@@ -695,6 +672,7 @@ const Studio: Component = () => {
         name={name} titleEditing={titleEditing} saveState={saveState} lastSaved={lastSaved}
         bpm={bpm} meter={timeSig} musicalKey={musicalKey}
         playing={playing} elapsed={elapsed} masterVol={masterVol}
+        horizontalZoom={horizontalZoom}
         titleInputRef={(el) => (titleInputEl = el)}
         onNavToggle={() => setNavOpen(!navOpen())}
         onDashboard={() => { void saveAndNavigate("/dashboard"); }}
@@ -705,7 +683,10 @@ const Studio: Component = () => {
         canSave={canSaveProject}
         canUndo={canUndo} canRedo={canRedo}
         onUndo={undo} onRedo={redo}
-        metronomeOn={metronomeOn} onToggleMetronome={toggleMetronome}
+        metronomeOn={metronomeOn} onToggleMetronome={() => setMetronomeOn(v => !v)}
+        countInEnabled={countInEnabled}
+        countingIn={countingIn}
+        onToggleCountIn={() => setCountInEnabled(v => !v)}
         loopOn={loopOn} onToggleLoop={() => setLoopOn(v => !v)}
         onTogglePlay={async () => {
           await togglePlayback();
@@ -716,6 +697,7 @@ const Studio: Component = () => {
             else trk.stopRecording();
           }
           transport.stopAll();
+          setCountingIn(false);
         }}
         recording={() => trk.recordingTrackId() !== null}
         recordingStartTime={trk.recordingStartTime}
@@ -724,6 +706,7 @@ const Studio: Component = () => {
         onUpdateMeter={setTimeSig}
         onUpdateKey={setMusicalKey}
         onSetMasterVol={transport.setMasterVolume}
+        onHorizontalZoom={setHorizontalZoom}
         onElapsedReset={() => setElapsed(0)}
         enhance={enhance}
         onToggleEnhance={() => {
@@ -801,11 +784,21 @@ const Studio: Component = () => {
         <TimelineArea
           tracks={tracks} selectedTrack={selectedTrack}
           pattern={pattern} playheadPx={playheadPx} setPlayheadPx={setPlayheadPx}
+          selectedClipId={selectedClipId}
+          timeSignature={timeSig}
+          horizontalZoom={horizontalZoom}
+          verticalZoom={verticalZoom}
+          onHorizontalZoom={setHorizontalZoom}
+          onVerticalZoom={setVerticalZoom}
+          onSeek={transport.seek}
           drumClipBars={drumClipBars}
           dropTarget={trk.dropTarget} globalDragOver={trk.globalDragOver}
           onLaneDragOver={trk.onLaneDragOver} onLaneDragLeave={trk.onLaneDragLeave} onLaneDrop={trk.onLaneDrop}
           onLanesDragOver={trk.onLanesDragOver} onLanesDragLeave={trk.onLanesDragLeave} onLanesDrop={trk.onLanesDrop}
-          onDeleteClip={trk.deleteClip}
+          onDeleteClip={(trackId, clipId) => {
+            trk.deleteClip(trackId, clipId);
+            if (selectedClipId() === clipId) setSelectedClipId(null);
+          }}
           onMoveClip={trk.moveClip}
           onMoveClipToTrack={trk.moveClipToTrack}
           onTrimClip={trk.trimClip}

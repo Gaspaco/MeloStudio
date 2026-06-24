@@ -205,7 +205,7 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  height: 5.5rem;
+  height: var(--track-lane-height, 88px);
   box-sizing: border-box;
   margin: 0;
   padding: 0.7rem 0.8rem 0.7rem 0.85rem;
@@ -310,8 +310,8 @@
   align-items: stretch;
   margin: 0;
   cursor: pointer;
-  height: 5.5rem;
-  min-height: 5.5rem;
+  height: var(--track-lane-height, 88px);
+  min-height: var(--track-lane-height, 88px);
   border-radius: 0;
   background: rgba(#fff, 0.028);
   border: 1px solid rgba(#fff, 0.05);

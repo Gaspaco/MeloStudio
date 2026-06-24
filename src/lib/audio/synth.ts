@@ -263,6 +263,19 @@ export class PolySynth {
     this.active.add(midi);
   }
 
+  scheduleNote(midi: number, velocity: number, atTime: number, duration: number): void {
+    const note = midiToNote(midi);
+    const safeDuration = Math.max(0.02, duration);
+    if (this.sampler && !this.samplerReady && this.sampler.loaded) {
+      this.samplerReady = true;
+    }
+    if (this.sampler && this.samplerReady) {
+      this.sampler.triggerAttackRelease(note, safeDuration, atTime, velocity);
+    } else {
+      this.synth.triggerAttackRelease(note, safeDuration, atTime, velocity);
+    }
+  }
+
   noteOff(midi: number): void {
     if (!this.active.has(midi)) return;
     if (this.sustainActive) {
@@ -329,4 +342,3 @@ export class PolySynth {
     this.master.dispose();
   }
 }
-
