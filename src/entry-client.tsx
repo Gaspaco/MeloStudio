@@ -23,6 +23,11 @@ function revealApp() {
 			const bootVeil = document.getElementById("boot-veil");
 			document.documentElement.removeAttribute("data-app-booting");
 			document.documentElement.removeAttribute("data-skip-boot-veil");
+			// Mark the session loaded after the first reveal (any page) so the
+			// loader plays once per session — not on every navigation. Home reads
+			// this BEFORE this point (at its onMount) to decide the splash.
+			try { sessionStorage.setItem("melostudio_loaded", "1"); }
+			catch { /* ignore */ }
 			if (bootVeil) {
 				bootVeil.setAttribute("data-hiding", "true");
 				window.setTimeout(() => bootVeil.remove(), 400);

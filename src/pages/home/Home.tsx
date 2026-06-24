@@ -87,13 +87,20 @@ const Home: Component<{ onLogin?: () => void; onSignup?: () => void; onProfile?:
     const footer = footerRef;
     const orb = orbRef;
 
+    // Decide whether to play the splash NOW, before the boot veil marks the
+    // session "loaded" — so it plays exactly once per session.
+    const playSplash = (() => {
+      try { return sessionStorage.getItem("melostudio_loaded") !== "1"; }
+      catch { return false; }
+    })();
+
     // Start the splash exactly when the boot veil lifts (data-app-booting
     // removed). Running it on raw onMount lets the timeline advance while #app
     // is still hidden, so on slower loads it pops in mid-animation ("tripping").
     const runIntro = () => animateIntro({
       loaderRef: loader, loaderMeloRef: loaderMelo, loaderStudioRef: loaderStudio,
       heroLine1Ref: heroLine1, heroLine2Ref: heroLine2, scrollIndRef: scrollIndicator,
-    });
+    }, playSplash);
     if (document.documentElement.hasAttribute("data-app-booting")) {
       const bootObs = new MutationObserver(() => {
         if (!document.documentElement.hasAttribute("data-app-booting")) {
