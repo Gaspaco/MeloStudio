@@ -225,11 +225,27 @@ const SAMPLE_SOURCE: Partial<Record<SynthPreset, SampleSource>> = {
   guitar: "guitar",
 };
 
+// Decoded sample buffers, cached per source after the first load. A Sampler
+// built from cached buffers reports `loaded` synchronously, so freshly-created
+// playback/live voices never fall through to the synth fallback.
+const sampleBufferCache = new Map<SampleSource, Record<string, Tone.ToneAudioBuffer>>();
+let preloadPromise: Promise<void> | null = null;
+
 function getSampler(preset: SampleSource): Tone.Sampler {
   const samplerCfg = SAMPLER_PRESETS[preset];
   // If it's a new preset without sampler configs like "fm-bell", fallback to piano configs for now if not defined or throw an error.
   if(!samplerCfg) throw new Error(`Missing sampler preset for ${preset}`);
-  
+
+  const cached = sampleBufferCache.get(preset);
+  if (cached) {
+    return new Tone.Sampler({
+      urls: cached,
+      release: samplerCfg.release,
+      attack: samplerCfg.attack ?? 0,
+      volume: samplerCfg.volume,
+    });
+  }
+
   const baseUrl = `${SAMPLE_BASE}/${samplerCfg.folder}/`;
   return new Tone.Sampler({
     urls: samplerCfg.urls,
@@ -238,6 +254,33 @@ function getSampler(preset: SampleSource): Tone.Sampler {
     attack: samplerCfg.attack ?? 0,
     volume: samplerCfg.volume,
   });
+}
+
+/**
+ * Preload (download + decode) the sampled instruments — piano, bass, guitar —
+ * into a buffer cache. Call once when the studio opens so that by the time a
+ * note is recorded or played back, the correct instrument is ready and notes
+ * never briefly sound like the synth fallback. Idempotent.
+ */
+export function preloadSampledInstruments(): Promise<void> {
+  if (preloadPromise) return preloadPromise;
+  bindToneToContext();
+  preloadPromise = (async () => {
+    await Promise.all((Object.keys(SAMPLER_PRESETS) as SampleSource[]).map(async (src) => {
+      if (sampleBufferCache.has(src)) return;
+      const cfg = SAMPLER_PRESETS[src];
+      const baseUrl = `${SAMPLE_BASE}/${cfg.folder}/`;
+      const entries = await Promise.all(
+        Object.entries(cfg.urls).map(async ([note, file]) => {
+          const buffer = new Tone.ToneAudioBuffer();
+          await buffer.load(baseUrl + file);
+          return [note, buffer] as const;
+        }),
+      );
+      sampleBufferCache.set(src, Object.fromEntries(entries));
+    }));
+  })();
+  return preloadPromise;
 }
 
 export class PolySynth {

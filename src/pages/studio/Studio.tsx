@@ -1,7 +1,7 @@
 import { type Component, createSignal, createMemo, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
-import { type SynthPreset } from "~/lib/audio/synth";
+import { type SynthPreset, preloadSampledInstruments } from "~/lib/audio/synth";
 import { getMasterBus } from "~/lib/audio/masterBus";
 import { updateProjectApi, sendHeartbeat } from "~/lib/api";
 import { getAppSession } from "~/lib/app-auth";
@@ -328,6 +328,10 @@ const Studio: Component = () => {
   };
 
   onMount(async () => {
+    // Warm the sampled instruments (piano/bass/guitar) up front so the correct
+    // sound is ready for recording and playback — no synth-fallback flicker.
+    void preloadSampledInstruments();
+
     seq = new StepSequencer();
     seq.onStep = (i) => setCurrentStep(i);
     await project.init();
