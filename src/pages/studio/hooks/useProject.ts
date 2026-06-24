@@ -11,7 +11,7 @@ import { sanitizePattern, DEFAULT_PATTERN, type StepPattern, type StepSequencer 
 import { type SynthPreset } from "~/lib/audio/synth";
 import { loadClip, loadClipBlob, removeClip, storeClip } from "~/lib/clipStore";
 import { remoteClipUploadErrorMessage, uploadRemoteClip } from "~/lib/remoteClips";
-import { type MediaClip, type UITrack, TRACK_DEFS, hasStudioContent, isTrackAllowedForClip } from "../types";
+import { type MediaClip, type UITrack, TRACK_DEFS, createDrumPatternRegions, hasStudioContent, isTrackAllowedForClip } from "../types";
 
 type Deps = {
   projectId: string;
@@ -284,7 +284,10 @@ export function useProject(deps: Deps) {
           }
           const instrumentPreset: SynthPreset | undefined =
             t.instrumentPreset ?? (t.type === "instrument" ? "piano" : t.type === "bass" ? "bass" : t.type === "guitar" ? "guitar" : undefined);
-          restoredTracks.push({ ...t, instrumentPreset, clips: restoredClips });
+          const normalizedClips = t.type === "drum" && !restoredClips.some(clip => clip.drumPattern)
+            ? createDrumPatternRegions(4)
+            : restoredClips;
+          restoredTracks.push({ ...t, instrumentPreset, clips: normalizedClips });
         }
         deps.setTracks(restoredTracks);
         deps.setSelectedTrack(restoredTracks[0]?.id ?? null);

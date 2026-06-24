@@ -77,6 +77,8 @@ export class StepSequencer {
   private masterGain: Tone.Gain | null = null;
   private sequence: Tone.Sequence<number> | null = null;
   private masterGainDb = 20 * Math.log10(0.8);
+  private activeBars: Set<number> | null = null;
+  private timeSignature: [number, number] = [4, 4];
 
   private playing = false;
 
@@ -143,16 +145,21 @@ export class StepSequencer {
     t.swingSubdivision = "16n";
   }
   setSteps(n: number): void {
-    if (n !== 16 && n !== 32) return;
-    this.pattern.steps = n;
+    const normalized = Math.max(1, Math.min(64, Math.round(n)));
+    this.pattern.steps = normalized;
     for (const row of this.pattern.rows) {
-      if (row.velocities.length < n) {
-        row.velocities = [...row.velocities, ...Array(n - row.velocities.length).fill(0)];
+      if (row.velocities.length < normalized) {
+        row.velocities = [...row.velocities, ...Array(normalized - row.velocities.length).fill(0)];
       } else {
-        row.velocities = row.velocities.slice(0, n);
+        row.velocities = row.velocities.slice(0, normalized);
       }
     }
     if (this.playing) this.rebuildSequence();
+  }
+
+  setActiveBars(bars: number[], timeSignature: [number, number]): void {
+    this.activeBars = new Set(bars.map(bar => Math.max(0, Math.floor(bar))));
+    this.timeSignature = timeSignature;
   }
 
   // trigger a single drum voice immediately — for UI preview on cell click
@@ -168,7 +175,7 @@ export class StepSequencer {
     voice.trigger(Tone.now(), vel);
   }
 
-  async start(startSeconds = 0): Promise<void> {
+  async start(startSeconds = 0, atTime?: number): Promise<void> {
     const transport = Tone.getTransport();
     if (this.playing && transport.state === "started") return;
     if (this.playing && transport.state !== "started") {
@@ -183,7 +190,7 @@ export class StepSequencer {
 
     this.rebuildSequence();
     transport.seconds = Math.max(0, startSeconds);
-    transport.start("+0.05");
+    transport.start(atTime ?? "+0.05");
     this.playing = true;
   }
 
@@ -221,6 +228,13 @@ export class StepSequencer {
 
   private scheduleStep(stepIdx: number, atTime: number): void {
     if (!this.kit) return;
+    if (this.activeBars) {
+      const quarterSecs = 60 / Math.max(1, this.pattern.bpm);
+      const barSecs = Math.max(0.001, this.timeSignature[0] * quarterSecs * (4 / this.timeSignature[1]));
+      const timelineSecs = Tone.getTransport().getSecondsAtTime(atTime);
+      const barIndex = Math.max(0, Math.floor((timelineSecs + 0.000001) / barSecs));
+      if (!this.activeBars.has(barIndex)) return;
+    }
     for (const row of this.pattern.rows) {
       if (row.muted) continue;
       const v = row.velocities[stepIdx] ?? 0;
