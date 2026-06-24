@@ -116,12 +116,35 @@ export const splitRegionAtPx = (clips: MediaClip[], clipId: string, splitPx: num
   return sortClipsByTimeline(clips.flatMap((item) => item.id === clipId ? [leftClip, rightClip] : [item]));
 };
 
+// Clip a MIDI clip's notes to its (possibly trimmed) bounds. `shiftBars` is how
+// far the clip's start moved (left-trim > 0). Notes are repositioned into the
+// new clip-relative space, then clamped to [0, bars]: a note crossing an edge is
+// shortened to exactly the edge, a note fully outside is dropped. Notes wholly
+// inside the region are left untouched — so trimming adheres to the exact edge
+// instead of deleting whole notes.
+const clipMidiNotesToBounds = (clip: MediaClip, shiftBars: number): MediaClip => {
+  if (!clip.midiNotes?.length) return clip;
+  const bars = clip.bars;
+  const EPS = 1e-4;
+  const midiNotes = [];
+  for (const note of clip.midiNotes) {
+    const start = note.startBars - shiftBars;
+    const end = start + note.durationBars;
+    const clippedStart = Math.max(0, start);
+    const clippedEnd = Math.min(bars, end);
+    if (clippedEnd - clippedStart > EPS) {
+      midiNotes.push({ ...note, startBars: clippedStart, durationBars: clippedEnd - clippedStart });
+    }
+  }
+  return { ...clip, midiNotes };
+};
+
 export const trimRegionEdge = (
   clips: MediaClip[],
   clipId: string,
   edge: RegionEdge,
   targetPx: number,
-  createId: () => string,
+  _createId: () => string,
 ): MediaClip[] => {
   const clip = clips.find((item) => item.id === clipId);
   if (!clip) return clips;
@@ -130,18 +153,23 @@ export const trimRegionEdge = (
   const originalRightPx = clipRightPx(clip);
   const sourceOffsetPx = barsToPx(clip.sourceOffsetBars ?? 0);
 
+  let trimmed: MediaClip;
   if (edge === "left") {
     const earliestLeftPx = Math.max(0, originalLeftPx - sourceOffsetPx);
     const newLeftPx = Math.max(earliestLeftPx, Math.min(targetPx, originalRightPx - MIN_REGION_PX));
     const newWidthPx = originalRightPx - newLeftPx;
-    const newSourceOffsetBars = (clip.sourceOffsetBars ?? 0) + pxToBars(newLeftPx - originalLeftPx);
-    const placedClip = placeClip(clip, newLeftPx, newWidthPx, newSourceOffsetBars);
-    return resolveRegionOverwrite(clips, placedClip, createId);
+    const shiftBars = pxToBars(newLeftPx - originalLeftPx);
+    const newSourceOffsetBars = (clip.sourceOffsetBars ?? 0) + shiftBars;
+    trimmed = clipMidiNotesToBounds(placeClip(clip, newLeftPx, newWidthPx, newSourceOffsetBars), shiftBars);
+  } else {
+    const newRightPx = Math.max(originalLeftPx + MIN_REGION_PX, targetPx);
+    trimmed = clipMidiNotesToBounds(placeClip(clip, originalLeftPx, newRightPx - originalLeftPx), 0);
   }
 
-  const newRightPx = Math.max(originalLeftPx + MIN_REGION_PX, targetPx);
-  const placedClip = placeClip(clip, originalLeftPx, newRightPx - originalLeftPx);
-  return resolveRegionOverwrite(clips, placedClip, createId);
+  // Trimming only resizes the dragged clip — it must never cut neighbouring
+  // clips (that's the drag-drop overwrite path), which is what made trimming
+  // feel destructive.
+  return sortClipsByTimeline(clips.map((item) => (item.id === clipId ? trimmed : item)));
 };
 
 export const snapMoveLeftPx = (
