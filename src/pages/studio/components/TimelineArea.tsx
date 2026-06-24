@@ -1,5 +1,4 @@
-import { type Component, For, Show, createMemo, createSignal, onMount, onCleanup } from "solid-js";
-import { type Component, For, Show, createEffect, createSignal, onMount, onCleanup } from "solid-js";
+import { type Component, For, Show, createMemo, createEffect, createSignal, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { MicVocal, FileMusic } from "lucide-solid";
 import { type ClipKind, type TrackType, type UITrack, TEMPLATES, isTrackAllowedForClip, isTrackTypeAllowedForClipKind } from "../types";
@@ -243,7 +242,14 @@ const TimelineArea: Component<Props> = (props) => {
       );
       return Math.max(max, trackEnd);
     }, 0);
-    const drumEndBars = props.drumClipBars().reduce((max, bar) => Math.max(max, bar + 1), 0);
+    const drumEndBars = props.tracks().reduce((max, track) => {
+      if (track.type !== "drum") return max;
+      const trackEnd = (track.clips ?? []).reduce(
+        (clipMax, clip) => clip.drumPattern ? Math.max(clipMax, Math.ceil(clipRightPx(clip) / BAR_PX)) : clipMax,
+        0,
+      );
+      return Math.max(max, trackEnd);
+    }, 0);
     const playheadEndBars = Math.ceil(props.playheadPx() / BAR_PX);
     const cycleEndBars = Math.ceil(props.cycleEndPx() / BAR_PX);
     const requiredBars = Math.max(24, clipEndBars, drumEndBars, playheadEndBars, cycleEndBars) + 8;
@@ -752,8 +758,14 @@ const TimelineArea: Component<Props> = (props) => {
                         </Show>
                       }>
                         <div class="bl__drum-region-grid" aria-hidden="true">
-                          <For each={Array.from({ length: props.timeSignature()[0] })}>
-                            {() => <span />}
+                          <For each={props.pattern().rows.filter(r => !r.muted && r.velocities.some(v => v > 0))}>
+                            {(row) => (
+                              <div class="bl__drum-region-row">
+                                <For each={row.velocities}>
+                                  {(v) => <span classList={{ "is-on": v > 0 }} />}
+                                </For>
+                              </div>
+                            )}
                           </For>
                         </div>
                       </Show>

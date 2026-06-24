@@ -1,7 +1,7 @@
 import { type Component, createSignal, createMemo, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
-import { type SynthPreset } from "~/lib/audio/synth";
+import { type SynthPreset, preloadSampledInstruments } from "~/lib/audio/synth";
 import { getMasterBus } from "~/lib/audio/masterBus";
 import { updateProjectApi, sendHeartbeat } from "~/lib/api";
 import { getAppSession } from "~/lib/app-auth";
@@ -315,19 +315,33 @@ const Studio: Component = () => {
     const punchInPx = loopOn() ? cycleStartPx() : playheadPx();
     if (loopOn()) await transport.seek(punchInPx);
 
+    const isMidi = isInstrumentTrackType(track.type);
+
+    // Arm MIDI capture BEFORE the count-in. Players anticipate the beat, so the
+    // first downbeat note is often struck a hair before the count finishes — if
+    // we only arm afterwards it gets dropped. While not yet playing, captured
+    // notes clamp to the punch-in point, so they land exactly on the downbeat.
+    if (isMidi) trk.startMidiRecording(track.id, punchInPx);
+
     if (countInEnabled() && !playing()) {
       setCountingIn(true);
       const completed = await transport.countIn(1);
       setCountingIn(false);
-      if (!completed) return;
+      if (!completed) {
+        if (isMidi) trk.stopMidiRecording();
+        return;
+      }
     }
 
-    if (isInstrumentTrackType(track.type)) trk.startMidiRecording(track.id, punchInPx);
-    else trk.startRecording(track.id, punchInPx);
+    if (!isMidi) trk.startRecording(track.id, punchInPx);
     if (!playing()) await transport.togglePlay();
   };
 
   onMount(async () => {
+    // Warm the sampled instruments (piano/bass/guitar) up front so the correct
+    // sound is ready for recording and playback — no synth-fallback flicker.
+    void preloadSampledInstruments();
+
     seq = new StepSequencer();
     seq.onStep = (i) => setCurrentStep(i);
     await project.init();

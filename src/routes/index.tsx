@@ -1,9 +1,13 @@
 import { useNavigate } from "@solidjs/router";
 import { lazy, onMount, Show, Suspense, createSignal } from "solid-js";
-import RouteVeil from "~/components/RouteVeil";
 import { getAppSession } from "~/lib/app-auth";
 
 const Home = lazy(() => import("~/pages/home/Home"));
+
+// Plain black cover (no animated logo) for the home route's loading states. The
+// landing page has its own GSAP splash, so an animated veil here would make the
+// intro appear, vanish, then replay. This just holds black until Home animates.
+const HomeVeil = () => <div class="route-veil route-veil--active" aria-hidden="true" />;
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -24,8 +28,8 @@ export default function HomePage() {
   });
 
   return (
-    <Show when={canShowLanding()} fallback={<RouteVeil label="Checking session" />}>
-      <Suspense fallback={<RouteVeil label="Loading" />}>
+    <Show when={canShowLanding()} fallback={<HomeVeil />}>
+      <Suspense fallback={<HomeVeil />}>
         <Home
           onLogin={() => navigate("/login")}
           onSignup={() => navigate("/signup")}

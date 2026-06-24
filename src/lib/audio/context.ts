@@ -10,6 +10,14 @@ export function getExistingAudioContext(): AudioContext | null {
   return ctx;
 }
 
+/**
+ * True when the context is live and Tone is bound, so a note can be triggered
+ * synchronously without awaiting the unlock path — keeps live playing snappy.
+ */
+export function isAudioContextReady(): boolean {
+  return ctx !== null && ctx.state === "running" && toneBound;
+}
+
 export function getAudioContext(): AudioContext {
   if (!ctx) {
     const Ctor =

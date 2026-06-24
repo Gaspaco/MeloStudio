@@ -134,7 +134,15 @@ export function useTracks(deps: Deps) {
   const syncDrumPlaybackRegions = (nextTracks = deps.tracks()) => {
     const bars = nextTracks
       .filter(track => track.type === "drum" && !track.muted)
-      .flatMap(track => (track.clips ?? []).filter(clip => clip.drumPattern).map(clip => clip.barStart));
+      .flatMap(track => (track.clips ?? [])
+        .filter(clip => clip.drumPattern)
+        // A drum clip can span multiple bars — mark them all active, not just
+        // the start bar, or the region mutes after the first bar / when seeked.
+        .flatMap(clip => {
+          const start = Math.max(0, Math.floor(clip.barStart));
+          const span = Math.max(1, Math.ceil(clip.bars));
+          return Array.from({ length: span }, (_, i) => start + i);
+        }));
     deps.getSeq()?.setActiveBars(bars, deps.timeSignature());
   };
 
@@ -253,9 +261,6 @@ export function useTracks(deps: Deps) {
     setRecordingMode("midi");
   };
 
-  const captureMidiNoteOn = (midi: number, velocity = 0.85) => {
-    if (!midiRecordTrackId) return;
-    if (activeMidiNotes.has(midi)) captureMidiNoteOff(midi);
   const captureMidiNoteOn = (midi: number, velocity = 0.85, receivedAt = performance.now()) => {
     if (!midiRecordTrackId || activeMidiNotes.has(midi)) return;
     const eventPx = deps.timelinePxAtPerformanceTime(receivedAt);

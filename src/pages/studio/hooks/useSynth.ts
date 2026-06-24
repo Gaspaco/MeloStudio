@@ -6,7 +6,7 @@
 // the UI keyboard accurately, and prevents rapid-fire key repeat events making the synth glitch.
 import { createEffect, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
-import { unlockAudioContext } from "~/lib/audio/context";
+import { unlockAudioContext, isAudioContextReady } from "~/lib/audio/context";
 import { MidiManager } from "~/lib/audio/midiManager";
 import { PolySynth, type SynthPreset } from "~/lib/audio/synth";
 import { PRESET_ADSR } from "../types";
@@ -131,7 +131,9 @@ export function useSynth(deps: Deps) {
     if (heldKeys.has(k)) return;
     heldKeys.add(k);
     e.preventDefault();
-    await unlockAudioContext();
+    // Once the context is warm, trigger synchronously — awaiting the unlock path
+    // on every keypress adds latency to live playing.
+    if (!isAudioContextReady()) await unlockAudioContext();
     const activePreset: SynthPreset = sel.instrumentPreset
       ?? (sel.type === "bass" ? "bass" : sel.type === "guitar" ? "guitar" : deps.synthPreset());
     ensureSynth(activePreset);
@@ -159,7 +161,7 @@ export function useSynth(deps: Deps) {
   };
 
   const pressKey = async (midi: number) => {
-    await unlockAudioContext();
+    if (!isAudioContextReady()) await unlockAudioContext();
     const sel = deps.tracks().find(t => t.id === deps.selectedTrack());
     if (!sel || (sel.type !== "instrument" && sel.type !== "bass" && sel.type !== "guitar")) return;
     const activePreset: SynthPreset = sel.instrumentPreset
