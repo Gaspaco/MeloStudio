@@ -4,7 +4,7 @@
 // and resolving clip types (audio vs midi vs video).
 // This hook directly manipulates the `tracks` array and instantly saves
 // up to `persist.ts` whenever the timeline layout is modified.
-import { createSignal } from "solid-js";
+import { createSignal, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { storeClip, removeClip } from "~/lib/clipStore";
 import { deleteRemoteClip, remoteClipUploadErrorMessage, uploadRemoteClip } from "~/lib/remoteClips";
@@ -207,7 +207,7 @@ export function useTracks(deps: Deps) {
       const file = new File([blob], `Take ${Date.now()}.${ext}`, { type: mr.mimeType });
       setRecordingTrackId(null);
       setRecordingMode(null);
-      void connectMicToTrack(trackId, deps.setError);
+      disconnectMicFromTrack(trackId);
       await addClip(trackId, file, startPx / BAR_PX, bars, { leftPx: startPx, widthPx });
     };
     mr.start(100);
@@ -253,6 +253,9 @@ export function useTracks(deps: Deps) {
     setRecordingMode("midi");
   };
 
+  const captureMidiNoteOn = (midi: number, velocity = 0.85) => {
+    if (!midiRecordTrackId) return;
+    if (activeMidiNotes.has(midi)) captureMidiNoteOff(midi);
   const captureMidiNoteOn = (midi: number, velocity = 0.85, receivedAt = performance.now()) => {
     if (!midiRecordTrackId || activeMidiNotes.has(midi)) return;
     const eventPx = deps.timelinePxAtPerformanceTime(receivedAt);
@@ -510,7 +513,6 @@ export function useTracks(deps: Deps) {
     deps.setSelectedTrack(t.id);
     if (type === "drum") { deps.setDrumPanelOpen(true); deps.setActivePanel("drum"); }
     else if (type === "instrument" || type === "bass" || type === "guitar") deps.setActivePanel("keys");
-    else if (type === "voice") void connectMicToTrack(t.id, deps.setError);
     if (openModal) deps.setShowNewTrack(false);
     void deps.save();
   };
@@ -542,6 +544,10 @@ export function useTracks(deps: Deps) {
       }
     }
   };
+
+  onCleanup(() => {
+    for (const trackId of micEntries.keys()) disconnectMicFromTrack(trackId);
+  });
 
   const onLaneDragOver = (e: DragEvent, trackId: string) => {
     if (!e.dataTransfer?.types.includes("Files")) return;

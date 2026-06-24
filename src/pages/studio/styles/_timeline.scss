@@ -22,10 +22,9 @@
   top: 0;
   height: 3rem;
   display: flex;
-  width: calc(128 * var(--timeline-bar-px, 240px));
+  width: calc(var(--timeline-bars, 32) * var(--timeline-bar-px, 240px));
   background:
-    linear-gradient(180deg, rgba(#000, 0.45), rgba($bg-primary, 0.96));
-  backdrop-filter: blur(8px);
+    linear-gradient(180deg, #09090c, $bg-primary);
   border-bottom: 1px solid rgba(#fff, 0.08);
   z-index: 5;
   box-shadow: 0 1px 0 rgba(#fff, 0.03), 0 4px 12px rgba(#000, 0.25);
@@ -112,7 +111,7 @@
 
 .bl__lanes {
   position: relative;
-  width: calc(128 * var(--timeline-bar-px, 240px));
+  width: calc(var(--timeline-bars, 32) * var(--timeline-bar-px, 240px));
 }
 
 .bl__timeline-automix-spacer {
@@ -130,6 +129,7 @@
   border-bottom: 1px solid rgba(#fff, 0.03);
   position: relative;
   overflow: hidden;
+  contain: layout paint style;
   background-image:
     linear-gradient(90deg, rgba(#fff, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(#fff, 0.01) 1px, transparent 1px);
@@ -279,7 +279,8 @@
   &.is-dragging {
     opacity: 0.75;
     box-shadow: 0 6px 20px color-mix(in srgb, var(--tc) 50%, transparent);
-    transform: translate3d(0, -2px, 0);
+    will-change: transform;
+    backface-visibility: hidden;
     z-index: 10;
     transition: none;
     pointer-events: none;
@@ -353,6 +354,7 @@
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  min-height: 1.55rem;
   padding: 0.2rem 0.35rem;
   background: rgba(0, 0, 0, 0.32);
   border-bottom: 1px solid rgba(#fff, 0.06);
@@ -392,6 +394,7 @@
 .bl__mclip-body {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   height: 100%;
   display: flex;
   align-items: stretch;
@@ -407,17 +410,27 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
+  // One faint vertical line per bar (aligns to the clip), evenly spaced
+  // horizontal rows — no heavy banding.
   background:
-    linear-gradient(90deg, rgba(#fff, 0.045) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(#fff, 0.018) 1px, transparent 1px);
-  background-size: 25% 100%, 100% 33.333%;
+    linear-gradient(90deg, rgba(#fff, 0.05) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(#fff, 0.025) 1px, transparent 1px);
+  background-size:
+    calc(100% / var(--mbars, 4)) 100%,
+    100% 25%;
 }
 .bl__midi-note {
   position: absolute;
-  min-width: 4px;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--tc) 78%, #fff);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--tc) 20%, transparent);
+  min-width: 2px;
+  min-height: 1px;
+  max-height: 5px;
+  border-radius: 1.5px;
+  background: color-mix(in srgb, var(--tc) 82%, #fff);
+  border: 1px solid color-mix(in srgb, var(--tc) 72%, rgba(#fff, 0.55));
+  box-sizing: border-box;
+  // Crisp note blocks — no glow/blur (was box-shadow: 0 0 6px, which smeared
+  // the notes together and looked stretched).
+  box-shadow: none;
 }
 .bl__midi-empty-grid {
   position: absolute;
@@ -425,8 +438,10 @@
   opacity: 0.55;
   background:
     linear-gradient(90deg, rgba(#fff, 0.04) 1px, transparent 1px),
-    linear-gradient(0deg, rgba(#fff, 0.03) 1px, transparent 1px);
-  background-size: 25% 100%, 100% 25%;
+    linear-gradient(0deg, rgba(#fff, 0.025) 1px, transparent 1px);
+  background-size:
+    calc(100% / var(--mbars, 4)) 100%,
+    100% 25%;
 }
 
 /* Drop position marker — vertical line where clip will land */
@@ -626,9 +641,6 @@
   transition: background 0.15s;
   contain: layout paint;
   user-select: none;
-  will-change: left, transform;
-  backface-visibility: hidden;
-  transform: translate3d(0, 0, 0);
 
   &:hover {
     background: color-mix(in srgb, var(--tc, #{$accent}) 62%, #0e0e12);
@@ -638,6 +650,8 @@
     z-index: 10;
     pointer-events: none;
     transition: none;
+    will-change: transform;
+    backface-visibility: hidden;
     box-shadow: 0 8px 22px color-mix(in srgb, var(--tc, #{$accent}) 38%, transparent);
   }
 }

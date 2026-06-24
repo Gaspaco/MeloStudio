@@ -38,6 +38,7 @@ let currentLang: Lang = "en";
 let scriptPromise: Promise<void> | undefined;
 let applyTimer: number | undefined;
 let cleanupObserver: MutationObserver | undefined;
+let cleanupObserverTimer: number | undefined;
 
 const GOOGLE_BANNER_SELECTORS = [
   "iframe.goog-te-banner-frame",
@@ -123,11 +124,27 @@ function watchGoogleBannerLayers() {
   removeGoogleBannerLayers();
   if (cleanupObserver) return;
 
-  cleanupObserver = new MutationObserver(removeGoogleBannerLayers);
-  cleanupObserver.observe(document.documentElement, {
-    childList: true,
-    subtree: true,
+  // Google appends its banner/iframe as a direct child of <body>, so watch only
+  // body's child list — NOT the whole document subtree, which would fire this on
+  // every DOM mutation in the app (a constant drain, especially in the studio).
+  cleanupObserver = new MutationObserver((mutations) => {
+    const hasGoogleLayer = mutations.some((mutation) =>
+      Array.from(mutation.addedNodes).some((node) =>
+        node instanceof Element
+        && (node.matches(GOOGLE_BANNER_SELECTORS) || Boolean(node.querySelector(GOOGLE_BANNER_SELECTORS))),
+      ),
+    );
+    if (hasGoogleLayer) removeGoogleBannerLayers();
   });
+  cleanupObserver.observe(document.body, {
+    childList: true,
+  });
+
+  window.clearTimeout(cleanupObserverTimer);
+  cleanupObserverTimer = window.setTimeout(() => {
+    cleanupObserver?.disconnect();
+    cleanupObserver = undefined;
+  }, 6000);
 }
 
 function setCookie(name: string, value: string, days: number) {
@@ -271,6 +288,7 @@ export function installI18n() {
 
   return () => {
     window.clearTimeout(applyTimer);
+    window.clearTimeout(cleanupObserverTimer);
     cleanupObserver?.disconnect();
     cleanupObserver = undefined;
     window.removeEventListener("ms:language-change", onLanguageChange);
