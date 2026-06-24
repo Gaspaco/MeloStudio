@@ -91,7 +91,15 @@ export function useTransport(deps: Deps) {
   const configureDrumSequencer = () => {
     const activeBars = deps.tracks()
       .filter(track => track.type === "drum" && isTrackAudible(track))
-      .flatMap(track => (track.clips ?? []).filter(clip => clip.drumPattern).map(clip => clip.barStart));
+      .flatMap(track => (track.clips ?? [])
+        .filter(clip => clip.drumPattern)
+        // Mark every bar a drum clip covers, not just its start bar — otherwise
+        // a multi-bar region mutes after bar one and seeking mid-region is silent.
+        .flatMap(clip => {
+          const start = Math.max(0, Math.floor(clip.barStart));
+          const span = Math.max(1, Math.ceil(clip.bars));
+          return Array.from({ length: span }, (_, i) => start + i);
+        }));
     deps.getSeq()?.setActiveBars(activeBars, deps.timeSignature());
   };
 
