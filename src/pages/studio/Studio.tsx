@@ -315,15 +315,25 @@ const Studio: Component = () => {
     const punchInPx = loopOn() ? cycleStartPx() : playheadPx();
     if (loopOn()) await transport.seek(punchInPx);
 
+    const isMidi = isInstrumentTrackType(track.type);
+
+    // Arm MIDI capture BEFORE the count-in. Players anticipate the beat, so the
+    // first downbeat note is often struck a hair before the count finishes — if
+    // we only arm afterwards it gets dropped. While not yet playing, captured
+    // notes clamp to the punch-in point, so they land exactly on the downbeat.
+    if (isMidi) trk.startMidiRecording(track.id, punchInPx);
+
     if (countInEnabled() && !playing()) {
       setCountingIn(true);
       const completed = await transport.countIn(1);
       setCountingIn(false);
-      if (!completed) return;
+      if (!completed) {
+        if (isMidi) trk.stopMidiRecording();
+        return;
+      }
     }
 
-    if (isInstrumentTrackType(track.type)) trk.startMidiRecording(track.id, punchInPx);
-    else trk.startRecording(track.id, punchInPx);
+    if (!isMidi) trk.startRecording(track.id, punchInPx);
     if (!playing()) await transport.togglePlay();
   };
 
