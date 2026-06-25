@@ -253,43 +253,6 @@
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
 }
 
-.sp__layout--lyrics .sp__disc-wrap {
-  min-height: unset;
-  height: 100%;
-  border-radius: 10px;
-}
-
-.sp__layout--lyrics .sp__disc,
-.sp__layout--lyrics .sp__disc-lbl,
-.sp__layout--lyrics .sp__disc-r,
-.sp__layout--lyrics .sp__disc-hole {
-  display: none;
-}
-
-.sp__layout--lyrics .sp__disc-wrap--img .sp__disc--img-pfp {
-  display: block;
-  border-radius: 0;
-  animation: none !important;
-  box-shadow: none;
-}
-.sp__layout--lyrics .sp__disc-wrap--img .sp__disc-img {
-  border-radius: 0;
-  animation: none !important;
-}
-
-.sp__layout--lyrics .sp__disc-bgblur {
-  inset: 0;
-  filter: none;
-  opacity: 1;
-  background-size: cover;
-  background-position: center;
-  border-radius: 10px;
-}
-
-.sp__layout--lyrics .sp__disc-play-btn {
-  display: none;
-}
-
 .sp__layout--lyrics .sp__below {
   display: none;
 }

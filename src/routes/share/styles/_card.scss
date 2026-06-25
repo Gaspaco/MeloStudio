@@ -21,153 +21,45 @@
 }
 
 
-// ── Vinyl disc cover ───────────────────────────────────────────────
+// ── Cover art ─────────────────────────────────────────────────────
 
 .sp__cover {
   width: clamp(16rem, 22vw, 24rem);
   align-self: stretch;
   border-radius: $radius-lg 0 0 $radius-lg;
   overflow: hidden;
+  flex-shrink: 0;
   animation: sleeveIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
 
-  @media (max-width: 580px) { 
-    height: 22rem; 
-
+  @media (max-width: 560px) {
     width: 100%;
     height: 220px;
+    border-radius: $radius-lg $radius-lg 0 0;
   }
 }
 
-// Solid-color container — background set inline from nameToDiscColor()
-.sp__disc-wrap {
+.sp__cover-img {
   width: 100%;
   height: 100%;
-  min-height: 14rem;
-  position: relative;
+  object-fit: cover;
+  display: block;
+}
+
+.sp__cover-placeholder {
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  border-right: 1px solid rgba(255, 255, 255, 0.04);
-
-  @media (max-width: 560px) {
-    border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-  }
 }
 
-// Play/pause button overlay centered on the disc
-.sp__disc-play-btn {
-  all: unset;
-  cursor: pointer;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #fff;
-  transition: background 0.18s, transform 0.18s, border-color 0.18s;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-
-  &:hover {
-    background: rgba(224, 82, 151, 0.75);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%) scale(1.08);
-  }
-
-  &:active {
-    transform: translate(-50%, -50%) scale(0.96);
-  }
-}
-
-// Spinning vinyl record disc (only ring borders visible — no color fill)
-.sp__disc {
-  width: 72%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.32);
-  position: relative;
-  animation: discSpin 14s linear infinite;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-// Concentric groove rings — border-only, no fill
-.sp__disc-r {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.065);
-  pointer-events: none;
-
-  &--a { width: 82%; aspect-ratio: 1; }
-  &--b { width: 64%; aspect-ratio: 1; }
-  &--c { width: 46%; aspect-ratio: 1; }
-  &--d { width: 28%; aspect-ratio: 1; border-color: rgba(255, 255, 255, 0.045); }
-}
-
-// Center label — static (not spinning), sits OVER the disc
-.sp__disc-lbl {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 21%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: var(--lbl-bg, #111);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 0;
-  pointer-events: none;
-}
-
-.sp__disc-initials {
+.sp__cover-initials {
   font-family: $font-display;
-  font-size: clamp(0.38rem, 1.1vw, 0.52rem);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.55);
-  line-height: 1;
+  color: rgba(255, 255, 255, 0.4);
   text-transform: uppercase;
-}
-
-// Center spindle hole
-.sp__disc-hole {
-  width: 18%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.7);
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-// Blurred background fill — shows album art as a soft glow behind the disc
-.sp__disc-bgblur {
-  position: absolute;
-  inset: -20px;
-  background-size: cover;
-  background-position: center;
-  filter: blur(40px) saturate(150%) brightness(1.2);
-  opacity: 0.85;
-  z-index: 0;
-  pointer-events: none;
 }
 
 
@@ -521,40 +413,10 @@
     height: auto;
   }
 
-  // ── Cover (flat image, no disc) ──
   .sp__layout .sp__cover {
     width: 100%;
     height: 220px;
     border-radius: $radius-lg $radius-lg 0 0;
-  }
-
-  .sp__layout .sp__disc-wrap {
-    min-height: unset;
-    height: 100%;
-    border-right: none;
-    border-bottom: none;
-  }
-
-  .sp__layout .sp__disc {
-    display: none;
-  }
-
-  .sp__layout .sp__disc-lbl {
-    display: none;
-  }
-
-  .sp__layout .sp__disc-bgblur {
-    inset: 0;
-    filter: none;
-    opacity: 1;
-    background-size: cover;
-    background-position: center;
-  }
-
-  .sp__layout .sp__disc-play-btn {
-    width: 60px;
-    height: 60px;
-    svg { width: 24px; height: 24px; }
   }
 
   // ── Body ──
