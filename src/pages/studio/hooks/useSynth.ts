@@ -142,10 +142,9 @@ export function useSynth(deps: Deps) {
     if (!synth) return;
     
     // Bypass standard pitched-instrument octave logic for drum kits.
+    // Map keyVal (0-16) onto C2 (MIDI 36) for all octave positions.
     const isDrumKit = activePreset.startsWith("drum-kit");
-    const octave = isDrumKit ? 2 : (deps.octave() + 1); // 2 * 12 = 24. Wait, MIDI octave 0 starts at 12? No, ToneJS maps C1 to 36. C0=24, C-1=12. So C1 = 12 * 3.
-    // Let's use 36 + keyVal directly to map to C1
-    const midi = isDrumKit ? 36 + keyVal : 12 * (deps.octave() + 1) + keyVal;
+    const midi = isDrumKit ? 36 + (keyVal % 12) : 12 * (deps.octave() + 1) + keyVal;
 
     synth.noteOn(midi, 0.85);
     deps.onMidiNoteOn?.(midi, 0.85, performance.now());
@@ -163,7 +162,7 @@ export function useSynth(deps: Deps) {
     const sel = deps.tracks().find(t => t.id === deps.selectedTrack());
     const activePreset = sel?.instrumentPreset ?? (sel?.type === "bass" ? "bass" : sel?.type === "guitar" ? "guitar" : deps.synthPreset());
     const isDrumKit = activePreset.startsWith("drum-kit");
-    const midi = isDrumKit ? 36 + keyVal : 12 * (deps.octave() + 1) + keyVal;
+    const midi = isDrumKit ? 36 + (keyVal % 12) : 12 * (deps.octave() + 1) + keyVal;
 
     synth?.noteOff(midi);
     deps.onMidiNoteOff?.(midi, performance.now());
@@ -224,12 +223,23 @@ export function useSynth(deps: Deps) {
   onMount(() => {
     void MidiManager.initialize();
     MidiManager.bindNoteListener((event) => {
+      // For drum kits, normalize the incoming physical MIDI note to the visual
+      // keyboard range (C2 = MIDI 36) so the UI key highlights correctly
+      // regardless of what octave the physical keyboard is playing on.
+      const sel = deps.tracks().find(t => t.id === deps.selectedTrack());
+      const activePreset = sel?.instrumentPreset ?? deps.synthPreset();
+      const isDrumKit = activePreset.startsWith("drum-kit");
+
+      // For drum kits: map any incoming MIDI note to its position within C2 octave
+      // so the UI piano keys at octave 2 always light up correctly.
+      const visualMidi = isDrumKit ? 36 + (event.midi % 12) : event.midi;
+
       const next = new Set(deps.activeNotes());
       if (event.type === "on") {
-        next.add(event.midi);
+        next.add(visualMidi);
         deps.onMidiNoteOn?.(event.midi, event.velocity, event.receivedAt);
       } else {
-        next.delete(event.midi);
+        next.delete(visualMidi);
         deps.onMidiNoteOff?.(event.midi, event.receivedAt);
       }
       deps.setActiveNotes(next);

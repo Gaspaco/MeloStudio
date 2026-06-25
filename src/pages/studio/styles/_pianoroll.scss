@@ -1,0 +1,482 @@
+@use "../../../styles/variables" as *;
+
+// ── Piano Roll ────────────────────────────────────────────────────────────────
+$pr-row-h: 14px;
+$pr-sidebar-w: 40px;
+$pr-toolbar-h: 36px;
+$pr-velocity-h: 60px;
+$pr-ruler-h: 22px;
+$pr-bar-px: 240px;
+
+.bl__pr {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: $bg-primary;
+  overflow: hidden;
+  user-select: none;
+  position: relative;
+}
+
+// ── Toolbar ──────────────────────────────────────────────────────────────────
+.bl__pr-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: $pr-toolbar-h;
+  min-height: $pr-toolbar-h;
+  padding: 0 10px;
+  background: $bg-secondary;
+  border-bottom: 1px solid $border;
+  font-size: 0.72rem;
+  color: $text-secondary;
+  flex-shrink: 0;
+  z-index: 2;
+}
+
+.bl__pr-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  color: $text-muted;
+  font-size: 1rem;
+  cursor: pointer;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: $text-primary;
+  }
+}
+
+.bl__pr-clip-name {
+  font-weight: 600;
+  color: $text-primary;
+  font-size: 0.73rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.bl__pr-divider {
+  width: 1px;
+  height: 18px;
+  background: $border;
+  flex-shrink: 0;
+}
+
+.bl__pr-select {
+  background: $bg-tertiary;
+  border: 1px solid $border;
+  border-radius: 4px;
+  color: $text-secondary;
+  font-size: 0.66rem;
+  font-family: $font-mono;
+  padding: 2px 6px;
+  cursor: pointer;
+  outline: none;
+  min-width: 50px;
+
+  &:hover {
+    border-color: $border-hover;
+  }
+
+  &:focus {
+    border-color: rgba($accent, 0.5);
+  }
+
+  option {
+    background: $bg-elevated;
+    color: $text-primary;
+  }
+}
+
+.bl__pr-label {
+  font-size: 0.6rem;
+  color: $text-muted;
+  font-family: $font-mono;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.bl__pr-ghost-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid $border;
+  border-radius: 4px;
+  background: transparent;
+  color: $text-muted;
+  font-size: 0.62rem;
+  font-family: $font-mono;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.12s;
+
+  &:hover {
+    border-color: $border-hover;
+    color: $text-secondary;
+  }
+
+  &.is-on {
+    background: rgba($accent, 0.12);
+    border-color: rgba($accent, 0.3);
+    color: $accent;
+  }
+}
+
+.bl__pr-spacer {
+  flex: 1;
+}
+
+// ── Body (sidebar + grid + ruler) ────────────────────────────────────────────
+.bl__pr-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+// ── Piano sidebar ────────────────────────────────────────────────────────────
+.bl__pr-sidebar {
+  width: $pr-sidebar-w;
+  min-width: $pr-sidebar-w;
+  overflow: hidden;
+  background: $bg-secondary;
+  border-right: 1px solid $border;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.bl__pr-sidebar-ruler {
+  height: $pr-ruler-h;
+  min-height: $pr-ruler-h;
+  border-bottom: 1px solid $border;
+}
+
+.bl__pr-sidebar-keys {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.bl__pr-keys-inner {
+  position: absolute;
+  width: 100%;
+}
+
+.bl__pr-key {
+  height: $pr-row-h;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 4px;
+  font-size: 7px;
+  font-family: $font-mono;
+  color: #333;
+  background: #f0f0f0;
+  border-bottom: 1px solid #d0d0d0;
+  cursor: pointer;
+  transition: background 0.08s;
+  box-sizing: border-box;
+  width: 100%;
+  border-radius: 0 2px 2px 0;
+  z-index: 1;
+
+  &.is-black {
+    background: #2a2a30;
+    color: rgba(255, 255, 255, 0.5);
+    width: 65%;
+    border-bottom: 1px solid #111;
+    border-top: 1px solid #111;
+    border-right: 1px solid #111;
+    z-index: 2;
+  }
+
+  &.is-c {
+    background: #ffffff;
+    font-weight: bold;
+    color: #000;
+  }
+
+  &.is-playing {
+    background: #e05297 !important;
+    color: #fff !important;
+  }
+
+  &:hover {
+    background: rgba($accent, 0.3);
+  }
+}
+
+// ── Grid area ────────────────────────────────────────────────────────────────
+.bl__pr-grid-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bl__pr-ruler {
+  height: $pr-ruler-h;
+  min-height: $pr-ruler-h;
+  overflow: hidden;
+  position: relative;
+  background: $bg-secondary;
+  border-bottom: 1px solid $border;
+}
+
+.bl__pr-ruler-inner {
+  position: absolute;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.bl__pr-ruler-bar {
+  flex-shrink: 0;
+  width: $pr-bar-px;
+  height: 100%;
+  border-left: 1px solid rgba($text-muted, 0.18);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 0 3px 4px;
+  font-size: 8px;
+  font-family: $font-mono;
+  color: $text-muted;
+  box-sizing: border-box;
+}
+
+.bl__pr-scroll {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>') 0 20, crosshair;
+
+  &::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $bg-primary;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $bg-elevated;
+    border-radius: 4px;
+
+    &:hover {
+      background: $border-hover;
+    }
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: $bg-primary;
+  }
+}
+
+.bl__pr-grid {
+  position: relative;
+  min-width: max-content;
+}
+
+.bl__pr-row {
+  height: $pr-row-h;
+  border-bottom: 1px solid rgba($border, 0.4);
+  position: relative;
+  box-sizing: border-box;
+
+  &.is-black {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  &.is-c {
+    border-bottom-color: rgba($text-muted, 0.18);
+  }
+
+  // Scale highlighting
+  &.is-in-key {
+    background: rgba(255, 255, 255, 0.025);
+
+    &.is-black {
+      background: rgba(255, 255, 255, 0.01);
+    }
+  }
+
+  &.is-out-of-key {
+    background: rgba(0, 0, 0, 0.35);
+
+    &.is-black {
+      background: rgba(0, 0, 0, 0.45);
+    }
+  }
+}
+
+// ── Beat grid lines ──────────────────────────────────────────────────────────
+.bl__pr-gridlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bl__pr-gridline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  pointer-events: none;
+
+  &.is-bar {
+    background: rgba($text-muted, 0.18);
+  }
+
+  &.is-beat {
+    background: rgba($text-muted, 0.08);
+  }
+
+  &.is-sub {
+    background: rgba($text-muted, 0.03);
+  }
+}
+
+// ── Playhead ─────────────────────────────────────────────────────────────────
+.bl__pr-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: $accent;
+  z-index: 5;
+  pointer-events: none;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -4px;
+    width: 9px;
+    height: 5px;
+    background: $accent;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+}
+
+// ── Notes ────────────────────────────────────────────────────────────────────
+.bl__pr-note {
+  position: absolute;
+  height: calc($pr-row-h - 2px);
+  min-width: 4px;
+  border-radius: 2px;
+  cursor: grab;
+  z-index: 2;
+  transition: box-shadow 0.1s;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+    z-index: 3;
+  }
+
+  &.is-selected {
+    box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.6);
+    z-index: 4;
+  }
+
+  &.is-dragging {
+    opacity: 0.8;
+    cursor: grabbing;
+    z-index: 10;
+  }
+}
+
+.bl__pr-note-resize {
+  position: absolute;
+  top: 0;
+  right: -6px;
+  width: 12px;
+  height: 100%;
+  cursor: ew-resize;
+  z-index: 10;
+}
+
+// ── Ghost notes ──────────────────────────────────────────────────────────────
+.bl__pr-ghost-note {
+  position: absolute;
+  height: calc($pr-row-h - 2px);
+  min-width: 4px;
+  border-radius: 2px;
+  background: rgba($text-muted, 0.3);
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 1;
+}
+
+// ── Velocity lane ────────────────────────────────────────────────────────────
+.bl__pr-velocity {
+  height: $pr-velocity-h;
+  min-height: $pr-velocity-h;
+  border-top: 1px solid $border;
+  background: $bg-secondary;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.bl__pr-vel-sidebar {
+  width: $pr-sidebar-w;
+  min-width: $pr-sidebar-w;
+  border-right: 1px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7px;
+  font-family: $font-mono;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.bl__pr-vel-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.bl__pr-vel-inner {
+  position: absolute;
+  bottom: 0;
+  height: 100%;
+}
+
+.bl__pr-vel-bar {
+  position: absolute;
+  bottom: 0;
+  width: 6px;
+  min-height: 3px;
+  border-radius: 1px 1px 0 0;
+  cursor: ns-resize;
+  transition: opacity 0.1s;
+
+  &:hover {
+    opacity: 0.9 !important;
+  }
+}

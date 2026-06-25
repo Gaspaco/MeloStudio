@@ -21,6 +21,7 @@ import RestoreDialog    from "./components/RestoreDialog";
 import DrumPanel        from "./components/DrumPanel";
 import KeyboardPanel    from "./components/KeyboardPanel";
 import AudioClipEditor  from "./components/AudioClipEditor";
+import PianoRoll        from "./components/PianoRoll";
 import NavDrawer, { type NavCategory } from "./components/NavDrawer";
 import NewTrackModal    from "./components/NewTrackModal";
 import PublishModal     from "./components/PublishModal";
@@ -62,6 +63,7 @@ const Studio: Component = () => {
   const [activePanel,        setActivePanel]        = createSignal<"drum" | "keys" | "voice" | null>(null);
   const [bottomPanelHeight,  setBottomPanelHeight]  = createSignal(300);
   const [selectedClipId,     setSelectedClipId]     = createSignal<string | null>(null);
+  const [pianoRollTarget,    setPianoRollTarget]    = createSignal<{ trackId: string; clipId: string } | null>(null);
   const [drumSwing,          setDrumSwing]          = createSignal(0);
   const [drumSteps,          setDrumSteps]          = createSignal(16);
   const [synthPreset,        setSynthPreset]        = createSignal<SynthPreset>("piano");
@@ -84,7 +86,7 @@ const Studio: Component = () => {
   const [showPublishModal,   setShowPublishModal]   = createSignal(false);
   const [showPublishToast,   setShowPublishToast]   = createSignal(false);
   const [horizontalZoom,     setHorizontalZoom]     = createSignal(STUDIO_BAR_PX);
-  const [verticalZoom,       setVerticalZoom]       = createSignal(88);
+  const [verticalZoom,       setVerticalZoom]       = createSignal(64);
   const [midiInputEnabled,   setMidiInputEnabled]   = createSignal(true);
   const [midiArmedTrackId,   setMidiArmedTrackId]   = createSignal<string | null>(null);
   const [timelineScrollTop,  setTimelineScrollTop]  = createSignal(0);
@@ -869,6 +871,7 @@ const Studio: Component = () => {
             if (t?.type === "voice") { setSelectedClipId(clipId); setActivePanel("voice"); }
             else setSelectedClipId(clipId);
           }}
+          onOpenPianoRoll={(trackId, clipId) => setPianoRollTarget({ trackId, clipId })}
           verticalScrollTop={timelineScrollTop}
           onVerticalScroll={setTimelineScrollTop}
         />
@@ -974,9 +977,25 @@ const Studio: Component = () => {
 
       <BottomBar
         tracks={tracks} selectedTrack={selectedTrack}
-        activePanel={activePanel} onSetActivePanel={setActivePanel}
+        activePanel={activePanel} 
+        onSetActivePanel={(panel) => {
+          if (panel === "keys" && pianoRollTarget()) {
+            setPianoRollTarget(null);
+          }
+          setActivePanel(panel);
+        }}
         onLyricsToggle={() => setLyricsOpen(v => !v)}
         onSelectTrack={setSelectedTrack}
+        isEditorOpen={() => !!pianoRollTarget()}
+        onCloseEditor={() => setPianoRollTarget(null)}
+        onOpenEditor={() => {
+          const trackId = selectedTrack();
+          if (!trackId) return;
+          const t = tracks().find(t => t.id === trackId);
+          if (!t || !t.clips || t.clips.length === 0) return;
+          const clipId = selectedClipId() ?? t.clips[0].id;
+          setPianoRollTarget({ trackId, clipId });
+        }}
       />
 
       <Show when={navOpen()}>
@@ -1004,6 +1023,35 @@ const Studio: Component = () => {
           }}
           onClose={() => setShowNewTrack(false)}
         />
+      </Show>
+
+      <Show when={pianoRollTarget()}>
+        <div style={{ position: "absolute", top: "50%", bottom: "40px", left: 0, right: 0, "z-index": 100, borderTop: "2px solid #2c2c30", boxShadow: "0 -4px 20px rgba(0,0,0,0.5)" }}>
+          <PianoRoll
+            tracks={tracks}
+            clip={() => {
+              const target = pianoRollTarget();
+              if (!target) return null;
+              const t = tracks().find(tr => tr.id === target.trackId);
+              return t?.clips?.find(c => c.id === target.clipId) ?? null;
+            }}
+            trackId={() => pianoRollTarget()?.trackId ?? null}
+            trackColor={() => "#e05297"}
+            onNoteOn={(midi) => sth.pressKey(midi, 0.8)}
+            onNoteOff={(midi) => sth.releaseKey(midi)}
+            bpm={bpm}
+            timeSignature={timeSig}
+            playheadPx={playheadPx}
+            onUpdateNotes={(trackId, clipId, notes) => {
+              const t = tracks().find(tr => tr.id === trackId);
+              if (!t) return;
+              trk.patchTrack(trackId, {
+                clips: t.clips?.map(c => c.id === clipId ? { ...c, midiNotes: notes } : c)
+              });
+            }}
+            onClose={() => setPianoRollTarget(null)}
+          />
+        </div>
       </Show>
 
       <Show when={showPublishModal()}>
