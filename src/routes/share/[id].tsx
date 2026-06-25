@@ -810,47 +810,12 @@ const SharePage: Component = () => {
                   }}
                 >
 
-                {/* Vinyl disc cover */}
                 <div class="sp__cover">
                   {coverImageUrl ? (
-                    <div class="sp__disc-wrap sp__disc-wrap--img">
-                      <div 
-                        class="sp__disc-bgblur" 
-                        style={{ "background-image": `url(${coverImageUrl})` }}
-                      />
-                      <div class="sp__disc sp__disc--img-pfp" style={{ "animation-play-state": isPlaying() ? "running" : "paused" }}>
-                        <img src={coverImageUrl} alt="Cover" class="sp__disc-img" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                        <div class="sp__disc-r sp__disc-r--a" />
-                        <div class="sp__disc-r sp__disc-r--b" />
-                        <div class="sp__disc-hole" />
-                      </div>
-                      <button class="sp__disc-play-btn" aria-label={isPlaying() ? "Pause" : "Play"} onClick={togglePlayback}>
-                        <Show when={isPlaying()} fallback={
-                          <svg viewBox="0 0 16 16" fill="currentColor" width="20" height="20"><path d="M4 2l10 6-10 6V2z"/></svg>
-                        }>
-                          <svg viewBox="0 0 16 16" fill="currentColor" width="20" height="20"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg>
-                        </Show>
-                      </button>
-                    </div>
+                    <img src={coverImageUrl} alt="Cover" class="sp__cover-img" />
                   ) : (
-                    <div class="sp__disc-wrap" style={{ background: discColor }}>
-                      <div class="sp__disc" style={{ "animation-play-state": isPlaying() ? "running" : "paused" }}>
-                        <div class="sp__disc-r sp__disc-r--a" />
-                        <div class="sp__disc-r sp__disc-r--b" />
-                        <div class="sp__disc-r sp__disc-r--c" />
-                        <div class="sp__disc-r sp__disc-r--d" />
-                      </div>
-                      <div class="sp__disc-lbl" style={{ "--lbl-bg": discColor }}>
-                        <span class="sp__disc-initials">{initials}</span>
-                        <div class="sp__disc-hole" />
-                      </div>
-                      <button class="sp__disc-play-btn" aria-label={isPlaying() ? "Pause" : "Play"} onClick={togglePlayback}>
-                        <Show when={isPlaying()} fallback={
-                          <svg viewBox="0 0 16 16" fill="currentColor" width="20" height="20"><path d="M4 2l10 6-10 6V2z"/></svg>
-                        }>
-                          <svg viewBox="0 0 16 16" fill="currentColor" width="20" height="20"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg>
-                        </Show>
-                      </button>
+                    <div class="sp__cover-placeholder" style={{ background: discColor }}>
+                      <span class="sp__cover-initials">{initials}</span>
                     </div>
                   )}
                 </div>
