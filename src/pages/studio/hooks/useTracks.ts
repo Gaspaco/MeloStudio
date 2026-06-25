@@ -224,7 +224,7 @@ export function useTracks(deps: Deps) {
       disconnectMicFromTrack(trackId);
       await addClip(trackId, file, startPx / BAR_PX, bars, { leftPx: startPx, widthPx });
     };
-    mr.start(100);
+    mr.start();
     mediaRecorder = mr;
     recordingAnchorPx = startPx;
     setRecordingStartPx(startPx);
