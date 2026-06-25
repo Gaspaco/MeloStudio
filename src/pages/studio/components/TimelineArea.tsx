@@ -224,6 +224,7 @@ type Props = {
   onSelectClip: (trackId: string, clipId: string) => void;
   verticalScrollTop: Accessor<number>;
   onVerticalScroll: (scrollTop: number) => void;
+  onOpenPianoRoll: (trackId: string, clipId: string) => void;
 };
 
 const TimelineArea: Component<Props> = (props) => {
@@ -699,6 +700,16 @@ const TimelineArea: Component<Props> = (props) => {
                       if (e.button !== 0) return;
                       e.stopPropagation();
                       e.preventDefault();
+                      
+                      const now = performance.now();
+                      const lastClick = (e.currentTarget as any)._lastClick || 0;
+                      if (now - lastClick < 350) {
+                        if (c.kind === "midi" && !c.drumPattern) {
+                          props.onOpenPianoRoll(t.id, c.id);
+                        }
+                      }
+                      (e.currentTarget as any)._lastClick = now;
+
                       props.onSelectClip(t.id, c.id);
                       const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
                         clipDrag = { clipId: c.id, trackId: t.id, mode: "move", offsetPx: basePx(e.clientX - rect.left), widthPx: baseWidthPx, startLeftPx: baseLeftPx, startRightPx: baseRightPx, minLeftPx, kind: c.kind, drumPattern: c.drumPattern, sourceTrackIndex: trackIndex(), sourceLaneTop: (e.currentTarget as HTMLElement).closest(".bl__lane")?.getBoundingClientRect().top };

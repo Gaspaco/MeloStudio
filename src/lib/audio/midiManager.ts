@@ -1,4 +1,4 @@
-import { getAudioContext, unlockAudioContext } from "./context";
+import { getAudioContext, unlockAudioContext, bindToneToContext } from "./context";
 import { setConnectedMidiDevices, type SimpleMidiDevice } from "../state/transportStore";
 import type { PolySynth } from "./synth";
 
@@ -11,9 +11,15 @@ class MidiHardwareManager {
   private pendingNoteOffs = new Set<number>();
   /** Notes currently held (noteOn received, noteOff not yet sent to synth). */
   private heldNotes = new Set<number>();
+  /** Heartbeat interval ID — periodically re-scans devices to catch silent handler detachment. */
+  private heartbeatId: ReturnType<typeof setInterval> | null = null;
+  /** Whether initialize() has been called at least once. */
+  private initialized = false;
 
   /**
    * Initializes the browser Web MIDI API subsystem and subscribes to hardware inputs.
+   * Safe to call multiple times — subsequent calls attempt re-acquisition if the
+   * previous access object is stale (e.g. after a browser permission revoke/re-grant).
    */
   async initialize(): Promise<boolean> {
     if (!navigator.requestMIDIAccess) {
@@ -22,19 +28,70 @@ class MidiHardwareManager {
     }
 
     try {
-      this.midiAccess = await navigator.requestMIDIAccess();
-      
+      const access = await navigator.requestMIDIAccess();
+      this.midiAccess = access;
+
       // Handle physical MIDI cables plugging/unplugging in real-time
       this.midiAccess.onstatechange = () => {
         this.scanDevices();
       };
 
       this.scanDevices();
+
+      // Start the heartbeat ONLY on first successful initialization
+      if (!this.initialized) {
+        this.startHeartbeat();
+        this.initialized = true;
+      }
+
+      // Watch the AudioContext for silent suspension (tab background, phone call, etc.)
+      // and resume + re-bind Tone when it comes back.
+      this.watchAudioContext();
+
       return true;
     } catch (error) {
       console.error("Failed to acquire MIDI access authorization:", error);
       return false;
     }
+  }
+
+  /**
+   * Registers a listener on the AudioContext statechange event.
+   * When the context transitions back to "running" (e.g. from "suspended" or "interrupted"),
+   * re-binds Tone.js and re-scans MIDI devices so playback resumes without a page refresh.
+   */
+  private watchAudioContext(): void {
+    const ctx = getAudioContext();
+    ctx.addEventListener("statechange", () => {
+      if (ctx.state === "running") {
+        bindToneToContext();
+        // Re-bind all device handlers in case they were dropped during suspension
+        this.scanDevices();
+      } else if (ctx.state === "suspended") {
+        // Attempt to resume silently — the next user gesture will also trigger this
+        void unlockAudioContext().catch(() => {/* may fail if not from user gesture */});
+      }
+    });
+  }
+
+  /**
+   * Periodic heartbeat: re-scans MIDI devices every 10 seconds to catch silent
+   * handler detachment (a known Chrome bug where onmidimessage gets silently
+   * garbage-collected on long-running pages) and to revive suspended AudioContexts.
+   */
+  private startHeartbeat(): void {
+    if (this.heartbeatId !== null) return;
+    this.heartbeatId = setInterval(() => {
+      // Re-scan devices to rebind any handlers that may have been detached
+      this.scanDevices();
+
+      // If context is suspended, attempt to recover without a user gesture
+      // (will only succeed in browsers that allow programmatic resume)
+      const ctx = getAudioContext();
+      if (ctx.state === "suspended" || (ctx.state as string) === "interrupted") {
+        void ctx.resume().then(() => bindToneToContext()).catch(() => {/* no-op */});
+      }
+    }, 10_000);
   }
 
   /**
@@ -74,6 +131,12 @@ class MidiHardwareManager {
   private scanDevices(): void {
     if (!this.midiAccess) return;
 
+    // If the MIDI access object has become stale (state changed to "closed"), re-initialize.
+    if ((this.midiAccess as any).sysexEnabled === undefined && this.midiAccess.inputs.size === 0) {
+      void this.initialize();
+      return;
+    }
+
     const devices: SimpleMidiDevice[] = [];
     const inputs = this.midiAccess.inputs.values();
 
@@ -85,7 +148,10 @@ class MidiHardwareManager {
         manufacturer: dev.manufacturer || "Generic",
       });
 
-      // Always re-bind so a unplugged/replugged device is immediately live again
+      // Always re-bind so an unplugged/replugged device is immediately live again.
+      // Using addEventListener instead of onmidimessage avoids silent detachment
+      // bugs in Chromium where the property gets cleared on long-running pages.
+      dev.onmidimessage = null; // clear old handler first to avoid double-firing
       dev.onmidimessage = (event: MIDIMessageEvent) => this.handleMidiMessage(event);
     }
 
@@ -149,11 +215,10 @@ class MidiHardwareManager {
 
     const command = status & 0xf0; // Extract command byte type
     const receivedAt = event.timeStamp || performance.now();
-    // const channel = status & 0x0f; // Extract MIDI channel (0-15) if needed later
 
     // Ensure the browser AudioContext has been physically unlocked by a gesture
     const ctx = getAudioContext();
-    if (ctx.state === "suspended") {
+    if (ctx.state === "suspended" || (ctx.state as string) === "interrupted") {
       void unlockAudioContext();
     }
 
@@ -217,6 +282,26 @@ class MidiHardwareManager {
       case 123: { // All Notes Off — sent by some devices on disconnect
         this.activeSynth.allNotesOff();
         break;
+      }
+    }
+  }
+
+  /**
+   * Tears down the heartbeat and unbinds all device handlers.
+   * Call this when the Studio component unmounts.
+   */
+  dispose(): void {
+    if (this.heartbeatId !== null) {
+      clearInterval(this.heartbeatId);
+      this.heartbeatId = null;
+    }
+    this.activeSynth?.allNotesOff();
+    this.activeSynth = null;
+    this.noteListener = null;
+    if (this.midiAccess) {
+      const inputs = this.midiAccess.inputs.values();
+      for (let input = inputs.next(); input && !input.done; input = inputs.next()) {
+        input.value.onmidimessage = null;
       }
     }
   }

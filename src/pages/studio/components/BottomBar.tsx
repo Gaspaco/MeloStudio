@@ -9,6 +9,9 @@ type Props = {
   onSetActivePanel: Setter<"drum" | "keys" | "voice" | null>;
   onLyricsToggle: () => void;
   onSelectTrack: Setter<string | null>;
+  onOpenEditor: () => void;
+  onCloseEditor: () => void;
+  isEditorOpen: Accessor<boolean>;
 };
 
 const BottomBar: Component<Props> = (props) => (
@@ -16,8 +19,15 @@ const BottomBar: Component<Props> = (props) => (
     <div class="bl__util-l">
       <Show when={props.tracks().some(t => t.type === "drum")}>
         <button
-          class={`bl__util-tab ${props.activePanel() === "drum" ? "is-active" : ""}`}
-          onClick={() => props.onSetActivePanel(props.activePanel() === "drum" ? null : "drum")}
+          class={`bl__util-tab ${props.activePanel() === "drum" && !props.isEditorOpen() ? "is-active" : ""}`}
+          onClick={() => {
+            if (props.isEditorOpen()) {
+              props.onCloseEditor();
+              props.onSetActivePanel("drum");
+              return;
+            }
+            props.onSetActivePanel(props.activePanel() === "drum" ? null : "drum");
+          }}
         >
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="14" height="8" rx="1.5"/><path d="M4 4v8M7 4v8M10 4v8"/></svg>
           <span>Drum Machine</span>
@@ -29,8 +39,13 @@ const BottomBar: Component<Props> = (props) => (
 
       <Show when={props.tracks().some(t => t.type === "instrument" || t.type === "bass" || t.type === "guitar")}>
         <button
-          class={`bl__util-tab ${props.activePanel() === "keys" ? "is-active" : ""}`}
+          class={`bl__util-tab ${props.activePanel() === "keys" && !props.isEditorOpen() ? "is-active" : ""}`}
           onClick={() => {
+            if (props.isEditorOpen()) {
+              props.onCloseEditor();
+              props.onSetActivePanel("keys");
+              return;
+            }
             if (props.activePanel() === "keys") { props.onSetActivePanel(null); return; }
             const cur = props.tracks().find(t => t.id === props.selectedTrack());
             if (!cur || (cur.type !== "instrument" && cur.type !== "bass" && cur.type !== "guitar")) {
@@ -55,8 +70,15 @@ const BottomBar: Component<Props> = (props) => (
       <Show when={props.tracks().some(t => t.type === "voice")}>
         <span class="bl__util-sep">·</span>
         <button
-          class={`bl__util-tab ${props.activePanel() === "voice" ? "is-active" : ""}`}
-          onClick={() => props.onSetActivePanel(props.activePanel() === "voice" ? null : "voice")}
+          class={`bl__util-tab ${props.activePanel() === "voice" && !props.isEditorOpen() ? "is-active" : ""}`}
+          onClick={() => {
+            if (props.isEditorOpen()) {
+              props.onCloseEditor();
+              props.onSetActivePanel("voice");
+              return;
+            }
+            props.onSetActivePanel(props.activePanel() === "voice" ? null : "voice");
+          }}
         >
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2a2 2 0 0 0-2 2v4a2 2 0 0 0 4 0V4a2 2 0 0 0-2-2z"/><path d="M4 8v.5a4 4 0 0 0 8 0V8M8 13v2M6 15h4"/></svg>
           <span>Voice</span>
@@ -74,7 +96,15 @@ const BottomBar: Component<Props> = (props) => (
         <span>Effects</span>
       </button>
       <span class="bl__util-sep">·</span>
-      <button class={`bl__util-btn${props.activePanel() !== null ? " is-ctx" : ""}`} disabled={props.activePanel() === null} title="Piano roll / step editor">
+      <button 
+        class={`bl__util-tab ${props.isEditorOpen() ? "is-active" : ""}`}
+        disabled={props.activePanel() === null && !props.isEditorOpen()} 
+        title="Piano roll / step editor"
+        onClick={() => {
+          if (props.isEditorOpen()) props.onCloseEditor();
+          else props.onOpenEditor();
+        }}
+      >
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2l3 3-9 9-3 1 1-3z"/><path d="M9 4l3 3"/></svg>
         <span>Editor</span>
       </button>

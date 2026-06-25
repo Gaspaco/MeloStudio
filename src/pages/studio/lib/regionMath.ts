@@ -1,6 +1,6 @@
 import type { MediaClip } from "../types";
 
-export const STUDIO_BAR_PX = 240;
+export const STUDIO_BAR_PX = 160;
 export const BEATS_PER_BAR = 4;
 export const STUDIO_BEAT_PX = STUDIO_BAR_PX / BEATS_PER_BAR;
 export const REGION_EDGE_EPS_PX = 0.5;
