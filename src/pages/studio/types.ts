@@ -18,6 +18,10 @@ export interface MediaClip {
   name: string;
   barStart: number;
   bars: number;
+  /** The full original extent of the clip content in bars — set once at creation and never reduced.
+   * Used to cap non-destructive right-trim expansion so the user can always drag the right edge
+   * back out to recover the original underlying material (Logic Pro behavior). */
+  originalBars?: number;
   sourceOffsetBars?: number;
   widthPx?: number;
   leftPx?: number;

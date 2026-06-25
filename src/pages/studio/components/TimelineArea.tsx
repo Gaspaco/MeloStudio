@@ -523,12 +523,16 @@ const TimelineArea: Component<Props> = (props) => {
     <section
       class="bl__timeline"
       ref={timelineEl}
-      style={{ "--timeline-bars": `${timelineBarCount()}` }}
+      style={{
+        "--timeline-bars": `${timelineBarCount()}`,
+        "--timeline-bar-px": `${visualPx(BAR_PX)}px`,
+      }}
       onWheel={onTimelineWheel}
       onMouseDown={onTimelineMouseDown}
       onScroll={(event) => props.onVerticalScroll(event.currentTarget.scrollTop)}
     >
-      <div class="bl__ruler" onMouseDown={onRulerMouseDown}>
+      <div style={{ position: "relative", "min-height": "100%", "min-width": "100%", width: "max-content" }}>
+        <div class="bl__ruler" onMouseDown={onRulerMouseDown}>
         <div
           class={`bl__cycle ${props.cycleEnabled() ? "is-active" : ""}`}
           style={{
@@ -827,6 +831,7 @@ const TimelineArea: Component<Props> = (props) => {
           document.body.style.cursor = "col-resize";
         }}
       />
+      </div>
 
       <Show when={ctxMenu()}>
         {(menu) => (

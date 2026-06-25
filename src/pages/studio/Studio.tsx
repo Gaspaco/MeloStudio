@@ -184,6 +184,7 @@ const Studio: Component = () => {
 
   const sth = useSynth({
     tracks, selectedTrack, midiArmedTrackId, midiInputEnabled, masterVol,
+    countingIn,
     synthPreset, setSynthPreset, octave, setOctave,
     activeNotes, setActiveNotes,
     setSynthAttack, setSynthDecay, setSynthSustain, setSynthRelease,

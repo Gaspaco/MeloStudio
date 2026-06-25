@@ -26,12 +26,15 @@ type Deps = {
   cycleEndPx: Accessor<number>;
 };
 
+import * as Tone from "tone";
+
 type PlaybackSynth = { trackId: string; preset: SynthPreset; synth: PolySynth };
 type ScheduledAudioVoice = {
   trackId: string;
   clipId: string;
   source: AudioBufferSourceNode;
   gain: GainNode;
+  pitchShift?: any;
 };
 
 export function useTransport(deps: Deps) {
@@ -44,6 +47,8 @@ export function useTransport(deps: Deps) {
   let countInTimer: ReturnType<typeof setTimeout> | null = null;
   let playbackRunId = 0;
   let countInRunId = 0;
+  // Guards against the RAF tick and the setTimeout both firing doLoop on the same cycle boundary.
+  let loopFiredForRun = -1;
   let masterGainNode: GainNode | null = null;
   const trackGainNodes = new Map<string, GainNode>();
   const audioBufferCache = new Map<string, AudioBuffer>();
@@ -397,19 +402,43 @@ export function useTransport(deps: Deps) {
         if (playableSecs <= 0) continue;
         const source = ctx.createBufferSource();
         const sourceGain = ctx.createGain();
+        const clipGainDb = clip.gain ?? 0;
+        sourceGain.gain.value = clipGainDb <= -24 ? 0 : Math.pow(10, clipGainDb / 20);
+        
         source.buffer = buffer;
-        source.playbackRate.value = Math.max(0.25, Math.min(4, clip.playbackRate ?? 1));
-        source.connect(sourceGain);
+        const rate = Math.max(0.25, Math.min(4, clip.playbackRate ?? 1));
+        const userPitch = clip.pitch ?? 0;
+        
+        source.playbackRate.value = rate;
+        
+        let pitchShiftNode: any = null;
+        const pitchCorrection = userPitch - 12 * Math.log2(rate);
+        
+        if (Math.abs(pitchCorrection) > 0.01) {
+          pitchShiftNode = new Tone.PitchShift({
+            pitch: pitchCorrection,
+            windowSize: 0.1,
+            delayTime: 0,
+            feedback: 0
+          });
+          Tone.connect(source, pitchShiftNode);
+          Tone.connect(pitchShiftNode, sourceGain);
+        } else {
+          source.connect(sourceGain);
+        }
+        
         sourceGain.connect(trackGain);
         const voice: ScheduledAudioVoice = {
           trackId: track.id,
           clipId: clip.id,
           source,
           gain: sourceGain,
+          pitchShift: pitchShiftNode,
         };
         source.onended = () => {
           try { source.disconnect(); } catch { /* already disconnected */ }
           try { sourceGain.disconnect(); } catch { /* already disconnected */ }
+          if (pitchShiftNode) pitchShiftNode.dispose();
           audioVoices = audioVoices.filter(item => item !== voice);
         };
         source.start(
@@ -425,13 +454,19 @@ export function useTransport(deps: Deps) {
     scheduleMetronome(timelineStartSecs, segmentEndSecs, scheduleAt);
 
     const doLoop = () => {
-      if (!isPlaybackRunActive(runId)) return;
+      // Prevent double-trigger: both the RAF tick and the setTimeout can reach this
+      // at the same cycle boundary. The second call is a no-op.
+      if (!isPlaybackRunActive(runId) || loopFiredForRun === runId) return;
+      loopFiredForRun = runId;
       deps.setPlayheadPx(bounds.startPx);
       deps.setElapsed(bounds.startSecs);
-      void startAudioPlayback(bounds.startPx).then((scheduleAt) => {
+      void startAudioPlayback(bounds.startPx).then((newScheduleAt) => {
+        // startAudioPlayback increments playbackRunId internally via stopAudioPlayback,
+        // so we must re-check playing() rather than relying on the old runId.
+        if (!deps.playing()) return;
         if (shouldRunDrumSequencer()) {
           configureDrumSequencer();
-          void deps.getSeq()?.start(bounds.startSecs, scheduleAt);
+          void deps.getSeq()?.start(bounds.startSecs, newScheduleAt);
         }
       });
     };

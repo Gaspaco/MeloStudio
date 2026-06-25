@@ -1,6 +1,6 @@
 import type { SynthPreset } from "~/lib/audio/synth";
 
-export type InstrumentCategoryId = "acoustic-piano" | "electric-keys" | "lead" | "pad-strings" | "guitar" | "bass";
+export type InstrumentCategoryId = "acoustic-piano" | "electric-keys" | "mallets" | "wind-brass" | "lead" | "pad-strings" | "guitar" | "bass" | "drum-kits";
 
 export type InstrumentSound = {
   id: SynthPreset;
@@ -32,6 +32,27 @@ export const INSTRUMENT_CATEGORIES: InstrumentCategory[] = [
     sounds: [
       { id: "electric-piano", label: "Stage EP", description: "Rounded tine-style keys" },
       { id: "organ", label: "Tonewheel Organ", description: "Sustained drawbar-style organ" },
+      { id: "clavinet", label: "Clavinet", description: "Bright, plucked electric keyboard" },
+      { id: "reed-organ", label: "Reed Organ", description: "Air-driven pump organ" },
+    ],
+  },
+  {
+    id: "mallets",
+    label: "Mallets & Bells",
+    description: "Struck melodic percussion instruments.",
+    sounds: [
+      { id: "vibraphone", label: "Vibraphone", description: "Warm metal bars with tremolo" },
+      { id: "marimba", label: "Marimba", description: "Wooden bars with short decay" },
+      { id: "bells", label: "Tubular Bells", description: "Large resonating chimes" },
+    ],
+  },
+  {
+    id: "wind-brass",
+    label: "Wind & Brass",
+    description: "Air-blown instruments.",
+    sounds: [
+      { id: "flute", label: "Flute", description: "Soft, breathy woodwind" },
+      { id: "brass", label: "Synth Brass", description: "Thick, analog brass ensemble" },
     ],
   },
   {
@@ -54,6 +75,9 @@ export const INSTRUMENT_CATEGORIES: InstrumentCategory[] = [
       { id: "pad", label: "Warm Pad", description: "Soft sustained layer" },
       { id: "glass-pad", label: "Glass Pad", description: "Airy harmonic layer" },
       { id: "string-ensemble", label: "String Ensemble", description: "Slow orchestral-style strings" },
+      { id: "warm-strings", label: "Warm Strings", description: "Rich, analog string section" },
+      { id: "space-pad", label: "Space Pad", description: "Evolving, atmospheric texture" },
+      { id: "choir", label: "Choir", description: "Synthesized vocal ensemble" },
     ],
   },
   {
@@ -72,6 +96,20 @@ export const INSTRUMENT_CATEGORIES: InstrumentCategory[] = [
       { id: "bass", label: "Electric Bass", description: "Sampled electric bass" },
       { id: "synth-bass", label: "Analog Bass", description: "Filtered saw bass" },
       { id: "sub-bass", label: "Sub Bass", description: "Clean sine low end" },
+      { id: "wobble-bass", label: "Wobble Bass", description: "Modulated dubstep bass" },
+      { id: "acid-bass", label: "Acid Bass", description: "Squuelchy resonant bass" },
+    ],
+  },
+  {
+    id: "drum-kits",
+    label: "Drum Kits",
+    description: "Playable drum kits mapped across the keyboard.",
+    sounds: [
+      { id: "drum-kit-electronic", label: "Electronic Kit", description: "Modern electronic drums" },
+      { id: "drum-kit-acoustic", label: "Acoustic Kit", description: "Natural drum sounds" },
+      { id: "drum-kit-808", label: "808 Kit", description: "Classic analog drum machine" },
+      { id: "drum-kit-vinyl", label: "Vinyl Kit", description: "Lo-fi sampled drum breaks" },
+      { id: "drum-kit-orchestra", label: "Orchestral Kit", description: "Cinematic percussion" },
     ],
   },
 ];

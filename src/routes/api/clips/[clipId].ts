@@ -92,7 +92,7 @@ function parseRange(header: string | null, total: number): { start: number; end:
   if (!header) return null;
   const match = header.match(/^bytes=(\d+)-(\d*)$/);
   if (!match) return null;
-  const start = parseInt(match[1], 10);
+  const start = parseInt(match[1] as string, 10);
   const end = match[2] ? parseInt(match[2], 10) : total - 1;
   if (start >= total || end >= total || start > end) return null;
   return { start, end };
@@ -104,7 +104,7 @@ function localClipResponse(local: { data: Uint8Array; mime: string }, rangeHeade
 
   if (range) {
     const slice = local.data.slice(range.start, range.end + 1);
-    return new Response(slice.buffer, {
+    return new Response(slice.buffer as ArrayBuffer, {
       status: 206,
       headers: {
         "Content-Type": local.mime,
@@ -314,7 +314,7 @@ export async function GET(event: APIEvent) {
 
     if (range) {
       const slice = fullBuffer.slice(range.start, range.end + 1);
-      return new Response(slice.buffer, {
+      return new Response(slice.buffer as ArrayBuffer, {
         status: 206,
         headers: {
           "Content-Type": mime,
@@ -326,7 +326,7 @@ export async function GET(event: APIEvent) {
       });
     }
 
-    return new Response(fullBuffer.buffer, {
+    return new Response(fullBuffer.buffer as ArrayBuffer, {
       headers: {
         "Content-Type": mime,
         "Content-Length": String(total),

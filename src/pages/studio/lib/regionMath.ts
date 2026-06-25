@@ -23,12 +23,17 @@ export const placeClip = (
 ): MediaClip => {
   const normalizedLeftPx = Math.max(0, leftPx);
   const normalizedWidthPx = Math.max(MIN_REGION_PX, widthPx);
+  const bars = pxToBars(normalizedWidthPx);
+  // Preserve the original clip extent so right-trim can always be recovered.
+  // Only set it on the first placement — never shrink it.
+  const originalBars = Math.max(clip.originalBars ?? bars, bars);
   return {
     ...clip,
     leftPx: normalizedLeftPx,
     widthPx: normalizedWidthPx,
     barStart: pxToBars(normalizedLeftPx),
-    bars: pxToBars(normalizedWidthPx),
+    bars,
+    originalBars,
     sourceOffsetBars: Math.max(0, sourceOffsetBars),
   };
 };
@@ -152,9 +157,13 @@ export const trimRegionEdge = (
   const originalLeftPx = clipLeftPx(clip);
   const originalRightPx = clipRightPx(clip);
   const sourceOffsetPx = barsToPx(clip.sourceOffsetBars ?? 0);
+  // The maximum right boundary is the original clip extent plus the current left position.
+  // This allows right-trim expansion to recover original material non-destructively.
+  const maxRightPx = originalLeftPx + barsToPx(clip.originalBars ?? clip.bars);
 
   let trimmed: MediaClip;
   if (edge === "left") {
+    // Left trim: can move left back to where sourceOffset allows (recovers trimmed start material)
     const earliestLeftPx = Math.max(0, originalLeftPx - sourceOffsetPx);
     const newLeftPx = Math.max(earliestLeftPx, Math.min(targetPx, originalRightPx - MIN_REGION_PX));
     const newWidthPx = originalRightPx - newLeftPx;
@@ -162,7 +171,8 @@ export const trimRegionEdge = (
     const newSourceOffsetBars = (clip.sourceOffsetBars ?? 0) + shiftBars;
     trimmed = clipMidiNotesToBounds(placeClip(clip, newLeftPx, newWidthPx, newSourceOffsetBars), shiftBars);
   } else {
-    const newRightPx = Math.max(originalLeftPx + MIN_REGION_PX, targetPx);
+    // Right trim: can expand back to the original clip length (non-destructive recovery)
+    const newRightPx = Math.max(originalLeftPx + MIN_REGION_PX, Math.min(targetPx, maxRightPx));
     trimmed = clipMidiNotesToBounds(placeClip(clip, originalLeftPx, newRightPx - originalLeftPx), 0);
   }
 
