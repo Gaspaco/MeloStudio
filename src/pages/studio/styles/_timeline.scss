@@ -754,7 +754,7 @@
   width: 2px;
   background: $accent;
   pointer-events: none;
-  z-index: 6;
+  z-index: 20;
   // Diamond "ball" at top — this is the drag handle
   &::before {
     content: "";

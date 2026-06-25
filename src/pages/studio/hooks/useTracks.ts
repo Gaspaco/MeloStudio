@@ -39,9 +39,9 @@ import {
   type RegionEdge,
 } from "../lib/regionMath";
 
-// Per-track mic state — NOT routed to output to prevent feedback
 export interface MicEntry {
   stream: MediaStream;
+  rawStream: MediaStream;
   analyser: AnalyserNode;
 }
 const micEntries = new Map<string, MicEntry>();
@@ -58,11 +58,17 @@ async function connectMicToTrack(trackId: string, onError: (msg: string) => void
     });
     const ctx = getAudioContext();
     const source = ctx.createMediaStreamSource(stream);
+    
+    // Isolate routing: connect source ONLY to a dedicated destination for recording
+    const dest = ctx.createMediaStreamDestination();
+    source.connect(dest);
+
     // Analyser only — never connect to destination to avoid feedback loop
     const analyser = ctx.createAnalyser();
     analyser.fftSize = 512;
     source.connect(analyser);
-    micEntries.set(trackId, { stream, analyser });
+    
+    micEntries.set(trackId, { stream: dest.stream, rawStream: stream, analyser });
   } catch {
     onError("Microphone access denied — check browser permissions");
   }
@@ -71,7 +77,7 @@ async function connectMicToTrack(trackId: string, onError: (msg: string) => void
 function disconnectMicFromTrack(trackId: string): void {
   const entry = micEntries.get(trackId);
   if (!entry) return;
-  entry.stream.getTracks().forEach(t => t.stop());
+  entry.rawStream.getTracks().forEach(t => t.stop());
   micEntries.delete(trackId);
 }
 

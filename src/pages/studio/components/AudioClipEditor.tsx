@@ -29,6 +29,22 @@ const AudioClipEditor: Component<Props> = (props) => {
 
   const bars = Array.from({ length: TOTAL_BARS }, (_, i) => i + 1);
 
+  const handleRateChange = (newRate: number) => {
+    const c = props.clip();
+    if (!c) return;
+    const currentRate = c.playbackRate ?? 1;
+    const unscaledBars = c.bars * currentRate;
+    const newBars = unscaledBars / newRate;
+    const patch: Partial<MediaClip> = { playbackRate: newRate, bars: newBars };
+    if (c.widthPx !== undefined) patch.widthPx = newBars * MAIN_BAR_PX;
+    if (c.originalBars !== undefined) patch.originalBars = c.originalBars; // keep it same, it's unscaled conceptually, or do we need to scale originalBars?
+    // Wait, originalBars is used to cap right-trim expansion. If we speed it up, the maximum length we can trim out also shrinks!
+    // So we SHOULD scale originalBars as well.
+    if (c.originalBars !== undefined) patch.originalBars = (c.originalBars * currentRate) / newRate;
+    
+    props.onPatch(patch);
+  };
+
   return (
     <div class="ace">
 
@@ -61,9 +77,9 @@ const AudioClipEditor: Component<Props> = (props) => {
         <div class="ace__field">
           <span class="ace__label">Playback Rate (Speed)</span>
           <div class="ace__stepper">
-            <button class="ace__step-btn" onClick={() => props.onPatch({ playbackRate: Math.max(0.25, parseFloat((rate() - 0.05).toFixed(2))) })}>—</button>
+            <button class="ace__step-btn" onClick={() => handleRateChange(Math.max(0.25, parseFloat((rate() - 0.05).toFixed(2))))}>—</button>
             <span class="ace__step-val">{rate().toFixed(2)}</span>
-            <button class="ace__step-btn" onClick={() => props.onPatch({ playbackRate: Math.min(4, parseFloat((rate() + 0.05).toFixed(2))) })}>+</button>
+            <button class="ace__step-btn" onClick={() => handleRateChange(Math.min(4, parseFloat((rate() + 0.05).toFixed(2))))}>+</button>
           </div>
         </div>
 

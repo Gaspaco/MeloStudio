@@ -17,6 +17,8 @@ type Deps = {
   selectedTrack: Accessor<string | null>;
   midiArmedTrackId: Accessor<string | null>;
   midiInputEnabled: Accessor<boolean>;
+  /** When true (count-in active), all MIDI and keyboard note input is blocked. */
+  countingIn?: Accessor<boolean>;
   masterVol: Accessor<number>;
   synthPreset: Accessor<SynthPreset>; setSynthPreset: Setter<SynthPreset>;
   octave: Accessor<number>; setOctave: Setter<number>;
@@ -73,7 +75,7 @@ export function useSynth(deps: Deps) {
         if (deps.synthPreset() !== preset) {
           deps.setSynthPreset(preset); synth?.setPreset(preset);
         }
-        deps.setOctave(4);
+        deps.setOctave(preset.startsWith("drum-kit") ? 2 : 4);
         deps.setActivePanel("keys");
       } else if (t.type === "drum") {
         deps.setActivePanel("drum");
@@ -119,7 +121,7 @@ export function useSynth(deps: Deps) {
       e.target instanceof HTMLTextAreaElement ||
       (e.target as HTMLElement).isContentEditable
     ) return;
-    
+
     const sel = deps.tracks().find(t => t.id === deps.selectedTrack());
     if (!sel || (sel.type !== "instrument" && sel.type !== "bass" && sel.type !== "guitar")) return;
     if (e.repeat || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -138,8 +140,13 @@ export function useSynth(deps: Deps) {
       ?? (sel.type === "bass" ? "bass" : sel.type === "guitar" ? "guitar" : deps.synthPreset());
     ensureSynth(activePreset);
     if (!synth) return;
-    // MIDI note formula: (octave+1)*12 + semitone; the +1 is because MIDI octave 0 starts at note 12, not 0
-    const midi = 12 * (deps.octave() + 1) + keyVal;
+    
+    // Bypass standard pitched-instrument octave logic for drum kits.
+    const isDrumKit = activePreset.startsWith("drum-kit");
+    const octave = isDrumKit ? 2 : (deps.octave() + 1); // 2 * 12 = 24. Wait, MIDI octave 0 starts at 12? No, ToneJS maps C1 to 36. C0=24, C-1=12. So C1 = 12 * 3.
+    // Let's use 36 + keyVal directly to map to C1
+    const midi = isDrumKit ? 36 + keyVal : 12 * (deps.octave() + 1) + keyVal;
+
     synth.noteOn(midi, 0.85);
     deps.onMidiNoteOn?.(midi, 0.85, performance.now());
     const next = new Set(deps.activeNotes());
@@ -152,7 +159,12 @@ export function useSynth(deps: Deps) {
     const keyVal = KEY_MAP[k];
     if (keyVal === undefined || !heldKeys.has(k)) return;
     heldKeys.delete(k);
-    const midi = 12 * (deps.octave() + 1) + keyVal;
+    
+    const sel = deps.tracks().find(t => t.id === deps.selectedTrack());
+    const activePreset = sel?.instrumentPreset ?? (sel?.type === "bass" ? "bass" : sel?.type === "guitar" ? "guitar" : deps.synthPreset());
+    const isDrumKit = activePreset.startsWith("drum-kit");
+    const midi = isDrumKit ? 36 + keyVal : 12 * (deps.octave() + 1) + keyVal;
+
     synth?.noteOff(midi);
     deps.onMidiNoteOff?.(midi, performance.now());
     const next = new Set(deps.activeNotes());
@@ -192,7 +204,7 @@ export function useSynth(deps: Deps) {
       deps.setSynthSustain(d.sustain); deps.setSynthRelease(d.release);
       deps.setSynthFilterFreq(d.filterFreq);
     }
-    if (p === "bass" || p === "synth-bass" || p === "sub-bass") deps.setOctave(2);
+    if (p === "bass" || p === "synth-bass" || p === "sub-bass" || p.startsWith("drum-kit")) deps.setOctave(2);
     else deps.setOctave(4);
   };
 
@@ -227,7 +239,7 @@ export function useSynth(deps: Deps) {
   });
 
   onCleanup(() => {
-    synth?.allNotesOff();
+    synth?.dispose();
     MidiManager.bindTargetSynth(null);
     MidiManager.bindNoteListener(null);
     window.removeEventListener("keydown", onKeyDown);

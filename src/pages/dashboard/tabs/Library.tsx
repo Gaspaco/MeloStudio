@@ -10,7 +10,9 @@ interface Project {
   key: string;
   tracks: number;
   updatedAt: string;
+  updatedAtRaw: string;
   color: string;
+  published: boolean;
 }
 
 export interface LibraryProps {

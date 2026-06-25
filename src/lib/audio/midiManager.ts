@@ -7,6 +7,10 @@ class MidiHardwareManager {
   private activeSynth: PolySynth | null = null;
   private enabled = true;
   private noteListener: ((event: { type: "on" | "off"; midi: number; velocity: number; receivedAt: number }) => void) | null = null;
+  /** Notes that were pressed but whose noteOff arrived while the synth was unbound. Flushed on rebind. */
+  private pendingNoteOffs = new Set<number>();
+  /** Notes currently held (noteOn received, noteOff not yet sent to synth). */
+  private heldNotes = new Set<number>();
 
   /**
    * Initializes the browser Web MIDI API subsystem and subscribes to hardware inputs.
@@ -36,10 +40,21 @@ class MidiHardwareManager {
   /**
    * Binds the incoming hardware inputs to trigger a specific PolySynth instance.
    * Call this whenever the user switches active tracks in the DAW timeline.
+   * Flushes any pending note-offs that arrived while the synth was unbound.
    */
   bindTargetSynth(synth: PolySynth | null): void {
     if (this.activeSynth && this.activeSynth !== synth) this.activeSynth.allNotesOff();
     this.activeSynth = synth;
+    // Flush note-offs that were received while no synth was bound
+    if (synth && this.pendingNoteOffs.size > 0) {
+      for (const midi of this.pendingNoteOffs) {
+        synth.noteOff(midi);
+      }
+      this.pendingNoteOffs.clear();
+    }
+    // If we're binding a fresh synth, clear the held-notes tracking too since
+    // we just called allNotesOff on the old synth.
+    if (!synth) this.heldNotes.clear();
   }
 
   setEnabled(enabled: boolean): void {
@@ -90,7 +105,24 @@ class MidiHardwareManager {
    * real-time bytes (clock/active-sensing) without clobbering running status.
    */
   private handleMidiMessage(event: MIDIMessageEvent): void {
-    if (!this.enabled || !event.data || event.data.length === 0 || !this.activeSynth) return;
+    if (!this.enabled || !event.data || event.data.length === 0) return;
+
+    // If no synth is bound, still track note-offs for currently-held notes so we
+    // can flush them when the synth is rebound — preventing stuck notes on track switch.
+    if (!this.activeSynth) {
+      const first = event.data[0]!;
+      if (first >= 0xf8) return;
+      const command = first >= 0x80 ? (first & 0xf0) : (this.lastStatus & 0xf0);
+      const data1 = first >= 0x80 ? (event.data[1] ?? 0) : first;
+      const data2 = first >= 0x80 ? (event.data[2] ?? 0) : (event.data[1] ?? 0);
+      if (command === 0x80 || (command === 0x90 && data2 === 0)) {
+        if (this.heldNotes.has(data1)) {
+          this.heldNotes.delete(data1);
+          this.pendingNoteOffs.add(data1);
+        }
+      }
+      return;
+    }
 
     const bytes = event.data;
     const first = bytes[0]!;
@@ -130,16 +162,22 @@ class MidiHardwareManager {
         const velocity = data2 / 127;
         if (velocity > 0) {
           this.activeSynth.noteOn(data1, velocity);
+          this.heldNotes.add(data1);
+          this.pendingNoteOffs.delete(data1);
           this.noteListener?.({ type: "on", midi: data1, velocity, receivedAt });
         } else {
           // Note On with velocity 0 is the MIDI spec's way of sending Note Off
           this.activeSynth.noteOff(data1);
+          this.heldNotes.delete(data1);
+          this.pendingNoteOffs.delete(data1);
           this.noteListener?.({ type: "off", midi: data1, velocity: 0, receivedAt });
         }
         break;
       }
       case 0x80: { // Note Off
         this.activeSynth.noteOff(data1);
+        this.heldNotes.delete(data1);
+        this.pendingNoteOffs.delete(data1);
         this.noteListener?.({ type: "off", midi: data1, velocity: 0, receivedAt });
         break;
       }

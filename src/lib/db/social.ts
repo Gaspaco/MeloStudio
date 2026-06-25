@@ -3,7 +3,7 @@ import { createNotification } from "./notifications";
 
 function getProjectOwner(projectId: string): Promise<string | null> {
   return sql`SELECT user_id FROM projects WHERE id = ${projectId} LIMIT 1`
-    .then((rows: Array<{ user_id: string }>) => rows[0]?.user_id ?? null)
+    .then((rows) => (rows as Array<any>)[0]?.user_id ?? null)
     .catch(() => null);
 }
 
@@ -63,6 +63,7 @@ export async function addComment(
     RETURNING id, user_id, body, created_at
   ` as Array<{ id: string; user_id: string; body: string; created_at: string }>;
   const r = rows[0];
+  if (!r) throw new Error("Failed to insert comment");
   const ownerId = await getProjectOwner(projectId);
   if (ownerId) void createNotification(ownerId, "comment", userId, projectId, r.id).catch(() => {});
   return { id: r.id, userId: r.user_id, body: r.body, createdAt: r.created_at };
