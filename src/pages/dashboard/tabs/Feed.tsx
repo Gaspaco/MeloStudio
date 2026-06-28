@@ -1,3 +1,5 @@
+// The feed switches between followed creators and public discovery. Changing
+// genre, sorting or feed mode reloads projects from the matching API endpoint.
 import { type Component, createSignal, createEffect, For, Show, onMount } from "solid-js";
 import {
   discoverProjectsApi, getFeedApi, searchUsersApi,

@@ -1,3 +1,4 @@
+// This protected route creates projects before opening their dynamic studio URL.
 import { useNavigate } from "@solidjs/router";
 import { lazy, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";

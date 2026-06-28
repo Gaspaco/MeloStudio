@@ -1,3 +1,5 @@
+// This page owns signup validation, account creation and its entrance animation.
+// Navigation stays in the route wrapper so this form can also be reused.
 import { type Component, createSignal, onMount, onCleanup, For } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";

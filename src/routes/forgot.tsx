@@ -1,3 +1,4 @@
+// The route supplies navigation while ForgotPassword owns the recovery form.
 import { useNavigate } from "@solidjs/router";
 import { lazy, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";

@@ -1,3 +1,5 @@
+// Home coordinates the landing-page sections and their GSAP timelines. Each
+// animation module owns one scene so this component only wires refs and cleanup.
 import { type Component, createSignal, onMount, onCleanup, createEffect } from "solid-js";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";

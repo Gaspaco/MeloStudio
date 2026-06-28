@@ -1,3 +1,4 @@
+// Static public policy page; it does not load account data or require a session.
 export default function PrivacyPage() {
   return (
     <main style={{ "max-width": "780px", margin: "0 auto", padding: "4rem 2rem", "font-family": "system-ui, sans-serif", color: "var(--theme-text, #e8e8e8)", background: "var(--theme-page-bg, #0d0d0d)", "min-height": "100vh", "line-height": "1.7" }}>
