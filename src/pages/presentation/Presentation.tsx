@@ -9,7 +9,7 @@ import {
   CirclePlay, Zap,
   ChevronLeft, ChevronRight, House,
 } from "lucide-solid";
-import "./tech.scss";
+import "./presentation.scss";
 
 interface Slide {
   id: string;

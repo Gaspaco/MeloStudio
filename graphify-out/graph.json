@@ -24781,39 +24781,60 @@
       "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:1"
     },
     {
-      "id": "tech::animateslide",
+      "id": "tech::techpage",
+      "label": "TechPage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:5"
+    },
+    {
+      "id": "file::presentation",
+      "label": "presentation.tsx",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/presentation.tsx:1"
+    },
+    {
+      "id": "Presentation::animateslide",
       "label": "animateSlide",
       "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:573"
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx:573"
     },
     {
-      "id": "tech::onkey",
+      "id": "Presentation::onkey",
       "label": "onKey",
       "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:592"
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx:592"
     },
     {
-      "id": "tech::ontouchstart",
+      "id": "Presentation::ontouchstart",
       "label": "onTouchStart",
       "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:599"
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx:599"
     },
     {
-      "id": "tech::ontouchend",
+      "id": "Presentation::ontouchend",
       "label": "onTouchEnd",
       "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:600"
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx:600"
     },
     {
-      "id": "tech::onwheel",
+      "id": "Presentation::onwheel",
       "label": "onWheel",
       "fileType": "code",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:606"
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx:606"
+    },
+    {
+      "id": "presentation::techpage",
+      "label": "TechPage",
+      "fileType": "code",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/presentation.tsx:5"
     }
   ],
   "edges": [
@@ -55320,54 +55341,72 @@
     },
     {
       "source": "file::tech",
-      "target": "tech::animateslide",
+      "target": "tech::techpage",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:573",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:5",
       "weight": 1
     },
     {
-      "source": "file::tech",
-      "target": "tech::onkey",
+      "source": "file::presentation",
+      "target": "Presentation::animateslide",
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:592",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx:573",
       "weight": 1
     },
     {
-      "source": "file::tech",
-      "target": "tech::ontouchstart",
+      "source": "file::presentation",
+      "target": "Presentation::onkey",
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:599",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx:592",
       "weight": 1
     },
     {
-      "source": "file::tech",
-      "target": "tech::ontouchend",
+      "source": "file::presentation",
+      "target": "Presentation::ontouchstart",
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:600",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx:599",
       "weight": 1
     },
     {
-      "source": "file::tech",
-      "target": "tech::onwheel",
+      "source": "file::presentation",
+      "target": "Presentation::ontouchend",
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx",
-      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/tech.tsx:606",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx:600",
+      "weight": 1
+    },
+    {
+      "source": "file::presentation",
+      "target": "Presentation::onwheel",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/pages/presentation/Presentation.tsx:606",
+      "weight": 1
+    },
+    {
+      "source": "file::presentation",
+      "target": "presentation::techpage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "sourceFile": "/Users/gaspaco/Downloads/MeloStudio/src/routes/presentation.tsx",
+      "sourceLocation": "/Users/gaspaco/Downloads/MeloStudio/src/routes/presentation.tsx:5",
       "weight": 1
     }
   ],
   "metadata": {
-    "files": 168,
-    "nodes": 3545,
-    "edges": 3394,
-    "builtAt": "2026-06-28T18:51:36.077Z"
+    "files": 170,
+    "nodes": 3548,
+    "edges": 3396,
+    "builtAt": "2026-06-28T18:59:12.535Z"
   }
 }
