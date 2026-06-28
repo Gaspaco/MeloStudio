@@ -1,3 +1,9 @@
+// Niko built the main region-math system. Malikhai later contributed the
+// original-length recovery used by non-destructive trimming.
+//
+// A region stores the same position twice: pixels make dragging smooth and bars
+// keep it musical. Every function here updates both, plus sourceOffsetBars when
+// the visible start moves into the original audio/MIDI source.
 import type { MediaClip } from "../types";
 
 export const STUDIO_BAR_PX = 160;
@@ -62,6 +68,8 @@ export const resolveRegionOverwrite = (clips: MediaClip[], placedClip: MediaClip
       continue;
     }
 
+    // DAW overwrite rule: keep whatever remains on the left and right. The
+    // placed clip wins in the middle, and the right piece gets a new ID.
     const sourceOffsetBars = clip.sourceOffsetBars ?? 0;
     const leftRemainderPx = Math.max(0, movedLeftPx - leftPx);
     const rightRemainderPx = Math.max(0, rightPx - movedRightPx);

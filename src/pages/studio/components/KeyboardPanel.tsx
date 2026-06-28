@@ -224,7 +224,11 @@ const KeyboardPanel: Component<KeyboardPanelProps> = (props) => {
                   {(category) => (
                     <button
                       class={`bl__preset-cat ${activeCategory().id === category.id ? "is-on" : ""}`}
-                      onClick={() => props.onUpdatePreset(category.sounds[0]!.id)}
+                      onClick={() => {
+                        const firstSound = category.sounds[0];
+                        if (firstSound) props.onUpdatePreset(firstSound.id);
+                      }}
+                      disabled={category.sounds.length === 0}
                       title={category.description}
                     >
                       <span>{category.label}</span>

@@ -134,10 +134,10 @@ const Overview: Component<OverviewProps> = (props) => {
         let points = new Float64Array(0);
         let pointCount = 0;
 
-        const ensureSize = (ctx: CanvasRenderingContext2D, w: number, h: number, dpr: number) => {
+        const ensureSize = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, w: number, h: number, dpr: number) => {
           if (sized) return;
-          canvasRef!.width = w * dpr;
-          canvasRef!.height = h * dpr;
+          canvas.width = w * dpr;
+          canvas.height = h * dpr;
           ctx.scale(dpr, dpr);
           pointCount = Math.ceil(w / 3);
           points = new Float64Array(pointCount);
@@ -147,11 +147,13 @@ const Overview: Component<OverviewProps> = (props) => {
         const pt = (i: number): number => points[i] ?? 0;
 
         const draw = () => {
-          if (!canvasRef) return;
-          const ctx = canvasRef.getContext("2d")!;
-          const rect = canvasRef.getBoundingClientRect();
+          const canvas = canvasRef;
+          if (!canvas) return;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
+          const rect = canvas.getBoundingClientRect();
           const w = rect.width, h = rect.height;
-          ensureSize(ctx, w, h, window.devicePixelRatio || 1);
+          ensureSize(canvas, ctx, w, h, window.devicePixelRatio || 1);
 
           const mid = h / 2;
           const step = w / pointCount;
@@ -229,10 +231,12 @@ const Overview: Component<OverviewProps> = (props) => {
         };
 
         onMount(() => {
-          if (!canvasRef) return;
-          const ctx = canvasRef.getContext("2d")!;
-          const rect = canvasRef.getBoundingClientRect();
-          ensureSize(ctx, rect.width, rect.height, window.devicePixelRatio || 1);
+          const canvas = canvasRef;
+          if (!canvas) return;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) return;
+          const rect = canvas.getBoundingClientRect();
+          ensureSize(canvas, ctx, rect.width, rect.height, window.devicePixelRatio || 1);
           ctx.beginPath();
           ctx.moveTo(0, rect.height / 2);
           ctx.lineTo(rect.width, rect.height / 2);
@@ -247,7 +251,9 @@ const Overview: Component<OverviewProps> = (props) => {
             ref={(el) => { canvasRef = el; }}
             class="db__wave-divider"
             onMouseMove={(e) => {
-              mouseX = e.clientX - canvasRef!.getBoundingClientRect().left;
+              const canvas = canvasRef;
+              if (!canvas) return;
+              mouseX = e.clientX - canvas.getBoundingClientRect().left;
               startLoop();
             }}
             onMouseLeave={() => { mouseX = -1; }}

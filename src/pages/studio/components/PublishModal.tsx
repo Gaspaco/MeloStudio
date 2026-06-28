@@ -30,9 +30,9 @@ const PublishModal: Component<PublishModalProps> = (props) => {
   const [publishedUrl, setPublishedUrl] = createSignal(props.published() ? getShareUrl() : "");
   const [copied, setCopied] = createSignal(false);
 
-  let coverInput!: HTMLInputElement;
+  let coverInput: HTMLInputElement | undefined;
 
-  const handleCoverClick = () => coverInput.click();
+  const handleCoverClick = () => coverInput?.click();
 
   const handleCoverChange = (e: Event) => {
     const file = (e.target as HTMLInputElement).files?.[0];

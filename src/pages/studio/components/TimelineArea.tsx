@@ -1,3 +1,9 @@
+// Authorship: this timeline is shared work. Niko built the original arrangement
+// and region workflow; Malikhai added substantial clip rendering and interaction
+// code. Later MIDI preview and drag fixes came from Niko's branch.
+//
+// Timeline clips use pixels for smooth dragging but bars for musical state. Any
+// edit must keep both values in sync through regionMath.
 import { type Component, For, Show, createMemo, createEffect, createSignal, onMount, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { MicVocal, FileMusic } from "lucide-solid";
@@ -32,6 +38,8 @@ const MIDI_OVERVIEW_MIN_ROWS = 12;
 const MIDI_NOTE_ROW_FILL = 0.68;
 
 const MidiNotesOverview: Component<{ clip: MediaClip }> = (props) => {
+  // Merge touching notes of the same pitch before drawing the tiny overview.
+  // This removes doubled lines without changing the real MIDI notes in the clip.
   const notes = () => props.clip.midiNotes ?? [];
   const displayNotes = createMemo(() => {
     const sorted = notes()

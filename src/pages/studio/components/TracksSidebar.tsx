@@ -5,14 +5,14 @@ import { type TrackType, type UITrack, TRACK_DEFS } from "../types";
 import { getMicEntry } from "../hooks/useTracks";
 
 const MicLevelMeter: Component<{ trackId: string }> = (props) => {
-  let bar!: HTMLDivElement;
-  let raf: number;
+  let bar: HTMLDivElement | undefined;
+  let raf: number | undefined;
   const buf = new Uint8Array(32);
 
   onMount(() => {
     const tick = () => {
       const entry = getMicEntry(props.trackId);
-      if (entry) {
+      if (entry && bar) {
         entry.analyser.getByteFrequencyData(buf);
         const avg = buf.reduce((s, v) => s + v, 0) / buf.length;
         bar.style.width = `${Math.min(100, (avg / 128) * 100)}%`;
@@ -22,7 +22,9 @@ const MicLevelMeter: Component<{ trackId: string }> = (props) => {
     raf = requestAnimationFrame(tick);
   });
 
-  onCleanup(() => cancelAnimationFrame(raf));
+  onCleanup(() => {
+    if (raf !== undefined) cancelAnimationFrame(raf);
+  });
 
   return (
     <div class="bl__mic-meter">

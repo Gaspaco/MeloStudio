@@ -96,7 +96,8 @@ const PublishPageInner: Component = () => {
           {(p) => {
             const initials = nameInitials(p().name);
             const discColor = nameToDiscColor(p().name);
-            const pfpUrl = p().ownerId ? buildPfpUrl(p().ownerId!) : null;
+            const ownerId = p().ownerId;
+            const pfpUrl = ownerId ? buildPfpUrl(ownerId) : null;
 
             return (
               <div class="pub__layout">

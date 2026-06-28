@@ -115,7 +115,12 @@ export const INSTRUMENT_CATEGORIES: InstrumentCategory[] = [
 ];
 
 export function getInstrumentCategoryForPreset(preset: SynthPreset): InstrumentCategory {
-  return INSTRUMENT_CATEGORIES.find((category) =>
-    category.sounds.some((sound) => sound.id === preset)
-  ) ?? INSTRUMENT_CATEGORIES[0]!;
+  const category = INSTRUMENT_CATEGORIES.find((item) =>
+    item.sounds.some((sound) => sound.id === preset)
+  );
+  if (category) return category;
+
+  const fallback = INSTRUMENT_CATEGORIES[0];
+  if (!fallback) throw new Error("At least one instrument category is required.");
+  return fallback;
 }

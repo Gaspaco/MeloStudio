@@ -73,18 +73,68 @@ Four places to touch:
 
 ---
 
-## Clip 3-tier storage
+## Clip storage
 
 ```
-Record/import → IndexedDB ("melostudio-clips")      always available locally
-              → inline dataUrl (≤2.8 MB)            embedded in save payload
-              → /api/clips/:id?projectId=:pid        large clips, Netlify Blobs / local .data/
+Record/import → IndexedDB ("melostudio-clips")       fast local playback
+              → /api/clips/:id?projectId=:pid        saved remote audio
+              → inline dataUrl                       legacy read fallback only
 ```
 
 **Rule:** Build clip URLs only via `clipUrl(projectId, clipId)` from `src/lib/api.ts`.  
 Never hand-write `/api/clips/...` strings — that's how bugs like the Profile waveform issue happened.
 
 Upload logic lives in `src/lib/remoteClips.ts`. `remoteClipUrl` is a re-export of `clipUrl` for zero importer churn.
+
+---
+
+## Who wrote what
+
+This section comes from current `git blame` and commit history, not guesses.
+Merge commits are not counted as authorship. This is a snapshot: later edits can
+make a file shared even when one person built the first version.
+
+### Mainly Malikhai
+
+| File | What he added |
+|------|---------------|
+| `src/pages/studio/components/PianoRoll.tsx` | Piano-roll editor, note drawing, moving, trimming, velocity and scale tools |
+| `src/pages/studio/styles/_pianoroll.scss` | Piano-roll layout and visual states |
+| `src/lib/audio/midiManager.ts` | Hardware Web MIDI connection, message parsing and controller input |
+| `src/lib/audio/synth.ts` | A large part of the Tone.js synth/sample engine and instrument presets |
+| `src/pages/studio/hooks/useTransport.ts` | A large part of current audio/MIDI scheduling, metronome, count-in and playback routing |
+
+### Shared files
+
+| File | Split of the work |
+|------|-------------------|
+| `src/pages/studio/Studio.tsx` | Niko built the studio shell and hook wiring; Malikhai added major DAW, MIDI and recording integrations |
+| `src/pages/studio/components/TimelineArea.tsx` | Niko built the arrangement/region workflow; Malikhai added substantial rendering and interaction code |
+| `src/pages/studio/hooks/useTracks.ts` | Niko built the track/region workflow; Malikhai added substantial recording, MIDI and routing code |
+| `src/pages/studio/hooks/useSynth.ts` | Shared synth lifecycle, live notes and MIDI binding |
+| `src/pages/studio/components/KeyboardPanel.tsx` | Shared instrument keyboard and controls |
+| `src/pages/studio/components/TopBar.tsx` | Shared transport and project controls |
+| `src/pages/studio/components/AudioClipEditor.tsx` | Shared audio editor and pitch controls |
+| `src/pages/studio/data/instrumentPresets.ts` | Instrument categories and presets mostly came from Malikhai's branch, with later sorting/integration work |
+| `src/lib/audio/graph.ts` | Shared Web Audio routing and microphone graph |
+| `src/lib/audio/stepSeq.ts` | Niko built the sequencer; Malikhai contributed later timing/playback changes |
+| `src/pages/studio/lib/regionMath.ts` | Niko built the main math; Malikhai contributed original-length trim recovery |
+
+### Smaller Malikhai contributions still present
+
+Current lines from Malikhai's commits also remain in:
+
+- `BottomBar.tsx`, `TracksSidebar.tsx`, `LiveRecordingClip.tsx`, `DrumPanel.tsx`
+- `_topbar.scss`, `_drum.scss`, `_timeline.scss`, `_keyboard.scss`, `_sidebar.scss`
+- `types.ts`, `transportStore.ts`, `studio.scss`
+- `useProject.ts`, `Library.tsx`, `social.ts`, `rateLimit.ts`
+- `src/routes/api/clips/[clipId].ts`
+
+For exact line-level credit, run:
+
+```bash
+git blame -w path/to/file
+```
 
 ---
 

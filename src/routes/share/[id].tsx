@@ -304,7 +304,8 @@ const SharePage: Component = () => {
           const discColor  = nameToDiscColor(p().name);
           const accentColor = nameToAccent(p().name);
           const initials   = nameInitials(p().name);
-          const pfpUrl = p().ownerId ? buildPfpUrl(p().ownerId!) : null;
+          const ownerId = p().ownerId;
+          const pfpUrl = ownerId ? buildPfpUrl(ownerId) : null;
           const coverImageUrl = p().coverUrl || pfpUrl;
           const extractedColor = useImageColorExt(coverImageUrl);
 

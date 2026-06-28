@@ -456,7 +456,7 @@
     }
     .prog-bar-fill {
       height: 100%;
-      width: calc(9 / 11 * 100%);
+      width: 100%;
       background: linear-gradient(90deg, rgba(34,197,94,0.6), var(--accent));
       border-radius: 2px;
     }
@@ -527,8 +527,8 @@
     <a href="#schema-section" class="hd-schema-link">ERD ↓</a>
     <a href="#testplan-section" class="hd-schema-link" style="border-color:rgba(0,194,194,0.3);color:var(--cyan);background:rgba(0,194,194,0.06);">Testplan ↓</a>
     <span class="hd-badge">Niko Dima</span>
-    <span class="hd-badge active">Week 10 - Actief</span>
-      <span class="hd-date">12 juni 2026</span>
+    <span class="hd-badge active">Week 11 - Afgerond</span>
+    <span class="hd-date">28 juni 2026</span>
   </div>
 </header>
 <div class="progress-strip">
@@ -542,10 +542,10 @@
   <span class="prog-week done" data-col="col-w7">W7 ✓</span><div class="prog-sep"></div>
   <span class="prog-week done" data-col="col-w8">W8 ✓</span><div class="prog-sep"></div>
   <span class="prog-week done" data-col="col-w9">W9 ✓</span><div class="prog-sep"></div>
-  <span class="prog-week active" data-col="col-backlog">W10 ●</span><div class="prog-sep"></div>
-  <span class="prog-week">W11</span>
+  <span class="prog-week done" data-col="col-w10">W10 ✓</span><div class="prog-sep"></div>
+  <span class="prog-week done" data-col="col-w11">W11 ✓</span>
   <div class="prog-right">
-    <span class="prog-counter">9 / 11 <span>weken</span></span>
+    <span class="prog-counter">11 / 11 <span>weken</span></span>
     <span class="prog-stack">SolidJS · TypeScript · Tone.js · Peaks.js · SCSS · Neon PostgreSQL</span>
   </div>
 </div>
@@ -902,7 +902,7 @@
   <div class="col-header" onclick="toggleCol(this)">
     <div class="col-dot" style="background:#00c2c2"></div>
     <span class="col-title">Week 9<span class="col-sub"> · Testen</span></span>
-    <span class="col-count">9</span>
+    <span class="col-count">16</span>
     <span class="col-toggle">▾</span>
   </div>
   <div class="col-dates">Blink traject – Testen en verbeteren</div>
@@ -932,6 +932,38 @@
       <div class="card-title">Responsive &amp; Edge cases (T18–T25)</div>
       <div class="card-desc">Mobiel ≤480px en tablet 768px layout. Gedeeld project via publieke link. Internet wegvallen — app crasht niet maar geen foutmelding (open bug B06).</div>
       <div class="tags"><span class="tag tag-pink">Design</span><span class="tag tag-pink">UX</span><span class="tag tag-yellow">T25</span></div>
+    </div>
+
+    <div class="sep-label">Testresultaten in detail</div>
+    <div class="card">
+      <div class="card-title">Formuliervalidatie &amp; foutmeldingen</div>
+      <div class="card-desc">Getest met een bestaand e-mailadres, lege registratievelden en een verkeerd wachtwoord. De app blokkeert ongeldige invoer en toont de juiste melding zonder een account of sessie aan te maken.</div>
+      <div class="tags"><span class="tag tag-blue">Auth</span><span class="tag tag-green">Geslaagd</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Standaard projectnaam &amp; live zoeken</div>
+      <div class="card-desc">Een project zonder naam krijgt automatisch "New Project". Tijdens zoeken filtert de bibliotheek direct mee; wanneer het zoekveld weer leeg is, worden alle projecten opnieuw getoond.</div>
+      <div class="tags"><span class="tag tag-purple">Studio</span><span class="tag tag-pink">UX</span><span class="tag tag-green">Geslaagd</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Opslaan &amp; databasecontrole</div>
+      <div class="card-desc">Wijzigingen in de studio opgeslagen en gecontroleerd dat een nieuwe versie in de <code style="font-size:0.67rem;color:var(--cyan);">project_versions</code> tabel verschijnt. Daarna het project opnieuw geopend om te controleren of de juiste data wordt geladen.</div>
+      <div class="tags"><span class="tag tag-green">Neon DB</span><span class="tag tag-purple">Studio</span><span class="tag tag-green">Geslaagd</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Volledige prullenbak-flow</div>
+      <div class="card-desc">Een project verwijderd, gecontroleerd dat het uit "All" en "Mine" verdwijnt, daarna hersteld en opnieuw permanent verwijderd. Elke stap werd direct correct in de bibliotheek en database verwerkt.</div>
+      <div class="tags"><span class="tag tag-purple">Studio</span><span class="tag tag-green">Neon DB</span><span class="tag tag-green">Geslaagd</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Wachtwoord-reset &amp; publieke projectlink</div>
+      <div class="card-desc">Gecontroleerd dat de resetmail wordt verstuurd en een bevestiging verschijnt. Ook een gedeelde projectlink in een uitgelogde sessie geopend: de publieke projectpagina blijft zonder account bereikbaar.</div>
+      <div class="tags"><span class="tag tag-blue">Auth</span><span class="tag tag-green">Sharing</span><span class="tag tag-green">Geslaagd</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Profiel &amp; navigatie op meerdere schermen</div>
+      <div class="card-desc">Een profielfoto geüpload en gecontroleerd in de profielkaart en topbalk. Daarna tussen Overview, Library en Profile gewisseld op desktop, tablet en mobiel; de juiste inhoud en mobiele bottombar bleven zichtbaar.</div>
+      <div class="tags"><span class="tag tag-pink">Responsive</span><span class="tag tag-pink">UI</span><span class="tag tag-green">Geslaagd</span></div>
     </div>
 
     <div class="sep-label">Gevonden bugs</div>
@@ -972,57 +1004,112 @@
 </div>
 
 
-<!-- BACKLOG -->
-<div class="col" id="col-backlog">
+<!-- WEEK 10 -->
+<div class="col" id="col-w10">
   <div class="col-header" onclick="toggleCol(this)">
-    <div class="col-dot" style="background:#4e4c49"></div>
-    <span class="col-title">Backlog<span class="col-sub"> · W10 → W11</span></span>
+    <div class="col-dot" style="background:#22c55e"></div>
+    <span class="col-title">Week 10<span class="col-sub"> · Platform</span></span>
     <span class="col-count">7</span>
     <span class="col-toggle">▾</span>
   </div>
-  <div class="col-dates">Weken 10 – 11 · Gepland</div>
+  <div class="col-dates">15 – 21 juni 2026 · Stabiliteit, API &amp; Community</div>
   <div class="cards">
-    <div class="sep-label">Audio functies</div>
-    <div class="card">
-      <div class="card-title">Effects paneel</div>
-      <div class="card-desc">Per-track reverb, delay, EQ via Web Audio EffectNode keten. Knop in util bar bestaat al, gemarkeerd als "binnenkort".</div>
-      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W8+</span></div>
+    <div class="card" style="border-left:2px solid rgba(34,197,94,0.4);">
+      <div class="card-title" style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--green);margin-bottom:0.2rem;">Doel</div>
+      <div class="card-desc" style="margin-bottom:0;">De verbinding tussen studio, dashboard en server stabiel maken en MeloStudio uitbreiden met veilige sociale functies.</div>
     </div>
     <div class="card">
-      <div class="card-title">AutoPitch engine</div>
-      <div class="card-desc">Toonhoogtecorrectie en -snapping voor het toetsenborddeel. Context-gevoelige knop al bedraad - dimt wanneer niet in toetsenborddmodus.</div>
-      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W8+</span></div>
+      <div class="card-title">Wat ik heb gedaan</div>
+      <div class="card-desc">Ik heb de studioverbinding en sessie-afhandeling hersteld, oude dubbele state- en opslaglagen verwijderd en projecttoegang gecentraliseerd. Daarna heb ik rate limiting, een discovery feed, gebruikers zoeken, volgen en notificaties aan de API en het dashboard toegevoegd.</div>
+      <div class="tags"><span class="tag tag-green">Infra</span><span class="tag tag-blue">Auth</span><span class="tag tag-purple">Studio</span></div>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">Studio sessies &amp; projecttoegang</div>
+      <div class="card-desc">Een gedeelde sessiecontext en server-side projectcontrole toegevoegd. Niet-gebruikte asset-, scheduler-, IndexedDB- en project-store code verwijderd, zodat er nog één duidelijke route voor projectdata overbleef.</div>
+      <div class="tags"><span class="tag tag-purple">Studio</span><span class="tag tag-blue">Auth</span><span class="tag tag-gray">Refactor</span></div>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">Community feed &amp; notificaties</div>
+      <div class="card-desc">Discovery endpoints voor projecten en gebruikers gebouwd, plus een persoonlijke feed en notificatie-dropdown. Hierdoor kunnen gebruikers makers vinden, volgen en nieuwe publieke projecten ontdekken.</div>
+      <div class="tags"><span class="tag tag-pink">UI</span><span class="tag tag-green">Neon DB</span><span class="tag tag-blue">API</span></div>
     </div>
     <div class="card">
-      <div class="card-title">Melo Sounds browser</div>
-      <div class="card-desc">Sample- en loop-browser paneel. Util-knop gestyled en klaar - paneel UI nog niet gebouwd.</div>
-      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W9+</span></div>
+      <div class="card-title">API rate limiting</div>
+      <div class="card-desc">Een centrale rate limiter toegevoegd aan gevoelige API-routes voor projecten, comments, likes, follows en uploads. Dit voorkomt dat één gebruiker de server met te veel aanvragen belast.</div>
+      <div class="tags"><span class="tag tag-green">Infra</span><span class="tag tag-blue">Security</span></div>
     </div>
     <div class="card">
-      <div class="card-title">MIDI controller ondersteuning</div>
-      <div class="card-desc">Web MIDI API integratie voor extern toetsenbord/controller. Stond in de originele scope; uitgesteld tijdens de scopingssessie van week 2.</div>
-      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W10+</span></div>
-    </div>
-    <div class="sep-label">Infrastructuur</div>
-    <div class="card">
-      <div class="card-title">Beat uploaden + opslaan in dashboard</div>
-      <div class="card-desc">Mogelijkheid om een beat vanuit de studio te exporteren en op te slaan in het dashboard. Beat wordt gekoppeld aan het project en zichtbaar als opgeslagen versie in de projectenlijst.</div>
-      <div class="tags"><span class="tag tag-purple">Studio</span><span class="tag tag-green">Neon DB</span><span class="tag tag-gray">W8+</span></div>
+      <div class="card-title">De uitdaging</div>
+      <div class="card-note challenge" style="margin-bottom:0;"><b></b>Projectdata liep via meerdere oude stores en opslagmethodes. Daardoor konden sessies, rechten en API-antwoorden elkaar tegenspreken en waren fouten moeilijk terug te vinden.</div>
     </div>
     <div class="card">
-      <div class="card-title">Projecten opslaan in de cloud (Neon)</div>
-      <div class="card-desc">Upgrade van localStorage naar Neon PostgreSQL. Gebruikersaccounts bestaan al in de database uit week 4 - alleen het projectschema moet nog worden toegevoegd.</div>
-      <div class="tags"><span class="tag tag-green">Neon DB</span><span class="tag tag-gray">W8+</span></div>
+      <div class="card-title">Oplossing</div>
+      <div class="card-note lesson" style="margin-bottom:0;"><b></b>De datastroom vereenvoudigd rond één sessiecontext, centrale projecttoegang en gedeelde API-helpers. Sociale endpoints kregen dezelfde authenticatie-, fout- en rate-limitregels.</div>
     </div>
     <div class="card">
-      <div class="card-title">Social Login OAuth</div>
-      <div class="card-desc">Google + Twitter login uitgesteld vanuit week 4 vanwege redirect-complexiteit. Gemarkeerd als stretch goal.</div>
-      <div class="tags"><span class="tag tag-blue">Auth</span><span class="tag tag-gray">Stretch</span></div>
+      <div class="card-title">Wat ik de volgende keer beter doe</div>
+      <div class="card-note" style="border-color:rgba(59,130,246,0.3);background:rgba(59,130,246,0.05);color:rgba(59,130,246,0.85);margin-bottom:0;"><b></b>Eerder één bron van waarheid kiezen voor sessies en projectdata. Nieuwe endpoints voortaan direct bouwen met gedeelde validatie, rechtencontrole en limieten.</div>
+    </div>
+  </div>
+</div>
+
+<!-- WEEK 11 -->
+<div class="col" id="col-w11" style="border-color:rgba(224,82,151,0.3);">
+  <div class="col-header" style="border-color:rgba(224,82,151,0.2);" onclick="toggleCol(this)">
+    <div class="col-dot" style="background:var(--accent);box-shadow:0 0 8px rgba(224,82,151,0.6);"></div>
+    <span class="col-title" style="color:var(--accent);">Week 11<span class="col-sub" style="color:var(--text-3);"> · Afronding</span></span>
+    <span class="col-count" style="background:rgba(224,82,151,0.12);color:var(--accent);">9</span>
+    <span class="col-toggle">▾</span>
+  </div>
+  <div class="col-dates" style="color:rgba(224,82,151,0.6);">22 – 28 juni 2026 · DAW betrouwbaarheid &amp; Oplevering</div>
+  <div class="cards">
+    <div class="card" style="border-left:2px solid rgba(224,82,151,0.4);">
+      <div class="card-title" style="font-size:0.68rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--accent);margin-bottom:0.2rem;">Doel</div>
+      <div class="card-desc" style="margin-bottom:0;">De belangrijkste DAW-workflows betrouwbaar maken, delen en laden afronden en de productiebuild veilig opleveren.</div>
     </div>
     <div class="card">
-      <div class="card-title">Audio exporteren (WAV / MP3)</div>
-      <div class="card-desc">De uiteindelijke mix exporteren als WAV of MP3 via OfflineAudioContext rendering pipeline.</div>
-      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-gray">W11</span></div>
+      <div class="card-title">Wat ik heb gedaan</div>
+      <div class="card-desc">Ik heb regioverplaatsing, splitsen en trimmen verbeterd, MIDI-opname en hardware-keyboards gerepareerd, drums en gesamplede instrumenten stabiel laten afspelen en de latency verlaagd. Ook heb ik project sharing, de sharepagina, vertaling, responsive layout, het laadscherm en kwetsbare dependencies aangepakt.</div>
+      <div class="tags"><span class="tag tag-cyan">Audio</span><span class="tag tag-orange">Instrumenten</span><span class="tag tag-pink">UX</span><span class="tag tag-green">Infra</span></div>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">Professionele regio-logica</div>
+      <div class="card-desc">Herbruikbare regionMath-functies toegevoegd voor snap, split, trim en overlap. Trimmen is non-destructief: de tijdlijnpositie, duur en interne asset-offset blijven correct zonder de bronopname te veranderen.</div>
+      <div class="tags"><span class="tag tag-purple">Studio</span><span class="tag tag-cyan">Audio</span><span class="tag tag-blue">Logic</span></div>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">MIDI opname, weergave &amp; hardware</div>
+      <div class="card-desc">MIDI-noten als scherpe pianorolblokken met maatlijnen weergegeven. Running-status berichten van echte MIDI-keyboards worden correct verwerkt, de eerste tel na count-in wordt opgenomen en live noten reageren sneller.</div>
+      <div class="tags"><span class="tag tag-orange">Instrumenten</span><span class="tag tag-cyan">MIDI</span><span class="tag tag-yellow">Performance</span></div>
+    </div>
+    <div class="card highlight">
+      <div class="card-title">Betrouwbare instrument- en drumplayback</div>
+      <div class="card-desc">Gesamplede instrumenten worden vooraf geladen zodat projecten met het gekozen geluid afspelen. Drumregio's blijven hoorbaar na de eerste maat en na seek, en tonen nu het echte patroon in plaats van een generieke preview.</div>
+      <div class="tags"><span class="tag tag-cyan">Tone.js</span><span class="tag tag-purple">Beat Maker</span><span class="tag tag-orange">Instrumenten</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Project sharing &amp; sharepagina</div>
+      <div class="card-desc">Publicatie en zichtbaarheid aan projectdata gekoppeld, gedeelde audioclips in de tijdlijn opgenomen en de publieke sharepagina opgeschoond. Cover art wordt nu correct weergegeven en de deelbare projectlink gebruikt de opgeslagen versie.</div>
+      <div class="tags"><span class="tag tag-green">Neon DB</span><span class="tag tag-pink">UI</span><span class="tag tag-blue">Sharing</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Laadscherm, i18n &amp; responsive fixes</div>
+      <div class="card-desc">Het originele geanimeerde MELO Studio intro behouden, dubbele animaties en verkeerde timing opgelost en het scherm beperkt tot de eerste sessielaadbeurt. Google Translate-layoutverspringingen, horizontale overflow en mobiele spacing zijn gecorrigeerd.</div>
+      <div class="tags"><span class="tag tag-pink">UX</span><span class="tag tag-yellow">Animaties</span><span class="tag tag-gray">i18n</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Security &amp; onderhoud</div>
+      <div class="card-desc">Vite, Nodemailer, tar en andere kwetsbare dependencies bijgewerkt. URL- en bestandstoegang voor e-mailtransport uitgeschakeld en audio-contextbeheer aangescherpt om vastlopende noten en onnodige vertraging te voorkomen.</div>
+      <div class="tags"><span class="tag tag-blue">Security</span><span class="tag tag-green">Infra</span><span class="tag tag-yellow">Performance</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">De uitdaging</div>
+      <div class="card-note challenge" style="margin-bottom:0;"><b></b>Audio-, MIDI- en UI-status liepen niet altijd gelijk na opnemen, seeken, herladen of het openen van een gedeeld project. Kleine timingfouten veroorzaakten stille instrumenten, gemiste noten of een loader die opnieuw begon.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Oplossing &amp; reflectie</div>
+      <div class="card-note lesson"><b>Oplossing</b>Audio-context, transport, MIDI-parser en clipberekeningen duidelijker gescheiden. Samples worden vooraf geladen en sessiestatus voorkomt dubbele loaders.</div>
+      <div class="card-note" style="border-color:rgba(59,130,246,0.3);background:rgba(59,130,246,0.05);color:rgba(59,130,246,0.85);margin-bottom:0;"><b>Volgende keer</b>Eerder geautomatiseerde tests schrijven voor transportgrenzen, MIDI-berichten en reloads. Deze bugs ontstonden vooral op overgangen die handmatig gemakkelijk worden gemist.</div>
     </div>
   </div>
 </div>

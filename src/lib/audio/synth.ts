@@ -8,6 +8,10 @@
 //
 // While the samples are downloading we route notes through a lightweight
 // fallback synth so the keyboard never goes silent.
+//
+// Authorship: this is shared code. Malikhai wrote a large part of the Tone.js
+// synth/sample engine and presets. Niko later added sample preloading plus
+// AudioContext and latency recovery fixes.
 
 import * as Tone from "tone";
 import { bindToneToContext } from "./context";
@@ -236,6 +240,12 @@ const SYNTH_PRESETS: Record<string, SynthPresetOptions> = {
     },
     volume: -6,
   },
+};
+
+const requiredSynthConfig = (name: string): SynthPresetOptions => {
+  const config = SYNTH_PRESETS[name];
+  if (!config) throw new Error(`Missing required synth preset: ${name}`);
+  return config;
 };
 
 // Free CC-licensed instrument samples, hosted on GitHub Pages.
@@ -510,7 +520,7 @@ export class PolySynth {
 
     this.master = new Tone.Gain(1);
     this.master.connect(getMasterBus().input);
-    this.synth = new Tone.PolySynth(Tone.MonoSynth, buildSynthOpts(SYNTH_PRESETS.fallback!))
+    this.synth = new Tone.PolySynth(Tone.MonoSynth, buildSynthOpts(requiredSynthConfig("fallback")))
       .connect(this.master);
     this.synth.maxPolyphony = 16;
 
@@ -547,7 +557,7 @@ export class PolySynth {
 
     // While we wait for samples, use a preset-appropriate fallback so bass
     // doesn't sound like piano during the download window.
-    const fallbackCfg = p === "bass" ? SYNTH_PRESETS.bassFallback! : SYNTH_PRESETS.fallback!;
+    const fallbackCfg = requiredSynthConfig(p === "bass" ? "bassFallback" : "fallback");
     this.synth.set(buildSynthOpts(fallbackCfg));
 
     if (!s.loaded) {
@@ -620,7 +630,9 @@ export class PolySynth {
   /** Fallback: map unmapped MIDI notes to the nearest drum sound by proximity. */
   private midiToDrumFallback(midi: number): string {
     const keys = Object.keys(GM_DRUM_MAP).map(Number);
-    const nearest = keys.reduce((best, k) => Math.abs(k - midi) < Math.abs(best - midi) ? k : best, keys[0]!);
+    const firstKey = keys[0];
+    if (firstKey === undefined) return "kick";
+    const nearest = keys.reduce((best, k) => Math.abs(k - midi) < Math.abs(best - midi) ? k : best, firstKey);
     return GM_DRUM_MAP[nearest] ?? "kick";
   }
 

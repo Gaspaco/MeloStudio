@@ -1,9 +1,9 @@
-// `useTracks` manages the structural composition of the DAW timeline.
-// It's responsible for dragging and dropping audio files, creating loops,
-// snapping movements to the grid (bars/beats), moving clips across lanes,
-// and resolving clip types (audio vs midi vs video).
-// This hook directly manipulates the `tracks` array and instantly saves
-// up to `persist.ts` whenever the timeline layout is modified.
+// Authorship: this hook is shared. Niko built the original track and region
+// workflow. Malikhai added substantial recording, MIDI and routing work.
+//
+// This hook changes the live track/clip structure. `useProject` owns drafts and
+// server saves; regionMath owns the timeline calculations. Keeping those jobs
+// separate stops a drag or recording update from saving half-finished state.
 import { createSignal, onCleanup } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { storeClip, removeClip } from "~/lib/clipStore";
@@ -84,9 +84,6 @@ function disconnectMicFromTrack(trackId: string): void {
 const volToDb = (v: number) => v <= 0.001 ? -60 : 20 * Math.log10(v);
 
 const BAR_PX = STUDIO_BAR_PX;
-// Files larger than this won't have a dataUrl in the saved project JSON,
-// so they must be uploaded to the server for cross-session / cross-device playback.
-const REMOTE_UPLOAD_THRESHOLD_BYTES = 2_000_000; // Must match useProject's inline clip cap.
 const createRegionId = () => crypto.randomUUID();
 
 type Deps = {
@@ -134,6 +131,8 @@ export function useTracks(deps: Deps) {
   let recordingStartedAtContextTime = 0;
   let recordingAnchorPx = 0;
   let midiRecordedNotes: MidiNoteEvent[] = [];
+  // A note is unfinished between note-on and note-off. Keep it here so the
+  // recording preview can grow smoothly without rewriting saved MIDI events.
   const activeMidiNotes = new Map<number, { startPx: number; startedAt: number; velocity: number }>();
 
   const trackById = (trackId: string) => deps.tracks().find(t => t.id === trackId);
@@ -743,15 +742,16 @@ export function useTracks(deps: Deps) {
     },
 
     addTrackBatch(templateTracks: StudioTemplate["tracks"]) {
-      const newTracks: UITrack[] = templateTracks.map(({ type, name }) => {
-        const def = TRACK_DEFS.find(d => d.type === type)!;
-        return {
+      const newTracks: UITrack[] = templateTracks.flatMap(({ type, name }) => {
+        const def = TRACK_DEFS.find(d => d.type === type);
+        if (!def) return [];
+        return [{
           id: crypto.randomUUID(), name, type,
           muted: false, solo: false, volume: 0.8, pan: 0,
           color: type === "drum" ? def.color : randomTrackColor(),
           instrumentPreset: type === "instrument" ? "piano" : type === "bass" ? "bass" : type === "guitar" ? "guitar" : undefined,
           clips: type === "drum" ? createDrumPatternRegions(4) : undefined,
-        };
+        }];
       });
       deps.setTracks(newTracks);
       syncDrumPlaybackRegions(newTracks);

@@ -1,3 +1,10 @@
+// Authorship: Studio is shared work. Niko built the main studio shell and hook
+// wiring. Malikhai added major DAW, MIDI and recording integrations. Both branches
+// contain later fixes, so the ownership guide has the more detailed breakdown.
+//
+// This component should mainly connect signals, hooks and panels. Audio timing,
+// region math and persistence belong in their own modules so this file does not
+// become the engine itself.
 import { type Component, createSignal, createMemo, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { useNavigate, useParams } from "@solidjs/router";
 import { StepSequencer, DEFAULT_PATTERN, type StepPattern } from "~/lib/audio/stepSeq";
@@ -142,7 +149,8 @@ const Studio: Component = () => {
     if (snap) applySnap(snap);
   };
 
-  let trk!: ReturnType<typeof useTracks>;
+  let captureMidiNoteOn: (midi: number, velocity: number, receivedAt: number) => void = () => {};
+  let captureMidiNoteOff: (midi: number, receivedAt: number) => void = () => {};
 
   const PANEL_MIN_HEIGHT = 170;
   const PANEL_MAX_HEIGHT = 520;
@@ -191,8 +199,8 @@ const Studio: Component = () => {
     activeNotes, setActiveNotes,
     setSynthAttack, setSynthDecay, setSynthSustain, setSynthRelease,
     setSynthFilterFreq, setActivePanel,
-    onMidiNoteOn: (midi, velocity, receivedAt) => trk?.captureMidiNoteOn(midi, velocity, receivedAt),
-    onMidiNoteOff: (midi, receivedAt) => trk?.captureMidiNoteOff(midi, receivedAt),
+    onMidiNoteOn: (midi, velocity, receivedAt) => captureMidiNoteOn(midi, velocity, receivedAt),
+    onMidiNoteOff: (midi, receivedAt) => captureMidiNoteOff(midi, receivedAt),
   });
 
   const transport = useTransport({
@@ -235,7 +243,7 @@ const Studio: Component = () => {
     lyricsText, setLyricsText,
   });
 
-  trk = useTracks({
+  const trk = useTracks({
     projectId: () => params.id,
     tracks, setTracks, selectedTrack, setSelectedTrack,
     bpm, timeSignature: timeSig,
@@ -252,6 +260,8 @@ const Studio: Component = () => {
     timelinePxAtPerformanceTime: transport.timelinePxAtPerformanceTime,
     save: project.save,
   });
+  captureMidiNoteOn = trk.captureMidiNoteOn;
+  captureMidiNoteOff = trk.captureMidiNoteOff;
 
   const canSaveProject = () => hasStudioContent(tracks(), pattern(), lyricsText());
 
@@ -993,7 +1003,8 @@ const Studio: Component = () => {
           if (!trackId) return;
           const t = tracks().find(t => t.id === trackId);
           if (!t || !t.clips || t.clips.length === 0) return;
-          const clipId = selectedClipId() ?? t.clips[0].id;
+          const clipId = selectedClipId() ?? t.clips[0]?.id;
+          if (!clipId) return;
           setPianoRollTarget({ trackId, clipId });
         }}
       />
@@ -1026,7 +1037,7 @@ const Studio: Component = () => {
       </Show>
 
       <Show when={pianoRollTarget()}>
-        <div style={{ position: "absolute", top: "50%", bottom: "40px", left: 0, right: 0, "z-index": 100, borderTop: "2px solid #2c2c30", boxShadow: "0 -4px 20px rgba(0,0,0,0.5)" }}>
+        <div style={{ position: "absolute", top: "50%", bottom: "40px", left: 0, right: 0, "z-index": 100, "border-top": "2px solid #2c2c30", "box-shadow": "0 -4px 20px rgba(0,0,0,0.5)" }}>
           <PianoRoll
             tracks={tracks}
             clip={() => {
@@ -1037,7 +1048,7 @@ const Studio: Component = () => {
             }}
             trackId={() => pianoRollTarget()?.trackId ?? null}
             trackColor={() => "#e05297"}
-            onNoteOn={(midi) => sth.pressKey(midi, 0.8)}
+            onNoteOn={(midi) => sth.pressKey(midi)}
             onNoteOff={(midi) => sth.releaseKey(midi)}
             bpm={bpm}
             timeSignature={timeSig}

@@ -1,3 +1,8 @@
+// Authorship: Malikhai built the hardware MIDI manager in this file.
+// Niko later added the duplicate-listener guard and safer device-change recovery.
+//
+// This is the one place that reads raw MIDI bytes. The rest of the studio only
+// receives clean note on/off events, so hardware input cannot leak into random tracks.
 import { getAudioContext, unlockAudioContext, bindToneToContext } from "./context";
 import { setConnectedMidiDevices, type SimpleMidiDevice } from "../state/transportStore";
 import type { PolySynth } from "./synth";
@@ -191,7 +196,8 @@ class MidiHardwareManager {
     // If no synth is bound, still track note-offs for currently-held notes so we
     // can flush them when the synth is rebound — preventing stuck notes on track switch.
     if (!this.activeSynth) {
-      const first = event.data[0]!;
+      const first = event.data[0];
+      if (first === undefined) return;
       if (first >= 0xf8) return;
       const command = first >= 0x80 ? (first & 0xf0) : (this.lastStatus & 0xf0);
       const data1 = first >= 0x80 ? (event.data[1] ?? 0) : first;
@@ -206,7 +212,8 @@ class MidiHardwareManager {
     }
 
     const bytes = event.data;
-    const first = bytes[0]!;
+    const first = bytes[0];
+    if (first === undefined) return;
 
     // System real-time (0xF8–0xFF: clock, active sensing, etc.) — ignore.
     if (first >= 0xf8) return;

@@ -1,3 +1,10 @@
+// Authorship: Niko built the original transport hook. Malikhai added much of
+// the current audio/MIDI scheduling, metronome and count-in code. Later timing,
+// cycle and playback fixes are mixed work from both branches.
+//
+// There are two clocks on purpose: AudioContext schedules what we hear, while
+// requestAnimationFrame only draws the playhead. Never schedule sound from RAF,
+// because a busy or hidden tab would make the audio drift.
 import { createEffect, onCleanup, untrack } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import { apiFetch } from "~/lib/api";
@@ -62,6 +69,8 @@ export function useTransport(deps: Deps) {
   const barsToSecs = (bars: number) => bars * barSecs();
   const pxToSecs = (px: number) => barsToSecs(px / STUDIO_BAR_PX);
   const secsToPx = (secs: number) => (secs / barSecs()) * STUDIO_BAR_PX;
+  // Convert a browser input timestamp back into timeline space. This keeps a
+  // recorded MIDI note lined up with the sound even when the UI frame arrives late.
   const timelinePxAtPerformanceTime = (performanceTime: number) => {
     if (!deps.playing()) return deps.playheadPx();
     const ctx = getAudioContext();

@@ -1,8 +1,9 @@
-// `useProject` handles the initial data load, parsing, and structured initialization
-// of a Studio project when you hit the `/studio/[id]` route. It wraps API calls 
-// securely, hydrates the UI state from the DB JSON doc, and resolves legacy tracks 
-// into currently supported tracks. It's also fully async via `suspense` in SolidJS,
-// putting up a clean loading state until the studio is absolutely ready to play.
+// This hook has three different kinds of project data:
+// 1. the server document is the saved truth,
+// 2. the local draft is crash/reload recovery,
+// 3. IndexedDB or remote clip URLs hold the real audio bytes.
+// Do not merge those jobs together. A project can load its layout correctly while
+// one audio file is still missing, and that should not destroy the saved project.
 import { createEffect, createSignal, onCleanup } from "solid-js";
 import { apiFetch, getProjectDocApi, putProjectDocApi } from "~/lib/api";
 import { unlockAudioContext } from "~/lib/audio/context";
@@ -51,7 +52,6 @@ export function useProject(deps: Deps) {
   const DRAFT_DEBOUNCE_MS = 600;
   const AUTOSAVE_DEBOUNCE_MS = 5_000;
   const draftKey = `melostudio:studio-draft:${deps.projectId}`;
-  const MAX_SAVE_PAYLOAD_BYTES = 4_500_000;
 
   type StudioDraft = {
     version: typeof DRAFT_VERSION;

@@ -55,9 +55,7 @@ export function bindToneToContext(): void {
   if (toneContext.rawContext !== c) {
     Tone.setContext(c);
   }
-  const activeToneContext = Tone.getContext();
-  // Tone defaults to 100 ms of look-ahead. Keep a small scheduler cushion for
-  // timeline playback while making live keyboard input feel immediate.
+  const activeToneContext = Tone.getContext() as unknown as { lookAhead: number; updateInterval: number };
   activeToneContext.lookAhead = 0.01;
   activeToneContext.updateInterval = 0.005;
   toneBound = true;

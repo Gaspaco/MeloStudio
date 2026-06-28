@@ -1,3 +1,8 @@
+// Authorship: Malikhai built this piano-roll editor and its note editing tools.
+//
+// The important rule here is simple: X is time in clip-relative bars, Y is the
+// MIDI pitch, and velocity controls how hard the note plays. Keeping notes
+// clip-relative means moving the region does not move every note by hand.
 import { type Component, createSignal, createMemo, createEffect, For, Show, onMount, onCleanup, on } from "solid-js";
 import type { Accessor, Setter } from "solid-js";
 import type { UITrack, MediaClip, MidiNoteEvent } from "../types";
@@ -175,6 +180,36 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
   const [selectedNoteIndex, setSelectedNoteIndex] = createSignal<number | null>(null);
   const [playingKeys, setPlayingKeys] = createSignal<Set<number>>(new Set());
 
+  const noteVisual = (note: MidiNoteEvent, noteIndex: number) => {
+    let startBars = note.startBars;
+    let midi = note.midi;
+    let durationBars = note.durationBars;
+    let velocity = note.velocity;
+    let isDragging = false;
+    let isVelocityDragging = false;
+    const state = dragState();
+
+    if (state && state.mode !== "draw" && state.noteIndex === noteIndex) {
+      isDragging = true;
+      if (state.mode === "move") {
+        startBars = state.newStartBars;
+        midi = state.newMidi;
+      } else if (state.mode === "trim") {
+        durationBars = state.newDurationBars;
+      } else {
+        velocity = state.newVelocity;
+        isVelocityDragging = true;
+      }
+    }
+
+    return { startBars, midi, durationBars, velocity, isDragging, isVelocityDragging };
+  };
+
+  const drawnNote = () => {
+    const state = dragState();
+    return state?.mode === "draw" ? state : null;
+  };
+
   const noteOn = (midi: number) => {
     setPlayingKeys(s => { const ns = new Set(s); ns.add(midi); return ns; });
     props.onNoteOn?.(midi);
@@ -185,15 +220,23 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
     props.onNoteOff?.(midi);
   };
 
+  const commitNotes = (newNotes: MidiNoteEvent[]): boolean => {
+    const trackId = props.trackId();
+    const currentClip = clip();
+    if (!trackId || !currentClip) return false;
+    props.onUpdateNotes(trackId, currentClip.id, newNotes);
+    return true;
+  };
+
   const handleKeyDown = (e: KeyboardEvent) => {
-    if ((e.key === "Backspace" || e.key === "Delete") && selectedNoteIndex() !== null) {
-      if (!props.trackId() || !clip()) return;
+    if (e.key === "Backspace" || e.key === "Delete") {
+      const idx = selectedNoteIndex();
+      if (idx === null) return;
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
-      const idx = selectedNoteIndex()!;
       const newNotes = [...notes()];
       newNotes.splice(idx, 1);
-      props.onUpdateNotes(props.trackId()!, clip()!.id, newNotes);
+      if (!commitNotes(newNotes)) return;
       setSelectedNoteIndex(null);
     }
   };
@@ -206,9 +249,11 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
 
   const handleGridMouseDown = (e: MouseEvent) => {
     if (e.button !== 0) return;
-    const rect = gridScrollEl!.getBoundingClientRect();
-    const x = e.clientX - rect.left + gridScrollEl!.scrollLeft;
-    const y = e.clientY - rect.top + gridScrollEl!.scrollTop;
+    const grid = gridScrollEl;
+    if (!grid) return;
+    const rect = grid.getBoundingClientRect();
+    const x = e.clientX - rect.left + grid.scrollLeft;
+    const y = e.clientY - rect.top + grid.scrollTop;
 
     const barClick = Math.max(0, x / barPx());
     const snappedStart = getSnappedBars(barClick);
@@ -231,11 +276,10 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
   };
 
   const handleNoteMouseDown = (e: MouseEvent, index: number, isRightEdge: boolean) => {
-    if (!props.trackId() || !clip()) return;
     if (e.button === 2) {
       const newNotes = [...notes()];
       newNotes.splice(index, 1);
-      props.onUpdateNotes(props.trackId()!, clip()!.id, newNotes);
+      if (!commitNotes(newNotes)) return;
       if (selectedNoteIndex() === index) setSelectedNoteIndex(null);
       return;
     }
@@ -244,6 +288,7 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
 
     setSelectedNoteIndex(index);
     const note = notes()[index];
+    if (!note) return;
     noteOn(note.midi);
 
     if (isRightEdge) {
@@ -271,10 +316,9 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
 
   const handleNoteDoubleClick = (e: MouseEvent, index: number) => {
     e.stopPropagation();
-    if (!props.trackId() || !clip()) return;
     const newNotes = [...notes()];
     newNotes.splice(index, 1);
-    props.onUpdateNotes(props.trackId()!, clip()!.id, newNotes);
+    if (!commitNotes(newNotes)) return;
     if (selectedNoteIndex() === index) setSelectedNoteIndex(null);
   };
 
@@ -282,6 +326,7 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
     if (e.button !== 0) return;
     e.stopPropagation();
     const note = notes()[index];
+    if (!note) return;
     setDragState({
       mode: "velocity",
       noteIndex: index,
@@ -339,7 +384,7 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
       else if (ds.mode === "velocity") noteOff(ds.origMidi);
     }
 
-    if (!ds || !props.trackId() || !clip()) {
+    if (!ds) {
       setDragState(null);
       return;
     }
@@ -351,19 +396,28 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
         durationBars: ds.durationBars,
         velocity: ds.velocity
       }];
-      props.onUpdateNotes(props.trackId()!, clip()!.id, newNotes);
+      commitNotes(newNotes);
     } else if (ds.mode === "move") {
       const newNotes = [...notes()];
-      newNotes[ds.noteIndex] = { ...newNotes[ds.noteIndex], startBars: ds.newStartBars, midi: ds.newMidi };
-      props.onUpdateNotes(props.trackId()!, clip()!.id, newNotes);
+      const note = newNotes[ds.noteIndex];
+      if (note) {
+        newNotes[ds.noteIndex] = { ...note, startBars: ds.newStartBars, midi: ds.newMidi };
+        commitNotes(newNotes);
+      }
     } else if (ds.mode === "trim") {
       const newNotes = [...notes()];
-      newNotes[ds.noteIndex] = { ...newNotes[ds.noteIndex], durationBars: ds.newDurationBars };
-      props.onUpdateNotes(props.trackId()!, clip()!.id, newNotes);
+      const note = newNotes[ds.noteIndex];
+      if (note) {
+        newNotes[ds.noteIndex] = { ...note, durationBars: ds.newDurationBars };
+        commitNotes(newNotes);
+      }
     } else if (ds.mode === "velocity") {
       const newNotes = [...notes()];
-      newNotes[ds.noteIndex] = { ...newNotes[ds.noteIndex], velocity: ds.newVelocity };
-      props.onUpdateNotes(props.trackId()!, clip()!.id, newNotes);
+      const note = newNotes[ds.noteIndex];
+      if (note) {
+        newNotes[ds.noteIndex] = { ...note, velocity: ds.newVelocity };
+        commitNotes(newNotes);
+      }
     }
     setDragState(null);
   };
@@ -514,35 +568,40 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
 
               {/* Actual Notes */}
               <For each={notes()}>
-                {(note, index) => (
-                  <div
-                    class={`bl__pr-note ${dragState()?.mode !== "draw" && dragState()?.noteIndex === index() ? "is-dragging" : ""} ${selectedNoteIndex() === index() ? "is-selected" : ""}`}
-                    style={{
-                      left: `${(dragState()?.mode === "move" && dragState()?.noteIndex === index() ? (dragState() as any).newStartBars : note.startBars) * barPx()}px`,
-                      top: `${(127 - (dragState()?.mode === "move" && dragState()?.noteIndex === index() ? (dragState() as any).newMidi : note.midi)) * rowH() + 1}px`,
-                      width: `${(dragState()?.mode === "trim" && dragState()?.noteIndex === index() ? (dragState() as any).newDurationBars : note.durationBars) * barPx()}px`,
-                      background: props.trackColor(),
-                      opacity: 0.4 + ((dragState()?.mode === "velocity" && dragState()?.noteIndex === index() ? (dragState() as any).newVelocity : note.velocity) * 0.6)
-                    }}
-                    onMouseDown={(e) => handleNoteMouseDown(e, index(), false)}
-                    onDblClick={(e) => handleNoteDoubleClick(e, index())}
-                  >
-                    <div class="bl__pr-note-resize" onMouseDown={(e) => handleNoteMouseDown(e, index(), true)} />
-                  </div>
-                )}
+                {(note, index) => {
+                  const visual = createMemo(() => noteVisual(note, index()));
+                  return (
+                    <div
+                      class={`bl__pr-note ${visual().isDragging ? "is-dragging" : ""} ${selectedNoteIndex() === index() ? "is-selected" : ""}`}
+                      style={{
+                        left: `${visual().startBars * barPx()}px`,
+                        top: `${(127 - visual().midi) * rowH() + 1}px`,
+                        width: `${visual().durationBars * barPx()}px`,
+                        background: props.trackColor(),
+                        opacity: 0.4 + (visual().velocity * 0.6)
+                      }}
+                      onMouseDown={(e) => handleNoteMouseDown(e, index(), false)}
+                      onDblClick={(e) => handleNoteDoubleClick(e, index())}
+                    >
+                      <div class="bl__pr-note-resize" onMouseDown={(e) => handleNoteMouseDown(e, index(), true)} />
+                    </div>
+                  );
+                }}
               </For>
 
               {/* Currently Drawn Note */}
-              <Show when={dragState()?.mode === "draw"}>
-                <div
-                  class="bl__pr-note is-dragging"
-                  style={{
-                    left: `${(dragState() as any).startBars * barPx()}px`,
-                    top: `${(127 - (dragState() as any).midi) * rowH() + 1}px`,
-                    width: `${(dragState() as any).durationBars * barPx()}px`,
-                    background: props.trackColor()
-                  }}
-                />
+              <Show when={drawnNote()}>
+                {(state) => (
+                  <div
+                    class="bl__pr-note is-dragging"
+                    style={{
+                      left: `${state().startBars * barPx()}px`,
+                      top: `${(127 - state().midi) * rowH() + 1}px`,
+                      width: `${state().durationBars * barPx()}px`,
+                      background: props.trackColor()
+                    }}
+                  />
+                )}
               </Show>
 
               {/* Playhead */}
@@ -568,33 +627,38 @@ const PianoRoll: Component<PianoRollProps> = (props) => {
             
             {/* Velocity Actual */}
             <For each={notes()}>
-              {(note, index) => (
-                <div
-                  class={`bl__pr-vel-bar ${dragState()?.mode === "velocity" && dragState()?.noteIndex === index() ? "is-dragging" : ""} ${selectedNoteIndex() === index() ? "is-selected" : ""}`}
-                  style={{
-                    left: `${(dragState()?.mode === "move" && dragState()?.noteIndex === index() ? (dragState() as any).newStartBars : note.startBars) * barPx()}px`,
-                    height: `${(dragState()?.mode === "velocity" && dragState()?.noteIndex === index() ? (dragState() as any).newVelocity : note.velocity) * 60}px`,
-                    background: props.trackColor(),
-                    opacity: dragState()?.mode === "velocity" && dragState()?.noteIndex === index() ? 0.9 : 0.6
-                  }}
-                  onMouseDown={(e) => handleVelocityMouseDown(e, index())}
-                >
-                  <div class="bl__pr-vel-cap" />
-                </div>
-              )}
+              {(note, index) => {
+                const visual = createMemo(() => noteVisual(note, index()));
+                return (
+                  <div
+                    class={`bl__pr-vel-bar ${visual().isVelocityDragging ? "is-dragging" : ""} ${selectedNoteIndex() === index() ? "is-selected" : ""}`}
+                    style={{
+                      left: `${visual().startBars * barPx()}px`,
+                      height: `${visual().velocity * 60}px`,
+                      background: props.trackColor(),
+                      opacity: visual().isVelocityDragging ? 0.9 : 0.6
+                    }}
+                    onMouseDown={(e) => handleVelocityMouseDown(e, index())}
+                  >
+                    <div class="bl__pr-vel-cap" />
+                  </div>
+                );
+              }}
             </For>
 
             {/* Drawn Velocity */}
-            <Show when={dragState()?.mode === "draw"}>
-              <div
-                class="bl__pr-vel-bar"
-                style={{
-                  left: `${(dragState() as any).startBars * barPx() + 2}px`,
-                  height: `${Math.max(3, (dragState() as any).velocity * 60)}px`,
-                  background: props.trackColor(),
-                  opacity: 0.8
-                }}
-              />
+            <Show when={drawnNote()}>
+              {(state) => (
+                <div
+                  class="bl__pr-vel-bar"
+                  style={{
+                    left: `${state().startBars * barPx() + 2}px`,
+                    height: `${Math.max(3, state().velocity * 60)}px`,
+                    background: props.trackColor(),
+                    opacity: 0.8
+                  }}
+                />
+              )}
             </Show>
           </div>
         </div>
