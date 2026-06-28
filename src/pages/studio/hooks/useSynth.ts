@@ -35,8 +35,21 @@ type Deps = {
 
 export function useSynth(deps: Deps) {
   let synth: PolySynth | null = null;
-  const heldKeys = new Set<string>();
+  const heldKeys = new Map<string, number | null>();
   let lastSelectedTrack: string | null = null;
+
+  const releaseHeldKeys = () => {
+    if (heldKeys.size === 0 && deps.activeNotes().size === 0) return;
+
+    for (const midi of heldKeys.values()) {
+      if (midi === null) continue;
+      synth?.noteOff(midi);
+      deps.onMidiNoteOff?.(midi, performance.now());
+    }
+    heldKeys.clear();
+    synth?.allNotesOff();
+    deps.setActiveNotes(new Set<number>());
+  };
 
   const ensureSynth = (preset: SynthPreset = "piano") => {
     if (!synth) {
@@ -131,11 +144,12 @@ export function useSynth(deps: Deps) {
     const keyVal = KEY_MAP[k];
     if (keyVal === undefined) return;
     if (heldKeys.has(k)) return;
-    heldKeys.add(k);
+    heldKeys.set(k, null);
     e.preventDefault();
     // Once the context is warm, trigger synchronously — awaiting the unlock path
     // on every keypress adds latency to live playing.
     if (!isAudioContextReady()) await unlockAudioContext();
+    if (!heldKeys.has(k)) return;
     const activePreset: SynthPreset = sel.instrumentPreset
       ?? (sel.type === "bass" ? "bass" : sel.type === "guitar" ? "guitar" : deps.synthPreset());
     ensureSynth(activePreset);
@@ -146,6 +160,7 @@ export function useSynth(deps: Deps) {
     const isDrumKit = activePreset.startsWith("drum-kit");
     const midi = isDrumKit ? 36 + (keyVal % 12) : 12 * (deps.octave() + 1) + keyVal;
 
+    heldKeys.set(k, midi);
     synth.noteOn(midi, 0.85);
     deps.onMidiNoteOn?.(midi, 0.85, performance.now());
     const next = new Set(deps.activeNotes());
@@ -155,14 +170,10 @@ export function useSynth(deps: Deps) {
 
   const onKeyUp = (e: KeyboardEvent) => {
     const k = e.key.toLowerCase();
-    const keyVal = KEY_MAP[k];
-    if (keyVal === undefined || !heldKeys.has(k)) return;
+    if (!heldKeys.has(k)) return;
+    const midi = heldKeys.get(k);
     heldKeys.delete(k);
-    
-    const sel = deps.tracks().find(t => t.id === deps.selectedTrack());
-    const activePreset = sel?.instrumentPreset ?? (sel?.type === "bass" ? "bass" : sel?.type === "guitar" ? "guitar" : deps.synthPreset());
-    const isDrumKit = activePreset.startsWith("drum-kit");
-    const midi = isDrumKit ? 36 + (keyVal % 12) : 12 * (deps.octave() + 1) + keyVal;
+    if (midi === null || midi === undefined) return;
 
     synth?.noteOff(midi);
     deps.onMidiNoteOff?.(midi, performance.now());
@@ -246,14 +257,19 @@ export function useSynth(deps: Deps) {
     });
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", releaseHeldKeys);
+    document.addEventListener("visibilitychange", releaseHeldKeys);
   });
 
   onCleanup(() => {
+    releaseHeldKeys();
     synth?.dispose();
     MidiManager.bindTargetSynth(null);
     MidiManager.bindNoteListener(null);
     window.removeEventListener("keydown", onKeyDown);
     window.removeEventListener("keyup", onKeyUp);
+    window.removeEventListener("blur", releaseHeldKeys);
+    document.removeEventListener("visibilitychange", releaseHeldKeys);
   });
 
   return { getSynth, ensureSynth, pressKey, releaseKey, updatePreset, updateEnvelope, updateFilterFreq, allNotesOff };

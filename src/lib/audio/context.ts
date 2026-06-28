@@ -46,12 +46,20 @@ export function getAudioContext(): AudioContext {
 
 export function bindToneToContext(): void {
   const c = getAudioContext();
-  const toneContext = Tone.getContext() as unknown as { rawContext?: AudioContext };
-  if (toneBound && toneContext.rawContext === c) return;
+  const toneContext = Tone.getContext() as unknown as {
+    rawContext?: AudioContext;
+    lookAhead: number;
+    updateInterval: number;
+  };
   // setContext accepts a raw AudioContext in Tone v15+
   if (toneContext.rawContext !== c) {
     Tone.setContext(c);
   }
+  const activeToneContext = Tone.getContext();
+  // Tone defaults to 100 ms of look-ahead. Keep a small scheduler cushion for
+  // timeline playback while making live keyboard input feel immediate.
+  activeToneContext.lookAhead = 0.01;
+  activeToneContext.updateInterval = 0.005;
   toneBound = true;
 }
 

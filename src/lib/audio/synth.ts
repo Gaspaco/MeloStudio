@@ -590,12 +590,13 @@ export class PolySynth {
 
   noteOn(midi: number, velocity = 1): void {
     if (this.active.has(midi)) this.noteOff(midi);
+    const liveTime = Tone.immediate();
     // Drum kit: map MIDI note to the appropriate drum voice and trigger immediately.
     if (this.drumKit) {
       const voiceName = GM_DRUM_MAP[midi] ?? this.midiToDrumFallback(midi);
       const voice = this.drumKit[voiceName];
       if (voice) {
-        voice.trigger(undefined, velocity);
+        voice.trigger(liveTime, velocity);
         this.noteOwner.set(midi, "drum");
         this.active.add(midi);
       }
@@ -607,10 +608,10 @@ export class PolySynth {
       this.samplerReady = true;
     }
     if (this.sampler && this.samplerReady) {
-      this.sampler.triggerAttack(note, undefined, velocity);
+      this.sampler.triggerAttack(note, liveTime, velocity);
       this.noteOwner.set(midi, "sampler");
     } else {
-      this.synth.triggerAttack(note, undefined, velocity);
+      this.synth.triggerAttack(note, liveTime, velocity);
       this.noteOwner.set(midi, "synth");
     }
     this.active.add(midi);
@@ -656,9 +657,9 @@ export class PolySynth {
     if (owner === "drum") {
       // Drums self-release; nothing to do here. Just clean up tracking.
     } else if (owner === "sampler" && this.sampler) {
-      this.sampler.triggerRelease(midiToNote(midi));
+      this.sampler.triggerRelease(midiToNote(midi), Tone.immediate());
     } else {
-      this.synth.triggerRelease(midiToNote(midi));
+      this.synth.triggerRelease(midiToNote(midi), Tone.immediate());
     }
     this.active.delete(midi);
     this.noteOwner.delete(midi);

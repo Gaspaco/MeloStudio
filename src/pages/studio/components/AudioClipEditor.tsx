@@ -45,6 +45,21 @@ const AudioClipEditor: Component<Props> = (props) => {
     props.onPatch(patch);
   };
 
+  const handleRetune = () => {
+    const c = props.clip();
+    if (!c) return;
+    const currentRate = c.playbackRate ?? 1;
+    const restoredBars = c.bars * currentRate;
+    const patch: Partial<MediaClip> = {
+      pitch: 0,
+      playbackRate: 1,
+      bars: restoredBars,
+    };
+    if (c.widthPx !== undefined) patch.widthPx = restoredBars * MAIN_BAR_PX;
+    if (c.originalBars !== undefined) patch.originalBars = c.originalBars * currentRate;
+    props.onPatch(patch);
+  };
+
   return (
     <div class="ace">
 
@@ -100,7 +115,10 @@ const AudioClipEditor: Component<Props> = (props) => {
             Reverse
           </button>
           <div class="ace__btn-row">
-            <button class="ace__btn ace__btn--retune">
+            <button
+              class="ace__btn ace__btn--retune"
+              onClick={handleRetune}
+            >
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
                 <path d="M2 9c1.5 0 1.5-2.5 3-2.5S7.5 11 9 11s1.5-2.5 3-2.5S13.5 9 15 9"/>
               </svg>

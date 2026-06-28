@@ -412,14 +412,18 @@ export function useTransport(deps: Deps) {
         source.playbackRate.value = rate;
         
         let pitchShiftNode: any = null;
-        const pitchCorrection = userPitch - 12 * Math.log2(rate);
+        // Playback rate is a tape-style speed control and naturally changes
+        // pitch. Do not force the realtime shifter to compensate for rate
+        // changes, since large corrections create metallic vocal artifacts.
+        const pitchCorrection = Math.max(-12, Math.min(12, userPitch));
         
         if (Math.abs(pitchCorrection) > 0.01) {
           pitchShiftNode = new Tone.PitchShift({
             pitch: pitchCorrection,
             windowSize: 0.1,
             delayTime: 0,
-            feedback: 0
+            feedback: 0,
+            wet: 1,
           });
           Tone.connect(source, pitchShiftNode);
           Tone.connect(pitchShiftNode, sourceGain);

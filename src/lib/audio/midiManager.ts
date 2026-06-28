@@ -15,6 +15,10 @@ class MidiHardwareManager {
   private heartbeatId: ReturnType<typeof setInterval> | null = null;
   /** Whether initialize() has been called at least once. */
   private initialized = false;
+  /** Prevent duplicate AudioContext listeners when MIDI access is reacquired. */
+  private watchingAudioContext = false;
+  /** Stable device signature used to avoid interrupting notes on heartbeat scans. */
+  private deviceSignature = "";
 
   /**
    * Initializes the browser Web MIDI API subsystem and subscribes to hardware inputs.
@@ -61,6 +65,8 @@ class MidiHardwareManager {
    * re-binds Tone.js and re-scans MIDI devices so playback resumes without a page refresh.
    */
   private watchAudioContext(): void {
+    if (this.watchingAudioContext) return;
+    this.watchingAudioContext = true;
     const ctx = getAudioContext();
     ctx.addEventListener("statechange", () => {
       if (ctx.state === "running") {
@@ -155,8 +161,17 @@ class MidiHardwareManager {
       dev.onmidimessage = (event: MIDIMessageEvent) => this.handleMidiMessage(event);
     }
 
-    // Kill any stuck notes when device list changes (e.g. keyboard unplugged mid-note)
-    this.activeSynth?.allNotesOff();
+    const nextSignature = devices
+      .map((device) => `${device.id}:${device.name}:${device.manufacturer}`)
+      .sort()
+      .join("|");
+    if (this.deviceSignature && nextSignature !== this.deviceSignature) {
+      // Kill stuck notes only when hardware actually changes, not on every heartbeat.
+      this.activeSynth?.allNotesOff();
+      this.heldNotes.clear();
+      this.pendingNoteOffs.clear();
+    }
+    this.deviceSignature = nextSignature;
 
     setConnectedMidiDevices(devices);
   }
@@ -298,6 +313,7 @@ class MidiHardwareManager {
     this.activeSynth?.allNotesOff();
     this.activeSynth = null;
     this.noteListener = null;
+    this.deviceSignature = "";
     if (this.midiAccess) {
       const inputs = this.midiAccess.inputs.values();
       for (let input = inputs.next(); input && !input.done; input = inputs.next()) {

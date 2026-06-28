@@ -20,6 +20,8 @@ function getTransporter() {
       user: requireEnv("SMTP_USER"),
       pass: requireEnv("SMTP_PASS"),
     },
+    disableFileAccess: true,
+    disableUrlAccess: true,
   });
   return _transporter;
 }

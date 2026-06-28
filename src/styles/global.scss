@@ -1,6 +1,7 @@
 @use "reset";
 
-html[data-skip-boot-veil] #boot-veil {
+html[data-skip-boot-veil] #boot-veil,
+html[data-skip-boot-veil] .route-veil {
   display: none !important;
 }
 
