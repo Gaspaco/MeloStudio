@@ -1,5 +1,4 @@
-// This page handles the login form and sends each provider through its matching
-// auth client. The route wrapper decides where to navigate after login succeeds.
+// Keep the login logic here. The route handles where we go after.
 import { type Component, createSignal, onMount, For } from "solid-js";
 import { useSearchParams } from "@solidjs/router";
 import { gsap } from "gsap";

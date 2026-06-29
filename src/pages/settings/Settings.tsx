@@ -1,5 +1,4 @@
-// Account and profile changes are saved through auth APIs. Device-only choices
-// such as appearance, music interests and privacy preferences use localStorage.
+// Account changes go to the API. Device preferences stay in localStorage.
 import { type Component, createSignal, createResource, Show, For, onCleanup, onMount } from "solid-js";
 import { useNavigate } from "@solidjs/router";
 import { authClient } from "../../lib/auth";

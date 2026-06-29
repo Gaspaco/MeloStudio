@@ -1,5 +1,4 @@
-// Password recovery first checks that the account exists, then asks the auth
-// service to send the reset email. The `sent` state swaps the form for feedback.
+// Check that the account exists before sending the reset email.
 import { type Component, createSignal, onMount, For } from "solid-js";
 import { gsap } from "gsap";
 import { socialAuthClient } from "../../lib/social-auth";

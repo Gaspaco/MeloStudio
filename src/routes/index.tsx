@@ -1,5 +1,4 @@
-// The root route checks the session before showing the public landing page.
-// Signed-in users go straight to their dashboard instead of seeing marketing.
+// If they are already logged in, take them straight to the dashboard.
 import { useNavigate } from "@solidjs/router";
 import { lazy, onMount, Show, Suspense, createSignal } from "solid-js";
 import { getAppSession } from "~/lib/app-auth";

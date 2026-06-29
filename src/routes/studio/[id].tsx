@@ -1,5 +1,4 @@
-// `[id]` is the dynamic project ID from URLs such as `/studio/abc123`.
-// The Studio component reads that ID and loads the matching project.
+// [id] is the project id from /studio/:id.
 import { lazy, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";
 import { ProtectedPage } from "~/lib/session";

@@ -1,5 +1,4 @@
-// `[id]` identifies the public project. This page rebuilds its playable mix from
-// saved audio, MIDI and drum data when no finished mix file is available.
+// Load the public project from [id]. If there is no final mix, play its saved tracks.
 import { type Component, createEffect, createMemo, createResource, createSignal, For, onCleanup, onMount, Show } from "solid-js";
 import gsap from "gsap";
 import { Portal } from "solid-js/web";

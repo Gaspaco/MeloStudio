@@ -1,4 +1,3 @@
-// This route owns navigation around the reusable signup form.
 import { useNavigate } from "@solidjs/router";
 import { createSignal, lazy, Show, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";
@@ -11,7 +10,7 @@ export default function SignupPage() {
 
   const finishSignup = () => {
     setLeaving(true);
-    // Give the route veil time to cover the old page before navigation swaps it.
+    // Let the veil cover the page before switching routes.
     window.setTimeout(() => navigate("/dashboard", { replace: true }), 260);
   };
 

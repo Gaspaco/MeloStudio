@@ -1,4 +1,4 @@
-// The reset token remains in the URL for the form to read with useSearchParams.
+// Keep the token in the URL so ResetPassword can read it.
 import { useNavigate } from "@solidjs/router";
 import { lazy, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";

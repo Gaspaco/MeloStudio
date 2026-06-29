@@ -1,5 +1,4 @@
-// The dashboard is the coordinator for account data, project actions and tabs.
-// The tab components render each view while this file owns their shared state.
+// Keep the dashboard data and shared tab state in one place.
 import { type Component, createSignal, createEffect, onMount, onCleanup, Show } from "solid-js";
 import { gsap } from "gsap";
 import { authClient } from "../../lib/auth";

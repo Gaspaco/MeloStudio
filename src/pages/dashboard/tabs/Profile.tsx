@@ -1,5 +1,4 @@
-// The profile combines server project data with optional profile details kept
-// in local storage. Audio previews use one shared AudioContext to avoid leaks.
+// Some profile extras are local for now. Audio previews share one context.
 import { type Component, For, Show, createEffect, createSignal, onCleanup, onMount, type Accessor } from "solid-js";
 import { apiFetch, clipUrl, getLikesApi, likeProjectApi, unlikeProjectApi, publishProjectApi } from "../../../lib/api";
 import { getAudioContext } from "../../../lib/audio/context";

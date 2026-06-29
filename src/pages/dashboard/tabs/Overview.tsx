@@ -1,5 +1,4 @@
-// This is the dashboard summary view. Project mutations stay in Dashboard and
-// arrive here as callbacks, which keeps this component focused on rendering.
+// Dashboard handles the project changes; this file just shows the overview.
 import { type Component, For, Show, onMount, onCleanup } from "solid-js";
 import "./overview.scss";
 

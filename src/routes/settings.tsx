@@ -1,4 +1,3 @@
-// ProtectedPage blocks this lazy-loaded page until the session check succeeds.
 import { lazy, Suspense } from "solid-js";
 import RouteVeil from "~/components/RouteVeil";
 import { ProtectedPage } from "~/lib/session";

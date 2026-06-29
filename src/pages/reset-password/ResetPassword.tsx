@@ -1,5 +1,4 @@
-// The reset token comes from the email link's query string. This page validates
-// the new password locally before sending the token and password to the auth API.
+// The reset token comes from the link in the email.
 import { type Component, createSignal, onMount, For } from "solid-js";
 import { useSearchParams } from "@solidjs/router";
 import { gsap } from "gsap";

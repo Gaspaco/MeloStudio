@@ -1,5 +1,4 @@
-// `[id]` is the project being prepared for publishing. This protected page lets
-// its owner toggle public access and copy the matching `/share/[id]` URL.
+// Use the project id from the URL to publish it and make its share link.
 import { type Component, createResource, createSignal, Show, onCleanup } from "solid-js";
 import { useParams } from "@solidjs/router";
 import { publishProjectApi, getShareProjectApi, pfpUrl as buildPfpUrl } from "~/lib/api";

@@ -1,5 +1,4 @@
-// The library filters active and deleted projects for display. Rename, restore
-// and delete operations are passed back to Dashboard, which owns the real data.
+// Dashboard handles the real changes; this file shows and filters the projects.
 import { type Component, For, Show } from "solid-js";
 import { type DeletedProjectListItem } from "../../../lib/api";
 import { waveform } from "./waveform";
